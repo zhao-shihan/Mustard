@@ -3,21 +3,21 @@
 Mustard is a modern offline software framework for HEP experiment.
 
 - [Mustard](#mustard)
-- [Dependencies](#dependencies)
-  - [Toolchain](#toolchain)
-  - [Libraries](#libraries)
-- [Cite](#cite)
+  - [Dependencies](#dependencies)
+    - [Toolchain](#toolchain)
+    - [Libraries](#libraries)
+  - [Cite](#cite)
 
-# Dependencies
+## Dependencies
 
-## Toolchain
+### Toolchain
 
 1. A C++ compiler (that supports ≥ C++20. [GCC](https://gcc.gnu.org/) ≥ 12, [LLVM Clang](https://clang.llvm.org/) ≥ 16, or MSVC ≥ 19.30 (i.e., [Visual Studio](https://visualstudio.microsoft.com/) 2022 ≥ 17.0))
 2. A C++ library (that supports ≥ C++20. [libstdc++](https://gcc.gnu.org/onlinedocs/libstdc++/) ≥ 12, or [MSVC STL](https://github.com/microsoft/STL) with [Visual Studio](https://visualstudio.microsoft.com/) 2022 ≥ 17.0)
 3. [CMake](https://cmake.org/) (≥ 3.16)
 4. A build system compatible with CMake ([GNU Make](https://www.gnu.org/software/make/), [Ninja](https://ninja-build.org), or etc.)
 
-## Libraries
+### Libraries
 
 Required:
 
@@ -38,6 +38,6 @@ Required, built-in if not found (network or pre-downloaded source is required):
 8. [zhao-shihan/cpp-TimSort (A C++ implementation of timsort)](https://github.com/timsort/cpp-TimSort) (a cpp-TimSort fork, built-in if not found)
 9. [yaml-cpp (A YAML parser and emitter in C++)](https://github.com/jbeder/yaml-cpp) (≥ 0.8.0, built-in if not found)
 
-# Cite
+## Cite
 
 1. [Shihan Zhao and Jian Tang, Optimization of muonium yield in perforated silica aerogel, arXiv:2401.00222.](https://arxiv.org/abs/2401.00222)
