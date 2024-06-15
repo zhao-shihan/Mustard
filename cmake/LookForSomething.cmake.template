@@ -1,0 +1,62 @@
+# Usage:
+# 1. Replace <lib_cmake_name> with the standard name of the library (The name that find_package can find the library. If the library uses xxxConfig.cmake then it is xxx) (e.g. for yaml-cpp it is yaml-cpp, for Eigen3 it is Eigen).
+# 2. Replace <LIB_NAME> with a full uppercase name same as (or at least similar to, if not convenient) <lib_cmake_name>  (e.g. for yaml-cpp it is YAML_CPP, for Microsoft-GSL it is MSGSL).
+# 3. Replace <lib_name> with the full lowercase version of <LIB_NAME>.
+# 4. Replace <min_version> with the minimum version required for this library.
+# 5. Replace <src_dir_with_version> with the directory name same as what the library archive extracts to, which should includes ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is yaml-cpp-${MUSTARD_BUILTIN_YAML_CPP_VERSION}).
+# 6. Replace <url_with_version> with the library archive download URL template, which should includes ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is https://github.com/jbeder/<lib_cmake_name>/archive/refs/tags/${MUSTARD_BUILTIN_<LIB_NAME>_VERSION}.tar.gz)
+# 7. Add proper options between "reuse or download" section and "configure it" section.
+# 8. Set options MUSTARD_BUILTIN_<LIB_NAME> and MUSTARD_BUILTIN_<LIB_NAME>_VERSION in the main CMakeLists.txt.
+# 9. Delete this guide text, and make other parts of this file prettier.
+
+message(STATUS "Looking for <lib_cmake_name>")
+
+set(MUSTARD_<LIB_NAME>_MINIMUM_REQUIRED <min_version>)
+
+if(NOT MUSTARD_BUILTIN_<LIB_NAME>)
+    find_package(<lib_cmake_name> ${MUSTARD_<LIB_NAME>_MINIMUM_REQUIRED} QUIET)
+    if(NOT <lib_cmake_name>_FOUND)
+        set(MUSTARD_BUILTIN_<LIB_NAME> ON)
+        message(NOTICE "***Notice: <lib_cmake_name> not found (minimum required is ${MUSTARD_<LIB_NAME>_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_<LIB_NAME>")
+    endif()
+endif()
+
+if(MUSTARD_BUILTIN_<LIB_NAME>)
+    message(STATUS "Mustard will use built-in <lib_cmake_name>")
+    # check built-in version
+    if(MUSTARD_BUILTIN_<LIB_NAME>_VERSION VERSION_LESS MUSTARD_<LIB_NAME>_MINIMUM_REQUIRED)
+        message(NOTICE "***Notice: Provided MUSTARD_BUILTIN_<LIB_NAME>_VERSION is ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION}, which is less than the requirement (${MUSTARD_<LIB_NAME>_MINIMUM_REQUIRED}). Changing to ${MUSTARD_<LIB_NAME>_MINIMUM_REQUIRED}")
+        set(MUSTARD_BUILTIN_<LIB_NAME>_VERSION ${MUSTARD_<LIB_NAME>_MINIMUM_REQUIRED})
+    endif()
+    # set download dest and URL
+    set(MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/<src_dir_with_version>")
+    set(MUSTARD_BUILTIN_<LIB_NAME>_URL "<url_with_version>")
+    # reuse or download
+    include(FetchContent)
+    if(EXISTS "${MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR}/CMakeLists.txt")
+        FetchContent_Declare(<lib_cmake_name> SOURCE_DIR "${MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR}")
+        message(STATUS "Reusing <lib_cmake_name> source ${MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR}")
+    else()
+        FetchContent_Declare(<lib_cmake_name> SOURCE_DIR "${MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR}"
+                                    URL "${MUSTARD_BUILTIN_<LIB_NAME>_URL}")
+        message(STATUS "<lib_cmake_name> will be downloaded from ${MUSTARD_BUILTIN_<LIB_NAME>_URL} to ${MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR}")
+    endif()
+    # set options
+    # uses CACHE INTERNAL variables to propagate options. see https://discourse.cmake.org/t/what-is-the-correct-way-to-set-options-of-a-project-before-fetch-content/268/4
+    # configure it
+    message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION})")
+    FetchContent_MakeAvailable(<lib_cmake_name>)
+    message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION}) - done")
+    # check download
+    if(NOT EXISTS "${MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR}/CMakeLists.txt")
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/<lib_name>-build")
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/<lib_name>-subbuild")
+        message(FATAL_ERROR "It seems that the download of <lib_cmake_name> is not successful. You can try to run cmake again, or manually download <lib_cmake_name> from ${MUSTARD_BUILTIN_<LIB_NAME>_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try to clean the build tree and restart the build.")
+    endif()
+endif()
+
+if(NOT MUSTARD_BUILTIN_<LIB_NAME>)
+    message(STATUS "Looking for <lib_cmake_name> - found (version: ${<lib_cmake_name>_VERSION})")
+else()
+    message(STATUS "Looking for <lib_cmake_name> - built-in (version: ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION})")
+endif()

@@ -1,0 +1,60 @@
+message(STATUS "Looking for pmp")
+
+set(MUSTARD_PMP_MINIMUM_REQUIRED 3.0.0)
+
+if(NOT MUSTARD_BUILTIN_PMP)
+    find_package(pmp ${MUSTARD_PMP_MINIMUM_REQUIRED} QUIET)
+    if(NOT pmp_FOUND)
+        set(MUSTARD_BUILTIN_PMP ON)
+        message(NOTICE "***Notice: pmp not found (minimum required is ${MUSTARD_PMP_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_PMP")
+    endif()
+endif()
+
+if(MUSTARD_BUILTIN_PMP)
+    message(STATUS "Mustard will use built-in pmp")
+    # check built-in version
+    if(MUSTARD_BUILTIN_PMP_VERSION VERSION_LESS MUSTARD_PMP_MINIMUM_REQUIRED)
+        message(NOTICE "***Notice: Provided MUSTARD_BUILTIN_PMP_VERSION is ${MUSTARD_BUILTIN_PMP_VERSION}, which is less than the requirement (${MUSTARD_PMP_MINIMUM_REQUIRED}). Changing to ${MUSTARD_PMP_MINIMUM_REQUIRED}")
+        set(MUSTARD_BUILTIN_PMP_VERSION ${MUSTARD_PMP_MINIMUM_REQUIRED})
+    endif()
+    # set download dest and URL
+    set(MUSTARD_BUILTIN_PMP_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/pmp-library-${MUSTARD_BUILTIN_PMP_VERSION}")
+    set(MUSTARD_BUILTIN_PMP_URL "https://github.com/pmp-library/pmp-library/archive/refs/tags/${MUSTARD_BUILTIN_PMP_VERSION}.tar.gz")
+    # reuse or download
+    include(FetchContent)
+    if(EXISTS "${MUSTARD_BUILTIN_PMP_SRC_DIR}/CMakeLists.txt")
+        FetchContent_Declare(pmp SOURCE_DIR "${MUSTARD_BUILTIN_PMP_SRC_DIR}")
+        message(STATUS "Reusing pmp source ${MUSTARD_BUILTIN_PMP_SRC_DIR}")
+    else()
+        FetchContent_Declare(pmp SOURCE_DIR "${MUSTARD_BUILTIN_PMP_SRC_DIR}"
+                                 URL "${MUSTARD_BUILTIN_PMP_URL}")
+        message(STATUS "pmp will be downloaded from ${MUSTARD_BUILTIN_PMP_URL} to ${MUSTARD_BUILTIN_PMP_SRC_DIR}")
+    endif()
+    # set options
+    set(PMP_BUILD_EXAMPLES OFF CACHE INTERNAL "")
+    set(PMP_BUILD_TESTS OFF CACHE INTERNAL "")
+    set(PMP_BUILD_DOCS OFF CACHE INTERNAL "")
+    set(PMP_BUILD_VIS OFF CACHE INTERNAL "")
+    set(PMP_INSTALL ON CACHE INTERNAL "")
+    set(PMP_STRICT_COMPILATION OFF CACHE INTERNAL "")
+    set(PMP_SCALAR_TYPE 64 CACHE INTERNAL "")
+    set(PMP_INDEX_TYPE 64 CACHE INTERNAL "")
+    # configure it
+    message(STATUS "Downloading (if required) and configuring pmp (version: ${MUSTARD_BUILTIN_PMP_VERSION})")
+    FetchContent_MakeAvailable(pmp)
+    message(STATUS "Downloading (if required) and configuring pmp (version: ${MUSTARD_BUILTIN_PMP_VERSION}) - done")
+    # check download
+    if(NOT EXISTS "${MUSTARD_BUILTIN_PMP_SRC_DIR}/CMakeLists.txt")
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/pmp-build")
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/pmp-subbuild")
+        message(FATAL_ERROR "It seems that the download of pmp is not successful. You can try to run cmake again, or manually download pmp from ${MUSTARD_BUILTIN_PMP_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try to clean the build tree and restart the build.")
+    endif()
+endif()
+
+if(NOT MUSTARD_BUILTIN_PMP)
+    message(STATUS "Looking for pmp - found (version: ${pmp_VERSION})")
+    set(PMP_INCLUDE_DIRS ${pmp_DIR}/include)
+else()
+    message(STATUS "Looking for pmp - built-in (version: ${MUSTARD_BUILTIN_PMP_VERSION})")
+    set(PMP_INCLUDE_DIRS ${MUSTARD_BUILTIN_PMP_SRC_DIR}/src)
+endif()

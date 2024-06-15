@@ -1,0 +1,152 @@
+#pragma once
+
+#include "Mustard/Concept/NumericVector.h++"
+#include "Mustard/Extension/gslx/index_sequence.h++"
+#include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
+#include "Mustard/Utility/InlineMacro.h++"
+
+#include "gsl/gsl"
+
+#include <array>
+#include <concepts>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+
+namespace Mustard::Math::Random::inline Distribution {
+
+namespace internal {
+
+namespace internal {
+
+template<gsl::index I, typename T>
+struct Margin {
+    T value;
+};
+
+template<typename...>
+struct CartesianProductMarginBase;
+template<gsl::index... Is, typename... Ts>
+    requires(sizeof...(Is) == sizeof...(Ts))
+struct CartesianProductMarginBase<gslx::index_sequence<Is...>, Ts...> : Margin<Is, Ts>... {};
+
+} // namespace internal
+
+template<typename... Ts>
+struct CartesianProductMargin : internal::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...> {
+    CartesianProductMargin() = default;
+    CartesianProductMargin(const Ts&... objects);
+
+    template<gsl::index I>
+    constexpr auto Margin() const -> const auto& { return static_cast<const internal::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
+    template<gsl::index I>
+    constexpr auto Margin() -> auto& { return static_cast<internal::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
+};
+
+} // namespace internal
+
+template<typename ADerived, typename ADistribution, typename... Ds>
+    requires(sizeof...(Ds) >= 2)
+class JointParameterInterface : public DistributionParameterBase<ADerived, ADistribution>,
+                                public internal::CartesianProductMargin<typename Ds::ParameterType...> {
+public:
+    constexpr JointParameterInterface();
+    constexpr JointParameterInterface(const typename Ds::ParameterType&... p);
+
+protected:
+    constexpr ~JointParameterInterface() = default;
+
+public:
+    template<gsl::index I>
+    constexpr auto Parameter() const -> const auto& { return this->template Margin<I>(); }
+
+    template<gsl::index I>
+    constexpr auto Parameter(const std::tuple_element_t<I, std::tuple<typename Ds::ParameterType...>>& p) -> void { this->template Margin<I>() = p; }
+
+    template<Concept::Character AChar>
+    friend auto operator<<(std::basic_ostream<AChar>& os, const JointParameterInterface& self) -> decltype(os) { return self.StreamOutput(os); }
+    template<Concept::Character AChar>
+    friend auto operator>>(std::basic_istream<AChar>& is, JointParameterInterface& self) -> decltype(is) { return self.StreamInput(is); }
+
+private:
+    template<Concept::Character AChar>
+    auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
+    template<Concept::Character AChar>
+    auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
+};
+
+template<typename ADerived, typename AParameter, typename T, typename... Ds>
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
+class JointInterface : public RandomNumberDistributionBase<ADerived, AParameter, T>,
+                       public internal::CartesianProductMargin<Ds...> {
+public:
+    constexpr JointInterface();
+    constexpr JointInterface(const typename Ds::ParameterType&... p);
+    constexpr explicit JointInterface(const AParameter& p);
+
+protected:
+    constexpr ~JointInterface() = default;
+
+public:
+    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> T;
+    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> T;
+
+    constexpr auto Reset() -> void;
+
+    constexpr auto Parameter() const -> AParameter;
+    template<gsl::index I>
+    constexpr auto Parameter() const -> auto { return this->template Margin<I>().Parameter(); }
+
+    constexpr auto Parameter(const AParameter& p) -> void;
+    template<gsl::index I>
+    constexpr auto Parameter(const typename std::tuple_element_t<I, std::tuple<Ds...>>::ParameterType& p) -> void { this->template Margin<I>().Parameter(p); }
+
+    constexpr auto Min() const -> T;
+    constexpr auto Max() const -> T;
+
+    static constexpr auto Stateless() -> bool { return (... and Ds::Stateless()); }
+
+    template<Concept::Character AChar>
+    friend auto operator<<(std::basic_ostream<AChar>& os, const JointInterface& self) -> decltype(os) { return self.StreamOutput(os); }
+    template<Concept::Character AChar>
+    friend auto operator>>(std::basic_istream<AChar>& is, JointInterface& self) -> decltype(is) { return self.StreamInput(is); }
+
+private:
+    template<Concept::Character AChar>
+    auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
+    template<Concept::Character AChar>
+    auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
+};
+
+template<typename T, typename... Ds>
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+class Joint;
+
+template<typename T, typename... Ds>
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+class JointParameter final : public JointParameterInterface<JointParameter<T, Ds...>,
+                                                            Joint<T, Ds...>,
+                                                            Ds...> {
+    using JointParameterInterface<Ds...>::JointParameterInterface;
+};
+
+template<typename... Ps>
+JointParameter(Ps...) -> JointParameter<std::array<std::common_type_t<typename Ps::DistributionType::ResultType...>, sizeof...(Ps)>, typename Ps::DistributionType...>;
+
+template<typename T, typename... Ds>
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+class Joint final : public JointInterface<Joint<T, Ds...>,
+                                          JointParameter<T, Ds...>,
+                                          T,
+                                          Ds...> {
+    using JointInterface<T, Ds...>::JointInterface;
+};
+
+template<typename... Ps>
+Joint(Ps...) -> Joint<std::array<std::common_type_t<typename Ps::DistributionType::ResultType...>, sizeof...(Ps)>, typename Ps::DistributionType...>;
+template<typename... Ds>
+Joint(JointParameter<Ds...>) -> Joint<std::array<std::common_type_t<typename Ds::ResultType...>, sizeof...(Ds)>, Ds...>;
+
+} // namespace Mustard::Math::Random::inline Distribution
+
+#include "Mustard/Math/Random/Distribution/Joint.inl"

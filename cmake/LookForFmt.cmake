@@ -1,0 +1,49 @@
+message(STATUS "Looking for fmt")
+
+set(MUSTARD_FMT_MINIMUM_REQUIRED 10.0.0)
+
+if(NOT MUSTARD_BUILTIN_FMT)
+    find_package(fmt ${MUSTARD_FMT_MINIMUM_REQUIRED} QUIET)
+    if(NOT fmt_FOUND)
+        set(MUSTARD_BUILTIN_FMT ON)
+        message(NOTICE "***Notice: fmt not found (minimum required is ${MUSTARD_FMT_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_FMT")
+    endif()
+endif()
+
+if(MUSTARD_BUILTIN_FMT)
+    message(STATUS "Mustard will use built-in fmt")
+    # check built-in version
+    if(MUSTARD_BUILTIN_FMT_VERSION VERSION_LESS MUSTARD_FMT_MINIMUM_REQUIRED)
+        message(NOTICE "***Notice: Provided MUSTARD_BUILTIN_FMT_VERSION is ${MUSTARD_BUILTIN_FMT_VERSION}, which is less than the requirement (${MUSTARD_FMT_MINIMUM_REQUIRED}). Changing to ${MUSTARD_FMT_MINIMUM_REQUIRED}")
+        set(MUSTARD_BUILTIN_FMT_VERSION ${MUSTARD_FMT_MINIMUM_REQUIRED})
+    endif()
+    # set download dest and URL
+    set(MUSTARD_BUILTIN_FMT_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/fmt-${MUSTARD_BUILTIN_FMT_VERSION}")
+    set(MUSTARD_BUILTIN_FMT_URL "https://github.com/fmtlib/fmt/archive/refs/tags/${MUSTARD_BUILTIN_FMT_VERSION}.tar.gz")
+    # reuse or download
+    include(FetchContent)
+    if(EXISTS "${MUSTARD_BUILTIN_FMT_SRC_DIR}/CMakeLists.txt")
+        FetchContent_Declare(fmt SOURCE_DIR "${MUSTARD_BUILTIN_FMT_SRC_DIR}")
+        message(STATUS "Reusing fmt source ${MUSTARD_BUILTIN_FMT_SRC_DIR}")
+    else()
+        FetchContent_Declare(fmt SOURCE_DIR "${MUSTARD_BUILTIN_FMT_SRC_DIR}"
+                                 URL "${MUSTARD_BUILTIN_FMT_URL}")
+        message(STATUS "fmt will be downloaded from ${MUSTARD_BUILTIN_FMT_URL} to ${MUSTARD_BUILTIN_FMT_SRC_DIR}")
+    endif()
+    # configure it
+    message(STATUS "Downloading (if required) and configuring fmt (version: ${MUSTARD_BUILTIN_FMT_VERSION})")
+    FetchContent_MakeAvailable(fmt)
+    message(STATUS "Downloading (if required) and configuring fmt (version: ${MUSTARD_BUILTIN_FMT_VERSION}) - done")
+    # check download
+    if(NOT EXISTS "${MUSTARD_BUILTIN_FMT_SRC_DIR}/CMakeLists.txt")
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/fmt-build")
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/fmt-subbuild")
+        message(FATAL_ERROR "It seems that the download of fmt is not successful. You can try to run cmake again, or manually download fmt from ${MUSTARD_BUILTIN_FMT_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try to clean the build tree and restart the build.")
+    endif()
+endif()
+
+if(NOT MUSTARD_BUILTIN_FMT)
+    message(STATUS "Looking for fmt - found (version: ${fmt_VERSION})")
+else()
+    message(STATUS "Looking for fmt - built-in (version: ${MUSTARD_BUILTIN_FMT_VERSION})")
+endif()
