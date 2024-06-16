@@ -30,31 +30,31 @@ concept SubscriptableToMaybeReferenced =
 
 template<typename T, typename U>
 concept SubscriptableToMaybeConst =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(SubscriptableTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(SubscriptableTo);
 
 template<typename T, typename U>
 concept SubscriptableToMaybeConstReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(SubscriptableToMaybeReferenced)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(SubscriptableToMaybeReferenced);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST
 
 template<typename T, typename U>
 concept SubscriptableToMaybeVolatile =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(SubscriptableTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(SubscriptableTo);
 
 template<typename T, typename U>
 concept SubscriptableToMaybeVolatileReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(SubscriptableToMaybeReferenced)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(SubscriptableToMaybeReferenced);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE
 
 template<typename T, typename U>
 concept SubscriptableToMaybeQualified =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(SubscriptableTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(SubscriptableTo);
 
 template<typename T, typename U>
 concept SubscriptableToMaybeQualifyReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(SubscriptableToMaybeReferenced)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(SubscriptableToMaybeReferenced);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED
 

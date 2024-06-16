@@ -27,27 +27,27 @@ concept IndirectableToMaybeReferenced =
 
 template<typename T, typename U>
 concept IndirectableToMaybeConst =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(IndirectableTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(IndirectableTo);
 
 template<typename T, typename U>
 concept IndirectableToMaybeConstReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(IndirectableToMaybeReferenced)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(IndirectableToMaybeReferenced);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST
 
 template<typename T, typename U>
 concept IndirectableToMaybeVolatile =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(IndirectableTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(IndirectableTo);
 
 template<typename T, typename U>
 concept IndirectableToMaybeVolatileReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(IndirectableToMaybeReferenced)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(IndirectableToMaybeReferenced);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE
 
 template<typename T, typename U>
 concept IndirectableToMaybeQualified =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(IndirectableTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(IndirectableTo);
 
 template<typename T, typename U>
 concept IndirectableToMaybeQualifyReferenced =

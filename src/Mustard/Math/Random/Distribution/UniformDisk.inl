@@ -64,19 +64,19 @@ constexpr UniformDiskBase<T, AUniformDisk>::UniformDiskBase(const typename Base:
 } // namespace internal
 
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_UNIFORM_DISK_GENERATOR(rejection) \
-    T r;                                                                \
-    VectorValueType<T> r2;                                              \
-    do {                                                                \
-        r = UniformCompactRectangle<T>({-0.5, 0.5}, {-0.5, 0.5})(g);    \
-        r2 = muc::hypot2(r[0], r[1]);                                  \
-        muc::assume(0 <= r2 and r2 <= 0.5);                           \
-    } while (rejection);                                                \
-    if constexpr (Concept::MathVector2Any<T>) {                         \
-        r = 2 * p.Radius() * r + p.Center();                            \
-    } else {                                                            \
-        r[0] = 2 * p.Radius() * r[0] + p.Center()[0];                   \
-        r[1] = 2 * p.Radius() * r[1] + p.Center()[1];                   \
-    }                                                                   \
+    T r;                                                                   \
+    VectorValueType<T> r2;                                                 \
+    do {                                                                   \
+        r = UniformCompactRectangle<T>({-0.5, 0.5}, {-0.5, 0.5})(g);       \
+        r2 = muc::hypot2(r[0], r[1]);                                      \
+        muc::assume(0 <= r2 and r2 <= 0.5);                                \
+    } while (rejection);                                                   \
+    if constexpr (Concept::MathVector2Any<T>) {                            \
+        r = 2 * p.Radius() * r + p.Center();                               \
+    } else {                                                               \
+        r[0] = 2 * p.Radius() * r[0] + p.Center()[0];                      \
+        r[1] = 2 * p.Radius() * r[1] + p.Center()[1];                      \
+    }                                                                      \
     return r;
 
 template<Concept::NumericVector2Any T>

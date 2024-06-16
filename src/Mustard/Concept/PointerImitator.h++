@@ -42,31 +42,31 @@ concept PointerImitatorOf =
 
 template<typename T, typename U>
 concept PointerImitatorOfMaybeConst =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(WeakPointerImitatorOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(WeakPointerImitatorOf);
 
 template<typename T, typename U>
 concept PointerImitatorOfMaybeConstReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(PointerImitatorOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(PointerImitatorOf);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST
 
 template<typename T, typename U>
 concept PointerImitatorOfMaybeVolatile =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(WeakPointerImitatorOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(WeakPointerImitatorOf);
 
 template<typename T, typename U>
 concept PointerImitatorOfMaybeVolatileReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(PointerImitatorOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(PointerImitatorOf);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE
 
 template<typename T, typename U>
 concept PointerImitatorOfMaybeQualified =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(WeakPointerImitatorOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(WeakPointerImitatorOf);
 
 template<typename T, typename U>
 concept PointerImitatorOfMaybeQualifyReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(PointerImitatorOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(PointerImitatorOf);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED
 

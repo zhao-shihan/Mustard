@@ -42,17 +42,17 @@ constexpr Gaussian2DDiagnoalBase<ADerived, T>::Gaussian2DDiagnoalBase(const type
 } // namespace internal
 
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(TheLog) \
-    T u;                                                                             \
-    VT x;                                                                            \
-    do {                                                                             \
-        static_assert(UniformCompactRectangle<T>::Stateless());                      \
-        u = UniformCompactRectangle<T>({-0.5, 0.5}, {-0.5, 0.5})(g);                 \
-        x = muc::hypot2(u[0], u[1]);                                                \
-        muc::assume(0 <= x and x < 0.5);                                           \
-    } while (x == 0 or x > 0.25);                                                    \
-    x = std::sqrt(-2 * (TheLog(x) + 2 * std::numbers::ln2_v<VT>) / x);               \
-    u[0] = p.SigmaX() * (x * u[0]) + p.MuX();                                        \
-    u[1] = p.SigmaY() * (x * u[1]) + p.MuY();                                        \
+    T u;                                                                                \
+    VT x;                                                                               \
+    do {                                                                                \
+        static_assert(UniformCompactRectangle<T>::Stateless());                         \
+        u = UniformCompactRectangle<T>({-0.5, 0.5}, {-0.5, 0.5})(g);                    \
+        x = muc::hypot2(u[0], u[1]);                                                    \
+        muc::assume(0 <= x and x < 0.5);                                                \
+    } while (x == 0 or x > 0.25);                                                       \
+    x = std::sqrt(-2 * (TheLog(x) + 2 * std::numbers::ln2_v<VT>) / x);                  \
+    u[0] = p.SigmaX() * (x * u[0]) + p.MuX();                                           \
+    u[1] = p.SigmaY() * (x * u[1]) + p.MuY();                                           \
     return u;
 
 template<Concept::NumericVector2FloatingPoint T>

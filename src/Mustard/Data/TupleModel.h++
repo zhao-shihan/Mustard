@@ -70,13 +70,13 @@ template<std::derived_from<internal::ModelSignature> AModel, TupleModelizable...
 struct TupleModel<AModel, AOthers...> final
     : internal::ModelBase<TupleModel<AModel, AOthers...>,
                           muc::tuple_concat_t<typename AModel::StdTuple,
-                                               typename TupleModel<AOthers...>::StdTuple>> {};
+                                              typename TupleModel<AOthers...>::StdTuple>> {};
 
 template<ValueAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription, TupleModelizable... AOthers>
 struct TupleModel<Value<T, AName, ADescription>, AOthers...> final
     : internal::ModelBase<TupleModel<Value<T, AName, ADescription>, AOthers...>,
                           muc::tuple_concat_t<std::tuple<Value<T, AName, ADescription>>,
-                                               typename TupleModel<AOthers...>::StdTuple>> {};
+                                              typename TupleModel<AOthers...>::StdTuple>> {};
 
 template<typename M1, typename M2>
 concept SubTupleModel = requires {

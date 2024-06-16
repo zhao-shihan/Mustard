@@ -25,19 +25,19 @@ concept PointerAccessibleTo =
 
 template<typename T, typename U>
 concept PointerAccessibleToMaybeConst =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(PointerAccessibleTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(PointerAccessibleTo);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST
 
 template<typename T, typename U>
 concept PointerAccessibleToMaybeVolatile =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(PointerAccessibleTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(PointerAccessibleTo);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE
 
 template<typename T, typename U>
 concept PointerAccessibleToMaybeQualified =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(PointerAccessibleTo)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(PointerAccessibleTo);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED
 

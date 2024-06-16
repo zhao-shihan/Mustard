@@ -4,4 +4,4 @@ namespace Mustard::Detector::Description {
 
 std::set<gsl::not_null<DescriptionBase<>*>> DescriptionIO::fgInstanceSet{};
 
-} // namespace Mustard::Detector
+} // namespace Mustard::Detector::Description

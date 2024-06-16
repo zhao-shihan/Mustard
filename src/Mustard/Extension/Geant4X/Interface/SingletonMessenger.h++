@@ -48,6 +48,6 @@ private:
     std::tuple<std::unordered_set<ARecipients*>...> fRecipientSetTuple;
 };
 
-} // namespace Mustard::inline Extension::Geant4X
+} // namespace Mustard::inline Extension::Geant4X::inline Interface
 
 #include "Mustard/Extension/Geant4X/Interface/SingletonMessenger.inl"

@@ -49,7 +49,7 @@ auto Output<Ts...>::Fill(T&& tuple) -> std::size_t {
 template<TupleModelizable... Ts>
 template<std::ranges::input_range R>
     requires std::assignable_from<Tuple<Ts...>&, std::ranges::range_reference_t<R>> or
-             ProperSubTuple<Tuple<Ts...>, std::ranges::range_value_t<R>>
+                 ProperSubTuple<Tuple<Ts...>, std::ranges::range_value_t<R>>
 auto Output<Ts...>::Fill(R&& data) -> std::size_t {
     std::size_t nByte{};
     for (auto&& tuple : std::forward<R>(data)) {
@@ -61,8 +61,8 @@ auto Output<Ts...>::Fill(R&& data) -> std::size_t {
 template<TupleModelizable... Ts>
 template<std::ranges::input_range R>
     requires std::indirectly_readable<std::ranges::range_reference_t<R>> and
-             (std::assignable_from<Tuple<Ts...>&, std::iter_reference_t<std::ranges::range_value_t<R>>> or
-              ProperSubTuple<Tuple<Ts...>, std::iter_value_t<std::ranges::range_value_t<R>>>)
+                 (std::assignable_from<Tuple<Ts...>&, std::iter_reference_t<std::ranges::range_value_t<R>>> or
+                  ProperSubTuple<Tuple<Ts...>, std::iter_value_t<std::ranges::range_value_t<R>>>)
 auto Output<Ts...>::Fill(R&& data) -> std::size_t {
     std::size_t nByte{};
     for (auto&& i : std::forward<R>(data)) {

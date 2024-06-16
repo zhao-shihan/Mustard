@@ -46,4 +46,4 @@ auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecip
     fDelivering = false;
 }
 
-} // namespace Mustard::inline Extension::Geant4X
+} // namespace Mustard::inline Extension::Geant4X::inline Interface

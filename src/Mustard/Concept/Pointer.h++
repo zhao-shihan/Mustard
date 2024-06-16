@@ -17,19 +17,19 @@ concept PointerOf =
 
 template<typename T, typename U>
 concept PointerOfMaybeConst =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(PointerOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST(PointerOf);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_CONST
 
 template<typename T, typename U>
 concept PointerOfMaybeVolatile =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(PointerOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE(PointerOf);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_VOLATILE
 
 template<typename T, typename U>
 concept PointerOfMaybeQualified =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(PointerOf)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(PointerOf);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED
 

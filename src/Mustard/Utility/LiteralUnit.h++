@@ -7,11 +7,11 @@
 namespace Mustard::inline Utility::LiteralUnit {
 
 #define MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION_IMPL(FloatType, fullSuffix, unit) \
-    constexpr FloatType operator""_##fullSuffix(long double value) {           \
-        return value * static_cast<long double>(unit);                         \
-    }                                                                          \
-    constexpr FloatType operator""_##fullSuffix(unsigned long long value) {    \
-        return value * static_cast<long double>(unit);                         \
+    constexpr FloatType operator""_##fullSuffix(long double value) {              \
+        return value * static_cast<long double>(unit);                            \
+    }                                                                             \
+    constexpr FloatType operator""_##fullSuffix(unsigned long long value) {       \
+        return value * static_cast<long double>(unit);                            \
     }
 #define MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(suffix, unit)             \
     MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION_IMPL(float, suffix##_f, unit) \

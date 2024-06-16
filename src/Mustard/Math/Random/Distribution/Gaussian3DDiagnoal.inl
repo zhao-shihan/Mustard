@@ -50,19 +50,19 @@ constexpr Gaussian3DDiagnoalBase<ADerived, T>::Gaussian3DDiagnoalBase(const type
 } // namespace internal
 
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_3D_DIAGNOAL_GENERATOR_SNIPPET(Suffix) \
-    static_assert(Gaussian2DDiagnoal##Suffix<std::array<VT, 2>>::Stateless());       \
-    Gaussian2DDiagnoal##Suffix<std::array<VT, 2>> standardGaussian2D;                \
-    auto&& [u, v]{standardGaussian2D(g)};                                            \
-    if ((fSaved = not fSaved)) {                                                     \
-        auto&& [w, x]{standardGaussian2D(g)};                                        \
-        fSavedValue = x;                                                             \
-        return {p.SigmaX() * u + p.MuX(),                                            \
-                p.SigmaY() * v + p.MuY(),                                            \
-                p.SigmaZ() * w + p.MuZ()};                                           \
-    } else {                                                                         \
-        return {p.SigmaX() * u + p.MuX(),                                            \
-                p.SigmaY() * v + p.MuY(),                                            \
-                p.SigmaZ() * fSavedValue + p.MuZ()};                                 \
+    static_assert(Gaussian2DDiagnoal##Suffix<std::array<VT, 2>>::Stateless());          \
+    Gaussian2DDiagnoal##Suffix<std::array<VT, 2>> standardGaussian2D;                   \
+    auto&& [u, v]{standardGaussian2D(g)};                                               \
+    if ((fSaved = not fSaved)) {                                                        \
+        auto&& [w, x]{standardGaussian2D(g)};                                           \
+        fSavedValue = x;                                                                \
+        return {p.SigmaX() * u + p.MuX(),                                               \
+                p.SigmaY() * v + p.MuY(),                                               \
+                p.SigmaZ() * w + p.MuZ()};                                              \
+    } else {                                                                            \
+        return {p.SigmaX() * u + p.MuX(),                                               \
+                p.SigmaY() * v + p.MuY(),                                               \
+                p.SigmaZ() * fSavedValue + p.MuZ()};                                    \
     }
 
 template<Concept::NumericVector3FloatingPoint T>

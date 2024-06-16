@@ -44,4 +44,4 @@ constexpr auto LeafTypeCode() -> char {
     }
 }
 
-} // namespace Mustard::inline Utility::ROOTUtil
+} // namespace Mustard::inline Extension::ROOTX

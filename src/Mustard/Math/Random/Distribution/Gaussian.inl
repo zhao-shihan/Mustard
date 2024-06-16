@@ -34,7 +34,7 @@ constexpr GaussianBase<T, AGaussian>::GaussianBase(const typename Base::Paramete
 
 } // namespace internal
 
-#define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET(Suffix)          \
+#define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET(Suffix)       \
     if ((fSaved = not fSaved)) {                                                  \
         static_assert(Gaussian2DDiagnoal##Suffix<std::array<T, 2>>::Stateless()); \
         auto&& [u, v]{Gaussian2DDiagnoal##Suffix<std::array<T, 2>>{}(g)};         \
