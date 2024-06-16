@@ -31,9 +31,9 @@ if(MUSTARD_BUILTIN_BACKWARD)
         message(STATUS "backward-cpp will be downloaded from ${MUSTARD_BUILTIN_BACKWARD_URL} to ${MUSTARD_BUILTIN_BACKWARD_SRC_DIR}")
     endif()
     # set options
-    set(BACKWARD_SHARED ${BUILD_SHARED_LIBS} CACHE INTERNAL "")
+    set(BACKWARD_SHARED OFF CACHE INTERNAL "")
     set(BACKWARD_TESTS OFF CACHE INTERNAL "")
-    set(BACKWARD_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
+    set(BACKWARD_INSTALL OFF CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring backward-cpp (version: ${MUSTARD_BUILTIN_BACKWARD_VERSION})")
     FetchContent_MakeAvailable(Backward)
