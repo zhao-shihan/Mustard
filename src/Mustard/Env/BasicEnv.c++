@@ -43,8 +43,8 @@ auto BasicEnv::PrintWelcomeMessageBody(int argc, char* argv[]) const -> void {
     auto cwd{std::filesystem::current_path(cwdError).generic_string()};
     if (cwdError) { cwd = "<Error getting current working directory>"; }
     Print("\n"
-          " Mustard: an offline software framework for HEP experiment\n"
-          " Version {}"
+          " Mustard (version {})\n"
+          "   -- an offline software framework for HEP experiment\n"
           " Copyright 2020-2024 Mustard developers\n"
           "\n"
           " Exe: {}",
