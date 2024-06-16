@@ -45,12 +45,6 @@ FixNamespaceComments: true
 IncludeBlocks: Regroup
 IncludeCategories: 
   # special
-  - Regex: '"RKTrackRep\.h"'
-    Priority: 1
-  - Regex: '"Track\.h"'
-    Priority: 1
-  - Regex: '"TrackPoint\.h"'
-    Priority: 1
   - Regex: '"Randomize\.hh"'
     Priority: 4
   - Regex: '"globals\.hh"'
@@ -72,35 +66,33 @@ IncludeCategories:
     Priority: 3
   - Regex: '"G4.*"'
     Priority: 4
-  - Regex: '"pmp/.*"'
-    Priority: 5
   - Regex: '"backward\.hpp"'
-    Priority: 6
+    Priority: 5
   - Regex: '"yaml-cpp/.*"'
-    Priority: 7
+    Priority: 6
   - Regex: '"argparse/.*"'
-    Priority: 8
+    Priority: 7
   - Regex: '"Eigen/.*"'
-    Priority: 9
+    Priority: 8
   - Regex: '"gsl.*\.h"'
-    Priority: 10
+    Priority: 9
   - Regex: '"mpi.*\.h"'
-    Priority: 11
+    Priority: 10
   - Regex: '"muc/.*"'
-    Priority: 12
+    Priority: 11
   - Regex: '"gfx/timsort.hpp"'
-    Priority: 13
+    Priority: 12
   - Regex: '"envparse/.*"'
-    Priority: 14
+    Priority: 13
   - Regex: '"gsl/.*"'
-    Priority: 15
+    Priority: 14
   - Regex: '"fmt/.*\.h"'
-    Priority: 16
+    Priority: 15
   # very general
   - Regex: '".*"'
     Priority: 1
   - Regex: '<.*>'
-    Priority: 17
+    Priority: 16
 IndentAccessModifiers: false
 IndentCaseBlocks: false
 IndentCaseLabels: false

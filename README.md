@@ -35,9 +35,8 @@ Required, built-in if not found (network or pre-downloaded source is required):
 5. [fmt (A modern formatting library)](https://github.com/fmtlib/fmt) (≥ 10.0.0, built-in if not found)
 6. [muc (A standard non-standard C++ library)](https://github.com/zhao-shihan/muc) (main, built-in if not found)
 7. [Microsoft.GSL](https://github.com/Microsoft/GSL) ([ISO C++ guidelines support library](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#gsl-guidelines-support-library)) (≥ 4.0.0, built-in if not found)
-8. [PMP (Polygon Mesh Processing Library)](https://www.pmp-library.org/) (≥ 3.0.0, built-in if not found)
-9. [zhao-shihan/cpp-TimSort (A C++ implementation of timsort)](https://github.com/zhao-shihan/cpp-TimSort) (a cpp-TimSort fork, built-in if not found)
-10. [yaml-cpp (A YAML parser and emitter in C++)](https://github.com/jbeder/yaml-cpp) (≥ 0.8.0, built-in if not found)
+8. [zhao-shihan/cpp-TimSort (A C++ implementation of timsort)](https://github.com/zhao-shihan/cpp-TimSort) (a cpp-TimSort fork, built-in if not found)
+9.  [yaml-cpp (A YAML parser and emitter in C++)](https://github.com/jbeder/yaml-cpp) (≥ 0.8.0, built-in if not found)
 
 ## Cite
 

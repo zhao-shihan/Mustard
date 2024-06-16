@@ -43,7 +43,6 @@ option(MUSTARD_BUILTIN_ENVPARSE "Use built-in envparse (network or pre-downloade
 option(MUSTARD_BUILTIN_FMT "Use built-in fmt (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_MSGSL "Use built-in Microsoft.GSL (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_MUC "Use built-in muc (network or pre-downloaded source is required)." OFF)
-option(MUSTARD_BUILTIN_PMP "Use built-in pmp (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_TIMSORT "Use built-in TimSort (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_YAML_CPP "Use built-in yaml-cpp (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_SIGNAL_HANDLER "Build with signal handling. Signal handlers are registered at the construction of environment." ON)
@@ -69,7 +68,6 @@ set(MUSTARD_BUILTIN_ENVPARSE_VERSION 0.0.1 CACHE STRING "Set built-in envparse v
 set(MUSTARD_BUILTIN_FMT_VERSION 10.2.1 CACHE STRING "Set built-in fmt version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.0.0 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
 set(MUSTARD_BUILTIN_MUC_VERSION 0.0.1 CACHE STRING "Set built-in muc version (if required).")
-set(MUSTARD_BUILTIN_PMP_VERSION 3.0.0 CACHE STRING "Set built-in fmt version (if required).")
 set(MUSTARD_BUILTIN_TIMSORT_VERSION 3.0.0 CACHE STRING "Set built-in TimSort version (if required).")
 set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.8.0 CACHE STRING "Set built-in yaml-cpp version (if required).")
 
@@ -123,8 +121,6 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForFmt.cmake)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMicrosoftGSL.cmake)
 # muc
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMUC.cmake)
-# PMP
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForPMP.cmake)
 # TimSort
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForTimSort.cmake)
 # yaml-cpp
