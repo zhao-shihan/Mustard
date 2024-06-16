@@ -51,7 +51,7 @@ concept IndirectableToMaybeQualified =
 
 template<typename T, typename U>
 concept IndirectableToMaybeQualifyReferenced =
-    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(IndirectableToMaybeReferenced)
+    MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED(IndirectableToMaybeReferenced);
 
 #undef MUSTARD_CONCEPT_ACCESS_TO_MAYBE_QUALIFIED
 
