@@ -31,7 +31,7 @@ if(MUSTARD_BUILTIN_EFM)
         message(STATUS "EFM will be downloaded from ${MUSTARD_BUILTIN_EFM_URL} to ${MUSTARD_BUILTIN_EFM_SRC_DIR}")
     endif()
     # set options
-    set(EFM_INSTALL ON CACHE INTERNAL "")
+    set(EFM_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring EFM (version: ${MUSTARD_BUILTIN_EFM_VERSION})")
     FetchContent_MakeAvailable(EFM)

@@ -32,7 +32,7 @@ if(MUSTARD_BUILTIN_MUC)
         message(STATUS "muc will be downloaded from ${MUSTARD_BUILTIN_MUC_URL} to ${MUSTARD_BUILTIN_MUC_SRC_DIR}")
     endif()
     # set options
-    set(MUC_INSTALL ON CACHE INTERNAL "")
+    set(MUC_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring muc (version: ${MUSTARD_BUILTIN_MUC_VERSION})")
     FetchContent_MakeAvailable(muc)

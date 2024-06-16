@@ -30,6 +30,8 @@ if(MUSTARD_BUILTIN_FMT)
                                  URL "${MUSTARD_BUILTIN_FMT_URL}")
         message(STATUS "fmt will be downloaded from ${MUSTARD_BUILTIN_FMT_URL} to ${MUSTARD_BUILTIN_FMT_SRC_DIR}")
     endif()
+    # set options
+    set(FMT_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring fmt (version: ${MUSTARD_BUILTIN_FMT_VERSION})")
     FetchContent_MakeAvailable(fmt)

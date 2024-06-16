@@ -19,7 +19,7 @@ if(MUSTARD_BUILTIN_ARGPARSE)
     endif()
     # set download dest and URL
     set(MUSTARD_BUILTIN_ARGPARSE_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/argparse-master")
-    set(MUSTARD_BUILTIN_ARGPARSE_URL "https://github.com/zhao-shihan/argparse/archive/refs/heads/master.zip")
+    set(MUSTARD_BUILTIN_ARGPARSE_URL "https://github.com/p-ranav/argparse/archive/refs/heads/master.zip")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_ARGPARSE_SRC_DIR}/CMakeLists.txt")
@@ -31,7 +31,7 @@ if(MUSTARD_BUILTIN_ARGPARSE)
         message(STATUS "argparse will be downloaded from ${MUSTARD_BUILTIN_ARGPARSE_URL} to ${MUSTARD_BUILTIN_ARGPARSE_SRC_DIR}")
     endif()
     # set options
-    set(ARGPARSE_INSTALL ON CACHE INTERNAL "")
+    set(ARGPARSE_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring argparse (version: ${MUSTARD_BUILTIN_ARGPARSE_VERSION})")
     FetchContent_MakeAvailable(argparse)

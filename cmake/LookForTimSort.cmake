@@ -30,6 +30,8 @@ if(MUSTARD_BUILTIN_TIMSORT)
                                       URL "${MUSTARD_BUILTIN_TIMSORT_URL}")
         message(STATUS "timsort will be downloaded from ${MUSTARD_BUILTIN_TIMSORT_URL} to ${MUSTARD_BUILTIN_TIMSORT_SRC_DIR}")
     endif()
+    # set options
+    set(TIMSORT_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring timsort (version: ${MUSTARD_BUILTIN_TIMSORT_VERSION})")
     FetchContent_MakeAvailable(timsort)

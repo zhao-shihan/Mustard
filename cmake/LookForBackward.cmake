@@ -18,8 +18,8 @@ if(MUSTARD_BUILTIN_BACKWARD)
         set(MUSTARD_BUILTIN_BACKWARD_VERSION ${MUSTARD_BACKWARD_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MUSTARD_BUILTIN_BACKWARD_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/backward-cpp-${MUSTARD_BUILTIN_BACKWARD_VERSION}")
-    set(MUSTARD_BUILTIN_BACKWARD_URL "https://github.com/bombela/backward-cpp/archive/refs/tags/v${MUSTARD_BUILTIN_BACKWARD_VERSION}.tar.gz")
+    set(MUSTARD_BUILTIN_BACKWARD_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/backward-cpp-master")
+    set(MUSTARD_BUILTIN_BACKWARD_URL "https://github.com/zhao-shihan/backward-cpp/archive/refs/heads/master.zip")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_BACKWARD_SRC_DIR}/CMakeLists.txt")
@@ -33,6 +33,7 @@ if(MUSTARD_BUILTIN_BACKWARD)
     # set options
     set(BACKWARD_SHARED ${BUILD_SHARED_LIBS} CACHE INTERNAL "")
     set(BACKWARD_TESTS OFF CACHE INTERNAL "")
+    set(BACKWARD_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring backward-cpp (version: ${MUSTARD_BUILTIN_BACKWARD_VERSION})")
     FetchContent_MakeAvailable(Backward)

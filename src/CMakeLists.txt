@@ -58,20 +58,22 @@ target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
 target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Tree ROOT::MathCore ROOT::ROOTDataFrame ROOT::Geom)
 
 # Install
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
+if(MUSTARD_INSTALL)
+    include(GNUInstallDirs)
+    include(CMakePackageConfigHelpers)
 
-set_target_properties(Mustard PROPERTIES VERSION ${MUSTARD_VERSION} SOVERSION ${MUSTARD_VERSION})
+    set_target_properties(Mustard PROPERTIES VERSION ${MUSTARD_VERSION} SOVERSION ${MUSTARD_VERSION})
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Mustard DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        PATTERN *.h++ PATTERN *.inl)
-install(TARGETS Mustard EXPORT MustardConfig
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(EXPORT MustardConfig NAMESPACE Mustard:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
-export(TARGETS Mustard NAMESPACE Mustard:: APPEND FILE MustardConfig.cmake)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Mustard DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            PATTERN *.h++ PATTERN *.inl)
+    install(TARGETS Mustard EXPORT MustardConfig
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(EXPORT MustardConfig NAMESPACE Mustard:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+    export(TARGETS Mustard NAMESPACE Mustard:: APPEND FILE MustardConfig.cmake)
 
-set(MUSTARD_CONFIG_VERSION ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake)
-write_basic_package_version_file(${MUSTARD_CONFIG_VERSION} COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
-install(FILES ${MUSTARD_CONFIG_VERSION} DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+    set(MUSTARD_CONFIG_VERSION ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake)
+    write_basic_package_version_file(${MUSTARD_CONFIG_VERSION} COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
+    install(FILES ${MUSTARD_CONFIG_VERSION} DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+endif()

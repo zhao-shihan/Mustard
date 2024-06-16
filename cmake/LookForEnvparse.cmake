@@ -31,7 +31,7 @@ if(MUSTARD_BUILTIN_ENVPARSE)
         message(STATUS "envparse will be downloaded from ${MUSTARD_BUILTIN_ENVPARSE_URL} to ${MUSTARD_BUILTIN_ENVPARSE_SRC_DIR}")
     endif()
     # set options
-    set(ENVPARSE_INSTALL ON CACHE INTERNAL "")
+    set(ENVPARSE_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring envparse (version: ${MUSTARD_BUILTIN_ENVPARSE_VERSION})")
     FetchContent_MakeAvailable(envparse)
