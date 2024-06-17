@@ -108,7 +108,7 @@ MPIEnv::MPIEnv(int argc, char* argv[],
                 auto currentNodeName{&nodeMap.begin()->first};
                 rankNode.push_back({{}, currentNodeName});
                 for (auto&& [nodeName, rank] : std::as_const(nodeMap)) {
-                    if (nodeName != *currentNodeName) {
+                    if (std::strncmp(nodeName.data(), currentNodeName->data(), MPI_MAX_PROCESSOR_NAME)) {
                         currentNodeName = &nodeName;
                         rankNode.push_back({{}, currentNodeName});
                     }
