@@ -42,15 +42,15 @@ struct BFieldSI2CLHEP : ATransformation {
     using ATransformation::ATransformation;
 
     template<Concept::MathVector3D T>
-    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(T B) const noexcept -> T {
-        return static_cast<const ATransformation&>(*this)(B * CLHEP::tesla);
+    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(double x, double y, double z, T B) const noexcept -> T {
+        return static_cast<const ATransformation&>(*this)(x, y, z, T{B * CLHEP::tesla});
     }
 };
 
 /// @brief An magnetic field interpolated from data.
 /// Initialization and interpolation are performed by `AFieldMap`.
 /// @tparam AFieldMap A field map type, e.g. `EFM::FieldMap3D<Eigen::Vector3d>`
-template<typename AFieldMap = EFM::FieldMap3D<Eigen::Vector3d, double, muc::multidentity, BFieldSI2CLHEP>>
+template<typename AFieldMap = EFM::FieldMap3D<Eigen::Vector3d, double, muc::multidentity, BFieldSI2CLHEP<>>>
     requires std::same_as<typename AFieldMap::CoordinateType, double>
 class MagneticFieldMap : public MagneticFieldBase<MagneticFieldMap<AFieldMap>>,
                          public AFieldMap {

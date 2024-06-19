@@ -42,15 +42,15 @@ struct EFieldSI2CLHEP : ATransformation {
     using ATransformation::ATransformation;
 
     template<Concept::MathVector3D T>
-    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(T E) const noexcept -> T {
-        return static_cast<const ATransformation&>(*this)(E * (CLHEP::volt / CLHEP::m));
+    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(double x, double y, double z, T E) const noexcept -> T {
+        return static_cast<const ATransformation&>(*this)(x, y, z, T{E * (CLHEP::volt / CLHEP::m)});
     }
 };
 
 /// @brief An electric field interpolated from data.
 /// Initialization and interpolation are performed by `AFieldMap`.
 /// @tparam AFieldMap A field map type, e.g. `EFM::FieldMap3D<Eigen::Vector3d>`
-template<typename AFieldMap = EFM::FieldMap3D<Eigen::Vector3d>>
+template<typename AFieldMap = EFM::FieldMap3D<Eigen::Vector3d, double, muc::multidentity, EFieldSI2CLHEP<>>>
     requires std::same_as<typename AFieldMap::CoordinateType, double>
 class ElectricFieldMap : public ElectricFieldBase<ElectricFieldMap<AFieldMap>>,
                          public AFieldMap {

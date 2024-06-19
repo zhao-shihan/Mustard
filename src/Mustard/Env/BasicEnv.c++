@@ -56,8 +56,7 @@ BasicEnv::BasicEnv(int argc, char* argv[],
 
 BasicEnv::~BasicEnv() {
     using scsc = std::chrono::system_clock;
-    Print("\n"
-          "===============================================================================\n"
+    Print("===============================================================================\n"
           " Exit Mustard environment at {:%FT%T%z}\n"
           "===============================================================================\n",
           fmt::localtime(scsc::to_time_t(scsc::now())));

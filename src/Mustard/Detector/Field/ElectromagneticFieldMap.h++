@@ -46,9 +46,10 @@ struct BEFieldSI2CLHEP : ATransformation {
     using ATransformation::ATransformation;
 
     template<Concept::NumericVector<double, 6> T>
-    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(T f) const noexcept -> T {
+    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(double x, double y, double z, T f) const noexcept -> T {
         using namespace CLHEP;
         return static_cast<const ATransformation&>(*this)(
+            x, y, z,
             T{f[0] * tesla, f[1] * tesla, f[2] * tesla,
               f[3] * (volt / m), f[4] * (volt / m), f[5] * (volt / m)});
     }
@@ -66,9 +67,9 @@ struct BEFieldSI2CLHEP : ATransformation {
 ///     Something(field.E(x), field.B(x));
 /// However, if these cases do not matter or you need maximum performace in EB then
 /// "NoCache" would be better.
-template<muc::ceta_string ACache = "WithCache", Concept::MathVector<double, 6> T = Eigen::Vector<double, 6>,
-         typename AFieldMap = EFM::FieldMap3D<T, double, muc::multidentity, BEFieldSI2CLHEP>>
-    requires((ACache == "WithCache" or == "NoCache") and
+template<muc::ceta_string ACache = "WithCache",
+         typename AFieldMap = EFM::FieldMap3D<Eigen::Vector<double, 6>, double, muc::multidentity, BEFieldSI2CLHEP<>>>
+    requires((ACache == "WithCache" or ACache == "NoCache") and
              std::same_as<typename AFieldMap::CoordinateType, double>)
 class ElectromagneticFieldMap;
 
