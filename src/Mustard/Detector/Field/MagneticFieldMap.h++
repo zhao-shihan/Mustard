@@ -20,7 +20,9 @@
 
 #include "Mustard/Concept/MathVector.h++"
 #include "Mustard/Concept/NumericVector.h++"
+#include "Mustard/Detector/Field/FieldMapSymmetry.h++"
 #include "Mustard/Detector/Field/MagneticFieldBase.h++"
+#include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "EFM/FieldMap3D.h++"
@@ -35,17 +37,19 @@ namespace Mustard::Detector::Field {
 
 /// @brief A functional type converts B-field SI field value
 /// to CLHEP unit system. Use in EFM template parameter.
-struct BFieldSI2CLHEP {
+template<typename ATransformation = EFM::Identity>
+struct BFieldSI2CLHEP : ATransformation {
+    using ATransformation::ATransformation;
+
     template<Concept::MathVector3D T>
-    [[nodiscard]] constexpr auto operator()(T B) const -> T {
-        return B * CLHEP::tesla;
+    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(T B) const noexcept -> T {
+        return static_cast<const ATransformation&>(*this)(B * CLHEP::tesla);
     }
 };
 
 /// @brief An magnetic field interpolated from data.
 /// Initialization and interpolation are performed by `AFieldMap`.
-/// @tparam AFieldMap A field map type, e.g. `EFM::FieldMap3D<Eigen::Vector3d>` or
-/// `EFM::FieldMap3DSymZ<Eigen::Vector3d>`.
+/// @tparam AFieldMap A field map type, e.g. `EFM::FieldMap3D<Eigen::Vector3d>`
 template<typename AFieldMap = EFM::FieldMap3D<Eigen::Vector3d, double, muc::multidentity, BFieldSI2CLHEP>>
     requires std::same_as<typename AFieldMap::CoordinateType, double>
 class MagneticFieldMap : public MagneticFieldBase<MagneticFieldMap<AFieldMap>>,
@@ -58,24 +62,38 @@ public:
 };
 
 /// @brief An YZ plane mirror symmetry magnetic field interpolated from data.
-using MagneticFieldMapSymX = MagneticFieldMap<EFM::FieldMap3DSymX<Eigen::Vector3d, double, BFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using MagneticFieldMapSymmetryX = MagneticFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryX, BFieldSI2CLHEP<FieldSymmetryX>>>;
 
 /// @brief An ZX plane mirror symmetry magnetic field interpolated from data.
-using MagneticFieldMapSymY = MagneticFieldMap<EFM::FieldMap3DSymY<Eigen::Vector3d, double, BFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using MagneticFieldMapSymmetryY = MagneticFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryY, BFieldSI2CLHEP<FieldSymmetryY>>>;
 
 /// @brief An XY plane mirror symmetry magnetic field interpolated from data.
-using MagneticFieldMapSymZ = MagneticFieldMap<EFM::FieldMap3DSymZ<Eigen::Vector3d, double, BFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using MagneticFieldMapSymmetryZ = MagneticFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryZ, BFieldSI2CLHEP<FieldSymmetryZ>>>;
 
 /// @brief An YZ, ZX plane mirror symmetry magnetic field interpolated from data.
-using MagneticFieldMapSymXY = MagneticFieldMap<EFM::FieldMap3DSymXY<Eigen::Vector3d, double, BFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using MagneticFieldMapSymmetryXY = MagneticFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryXY, BFieldSI2CLHEP<FieldSymmetryXY>>>;
 
 /// @brief An XY, YZ plane mirror symmetry magnetic field interpolated from data.
-using MagneticFieldMapSymXZ = MagneticFieldMap<EFM::FieldMap3DSymXZ<Eigen::Vector3d, double, BFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using MagneticFieldMapSymmetryXZ = MagneticFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryXZ, BFieldSI2CLHEP<FieldSymmetryXZ>>>;
 
 /// @brief An ZX, XY plane mirror symmetry magnetic field interpolated from data.
-using MagneticFieldMapSymYZ = MagneticFieldMap<EFM::FieldMap3DSymYZ<Eigen::Vector3d, double, BFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using MagneticFieldMapSymmetryYZ = MagneticFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryYZ, BFieldSI2CLHEP<FieldSymmetryYZ>>>;
 
 /// @brief An XY, YZ, ZX plane mirror symmetry magnetic field interpolated from data.
-using MagneticFieldMapSymXYZ = MagneticFieldMap<EFM::FieldMap3DSymXYZ<Eigen::Vector3d, double, BFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using MagneticFieldMapSymmetryXYZ = MagneticFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryXYZ, BFieldSI2CLHEP<FieldSymmetryXYZ>>>;
 
 } // namespace Mustard::Detector::Field

@@ -21,6 +21,8 @@
 #include "Mustard/Concept/MathVector.h++"
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectricFieldBase.h++"
+#include "Mustard/Detector/Field/FieldMapSymmetry.h++"
+#include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "EFM/FieldMap3D.h++"
@@ -35,17 +37,19 @@ namespace Mustard::Detector::Field {
 
 /// @brief A functional type converts E-field SI field value
 /// to CLHEP unit system. Use in EFM template parameter.
-struct EFieldSI2CLHEP {
+template<typename ATransformation = EFM::Identity>
+struct EFieldSI2CLHEP : ATransformation {
+    using ATransformation::ATransformation;
+
     template<Concept::MathVector3D T>
-    [[nodiscard]] constexpr auto operator()(T E) const -> T {
-        return E * (CLHEP::volt / CLHEP::m);
+    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(T E) const noexcept -> T {
+        return static_cast<const ATransformation&>(*this)(E * (CLHEP::volt / CLHEP::m));
     }
 };
 
 /// @brief An electric field interpolated from data.
 /// Initialization and interpolation are performed by `AFieldMap`.
-/// @tparam AFieldMap A field map type, e.g. `EFM::FieldMap3D<Eigen::Vector3d>` or
-/// `EFM::FieldMap3DSymZ<Eigen::Vector3d>`.
+/// @tparam AFieldMap A field map type, e.g. `EFM::FieldMap3D<Eigen::Vector3d>`
 template<typename AFieldMap = EFM::FieldMap3D<Eigen::Vector3d>>
     requires std::same_as<typename AFieldMap::CoordinateType, double>
 class ElectricFieldMap : public ElectricFieldBase<ElectricFieldMap<AFieldMap>>,
@@ -58,24 +62,38 @@ public:
 };
 
 /// @brief An YZ plane mirror symmetry electric field interpolated from data.
-using ElectricFieldMapSymX = ElectricFieldMap<EFM::FieldMap3DSymX<Eigen::Vector3d, double, EFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using ElectricFieldMapSymmetryX = ElectricFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryX, EFieldSI2CLHEP<FieldSymmetryX>>>;
 
 /// @brief An ZX plane mirror symmetry electric field interpolated from data.
-using ElectricFieldMapSymY = ElectricFieldMap<EFM::FieldMap3DSymY<Eigen::Vector3d, double, EFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using ElectricFieldMapSymmetryY = ElectricFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryY, EFieldSI2CLHEP<FieldSymmetryY>>>;
 
 /// @brief An XY plane mirror symmetry electric field interpolated from data.
-using ElectricFieldMapSymZ = ElectricFieldMap<EFM::FieldMap3DSymZ<Eigen::Vector3d, double, EFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using ElectricFieldMapSymmetryZ = ElectricFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryZ, EFieldSI2CLHEP<FieldSymmetryZ>>>;
 
 /// @brief An YZ, ZX plane mirror symmetry electric field interpolated from data.
-using ElectricFieldMapSymXY = ElectricFieldMap<EFM::FieldMap3DSymXY<Eigen::Vector3d, double, EFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using ElectricFieldMapSymmetryXY = ElectricFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryXY, EFieldSI2CLHEP<FieldSymmetryXY>>>;
 
 /// @brief An XY, YZ plane mirror symmetry electric field interpolated from data.
-using ElectricFieldMapSymXZ = ElectricFieldMap<EFM::FieldMap3DSymXZ<Eigen::Vector3d, double, EFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using ElectricFieldMapSymmetryXZ = ElectricFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryXZ, EFieldSI2CLHEP<FieldSymmetryXZ>>>;
 
 /// @brief An ZX, XY plane mirror symmetry electric field interpolated from data.
-using ElectricFieldMapSymYZ = ElectricFieldMap<EFM::FieldMap3DSymYZ<Eigen::Vector3d, double, EFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using ElectricFieldMapSymmetryYZ = ElectricFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryYZ, EFieldSI2CLHEP<FieldSymmetryYZ>>>;
 
 /// @brief An XY, YZ, ZX plane mirror symmetry electric field interpolated from data.
-using ElectricFieldMapSymXYZ = ElectricFieldMap<EFM::FieldMap3DSymXYZ<Eigen::Vector3d, double, EFieldSI2CLHEP>>;
+template<Concept::MathVector3D T = Eigen::Vector3d>
+using ElectricFieldMapSymmetryXYZ = ElectricFieldMap<
+    EFM::FieldMap3D<T, double, CoordinateSymmetryXYZ, EFieldSI2CLHEP<FieldSymmetryXYZ>>>;
 
 } // namespace Mustard::Detector::Field
