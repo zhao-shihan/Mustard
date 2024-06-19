@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Concept/NumericVector.h++"
+#include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/VectorAssign.h++"
 
 #include <concepts>
@@ -27,17 +28,16 @@
 
 namespace Mustard::inline Utility {
 
-template<Concept::NumericVectorAny T>
-[[nodiscard]] T VectorCast(std::convertible_to<T> auto&& src) {
-    return src;
+template<Concept::NumericVectorAny T, typename S>
+    requires std::convertible_to<S&&, T>
+[[nodiscard]] MUSTARD_ALWAYS_INLINE auto VectorCast(S&& src) -> T {
+    return std::forward<S>(src);
 }
 
-template<Concept::NumericVectorAny T>
-[[nodiscard]] T VectorCast(auto&& src)
-    requires(not std::convertible_to<decltype(src), T>)
-{
+template<Concept::NumericVectorAny T, typename S>
+[[nodiscard]] MUSTARD_ALWAYS_INLINE auto VectorCast(S&& src) -> T {
     T dst;
-    VectorAssign(dst, std::forward<decltype(src)>(src));
+    VectorAssign(dst, std::forward<S>(src));
     return dst;
 }
 
