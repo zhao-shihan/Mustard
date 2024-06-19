@@ -20,7 +20,7 @@ public:
              std::optional<std::reference_wrapper<CLI::CLI<>>> cli = {},
              enum VerboseLevel verboseLevel = {},
              bool printWelcomeMessage = true);
-    virtual ~BasicEnv() = default;
+    virtual ~BasicEnv();
 
     auto Argc() const -> auto { return fArgc; }
     auto Argv() const -> auto { return fArgv; }

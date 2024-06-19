@@ -3,6 +3,9 @@
 #include "Mustard/Env/Print.h++"
 #include "Mustard/Version.h++"
 
+#include "fmt/chrono.h"
+
+#include <chrono>
 #include <filesystem>
 #include <system_error>
 #include <typeinfo>
@@ -33,6 +36,15 @@ BasicEnv::BasicEnv(int argc, char* argv[],
     }
 }
 
+BasicEnv::~BasicEnv() {
+    using scsc = std::chrono::system_clock;
+    Print("\n"
+          "===============================================================================\n"
+          " Exit Mustard environment at {:%FT%T%z}\n"
+          "===============================================================================\n",
+          fmt::localtime(scsc::to_time_t(scsc::now())));
+}
+
 auto BasicEnv::PrintWelcomeMessageSplitLine() const -> void {
     Print("\n===============================================================================\n");
 }
@@ -42,17 +54,19 @@ auto BasicEnv::PrintWelcomeMessageBody(int argc, char* argv[]) const -> void {
     const auto exe{std::filesystem::path(argv[0]).filename().generic_string()};
     auto cwd{std::filesystem::current_path(cwdError).generic_string()};
     if (cwdError) { cwd = "<Error getting current working directory>"; }
+    using scsc = std::chrono::system_clock;
     Print(" ______  ___             _____              _________\n"
           " ___   |/  /___  __________  /______ _____________  /\n"
           " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
           " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n"
-          " /_/  /_/  \\____/ /____/ \\__/ \\____/ /_/    \\____/   {}\n"
+          " /_/  /_/  \\____/ /____/ \\__/ \\____/ /_/    \\____/   " MUSTARD_VERSION_STRING "\n"
           "\n"
           " An offline software framework for HEP experiments\n"
           " Copyright 2020-2024 Mustard developers\n"
           "\n"
+          " Start at {:%FT%T%z}\n"
           " Exe: {}",
-          MUSTARD_VERSION_STRING,
+          fmt::localtime(scsc::to_time_t(scsc::now())),
           exe);
     for (auto i{1}; i < argc; ++i) {
         Print(" {}", argv[i]);
