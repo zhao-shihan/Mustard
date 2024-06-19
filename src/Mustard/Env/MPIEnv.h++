@@ -34,13 +34,20 @@
 
 namespace Mustard::Env {
 
-class MPIEnv : public BasicEnv,
+class MPIEnv : public virtual BasicEnv,
                public Memory::PassiveSingleton<MPIEnv> {
+protected:
+    MPIEnv(NoBanner, int argc, char* argv[],
+           std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+           enum VerboseLevel verboseLevel,
+           bool showBannerHint);
+
 public:
     MPIEnv(int argc, char* argv[],
            std::optional<std::reference_wrapper<CLI::CLI<>>> cli = {},
            enum VerboseLevel verboseLevel = {},
-           bool printWelcomeMessage = true);
+           bool showBannerHint = true);
+
     virtual ~MPIEnv();
 
     using PassiveSingleton<MPIEnv>::Instance;
@@ -74,7 +81,7 @@ public:
     auto OnCluster() const -> auto { return ClusterSize() != 1; }
 
 protected:
-    auto PrintWelcomeMessageBody(int argc, char* argv[]) const -> void;
+    auto PrintStartBannerBody(int argc, char* argv[]) const -> void;
 
 private:
     struct NodeInfo {

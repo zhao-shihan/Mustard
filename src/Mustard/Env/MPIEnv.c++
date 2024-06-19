@@ -35,11 +35,11 @@
 
 namespace Mustard::Env {
 
-MPIEnv::MPIEnv(int argc, char* argv[],
+MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
                enum VerboseLevel verboseLevel,
-               bool printWelcomeMessage) :
-    BasicEnv{argc, argv, cli, verboseLevel, false},
+               bool showBannerHint) :
+    BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     PassiveSingleton<MPIEnv>{},
     fMPIThreadSupport{
         [&argc, &argv] {
@@ -214,11 +214,17 @@ MPIEnv::MPIEnv(int argc, char* argv[],
     if (ROOT::IsImplicitMTEnabled()) {
         ROOT::DisableImplicitMT();
     }
-    // Print startup message
-    if (printWelcomeMessage and OnCommWorldMaster()) {
-        PrintWelcomeMessageSplitLine();
-        PrintWelcomeMessageBody(argc, argv);
-        PrintWelcomeMessageSplitLine();
+}
+
+MPIEnv::MPIEnv(int argc, char* argv[],
+               std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+               enum VerboseLevel verboseLevel,
+               bool showBannerHint) :
+    MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
+    if (fShowBanner and OnCommWorldMaster()) {
+        PrintStartBannerSplitLine();
+        PrintStartBannerBody(argc, argv);
+        PrintStartBannerSplitLine();
     }
 }
 
@@ -230,10 +236,15 @@ MPIEnv::~MPIEnv() {
     MPI_Barrier(MPI_COMM_WORLD);
     // Finalize MPI
     MPI_Finalize();
+    // Show exit banner
+    if (fShowBanner and OnCommWorldMaster()) {
+        PrintExitBanner();
+    }
+    fShowBanner = false;
 }
 
-auto MPIEnv::PrintWelcomeMessageBody(int argc, char* argv[]) const -> void {
-    BasicEnv::PrintWelcomeMessageBody(argc, argv);
+auto MPIEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
+    BasicEnv::PrintStartBannerBody(argc, argv);
     // MPI library version
     char mpiLibVersion[MPI_MAX_LIBRARY_VERSION_STRING];
     int mpiLibVersionStringLength;

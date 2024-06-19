@@ -30,12 +30,13 @@
 
 namespace Mustard::Env {
 
-BasicEnv::BasicEnv(int argc, char* argv[],
+BasicEnv::BasicEnv(NoBanner, int argc, char* argv[],
                    std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
                    enum VerboseLevel verboseLevel,
-                   bool printWelcomeMessage) :
+                   bool showBannerHint) :
     EnvBase{},
     PassiveSingleton{},
+    fShowBanner{showBannerHint},
     fArgc{argc},
     fArgv{argv},
     fVerboseLevel{verboseLevel} {
@@ -44,17 +45,33 @@ BasicEnv::BasicEnv(int argc, char* argv[],
         const auto pCLI{&cli->get()};
         pCLI->ParseArgs(argc, argv);
         const auto basicCLI{dynamic_cast<const CLI::BasicModule*>(pCLI)};
-        if (basicCLI) { fVerboseLevel = basicCLI->VerboseLevel().value_or(verboseLevel); }
+        if (basicCLI) {
+            fVerboseLevel = basicCLI->VerboseLevel().value_or(verboseLevel);
+            fShowBanner = basicCLI->ShowBanner();
+        }
     }
-    // Print startup message after parse
-    if (printWelcomeMessage) {
-        PrintWelcomeMessageSplitLine();
-        PrintWelcomeMessageBody(argc, argv);
-        PrintWelcomeMessageSplitLine();
+}
+
+BasicEnv::BasicEnv(int argc, char* argv[],
+                   std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+                   enum VerboseLevel verboseLevel,
+                   bool showBannerHint) :
+    BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
+    if (fShowBanner) {
+        PrintStartBannerSplitLine();
+        PrintStartBannerBody(argc, argv);
+        PrintStartBannerSplitLine();
     }
 }
 
 BasicEnv::~BasicEnv() {
+    if (fShowBanner) {
+        PrintExitBanner();
+    }
+    fShowBanner = false;
+}
+
+auto BasicEnv::PrintExitBanner() const -> void {
     using scsc = std::chrono::system_clock;
     Print("===============================================================================\n"
           " Exit Mustard environment at {:%FT%T%z}\n"
@@ -62,11 +79,11 @@ BasicEnv::~BasicEnv() {
           fmt::localtime(scsc::to_time_t(scsc::now())));
 }
 
-auto BasicEnv::PrintWelcomeMessageSplitLine() const -> void {
+auto BasicEnv::PrintStartBannerSplitLine() const -> void {
     Print("\n===============================================================================\n");
 }
 
-auto BasicEnv::PrintWelcomeMessageBody(int argc, char* argv[]) const -> void {
+auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     std::error_code cwdError;
     const auto exe{std::filesystem::path(argv[0]).filename().generic_string()};
     auto cwd{std::filesystem::current_path(cwdError).generic_string()};

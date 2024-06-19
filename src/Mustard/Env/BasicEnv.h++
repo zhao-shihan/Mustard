@@ -31,13 +31,23 @@
 
 namespace Mustard::Env {
 
-class BasicEnv : public internal::EnvBase,
+class BasicEnv : public virtual internal::EnvBase,
                  public Memory::PassiveSingleton<BasicEnv> {
+protected:
+    struct NoBanner {};
+
+protected:
+    BasicEnv(NoBanner, int argc, char* argv[],
+             std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+             enum VerboseLevel verboseLevel,
+             bool showBannerHint);
+
 public:
     BasicEnv(int argc, char* argv[],
              std::optional<std::reference_wrapper<CLI::CLI<>>> cli = {},
              enum VerboseLevel verboseLevel = {},
-             bool printWelcomeMessage = true);
+             bool showBannerHint = true);
+
     virtual ~BasicEnv();
 
     auto Argc() const -> auto { return fArgc; }
@@ -45,8 +55,12 @@ public:
     auto VerboseLevel() const -> auto { return fVerboseLevel; }
 
 protected:
-    auto PrintWelcomeMessageSplitLine() const -> void;
-    auto PrintWelcomeMessageBody(int argc, char* argv[]) const -> void;
+    auto PrintStartBannerSplitLine() const -> void;
+    auto PrintStartBannerBody(int argc, char* argv[]) const -> void;
+    auto PrintExitBanner() const -> void;
+
+protected:
+    bool fShowBanner;
 
 private:
     int fArgc;

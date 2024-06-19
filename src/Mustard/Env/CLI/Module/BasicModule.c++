@@ -63,6 +63,10 @@ BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
         .append()
         .nargs(0)
         .action([this](auto&&) { --fVerboseLevelValue; });
+    ArgParser()
+        .add_argument("-l", "--lite")
+        .flag()
+        .help("Do not show the Mustard banner.");
 }
 
 auto BasicModule::VerboseLevel() const -> std::optional<enum VerboseLevel> {
