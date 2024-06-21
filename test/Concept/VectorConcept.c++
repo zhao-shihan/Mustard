@@ -5,7 +5,9 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
 
-#include "TEveVector.h"
+#if __has_include("TEveVector.h")
+#    include "TEveVector.h"
+#endif
 
 #include "Eigen/Core"
 
@@ -71,12 +73,14 @@ static_assert(MathVector<CLHEP::Hep2Vector, double, 2>);
 static_assert(MathVector<CLHEP::Hep3Vector, double, 3>);
 static_assert(MathVector<CLHEP::HepLorentzVector, double, 4>);
 
+#if __has_include("TEveVector.h")
 static_assert(not MathVector<TEveVector2D, double, 2>);
 static_assert(not MathVector<TEveVectorD, double, 3>);
 static_assert(not MathVector<TEveVector4D, double, 4>);
 static_assert(not MathVector<TEveVector2F, float, 2>);
 static_assert(not MathVector<TEveVectorF, float, 3>);
 static_assert(not MathVector<TEveVector4F, float, 4>);
+#endif
 
 int main() {
     std::cout << "I'm compiled, I'm passed." << std::endl;
