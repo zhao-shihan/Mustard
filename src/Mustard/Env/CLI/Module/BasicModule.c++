@@ -33,31 +33,39 @@ BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
     ModuleBase{argParser},
     fVerboseLevelValue{muc::to_underlying(VerboseLevel::Warning)} {
     ArgParser()
-        .add_argument("-h", "--help")
-        .help("Show help message and exit.")
+        .add_argument("--help")
+        .help("Show this help and exit.")
         .nargs(0)
         .action([this](auto&&) {
             fmt::println("{}", ArgParser().help().str());
             std::exit(EXIT_SUCCESS);
         });
     ArgParser()
-        .add_argument("-v", "--version")
-        .help("Print version and exit.")
+        .add_argument("--version")
+        .help("Show version information and exit.")
         .nargs(0)
         .action([](auto&&) {
-            fmt::println("{}", MUSTARD_VERSION_STRING);
+            fmt::println("Mustard " MUSTARD_VERSION_STRING "\n"
+                         "Copyright 2020-2024  The Mustard development team\n"
+                         "Mustard is free software: you can redistribute it and/or modify it under the "
+                         "terms of the GNU General Public License as published by the Free Software "
+                         "Foundation, either version 3 of the License, or (at your option) any later "
+                         "version.\n"
+                         "Mustard is distributed in the hope that it will be useful, but WITHOUT ANY "
+                         "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR "
+                         "A PARTICULAR PURPOSE. See the GNU General Public License for more details.");
             std::exit(EXIT_SUCCESS);
         });
     ArgParser()
-        .add_argument("-V", "--verbose")
+        .add_argument("-v", "--verbose")
         .help("Increase verbose level (-2: quiet, -1: error, 0: warning (default), 1: informative, 2: verbose). "
-              "This is repeatable (e.g. -V -V or -VV) and can be combined with -Q or --quiet (e.g. -VVQ (=1) -QV (=0) -QQVQV (=-1)).")
+              "This is repeatable (e.g. -v -v or -vv) and can be combined with -q or --quiet (e.g. -vvq (=1) -qv (=0) -qqvqv (=-1)).")
         .flag()
         .append()
         .nargs(0)
         .action([this](auto&&) { ++fVerboseLevelValue; });
     ArgParser()
-        .add_argument("-Q", "--quiet")
+        .add_argument("-q", "--quiet")
         .help("Decrease verbose level (see previous).")
         .flag()
         .append()
@@ -70,7 +78,7 @@ BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
 }
 
 auto BasicModule::VerboseLevel() const -> std::optional<enum VerboseLevel> {
-    if (ArgParser().is_used("-V") or ArgParser().is_used("-Q")) {
+    if (ArgParser().is_used("-v") or ArgParser().is_used("-q")) {
         return static_cast<enum VerboseLevel>(std::clamp(fVerboseLevelValue,
                                                          muc::to_underlying(VerboseLevel::Quiet),
                                                          muc::to_underlying(VerboseLevel::Verbose)));
