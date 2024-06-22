@@ -3,10 +3,17 @@
 Mustard is a modern offline software framework for HEP experiment.
 
 - [Mustard](#mustard)
+  - [Pre-built binaries](#pre-built-binaries)
   - [Dependencies](#dependencies)
     - [Toolchain](#toolchain)
     - [Libraries](#libraries)
   - [Cite](#cite)
+
+## Pre-built binaries
+
+Pre-built, optimized binaries are available through [Apptainer](https://apptainer.org/) (formerly known as Singularity).
+
+For more information, please check out [the image repository homepage](https://github.com/zhao-shihan/Mustard-apptainer).
 
 ## Dependencies
 
