@@ -1,6 +1,6 @@
 # Mustard
 
-Mustard is a modern offline software framework for HEP experiment.
+Mustard is a generic offline software framework for particle physics experiments, aimed at providing a modern, high-performace architecture for distributed computing capabilities, unified geometric interfaces, and high-level abstraction of data models out of the box. This framework was formerly part of the MACE offline software. 
 
 - [Mustard](#mustard)
   - [Pre-built binaries](#pre-built-binaries)
