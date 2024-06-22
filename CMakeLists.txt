@@ -70,6 +70,7 @@ set(MUSTARD_BUILTIN_MSGSL_VERSION 4.0.0 CACHE STRING "Set built-in Microsoft.GSL
 set(MUSTARD_BUILTIN_MUC_VERSION 0.0.1 CACHE STRING "Set built-in muc version (if required).")
 set(MUSTARD_BUILTIN_TIMSORT_VERSION 3.0.0 CACHE STRING "Set built-in TimSort version (if required).")
 set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.8.0 CACHE STRING "Set built-in yaml-cpp version (if required).")
+set(MUSTARD_DEBUG_POSTFIX d CACHE STRING "Debug library postfix.")
 
 # =============================================================================
 # Installation path

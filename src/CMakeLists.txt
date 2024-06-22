@@ -7,6 +7,7 @@ target_include_directories(Mustard PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOUR
                                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_options(Mustard PUBLIC ${MUSTARD_COMPILE_OPTIONS})
 target_compile_definitions(Mustard PUBLIC ${MUSTARD_COMPILE_DEFINITIONS})
+set_target_properties(Mustard PROPERTIES DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
 
 # envparse
 target_link_libraries(Mustard PUBLIC envparse::envparse)
