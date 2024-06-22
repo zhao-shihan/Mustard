@@ -4,9 +4,8 @@
 # Mustard at C++20
 # =============================================================================
 
-if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 20)
-elseif(CMAKE_CXX_STANDARD LESS 20)
+set(CMAKE_CXX_STANDARD 20 CACHE STRING "C++ standard.")
+if(CMAKE_CXX_STANDARD LESS 20)
     message(FATAL_ERROR "Mustard should be built, at least, with C++20")
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

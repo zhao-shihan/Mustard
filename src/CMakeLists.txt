@@ -13,7 +13,7 @@ set_target_properties(Mustard PROPERTIES DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
 target_link_libraries(Mustard PUBLIC envparse::envparse)
 
 # TimSort
-target_link_libraries(Mustard PUBLIC timsort)
+target_link_libraries(Mustard PUBLIC gfx::timsort)
 
 # muc
 target_link_libraries(Mustard PUBLIC muc::muc)
