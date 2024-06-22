@@ -32,7 +32,7 @@ if(MUSTARD_BUILTIN_BACKWARD)
     endif()
     # set options
     set(BACKWARD_SHARED OFF CACHE INTERNAL "")
-    set(BACKWARD_INSTALL ON CACHE INTERNAL "")
+    set(BACKWARD_INSTALL OFF CACHE INTERNAL "")
     set(BACKWARD_TESTS OFF CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring backward-cpp (version: ${MUSTARD_BUILTIN_BACKWARD_VERSION})")
