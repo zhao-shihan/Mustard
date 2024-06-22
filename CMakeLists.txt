@@ -122,8 +122,6 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForFmt.cmake)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMicrosoftGSL.cmake)
 # muc
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMUC.cmake)
-# TimSort
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForTimSort.cmake)
 # yaml-cpp
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForYamlCpp.cmake)
 
