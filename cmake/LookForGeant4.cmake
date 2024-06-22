@@ -20,6 +20,5 @@ if(MUSTARD_USE_STATIC_G4)
 endif()
 
 find_package(Geant4 ${MUSTARD_G4_MINIMUM_REQUIRED} REQUIRED ${MUSTARD_G4_REQUIRED_COMPONENTS})
-unset(MUSTARD_G4_REQUIRED_COMPONENTS)
 
 message(STATUS "Looking for Geant4 - found (version: ${Geant4_VERSION})")

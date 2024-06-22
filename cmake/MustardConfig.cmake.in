@@ -4,13 +4,18 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(argparse)
-find_dependency(EFM)
-find_dependency(envparse)
-find_dependency(fmt)
-find_dependency(Microsoft.GSL)
-find_dependency(muc)
-find_dependency(yaml-cpp)
+find_dependency(MPI 2.0 REQUIRED C)
+find_dependency(Eigen3 3.4.0 REQUIRED)
+find_dependency(Geant4 @MUSTARD_G4_MINIMUM_REQUIRED@ REQUIRED @MUSTARD_G4_REQUIRED_COMPONENTS@)
+find_dependency(ROOT 6.30.00 REQUIRED Geom)
+
+find_dependency(argparse @MUSTARD_ARGPARSE_MINIMUM_REQUIRED@.0)
+find_dependency(EFM @MUSTARD_EFM_MINIMUM_REQUIRED@)
+find_dependency(envparse @MUSTARD_ENVPARSE_MINIMUM_REQUIRED@)
+find_dependency(fmt @MUSTARD_FMT_MINIMUM_REQUIRED@)
+find_dependency(Microsoft.GSL @MUSTARD_MSGSL_MINIMUM_REQUIRED@)
+find_dependency(muc @MUSTARD_MUC_MINIMUM_REQUIRED@)
+find_dependency(yaml-cpp @MUSTARD_YAML_CPP_MINIMUM_REQUIRED@)
 
 include("${CMAKE_CURRENT_LIST_DIR}/MustardTargets.cmake")
 
