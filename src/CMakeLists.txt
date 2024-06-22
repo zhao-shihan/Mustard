@@ -5,8 +5,8 @@ add_library(Mustard::Mustard ALIAS Mustard)
 # Mustrad
 target_include_directories(Mustard PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-target_compile_options(Mustard PUBLIC ${MUSTARD_COMPILE_OPTIONS})
-target_compile_definitions(Mustard PUBLIC ${MUSTARD_COMPILE_DEFINITIONS})
+target_compile_options(Mustard PRIVATE ${MUSTARD_PRIVATE_COMPILE_OPTIONS})
+target_compile_definitions(Mustard PUBLIC ${MUSTARD_PUBLIC_COMPILE_DEFINITIONS})
 
 # envparse
 target_link_libraries(Mustard PUBLIC envparse::envparse)

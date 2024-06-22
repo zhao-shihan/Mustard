@@ -15,9 +15,7 @@ message(STATUS "Mustard will be compiled with C++${CMAKE_CXX_STANDARD}")
 # By default, no C++ extensions available for Mustard
 # =============================================================================
 
-if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
-    set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
+set(CMAKE_CXX_EXTENSIONS OFF CACHE INTERNAL "Boolean specifying whether compiler specific extensions are requested.")
 
 # =============================================================================
 # Unity build for Mustard
@@ -58,8 +56,8 @@ endif()
 # Compile options and definitions for Mustard
 # =============================================================================
 
-set(MUSTARD_COMPILE_OPTIONS "")
-set(MUSTARD_COMPILE_DEFINITIONS "")
+set(MUSTARD_PRIVATE_COMPILE_OPTIONS "")
+set(MUSTARD_PUBLIC_COMPILE_DEFINITIONS "")
 
 # =============================================================================
 # Compile warnings for Mustard
@@ -67,51 +65,50 @@ set(MUSTARD_COMPILE_DEFINITIONS "")
 
 # More warnings
 if(CMAKE_COMPILER_IS_GNUCXX)
-    list(APPEND MUSTARD_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    list(APPEND MUSTARD_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros
-                                     -Wno-gnu-zero-variadic-macro-arguments)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros -Wno-gnu-zero-variadic-macro-arguments)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    list(APPEND MUSTARD_COMPILE_OPTIONS /W4)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /W4)
 endif()
 
 # Surpress some, if needed
 if(NOT MUSTARD_SHOW_MORE_COMPILER_WARNINGS)
     if(CMAKE_COMPILER_IS_GNUCXX)
         # # OpenMPI
-        # list(APPEND MUSTARD_COMPILE_OPTIONS -Wno-cast-function-type)
+        # list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Wno-cast-function-type)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         # if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 15.0.0)
         #     # backward-cpp
-        #     list(APPEND MUSTARD_COMPILE_OPTIONS -Wno-unqualified-std-cast-call)
+        #     list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Wno-unqualified-std-cast-call)
         # endif()
         if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 15.0.0)
-            list(APPEND MUSTARD_COMPILE_OPTIONS -Wno-unsupported-friend)
+            list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Wno-unsupported-friend)
         endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # ROOT (conditional expression is constant)
-        list(APPEND MUSTARD_COMPILE_OPTIONS /wd4127)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd4127)
         # Common ('argument': conversion from 'type1' to 'type2', possible loss of data)
-        list(APPEND MUSTARD_COMPILE_OPTIONS /wd4244)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd4244)
         # Common ('var': conversion from 'size_t' to 'type', possible loss of data)
-        list(APPEND MUSTARD_COMPILE_OPTIONS /wd4267)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd4267)
         # MSVC std::tuple ('derived class' : destructor was implicitly defined as deleted because a base class destructor is inaccessible or deleted)
-        list(APPEND MUSTARD_COMPILE_OPTIONS /wd4624)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd4624)
         # Common (The file contains a character that cannot be represented in the current code page (number). Save the file in Unicode format to prevent data loss)
-        list(APPEND MUSTARD_COMPILE_OPTIONS /wd4819)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd4819)
         # ROOT (using a function, class member, variable, or typedef that's marked deprecated)
-        list(APPEND MUSTARD_COMPILE_OPTIONS /wd4996)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd4996)
         # Eigen (operator 'operator-name': deprecated between enumerations of different types)
-        list(APPEND MUSTARD_COMPILE_OPTIONS /wd5054)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd5054)
     endif()
 # Even more warnings, if needed
 elseif(MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS)
     if(CMAKE_COMPILER_IS_GNUCXX)
-        list(APPEND MUSTARD_COMPILE_OPTIONS -Weffc++)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Weffc++)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        list(APPEND MUSTARD_COMPILE_OPTIONS -Weverything)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Weverything)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        list(APPEND MUSTARD_COMPILE_OPTIONS /Wall)
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /Wall)
     endif()
 endif()
 
@@ -120,23 +117,23 @@ endif()
 # =============================================================================
 
 if(MUSTARD_SIGNAL_HANDLER)
-    list(APPEND MUSTARD_COMPILE_DEFINITIONS MUSTARD_SIGNAL_HANDLER=1)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MUSTARD_SIGNAL_HANDLER=1)
 else()
-    list(APPEND MUSTARD_COMPILE_DEFINITIONS MUSTARD_SIGNAL_HANDLER=0)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MUSTARD_SIGNAL_HANDLER=0)
 endif()
 
 if(MUSTARD_USE_G4VIS)
-    list(APPEND MUSTARD_COMPILE_DEFINITIONS MUSTARD_USE_G4VIS=1)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MUSTARD_USE_G4VIS=1)
 else()
-    list(APPEND MUSTARD_COMPILE_DEFINITIONS MUSTARD_USE_G4VIS=0)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MUSTARD_USE_G4VIS=0)
 endif()
 
 if(MUSTARD_ENABLE_MSVC_STD_CONFORMITY AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Enable standard-conformity
-    list(APPEND MUSTARD_COMPILE_OPTIONS /permissive- /Zc:__cplusplus /Zc:inline)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /permissive- /Zc:__cplusplus /Zc:inline)
     message(STATUS "MSVC standard-conformity enabled (/permissive- /Zc:__cplusplus /Zc:inline)")
     # Be permissive to standard cfunctions
-    list(APPEND MUSTARD_COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS=1)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS=1)
 endif()
 
 # =============================================================================
@@ -144,20 +141,20 @@ endif()
 # =============================================================================
 
 # Inform OpenMPI not to bring mpicxx in, it's necessary for most cases.
-list(APPEND MUSTARD_COMPILE_DEFINITIONS OMPI_SKIP_MPICXX=1)
+list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS OMPI_SKIP_MPICXX=1)
 
 # Inform MPICH and derivatives not to bring mpicxx in, seems unnecessary but more consistent.
-list(APPEND MUSTARD_COMPILE_DEFINITIONS MPICH_SKIP_MPICXX=1)
+list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MPICH_SKIP_MPICXX=1)
 
 # =============================================================================
 # Eigen-induced compile options for Mustard
 # =============================================================================
 
 # Inform Eigen not to enable multithreading, though we are not using OpenMP. It is safer to do so.
-list(APPEND MUSTARD_COMPILE_DEFINITIONS EIGEN_DONT_PARALLELIZE=1)
+list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_DONT_PARALLELIZE=1)
 
 if(CMAKE_CXX_PLATFORM_ID STREQUAL "MinGW")
     # MinGW and GCC 12.2 have issues with explitic vectorization
-    list(APPEND MUSTARD_COMPILE_DEFINITIONS EIGEN_DONT_VECTORIZE=1)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_DONT_VECTORIZE=1)
     message(NOTICE "***Notice: Building on Windows with MinGW, disabling vectorization of Eigen")
 endif()
