@@ -24,17 +24,7 @@ target_link_libraries(Mustard PUBLIC argparse::argparse)
 target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
 
 # backward-cpp
-target_include_directories(Mustard PRIVATE $<BUILD_INTERFACE:${BACKWARD_INCLUDE_DIRS}>)
-target_compile_definitions(Mustard PRIVATE $<BUILD_INTERFACE:${BACKWARD_DEFINITIONS}>)
-if(LIBDW_LIBRARY)
-    target_link_libraries(Mustard PRIVATE $<BUILD_INTERFACE:${LIBDW_LIBRARY}>)
-endif()
-if(LIBBFD_LIBRARY)
-    target_link_libraries(Mustard PRIVATE $<BUILD_INTERFACE:${LIBBFD_LIBRARY}>)
-endif()
-if(LIBDWARF_LIBRARY AND LIBELF_LIBRARY)
-    target_link_libraries(Mustard PRIVATE $<BUILD_INTERFACE:${LIBDWARF_LIBRARY}> $<BUILD_INTERFACE:${LIBELF_LIBRARY}>)
-endif()
+target_link_libraries(Mustard PUBLIC Backward::Interface)
 
 # fmt
 target_link_libraries(Mustard PUBLIC fmt::fmt)

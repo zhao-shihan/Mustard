@@ -10,6 +10,7 @@ find_dependency(Geant4 @MUSTARD_G4_MINIMUM_REQUIRED@ REQUIRED @MUSTARD_G4_REQUIR
 find_dependency(ROOT 6.30.00 REQUIRED Geom)
 
 find_dependency(argparse @MUSTARD_ARGPARSE_MINIMUM_REQUIRED@.0)
+find_dependency(Backward)
 find_dependency(EFM @MUSTARD_EFM_MINIMUM_REQUIRED@)
 find_dependency(envparse @MUSTARD_ENVPARSE_MINIMUM_REQUIRED@)
 find_dependency(fmt @MUSTARD_FMT_MINIMUM_REQUIRED@)
