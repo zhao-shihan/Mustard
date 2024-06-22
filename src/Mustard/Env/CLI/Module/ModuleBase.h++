@@ -27,7 +27,7 @@ namespace Mustard::Env::CLI::inline Module {
 class ModuleBase : public NonMoveableBase {
 protected:
     ModuleBase(argparse::ArgumentParser& argParser);
-    ~ModuleBase() = default;
+    virtual ~ModuleBase() = default;
 
     auto ArgParser() const -> const auto& { return *fArgParser; }
     auto ArgParser() -> auto& { return *fArgParser; }

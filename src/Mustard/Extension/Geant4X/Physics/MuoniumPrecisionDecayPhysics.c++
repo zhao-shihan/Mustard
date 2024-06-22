@@ -31,7 +31,9 @@
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
 MuoniumPrecisionDecayPhysics::MuoniumPrecisionDecayPhysics(G4int verbose) :
-    DecayPhysicsBase{"MuoniumPrecisionDecayPhysics", verbose} {}
+    DecayPhysicsBase{"MuoniumPrecisionDecayPhysics", verbose},
+    fRadiativeDecayBR{},
+    fIPPDecayBR{} {}
 
 auto MuoniumPrecisionDecayPhysics::ConstructParticle() -> void {
     G4EmBuilder::ConstructMinimalEmSet();
