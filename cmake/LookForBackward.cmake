@@ -3,7 +3,7 @@ message(STATUS "Looking for backward-cpp")
 set(MUSTARD_BACKWARD_MINIMUM_REQUIRED 1.6)
 
 if(NOT MUSTARD_BUILTIN_BACKWARD)
-    find_package(Backward QUIET)
+    find_package(Backward)
     if(NOT Backward_FOUND)
         set(MUSTARD_BUILTIN_BACKWARD ON)
         message(NOTICE "***Notice: backward-cpp not found. Turning on MUSTARD_BUILTIN_BACKWARD")
@@ -32,8 +32,8 @@ if(MUSTARD_BUILTIN_BACKWARD)
     endif()
     # set options
     set(BACKWARD_SHARED OFF CACHE INTERNAL "")
+    set(BACKWARD_INSTALL ON CACHE INTERNAL "")
     set(BACKWARD_TESTS OFF CACHE INTERNAL "")
-    set(BACKWARD_INSTALL OFF CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring backward-cpp (version: ${MUSTARD_BUILTIN_BACKWARD_VERSION})")
     FetchContent_MakeAvailable(Backward)

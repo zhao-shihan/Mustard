@@ -3,7 +3,7 @@ message(STATUS "Looking for timsort")
 set(MUSTARD_TIMSORT_MINIMUM_REQUIRED 3.0.0)
 
 if(NOT MUSTARD_BUILTIN_TIMSORT)
-    find_package(timsort ${MUSTARD_TIMSORT_MINIMUM_REQUIRED} QUIET)
+    find_package(timsort ${MUSTARD_TIMSORT_MINIMUM_REQUIRED})
     if(NOT timsort_FOUND)
         set(MUSTARD_BUILTIN_TIMSORT ON)
         message(NOTICE "***Notice: timsort not found (minimum required is ${MUSTARD_TIMSORT_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_TIMSORT")

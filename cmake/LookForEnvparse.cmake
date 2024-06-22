@@ -3,7 +3,7 @@ message(STATUS "Looking for envparse")
 set(MUSTARD_ENVPARSE_MINIMUM_REQUIRED 0.0.1)
 
 if(NOT MUSTARD_BUILTIN_ENVPARSE)
-    find_package(envparse ${MUSTARD_ENVPARSE_MINIMUM_REQUIRED} QUIET)
+    find_package(envparse ${MUSTARD_ENVPARSE_MINIMUM_REQUIRED})
     if(NOT envparse_FOUND)
         set(MUSTARD_BUILTIN_ENVPARSE ON)
         message(NOTICE "***Notice: envparse not found (minimum required is ${MUSTARD_ENVPARSE_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_ENVPARSE")

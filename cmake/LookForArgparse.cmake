@@ -3,7 +3,7 @@ message(STATUS "Looking for argparse")
 set(MUSTARD_ARGPARSE_MINIMUM_REQUIRED 3.0)
 
 if(NOT MUSTARD_BUILTIN_ARGPARSE)
-    find_package(argparse ${MUSTARD_ARGPARSE_MINIMUM_REQUIRED}.0 QUIET)
+    find_package(argparse ${MUSTARD_ARGPARSE_MINIMUM_REQUIRED}.0)
     if(NOT argparse_FOUND)
         set(MUSTARD_BUILTIN_ARGPARSE ON)
         message(NOTICE "***Notice: argparse not found (minimum required is ${MUSTARD_ARGPARSE_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_ARGPARSE")

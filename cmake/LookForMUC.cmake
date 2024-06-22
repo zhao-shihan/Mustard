@@ -3,7 +3,7 @@ message(STATUS "Looking for muc")
 set(MUSTARD_MUC_MINIMUM_REQUIRED 0.0.1)
 
 if(NOT MUSTARD_BUILTIN_MUC)
-    find_package(muc ${MUSTARD_MUC_MINIMUM_REQUIRED} QUIET)
+    find_package(muc ${MUSTARD_MUC_MINIMUM_REQUIRED})
     if(NOT muc_FOUND)
         set(MUSTARD_BUILTIN_MUC ON)
         message(NOTICE "***Notice: muc not found (minimum required is ${MUSTARD_MUC_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_MUC")

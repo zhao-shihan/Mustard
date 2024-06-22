@@ -3,7 +3,7 @@ message(STATUS "Looking for Microsoft.GSL")
 set(MUSTARD_MSGSL_MINIMUM_REQUIRED 4.0.0)
 
 if(NOT MUSTARD_BUILTIN_MSGSL)
-    find_package(Microsoft.GSL ${MUSTARD_MSGSL_MINIMUM_REQUIRED} QUIET)
+    find_package(Microsoft.GSL ${MUSTARD_MSGSL_MINIMUM_REQUIRED})
     if(NOT Microsoft.GSL_FOUND)
         set(MUSTARD_BUILTIN_MSGSL ON)
         message(NOTICE "***Notice: Microsoft.GSL not found (minimum required is ${MUSTARD_MSGSL_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_MSGSL")

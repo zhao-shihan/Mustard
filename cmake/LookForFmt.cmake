@@ -3,7 +3,7 @@ message(STATUS "Looking for fmt")
 set(MUSTARD_FMT_MINIMUM_REQUIRED 10.0.0)
 
 if(NOT MUSTARD_BUILTIN_FMT)
-    find_package(fmt ${MUSTARD_FMT_MINIMUM_REQUIRED} QUIET)
+    find_package(fmt ${MUSTARD_FMT_MINIMUM_REQUIRED})
     if(NOT fmt_FOUND)
         set(MUSTARD_BUILTIN_FMT ON)
         message(NOTICE "***Notice: fmt not found (minimum required is ${MUSTARD_FMT_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_FMT")

@@ -3,7 +3,7 @@ message(STATUS "Looking for yaml-cpp")
 set(MUSTARD_YAML_CPP_MINIMUM_REQUIRED 0.8.0)
 
 if(NOT MUSTARD_BUILTIN_YAML_CPP)
-    find_package(yaml-cpp ${MUSTARD_YAML_CPP_MINIMUM_REQUIRED} QUIET)
+    find_package(yaml-cpp ${MUSTARD_YAML_CPP_MINIMUM_REQUIRED})
     if(NOT yaml-cpp_FOUND)
         set(MUSTARD_BUILTIN_YAML_CPP ON)
         message(NOTICE "***Notice: yaml-cpp not found (minimum required is ${MUSTARD_YAML_CPP_MINIMUM_REQUIRED}). Turning on MUSTARD_BUILTIN_YAML_CPP")
