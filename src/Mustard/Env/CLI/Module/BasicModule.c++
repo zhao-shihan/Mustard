@@ -41,8 +41,8 @@ BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
             std::exit(EXIT_SUCCESS);
         });
     ArgParser()
-        .add_argument("--version")
-        .help("Show version information and exit.")
+        .add_argument("--mustard-version")
+        .help("Show Mustard version information and exit.")
         .nargs(0)
         .action([](auto&&) {
             fmt::println("Mustard " MUSTARD_VERSION_STRING "\n"
