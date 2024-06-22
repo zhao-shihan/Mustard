@@ -7,13 +7,9 @@ target_include_directories(Mustard PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOUR
                                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_options(Mustard PUBLIC ${MUSTARD_COMPILE_OPTIONS})
 target_compile_definitions(Mustard PUBLIC ${MUSTARD_COMPILE_DEFINITIONS})
-set_target_properties(Mustard PROPERTIES DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
 
 # envparse
 target_link_libraries(Mustard PUBLIC envparse::envparse)
-
-# TimSort
-target_link_libraries(Mustard PUBLIC gfx::timsort)
 
 # muc
 target_link_libraries(Mustard PUBLIC muc::muc)
@@ -61,20 +57,28 @@ target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Tree ROOT::Math
 # Install
 if(MUSTARD_INSTALL)
     include(GNUInstallDirs)
-    include(CMakePackageConfigHelpers)
 
-    set_target_properties(Mustard PROPERTIES VERSION ${MUSTARD_VERSION} SOVERSION ${MUSTARD_VERSION})
+    set_target_properties(Mustard PROPERTIES VERSION ${MUSTARD_VERSION}
+                                             SOVERSION ${MUSTARD_VERSION}
+                                             DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
 
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Mustard DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             PATTERN *.h++ PATTERN *.inl)
-    install(TARGETS Mustard EXPORT MustardConfig
+    install(TARGETS Mustard EXPORT MustardTargets
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    install(EXPORT MustardConfig NAMESPACE Mustard:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
-    export(TARGETS Mustard NAMESPACE Mustard:: APPEND FILE MustardConfig.cmake)
+    install(EXPORT MustardTargets
+            NAMESPACE Mustard::
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 
-    set(MUSTARD_CONFIG_VERSION ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake)
-    write_basic_package_version_file(${MUSTARD_CONFIG_VERSION} COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
-    install(FILES ${MUSTARD_CONFIG_VERSION} DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(${MUSTARD_PROJECT_CMAKE_DIR}/MustardConfig.cmake.in
+                                  ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
+                                  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+    write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
+                                     COMPATIBILITY SameMajorVersion)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
+                  ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 endif()

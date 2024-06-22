@@ -8,6 +8,7 @@
 # 7. Add proper options between "reuse or download" section and "configure it" section.
 # 8. Set options MUSTARD_BUILTIN_<LIB_NAME> and MUSTARD_BUILTIN_<LIB_NAME>_VERSION in the main CMakeLists.txt.
 # 9. Delete this guide text, and make other parts of this file prettier.
+# 10. Add a find_dependency(<lib_cmake_name>) line to ${CMAKE_PROJECT_NAME}Config.cmake.in in need.
 
 message(STATUS "Looking for <lib_cmake_name>")
 
