@@ -18,6 +18,10 @@
 
 #pragma once
 
+#if __cplusplus < 202002L
+#    error "Mustard need at least C++20"
+#endif
+
 #define MUSTARD_VERSION_WORLD 0
 #define MUSTARD_VERSION_MAJOR 0
 #define MUSTARD_VERSION_MINOR 1
