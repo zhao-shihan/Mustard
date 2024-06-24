@@ -22,7 +22,7 @@ template<typename AFieldMap>
 template<Concept::NumericVector3D T>
 auto ElectromagneticFieldMap<"WithCache", AFieldMap>::B(T x) const -> T {
     const auto xEigen{VectorCast<Eigen::Vector3d>(x)};
-    if (xEigen != fCachedX or fCache == std::nullopt) {
+    if (xEigen != fCachedX) {
         fCachedX = xEigen;
         fCache = (*this)(x[0], x[1], x[2]);
     }
@@ -34,7 +34,7 @@ template<typename AFieldMap>
 template<Concept::NumericVector3D T>
 auto ElectromagneticFieldMap<"WithCache", AFieldMap>::E(T x) const -> T {
     const auto xEigen{VectorCast<Eigen::Vector3d>(x)};
-    if (xEigen != fCachedX or fCache == std::nullopt) {
+    if (xEigen != fCachedX) {
         fCachedX = xEigen;
         fCache = (*this)(x[0], x[1], x[2]);
     }

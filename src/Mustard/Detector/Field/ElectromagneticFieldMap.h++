@@ -35,7 +35,7 @@
 #include "muc/functional"
 
 #include <concepts>
-#include <optional>
+#include <limits>
 
 namespace Mustard::Detector::Field {
 
@@ -91,8 +91,8 @@ public:
     auto BE(T x) const -> F<T>;
 
 private:
-    mutable Eigen::Vector3d fCachedX;
-    mutable std::optional<typename AFieldMap::ValueType> fCache;
+    mutable Eigen::Vector3d fCachedX{std::numeric_limits<double>::quiet_NaN(), 0, 0};
+    mutable typename AFieldMap::ValueType fCache;
 };
 
 template<typename AFieldMap>
