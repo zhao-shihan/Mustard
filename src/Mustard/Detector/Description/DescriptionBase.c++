@@ -32,7 +32,7 @@ auto DescriptionBase<>::Import(const YAML::Node& rootNode) -> void {
     if (node.IsDefined()) {
         ImportAllValue(node);
     } else {
-        PrintNodeNotFoundWarning();
+        PrintNodeNotFoundNotice();
     }
 }
 

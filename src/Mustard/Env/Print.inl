@@ -73,6 +73,21 @@ auto VPrint(auto&&... args) -> void {
 }
 
 template<typename... Ts>
+auto PrintInfo(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    Print<'I'>(stderr, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<typename... Ts>
+auto PrintLnInfo(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    PrintLn<'I'>(stderr, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<typename... Ts>
+auto VPrintInfo(auto&&... args) -> void {
+    VPrint<'I'>(stderr, std::forward<decltype(args)>(args)...);
+}
+
+template<typename... Ts>
 auto PrintWarning(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     Print<'W'>(stderr, std::move(fmt), std::forward<Ts>(args)...);
 }

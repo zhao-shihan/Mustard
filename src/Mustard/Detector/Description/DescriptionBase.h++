@@ -73,7 +73,7 @@ private:
     template<std::convertible_to<std::string>... AStrings>
     auto UnpackToLeafNodeForExporting(YAML::Node& node, AStrings&&... nodeNames) const -> YAML::Node;
     template<std::convertible_to<std::string>... AStrings>
-    auto PrintNodeNotFoundWarning(AStrings&&... nodeNames) const -> void;
+    auto PrintNodeNotFoundNotice(AStrings&&... nodeNames) const -> void;
 
 private:
     std::string fName;

@@ -25,7 +25,7 @@ auto DescriptionBase<>::ImportValue(const YAML::Node& node, AValue& value, AStri
         leaf.has_value()) {
         value = leaf->template as<AReadAs>();
     } else {
-        PrintNodeNotFoundWarning(nodeNames...);
+        PrintNodeNotFoundNotice(nodeNames...);
     }
 }
 
@@ -35,7 +35,7 @@ auto DescriptionBase<>::ImportValue(const YAML::Node& node, const std::regular_i
         leaf.has_value()) {
         ImportAction(leaf->template as<AReadAs>());
     } else {
-        PrintNodeNotFoundWarning(nodeNames...);
+        PrintNodeNotFoundNotice(nodeNames...);
     }
 }
 
@@ -88,13 +88,13 @@ auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, AStrings&
 }
 
 template<std::convertible_to<std::string>... AStrings>
-auto DescriptionBase<>::PrintNodeNotFoundWarning(AStrings&&... nodeNames) const -> void {
-    Env::PrintWarning("Warning: YAML node '{}", fName);
+auto DescriptionBase<>::PrintNodeNotFoundNotice(AStrings&&... nodeNames) const -> void {
+    Env::PrintInfo("Notice: YAML node '{}", fName);
     internal::TupleForEach(std::tie(std::forward<AStrings>(nodeNames)...),
                            [](auto&& name) {
-                               Env::PrintWarning("/{}", name);
+                               Env::PrintInfo(".{}", name);
                            });
-    Env::PrintLnWarning("' not defined, skipping");
+    Env::PrintLnInfo("' not defined, skipping");
 }
 
 template<typename ADerived>
