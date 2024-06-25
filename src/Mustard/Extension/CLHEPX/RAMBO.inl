@@ -81,88 +81,19 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
     // if none of the reduced masses is > fgTiny, return
     if (fAllMassAreTiny) { return {weight, State()}; }
 
-    const auto ZBrent{[&](auto&& fun, double r, double x1, double x2, double tol) -> double {
-        auto a{x1};
-        auto b{x2};
-        auto c{x2};
-        auto d{x2 - x1};
-        auto e{x2 - x1};
-        double fa{fun(a) - r};
-        double fb{fun(b) - r};
-        double fc{fb};
-        double p;
-        double q;
-        constexpr auto realtiny{std::min(fgTiny, 1e-12)};
-        tol = std::max(tol, realtiny);
-
-        // Check if there is a single zero in range
-        if (fa * fb > 0) { return 0; }
-
-        // Start search
-        const auto maxIter{std::max(1000ll, std::llround(1 / std::sqrt(tol)))};
-        for (auto iter{0ll}; iter < maxIter; iter++) {
-            if ((fb > 0 and fc > 0) or (fb < 0 and fc < 0)) {
-                c = a;
-                fc = fa;
-                e = d = b - a;
-            }
-            if (muc::abs(fc) < muc::abs(fb)) {
-                a = b;
-                b = c;
-                c = a;
-                fa = fb;
-                fb = fc;
-                fc = fa;
-            }
-            const auto tol1{2 * realtiny * muc::abs(b) + tol / 2};
-            const auto xm{(c - b) / 2};
-            if (muc::abs(xm) <= tol1 or fb == 0) { return b; }
-            if (muc::abs(e) >= tol1 and muc::abs(fa) > muc::abs(fb)) {
-                const auto s{fb / fa};
-                if (a == c) {
-                    p = 2 * xm * s;
-                    q = 1 - s;
-                } else {
-                    q = fa / fc;
-                    const auto r1{fb / fc};
-                    p = s * (2 * xm * q * (q - r1) - (b - a) * (r1 - 1));
-                    q = (q - 1) * (r1 - 1) * (s - 1);
-                }
-                if (p > 0) q = -q;
-                p = muc::abs(p);
-                if (2 * p < std::min(3 * xm * q - muc::abs(tol1 * q), muc::abs(e * q))) {
-                    e = d;
-                    d = p / q;
-                } else {
-                    d = xm;
-                    e = d;
-                }
-            } else {
-                d = xm;
-                e = d;
-            }
-            a = b;
-            fa = fb;
-            if (muc::abs(d) > tol1) {
-                b += d;
-            } else {
-                b += (xm > 1) ? tol1 : -tol1;
-            }
-            fb = fun(b) - r;
-        }
-        Env::PrintLnWarning("(brent:) -> Maximum number of iterations exceeded");
-        return 0;
-    }};
-    const auto xi{ZBrent(
-        [&, &p = p](double xi) {
-            double retval{};
-            for (auto i{0}; i < N; i++) {
-                retval += muc::hypot(fMass[i], xi * p[i][0]);
-            }
-            return retval;
-        },
-        fECM, 0, 1, 1e-10)};
     // rescale all the momenta
+    const auto [xi, xiConverged]{muc::find_root::zbrent(
+        [&, &p = p](double xi) {
+            double sum{};
+            for (int i{}; i < N; i++) {
+                sum += muc::hypot(fMass[i], xi * p[i][0]);
+            }
+            return sum - fECM;
+        },
+        0., 1.)};
+    if (not xiConverged) [[unlikely]] {
+        Env::PrintLnWarning("Mustard::CLHEPX::RAMBO: Momentum scale (xi = {}) not converged", xi);
+    }
     for (auto iMom{0}; iMom < N; iMom++) {
         p[iMom][0] = muc::hypot(fMass[iMom], xi * p[iMom][0]);
         p[iMom][1] *= xi;
