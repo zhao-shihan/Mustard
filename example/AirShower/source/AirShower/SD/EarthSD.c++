@@ -12,6 +12,8 @@
 #include "G4String.hh"
 #include "G4TrackStatus.hh"
 
+#include "muc/math"
+
 #include <cmath>
 #include <string_view>
 
@@ -34,6 +36,16 @@ auto EarthSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& step{*theStep};
     const auto& track{*step.GetTrack()};
     const auto& particle{*track.GetDefinition()};
+    const auto pdgID{particle.GetPDGEncoding()};
+
+    enum { vE = 12,
+           vMu = 14,
+           vTau = 16 };
+    if (const auto absPDGID{muc::abs(pdgID)};
+        absPDGID == vE or absPDGID == vMu or absPDGID == vTau) {
+        return false;
+    }
+
     const auto& preStepPoint{*step.GetPreStepPoint()};
     // calculate (E0, p0)
     const auto vertexEk{track.GetVertexKineticEnergy()};
@@ -44,7 +56,7 @@ auto EarthSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     auto hit{new EarthHit};
     Get<"EvtID">(*hit) = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
     Get<"TrkID">(*hit) = track.GetTrackID();
-    Get<"PDGID">(*hit) = particle.GetPDGEncoding();
+    Get<"PDGID">(*hit) = pdgID;
     Get<"t">(*hit) = preStepPoint.GetGlobalTime();
     Get<"t0">(*hit) = track.GetGlobalTime() - track.GetLocalTime();
     Get<"x">(*hit) = preStepPoint.GetPosition();
