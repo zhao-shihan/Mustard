@@ -1,0 +1,26 @@
+#############################################################################
+# Initialization settings
+#############################################################################
+
+/control/verbose 0
+/run/verbose 0
+
+#/AirShower/Detector/Description/Ixport AirShower_geom.yaml
+
+/run/initialize
+
+/gps/particle             proton
+/gps/position             0 0 100 km
+/gps/ang/type             iso
+/gps/energy               100 GeV
+
+/run/setCut 700 m
+
+#############################################################################
+# Run
+#############################################################################
+
+/AirShower/Analysis/FilePath AirShower_p_100GeV
+/AirShower/Analysis/FileMode NEW
+/run/beamOn 10000
+/MPIRun/PrintRunSummary

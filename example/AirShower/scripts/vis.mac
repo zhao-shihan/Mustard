@@ -1,0 +1,86 @@
+#############################################################################
+# Initialization settings
+#############################################################################
+
+/control/verbose 2
+#/control/saveHistory
+/run/verbose 2
+
+#/AirShower/Detector/Description/Ixport AirShower_geom.yaml
+
+/run/initialize
+
+/gps/particle             proton
+/gps/direction            0 0 -1
+/gps/position             0 0 100 km
+/gps/energy               100 GeV
+
+/run/setCut 700 m
+
+/AirShower/Analysis/FilePath AirShower_vis
+/AirShower/Analysis/FileMode RECREATE
+
+#############################################################################
+# Visualization settings
+#############################################################################
+
+/vis/open OGL
+
+/vis/viewer/set/autoRefresh false
+/vis/verbose errors
+
+/vis/drawVolume
+
+/vis/viewer/set/upVector 0 0 1
+/vis/viewer/set/viewpointVector 0 1 0
+/vis/viewer/set/lightsVector -1 1 1
+#/vis/viewer/set/rotationStyle freeRotation
+/vis/viewer/set/projection p
+#/vis/viewer/set/style s
+/vis/viewer/set/style w
+/vis/viewer/set/hiddenEdge true
+/vis/viewer/set/auxiliaryEdge false
+#/vis/viewer/set/lineSegmentsPerCircle 100
+/vis/viewer/zoom 5
+
+# Colors
+/vis/geometry/set/colour Atmosphere          0     1     1     1     0.005
+/vis/geometry/set/colour Earth               0     0     0     1     1
+/vis/geometry/set/colour World               0     1     1     1     0.001
+
+/vis/scene/add/date
+/vis/scene/add/axes 0 0 0 10 km
+/vis/scene/add/trajectories smooth #rich
+/vis/scene/add/hits
+
+/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/particleFilter-0/add mu+
+/vis/filtering/trajectories/particleFilter-0/add mu-
+/vis/filtering/trajectories/particleFilter-0/add e+
+/vis/filtering/trajectories/particleFilter-0/add e-
+#/vis/filtering/trajectories/particleFilter-0/add gamma
+/vis/filtering/trajectories/particleFilter-0/add opticalphoton
+/vis/filtering/trajectories/particleFilter-0/add neutron
+/vis/filtering/trajectories/particleFilter-0/add anti_neutron
+/vis/filtering/trajectories/particleFilter-0/add proton
+/vis/filtering/trajectories/particleFilter-0/add anti_proton
+/vis/filtering/trajectories/particleFilter-0/add pi+
+/vis/filtering/trajectories/particleFilter-0/add pi-
+/vis/filtering/trajectories/particleFilter-0/add pi0
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/default/setDrawAuxPts false
+/vis/modeling/trajectories/drawByParticleID-0/default/setAuxPtsSize 2
+/vis/modeling/trajectories/drawByParticleID-0/default/setAuxPtsSizeType screen
+/vis/modeling/trajectories/drawByParticleID-0/default/setAuxPtsType dots
+/vis/modeling/trajectories/drawByParticleID-0/default/setDrawLine true
+/vis/modeling/trajectories/drawByParticleID-0/default/setLineWidth 2
+#/vis/modeling/trajectories/drawByParticleID-0/default/setDrawStepPts true
+#/vis/modeling/trajectories/drawByParticleID-0/default/setStepPtsSize 2
+#/vis/modeling/trajectories/drawByParticleID-0/default/setStepPtsSizeType screen
+#/vis/modeling/trajectories/drawByParticleID-0/default/setStepPtsType dots
+
+/vis/scene/endOfEventAction accumulate
+
+/vis/verbose warnings
+/vis/viewer/set/autoRefresh true
