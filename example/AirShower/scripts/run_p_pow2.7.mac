@@ -15,7 +15,7 @@
 /gps/ene/type             Pow
 /gps/ene/biasAlpha        -2.7
 /gps/ene/min              2 GeV
-/gps/ene/max              1 TeV
+/gps/ene/max              10 TeV
 
 /run/setCut 700 m
 
