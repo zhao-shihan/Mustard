@@ -18,31 +18,31 @@
 
 namespace Mustard::Detector::Description {
 
-template<typename AValue, typename AReadAs, std::convertible_to<std::string>... AStrings>
+template<typename AValue, typename AReadAs>
     requires std::assignable_from<AValue&, AReadAs>
-auto DescriptionBase<>::ImportValue(const YAML::Node& node, AValue& value, AStrings&&... nodeNames) -> void {
-    if (const auto leaf = UnpackToLeafNodeForImporting(node, nodeNames...);
+auto DescriptionBase<>::ImportValue(const YAML::Node& node, AValue& value, std::convertible_to<std::string> auto&&... names) -> void {
+    if (const auto leaf{UnpackToLeafNodeForImporting(node, std::forward<decltype(names)>(names)...)};
         leaf.has_value()) {
         value = leaf->template as<AReadAs>();
     } else {
-        PrintNodeNotFoundNotice(nodeNames...);
+        PrintNodeNotFoundNotice(std::forward<decltype(names)>(names)...);
     }
 }
 
-template<typename AReadAs, std::convertible_to<std::string>... AStrings>
-auto DescriptionBase<>::ImportValue(const YAML::Node& node, const std::regular_invocable<AReadAs> auto& ImportAction, AStrings&&... nodeNames) -> void {
-    if (const auto leaf = UnpackToLeafNodeForImporting(node, nodeNames...);
+template<typename AReadAs>
+auto DescriptionBase<>::ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& ImportAction, std::convertible_to<std::string> auto&&... names) -> void {
+    if (const auto leaf{UnpackToLeafNodeForImporting(node, std::forward<decltype(names)>(names)...)};
         leaf.has_value()) {
         ImportAction(leaf->template as<AReadAs>());
     } else {
-        PrintNodeNotFoundNotice(nodeNames...);
+        PrintNodeNotFoundNotice(std::forward<decltype(names)>(names)...);
     }
 }
 
-template<typename AValue, typename AWriteAs, std::convertible_to<std::string>... AStrings>
+template<typename AValue, typename AWriteAs>
     requires std::convertible_to<const AValue&, AWriteAs>
-auto DescriptionBase<>::ExportValue(YAML::Node& node, const AValue& value, AStrings&&... nodeNames) const -> void {
-    UnpackToLeafNodeForExporting(node, nodeNames...) = static_cast<AWriteAs>(value);
+auto DescriptionBase<>::ExportValue(YAML::Node& node, const AValue& value, std::convertible_to<std::string> auto&&... names) const -> void {
+    UnpackToLeafNodeForExporting(node, std::forward<decltype(names)>(names)...) = static_cast<AWriteAs>(value);
 }
 
 namespace internal {
@@ -59,12 +59,11 @@ constexpr void TupleForEach(auto&& tuple, auto&& func) {
 } // namespace
 } // namespace internal
 
-template<std::convertible_to<std::string>... AStrings>
-auto DescriptionBase<>::UnpackToLeafNodeForImporting(const YAML::Node& node, AStrings&&... nodeNames) -> std::optional<const YAML::Node> {
+auto DescriptionBase<>::UnpackToLeafNodeForImporting(const YAML::Node& node, std::convertible_to<std::string> auto&&... names) -> std::optional<const YAML::Node> {
     try {
-        std::array<YAML::Node, sizeof...(nodeNames)> leafNodes;
+        std::array<YAML::Node, sizeof...(names)> leafNodes;
         gsl::index i{};
-        internal::TupleForEach(std::tie(std::forward<AStrings>(nodeNames)...),
+        internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
                                [&node, &leafNodes, &i](auto&& name) {
                                    leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
                                    ++i;
@@ -75,11 +74,10 @@ auto DescriptionBase<>::UnpackToLeafNodeForImporting(const YAML::Node& node, ASt
     }
 }
 
-template<std::convertible_to<std::string>... AStrings>
-auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, AStrings&&... nodeNames) const -> YAML::Node {
-    std::array<YAML::Node, sizeof...(nodeNames)> leafNodes;
+auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, std::convertible_to<std::string> auto&&... names) const -> YAML::Node {
+    std::array<YAML::Node, sizeof...(names)> leafNodes;
     gsl::index i{};
-    internal::TupleForEach(std::tie(std::forward<AStrings>(nodeNames)...),
+    internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
                            [&node, &leafNodes, &i](auto&& name) {
                                leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
                                ++i;
@@ -87,10 +85,9 @@ auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, AStrings&
     return leafNodes.back();
 }
 
-template<std::convertible_to<std::string>... AStrings>
-auto DescriptionBase<>::PrintNodeNotFoundNotice(AStrings&&... nodeNames) const -> void {
+auto DescriptionBase<>::PrintNodeNotFoundNotice(std::convertible_to<std::string> auto&&... names) const -> void {
     Env::PrintInfo("Notice: YAML node '{}", fName);
-    internal::TupleForEach(std::tie(std::forward<AStrings>(nodeNames)...),
+    internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
                            [](auto&& name) {
                                Env::PrintInfo(".{}", name);
                            });
