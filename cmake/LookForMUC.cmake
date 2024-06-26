@@ -12,12 +12,11 @@ endif()
 
 if(MUSTARD_BUILTIN_MUC)
     message(STATUS "Mustard will use built-in muc")
-    # # check built-in version
-    # if(MUSTARD_BUILTIN_MUC_VERSION VERSION_LESS MUSTARD_MUC_MINIMUM_REQUIRED)
-    #     message(NOTICE "***Notice: Provided MUSTARD_BUILTIN_MUC_VERSION is ${MUSTARD_BUILTIN_MUC_VERSION}, which is less than the requirement (${MUSTARD_MUC_MINIMUM_REQUIRED}). Changing to ${MUSTARD_MUC_MINIMUM_REQUIRED}")
-    #     set(MUSTARD_BUILTIN_MUC_VERSION ${MUSTARD_MUC_MINIMUM_REQUIRED})
-    # endif()
-    set(MUSTARD_BUILTIN_MUC_VERSION 0.0.1) # for now we use a hard-coded version
+    # check built-in version
+    if(MUSTARD_BUILTIN_MUC_VERSION VERSION_LESS MUSTARD_MUC_MINIMUM_REQUIRED)
+        message(NOTICE "***Notice: Provided MUSTARD_BUILTIN_MUC_VERSION is ${MUSTARD_BUILTIN_MUC_VERSION}, which is less than the requirement (${MUSTARD_MUC_MINIMUM_REQUIRED}). Changing to ${MUSTARD_MUC_MINIMUM_REQUIRED}")
+        set(MUSTARD_BUILTIN_MUC_VERSION ${MUSTARD_MUC_MINIMUM_REQUIRED})
+    endif()
     # set download dest and URL
     set(MUSTARD_BUILTIN_MUC_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/muc-main")
     set(MUSTARD_BUILTIN_MUC_URL "https://github.com/zhao-shihan/muc/archive/refs/heads/main.zip")
