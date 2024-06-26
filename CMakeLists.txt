@@ -134,5 +134,5 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/MustardCompileConfig.cmake)
 
 add_subdirectory(src)
 if(MUSTARD_BUILD_TEST)
-    add_subdirectory(test EXCLUDE_FROM_ALL)
+    add_subdirectory(test)
 endif()
