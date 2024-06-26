@@ -37,22 +37,22 @@ template<typename T>
 template<typename U>
     requires std::assignable_from<T&, U&&>
 auto DescriptionWithCacheBase<>::Simple<T>::operator=(U&& other) -> auto& {
-    fDescription->fCacheUpToDate = false;
+    fDescription->ExpireCache();
     fValue = std::forward<U>(other);
     return *this;
 }
 
 template<typename T>
-DescriptionWithCacheBase<>::Cached<T>::Cached(const DescriptionWithCacheBase<>* description, std::function<T()> CalculateValue) :
+DescriptionWithCacheBase<>::Cached<T>::Cached(DescriptionWithCacheBase<>* description, std::function<T()> CalculateValue) :
+    CacheBase{description},
     fValue{},
-    fDescription{description},
     fCalculateValue{std::move(CalculateValue)} {}
 
 template<typename T>
 DescriptionWithCacheBase<>::Cached<T>::operator const T&() const {
-    if (fDescription->fCacheUpToDate) { return fValue; }
+    if (fUpToDate) { return fValue; }
     fValue = fCalculateValue();
-    fDescription->fCacheUpToDate = true;
+    fUpToDate = true;
     return fValue;
 }
 

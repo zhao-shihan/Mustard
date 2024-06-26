@@ -20,8 +20,16 @@
 
 namespace Mustard::Detector::Description {
 
-DescriptionWithCacheBase<>::DescriptionWithCacheBase(std::string name) :
-    DescriptionBase{std::move(name)},
-    fCacheUpToDate{false} {}
+DescriptionWithCacheBase<>::CacheBase::CacheBase(DescriptionWithCacheBase<>* description) :
+    NonMoveableBase{},
+    fUpToDate{false} {
+    description->fCache.emplace_back(this);
+}
+
+auto DescriptionWithCacheBase<>::ExpireCache() const -> void {
+    for (auto&& cache : fCache) {
+        cache->Expire();
+    }
+}
 
 } // namespace Mustard::Detector::Description

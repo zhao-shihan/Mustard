@@ -37,7 +37,7 @@ class DescriptionWithCacheBase;
 template<>
 class DescriptionWithCacheBase<> : public DescriptionBase<> {
 protected:
-    DescriptionWithCacheBase(std::string name);
+    using DescriptionBase::DescriptionBase;
     virtual ~DescriptionWithCacheBase() = default; // not necessarily virtual, but I need to mute a warning...
 
 protected:
@@ -63,12 +63,24 @@ protected:
         const DescriptionWithCacheBase<>* fDescription;
     };
 
-    template<typename T>
-    friend class Cached;
-    template<typename T>
-    class Cached : public NonMoveableBase {
+private:
+    friend class CacheBase;
+    class CacheBase : public NonMoveableBase {
     public:
-        Cached(const DescriptionWithCacheBase<>* description, std::function<T()> CalculateValue);
+        CacheBase(DescriptionWithCacheBase<>* description);
+
+        auto UpToDate() const -> auto { return fUpToDate; }
+        auto Expire() const -> void { fUpToDate = false; }
+
+    protected:
+        mutable bool fUpToDate;
+    };
+
+protected:
+    template<typename T>
+    class Cached : private CacheBase {
+    public:
+        Cached(DescriptionWithCacheBase<>* description, std::function<T()> CalculateValue);
 
         auto operator*() const -> const T& { return static_cast<const T&>(*this); }
         auto operator->() const -> auto { return &static_cast<const T&>(*this); }
@@ -76,7 +88,6 @@ protected:
 
     private:
         mutable T fValue;
-        const DescriptionWithCacheBase<>* fDescription;
         std::function<T()> fCalculateValue;
     };
 
@@ -89,7 +100,10 @@ protected:
     auto ExportValue(YAML::Node& node, const Simple<AValue>& value, std::convertible_to<std::string> auto&&... names) const -> void;
 
 private:
-    mutable bool fCacheUpToDate;
+    auto ExpireCache() const -> void;
+
+private:
+    std::vector<CacheBase*> fCache;
 };
 
 template<typename ADerived>
