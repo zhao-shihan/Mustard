@@ -1,6 +1,6 @@
 message(STATUS "Looking for envparse")
 
-set(MUSTARD_ENVPARSE_MINIMUM_REQUIRED 0.0.1)
+set(MUSTARD_ENVPARSE_MINIMUM_REQUIRED 1.0.0)
 
 if(NOT MUSTARD_BUILTIN_ENVPARSE)
     find_package(envparse ${MUSTARD_ENVPARSE_MINIMUM_REQUIRED})
@@ -18,8 +18,8 @@ if(MUSTARD_BUILTIN_ENVPARSE)
         set(MUSTARD_BUILTIN_ENVPARSE_VERSION ${MUSTARD_ENVPARSE_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MUSTARD_BUILTIN_ENVPARSE_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/envparse-main")
-    set(MUSTARD_BUILTIN_ENVPARSE_URL "https://github.com/zhao-shihan/envparse/archive/refs/heads/main.zip")
+    set(MUSTARD_BUILTIN_ENVPARSE_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/envparse-v${MUSTARD_BUILTIN_ENVPARSE_VERSION}")
+    set(MUSTARD_BUILTIN_ENVPARSE_URL "https://github.com/zhao-shihan/envparse/archive/refs/tags/v${MUSTARD_BUILTIN_ENVPARSE_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_ENVPARSE_SRC_DIR}/CMakeLists.txt")

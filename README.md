@@ -38,7 +38,7 @@ Required, built-in if not found (network or pre-downloaded source is required):
 1. [argparse (Argument Parser for Modern C++)](https://github.com/p-ranav/argparse) (master, built-in if not found)
 2. [zhao-shihan/backward-cpp (A beautiful stack trace pretty printer for C++)](https://github.com/zhao-shihan/backward-cpp) (a backward-cpp fork, built-in if not found)
 3. [EFM (A generic bilinear/trilinear interpolator)](https://github.com/zhao-shihan/EFM) (main, built-in if not found)
-4. [envparse (A simple, header-only environment variable parser in C++)](https://github.com/zhao-shihan/envparse) (main, built-in if not found)
+4. [envparse (A simple, header-only environment variable parser in C++)](https://github.com/zhao-shihan/envparse) (≥ 1.0.0, built-in if not found)
 5. [fmt (A modern formatting library)](https://github.com/fmtlib/fmt) (≥ 10.0.0, built-in if not found)
 6. [muc (A standard non-standard C++ library)](https://github.com/zhao-shihan/muc) (main, built-in if not found)
 7. [Microsoft.GSL](https://github.com/Microsoft/GSL) ([ISO C++ guidelines support library](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#gsl-guidelines-support-library)) (≥ 4.0.0, built-in if not found)
