@@ -38,7 +38,7 @@ template<>
 class DescriptionWithCacheBase<> : public DescriptionBase<> {
 protected:
     DescriptionWithCacheBase(std::string name);
-    ~DescriptionWithCacheBase() = default;
+    virtual ~DescriptionWithCacheBase() = default; // not necessarily virtual, but I need to mute a warning...
 
 protected:
     template<typename T>
