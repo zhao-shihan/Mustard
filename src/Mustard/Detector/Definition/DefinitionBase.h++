@@ -51,7 +51,7 @@ public:
     virtual ~DefinitionBase() = default;
 
     auto Topmost() const -> bool { return fMother == nullptr; }
-    auto Mother() const -> const auto& { return *fMother; }
+    auto Mother() const -> const DefinitionBase&;
 
     /// @brief Determines whether we will construct this geometry.
     /// Entities could override this function to control whether this will be constructed.

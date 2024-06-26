@@ -31,6 +31,8 @@
 
 #include "fmt/format.h"
 
+#include <stdexcept>
+
 namespace Mustard::Detector::Definition {
 
 namespace internal {
@@ -87,6 +89,13 @@ auto Export(const std::filesystem::path& gdmlFile, gsl::not_null<G4LogicalVolume
 
 } // namespace
 } // namespace internal
+
+auto DefinitionBase::Mother() const -> const DefinitionBase& {
+    if (Topmost()) {
+        throw std::logic_error{"Mustard::Detector::Definition::DefinitionBase: Topmost entity should not access Mother()"};
+    }
+    return *fMother;
+}
 
 auto DefinitionBase::RegisterMaterial(gsl::not_null<G4Material*> material) const -> void {
     if (not Ready()) { return; }
