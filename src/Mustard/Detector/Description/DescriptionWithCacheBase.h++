@@ -69,7 +69,6 @@ private:
     public:
         CacheBase(DescriptionWithCacheBase<>* description);
 
-        auto UpToDate() const -> auto { return fUpToDate; }
         auto Expire() const -> void { fUpToDate = false; }
 
     protected:
