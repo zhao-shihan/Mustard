@@ -23,8 +23,8 @@
 #endif
 
 #define MUSTARD_VERSION_WORLD 0
-#define MUSTARD_VERSION_MAJOR 0
-#define MUSTARD_VERSION_MINOR 1
+#define MUSTARD_VERSION_MAJOR 1
+#define MUSTARD_VERSION_MINOR 0
 
 #define MUSTARD_VERSION_STRING_HELPER1(world, major, minor) world.major.minor
 #define MUSTARD_VERSION_STRING_HELPER2(version) #version

@@ -13,7 +13,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-set(MUSTARD_VERSION 0.0.1)
+set(MUSTARD_VERSION 0.1.0)
 
 project(Mustard VERSION ${MUSTARD_VERSION}
                 LANGUAGES C CXX)
@@ -62,7 +62,7 @@ cmake_dependent_option(MUSTARD_SHOW_MORE_COMPILER_WARNINGS "Show compiler warnin
 set(MUSTARD_BUILTIN_ARGPARSE_VERSION 3.0 CACHE STRING "Set built-in argparse version (if required).")
 set(MUSTARD_BUILTIN_BACKWARD_VERSION 1.6 CACHE STRING "Set built-in backward-cpp version (if required).")
 set(MUSTARD_BUILTIN_EFM_VERSION 0.0.1 CACHE STRING "Set built-in EFM version (if required).")
-set(MUSTARD_BUILTIN_ENVPARSE_VERSION 0.0.1 CACHE STRING "Set built-in envparse version (if required).")
+set(MUSTARD_BUILTIN_ENVPARSE_VERSION 1.0.0 CACHE STRING "Set built-in envparse version (if required).")
 set(MUSTARD_BUILTIN_FMT_VERSION 10.2.1 CACHE STRING "Set built-in fmt version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.0.0 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
 set(MUSTARD_BUILTIN_MUC_VERSION 0.0.1 CACHE STRING "Set built-in muc version (if required).")
