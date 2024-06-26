@@ -40,7 +40,6 @@
 #    include <csignal>
 #    include <cstdlib>
 #    include <ctime>
-#    include <exception>
 #    include <iostream>
 
 #endif
@@ -50,7 +49,6 @@ namespace Mustard::Env::internal {
 #if MUSTARD_SIGNAL_HANDLER
 
 namespace {
-
 extern "C" {
 
 auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
@@ -148,19 +146,6 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
 }
 
 } // extern "C"
-
-std::terminate_handler DefaultTerminateHandler{};
-
-auto TerminateHandler() -> void {
-    std::signal(SIGABRT, SIG_DFL);
-    if (DefaultTerminateHandler) {
-        DefaultTerminateHandler();
-    } else {
-        Env::PrintLnError("std::terminate called");
-        std::abort();
-    }
-}
-
 } // namespace
 
 #endif
@@ -183,10 +168,9 @@ EnvBase::EnvBase() :
     std::signal(SIGINT, MUSTARD_SIGINT_SIGTERM_Handler);
     std::signal(SIGSEGV, MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
     std::signal(SIGTERM, MUSTARD_SIGINT_SIGTERM_Handler);
-    DefaultTerminateHandler = std::set_terminate(TerminateHandler);
 #endif
 
-    if (static bool gInstantiated = false;
+    if (static bool gInstantiated{false};
         gInstantiated) {
         throw std::logic_error("Mustard::Env::internal::EnvBase: Trying to construct environment twice");
     } else {
