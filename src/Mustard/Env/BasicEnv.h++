@@ -52,6 +52,10 @@ public:
 
     auto Argc() const -> auto { return fArgc; }
     auto Argv() const -> auto { return fArgv; }
+
+    template<char L>
+        requires(L == 'E' or L == 'W' or L == 'I' or L == 'V')
+    MUSTARD_ALWAYS_INLINE auto VerboseLevelReach() const -> bool;
     auto VerboseLevel() const -> auto { return fVerboseLevel; }
 
 protected:
@@ -70,14 +74,8 @@ private:
 
 template<char L>
     requires(L == 'E' or L == 'W' or L == 'I' or L == 'V')
-MUSTARD_ALWAYS_INLINE auto VerboseLevelReach() -> bool {
-    if (not BasicEnv::Available()) [[unlikely]] { return true; }
-    const auto vl{BasicEnv::Instance().VerboseLevel()};
-    // if constexpr (L == 'Q') { return vl >= VerboseLevel::Quiet; }
-    if constexpr (L == 'E') { return vl >= VerboseLevel::Error; }
-    if constexpr (L == 'W') { return vl >= VerboseLevel::Warning; }
-    if constexpr (L == 'I') { return vl >= VerboseLevel::Informative; }
-    if constexpr (L == 'V') { return vl >= VerboseLevel::Verbose; }
-}
+MUSTARD_ALWAYS_INLINE auto VerboseLevelReach() -> bool;
 
 } // namespace Mustard::Env
+
+#include "Mustard/Env/BasicEnv.inl"
