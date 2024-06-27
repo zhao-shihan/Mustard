@@ -34,15 +34,18 @@ auto EarthSD::Initialize(G4HCofThisEvent* hitsCollectionOfThisEvent) -> void {
 
 auto EarthSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& step{*theStep};
+    if (not step.IsFirstStepInVolume()) { return false; } // ensure first step
+
     const auto& track{*step.GetTrack()};
+    if (track.GetCurrentStepNumber() < 2) { return false; } // ensure track coming from outside
+
     const auto& particle{*track.GetDefinition()};
     const auto pdgID{particle.GetPDGEncoding()};
-
     enum { vE = 12,
            vMu = 14,
            vTau = 16 };
     if (const auto absPDGID{muc::abs(pdgID)};
-        absPDGID == vE or absPDGID == vMu or absPDGID == vTau) {
+        absPDGID == vE or absPDGID == vMu or absPDGID == vTau) { // ignoring neutrino
         return false;
     }
 

@@ -9,11 +9,11 @@
 
 /run/initialize
 
-/gps/particle             gamma
+/gps/particle             proton
 /gps/position             0 0 100 km
 /gps/ang/type             iso
 /gps/ene/type             Pow
-/gps/ene/biasAlpha        -2
+/gps/ene/biasAlpha        -2.7
 /gps/ene/min              2 GeV
 /gps/ene/max              10 TeV
 
@@ -26,7 +26,7 @@
 # Run
 #############################################################################
 
-/AirShower/Analysis/FilePath AirShower_gamma_pow2
+/AirShower/Analysis/FilePath AirShower_p_pow2_7_em
 /AirShower/Analysis/FileMode NEW
 /run/beamOn 1000000
 /Mustard/Run/PrintRunSummary

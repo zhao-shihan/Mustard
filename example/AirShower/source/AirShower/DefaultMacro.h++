@@ -18,7 +18,7 @@ constexpr auto defaultMacro = {
     "/gps/position             0 0 100 km",
     "/gps/energy               100 GeV",
     "",
-    "/run/setCut 100 m",
+    "/run/setCut 10 m   # lower range cut for simulating EM shower shape",
     "",
     "/AirShower/Analysis/FilePath AirShower_vis",
     "/AirShower/Analysis/FileMode RECREATE",

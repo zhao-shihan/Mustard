@@ -17,7 +17,7 @@
 /gps/ene/min              2 GeV
 /gps/ene/max              10 TeV
 
-/run/setCut 100 m
+/run/setCut 1 pc    # ... arbitrarily large for muon shower
 
 #/AirShower/Analysis/SavePrimaryVertexData  false
 #/AirShower/Analysis/SaveDecayVertexData    false
@@ -26,7 +26,7 @@
 # Run
 #############################################################################
 
-/AirShower/Analysis/FilePath AirShower_p_pow2_7
+/AirShower/Analysis/FilePath AirShower_p_pow2_7_muon
 /AirShower/Analysis/FileMode NEW
 /run/beamOn 1000000
 /Mustard/Run/PrintRunSummary
