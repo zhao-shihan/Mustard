@@ -9,11 +9,11 @@
 
 /run/initialize
 
-/gps/particle             proton
+/gps/particle             gamma
 /gps/position             0 0 100 km
 /gps/ang/type             iso
 /gps/ene/type             Pow
-/gps/ene/biasAlpha        -2.7
+/gps/ene/biasAlpha        -2
 /gps/ene/min              2 GeV
 /gps/ene/max              10 TeV
 

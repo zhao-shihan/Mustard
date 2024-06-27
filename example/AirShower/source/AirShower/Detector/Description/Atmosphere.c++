@@ -177,7 +177,7 @@ using namespace Mustard::LiteralUnit::Pressure;
 Atmosphere::Atmosphere() :
     DescriptionWithCacheBase{"Atmosphere"},
     fMaxAltitude{this, 90_km},
-    fNPressureSlice{this, 1000},
+    fNPressureSlice{this, 200},
     fAltitudeSlice{this, [this] { return CalculateAltitudeSlice(); }},
     fStateSlice{this, [this] { return CalculateStateSlice(); }} {}
 
@@ -186,7 +186,7 @@ auto Atmosphere::CalculateAltitudeSlice() const -> std::vector<double> {
         [](double alt) {
             return LouiEriksson::ISA<>::TrySolve(alt / m).value().m_Pressure * pascal;
         }};
-    constexpr auto pGround{101325_Pa};
+    const auto pGround{CalculateP(0)};
     const auto deltaP{(pGround - CalculateP(fMaxAltitude)) / fNPressureSlice};
 
     std::vector<double> pressure(fNPressureSlice);
