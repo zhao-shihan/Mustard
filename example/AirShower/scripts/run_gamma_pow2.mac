@@ -26,7 +26,7 @@
 # Run
 #############################################################################
 
-/AirShower/Analysis/FilePath AirShower_p_pow2_7
+/AirShower/Analysis/FilePath AirShower_gamma_pow2
 /AirShower/Analysis/FileMode NEW
 /run/beamOn 1000000
 /MPIRun/PrintRunSummary
