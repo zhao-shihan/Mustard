@@ -72,6 +72,7 @@ auto EarthSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     Get<"theta">(*hit) = theta;
     Get<"phi">(*hit) = phi;
     Get<"len">(*hit) = track.GetTrackLength();
+    Get<"ParentTrkID">(*hit) = track.GetParentID();
     *Get<"CreatProc">(*hit) = creatorProcess ? std::string_view{creatorProcess->GetProcessName()} : "|0>";
     fHitsCollection->insert(hit);
 
