@@ -17,7 +17,7 @@
 /gps/ene/min              2 GeV
 /gps/ene/max              10 TeV
 
-/run/setCut 10 m   # lower range cut for simulating EM shower shape
+/run/setCut 10 m
 
 #/AirShower/Analysis/SavePrimaryVertexData  false
 #/AirShower/Analysis/SaveDecayVertexData    false

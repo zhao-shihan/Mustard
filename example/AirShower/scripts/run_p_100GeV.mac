@@ -14,8 +14,7 @@
 /gps/ang/type             iso
 /gps/energy               100 GeV
 
-#/run/setCut 10 m   # lower range cut for simulating EM shower shape
-/run/setCut 1 pc    # ... arbitrarily large for muon shower
+/run/setCut 10 m
 
 #############################################################################
 # Run
