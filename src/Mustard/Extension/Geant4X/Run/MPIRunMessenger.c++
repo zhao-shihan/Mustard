@@ -33,20 +33,20 @@ MPIRunMessenger::MPIRunMessenger() :
     fPrintProgressModulo{},
     fPrintRunSummary{} {
 
-    fDirectory = std::make_unique<G4UIdirectory>("/MPIRun/");
+    fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Run/");
     fDirectory->SetGuidance("Specialized settings for MPIRunManager.");
 
-    fPrintProgress = std::make_unique<G4UIcmdWithABool>("/MPIRun/PrintProgress", this);
+    fPrintProgress = std::make_unique<G4UIcmdWithABool>("/Mustard/Run/PrintProgress", this);
     fPrintProgress->SetGuidance("Set whether to display the run progress. /run/printprogress is disabled once this is set.");
     fPrintProgress->SetParameterName("b", false);
     fPrintProgress->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    fPrintProgressModulo = std::make_unique<G4UIcmdWithAnInteger>("/MPIRun/PrintProgressModulo", this);
+    fPrintProgressModulo = std::make_unique<G4UIcmdWithAnInteger>("/Mustard/Run/PrintProgressModulo", this);
     fPrintProgressModulo->SetGuidance("Set display frequency of run progress. If set to 0, the frequency is adaptive. Progress will not be displayed if set to <0. /run/printprogress is disabled once this is set.");
     fPrintProgressModulo->SetParameterName("modulo", false);
     fPrintProgressModulo->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    fPrintRunSummary = std::make_unique<G4UIcommand>("/MPIRun/PrintRunSummary", this);
+    fPrintRunSummary = std::make_unique<G4UIcommand>("/Mustard/Run/PrintRunSummary", this);
     fPrintRunSummary->SetGuidance("Print MPI run performace summary.");
     fPrintRunSummary->AvailableForStates(G4State_Idle);
 }

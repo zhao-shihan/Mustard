@@ -23,4 +23,4 @@
 /AirShower/Analysis/FilePath AirShower_p_100GeV
 /AirShower/Analysis/FileMode NEW
 /run/beamOn 10000
-/MPIRun/PrintRunSummary
+/Mustard/Run/PrintRunSummary
