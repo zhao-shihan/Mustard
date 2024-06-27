@@ -19,8 +19,8 @@
 
 /run/setCut 100 m
 
-/AirShower/Analysis/SavePrimaryVertexData  false
-/AirShower/Analysis/SaveDecayVertexData    false
+#/AirShower/Analysis/SavePrimaryVertexData  false
+#/AirShower/Analysis/SaveDecayVertexData    false
 
 #############################################################################
 # Run
