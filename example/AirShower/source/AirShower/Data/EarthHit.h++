@@ -19,6 +19,9 @@ using EarthHit = Mustard::Data::TupleModel<
     Mustard::Data::Value<float, "Ek0", "Vertex kinetic energy">,
     Mustard::Data::Value<muc::array3f, "p", "Hit momentum">,
     Mustard::Data::Value<muc::array3f, "p0", "Vertex momentum">,
+    Mustard::Data::Value<float, "theta", "Direction zenith angle">,
+    Mustard::Data::Value<float, "phi", "Direction azimuth angle">,
+    Mustard::Data::Value<float, "len", "Track total length">,
     Mustard::Data::Value<std::string, "CreatProc", "Track creator process">>;
 
 } // namespace AirShower::Data
