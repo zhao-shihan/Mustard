@@ -12,15 +12,18 @@ using namespace std::chrono_literals;
 auto main(int argc, char* argv[]) -> int {
     Mustard::Env::MPIEnv env{argc, argv, {}};
 
-    MPIX::Executor<unsigned short> executor{MPIX::ScheduleBy<MPIX::DynamicScheduler>{}};
+    MPIX::Executor<unsigned long long> executor{MPIX::ScheduleBy<MPIX::DynamicScheduler>{}};
 
-    const auto n{std::stoll(argv[1])};
+    const auto n{std::stoull(argv[1])};
 
     executor.PrintProgress(false);
     executor.Execute(n,
                      [&](auto i) {
                          Env::PrintLn("{},{}", i, env.CommWorldRank());
                      });
+
+    executor.PrintProgress(true);
+    executor.Execute(1000000000ull * n, [&](auto) {});
 
     std::this_thread::sleep_for(3s);
 
