@@ -2,6 +2,7 @@
 
 #include "AirShower/Detector/Description/Atmosphere.h++"
 #include "AirShower/Detector/Description/Earth.h++"
+#include "AirShower/Detector/Description/Field.h++"
 #include "AirShower/Detector/Description/World.h++"
 
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
@@ -32,6 +33,7 @@ public:
 public:
     using DescriptionInUse = std::tuple<Detector::Description::Atmosphere,
                                         Detector::Description::Earth,
+                                        Detector::Description::Field,
                                         Detector::Description::World>;
 
 private:
