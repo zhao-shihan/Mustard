@@ -9,7 +9,7 @@ constexpr auto defaultMacro = {
     "#/control/saveHistory",
     "/run/verbose 2",
     "",
-    "#/AirShower/Detector/Description/Ixport AirShower_geom.yaml",
+    "#/Mustard/Detector/Description/Ixport AirShower_geom.yaml",
     "",
     "/run/initialize",
     "",

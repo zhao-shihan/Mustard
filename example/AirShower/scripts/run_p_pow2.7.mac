@@ -5,7 +5,7 @@
 /control/verbose 0
 /run/verbose 0
 
-#/AirShower/Detector/Description/Ixport AirShower_geom.yaml
+#/Mustard/Detector/Description/Ixport AirShower_geom.yaml
 
 /run/initialize
 
