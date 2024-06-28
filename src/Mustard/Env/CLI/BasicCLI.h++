@@ -20,9 +20,14 @@
 
 #include "Mustard/Env/CLI/CLI.h++"
 #include "Mustard/Env/CLI/Module/BasicModule.h++"
+#include "Mustard/Env/CLI/Module/ModuleBase.h++"
+
+#include <concepts>
 
 namespace Mustard::Env::CLI {
 
-using BasicCLI = CLI<BasicModule>;
+template<std::derived_from<ModuleBase>... AExtraModules>
+using BasicCLI = CLI<BasicModule,
+                     AExtraModules...>;
 
 } // namespace Mustard::Env::CLI

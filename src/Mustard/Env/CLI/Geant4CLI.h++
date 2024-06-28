@@ -18,15 +18,16 @@
 
 #pragma once
 
-#include "Mustard/Env/CLI/CLI.h++"
-#include "Mustard/Env/CLI/Module/BasicModule.h++"
 #include "Mustard/Env/CLI/Module/Geant4Module.h++"
-#include "Mustard/Env/CLI/Module/MonteCarloModule.h++"
+#include "Mustard/Env/CLI/Module/ModuleBase.h++"
+#include "Mustard/Env/CLI/MonteCarloCLI.h++"
+
+#include <concepts>
 
 namespace Mustard::Env::CLI {
 
-using Geant4CLI = CLI<BasicModule,
-                      MonteCarloModule,
-                      Geant4Module>;
+template<std::derived_from<ModuleBase>... AExtraModules>
+using Geant4CLI = MonteCarloCLI<Geant4Module,
+                                AExtraModules...>;
 
 } // namespace Mustard::Env::CLI

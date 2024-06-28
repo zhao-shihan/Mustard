@@ -19,31 +19,38 @@
 #pragma once
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/CLI/Geant4CLI.h++"
+#include "Mustard/Env/CLI/CLI.h++"
+#include "Mustard/Env/CLI/Module/Geant4Module.h++"
+#include "Mustard/Env/CLI/Module/ModuleBase.h++"
 #include "Mustard/Env/Memory/WeakSingleton.h++"
 
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
 #include "G4VisExecutive.hh"
 
+#include "muc/tuple"
+
 #include <algorithm>
+#include <concepts>
 #include <initializer_list>
 #include <iostream>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
 namespace Mustard::inline Extension::Geant4X::inline Interface {
 
-using Env::CLI::Geant4CLI;
-
 class MPIExecutive final : public Env::Memory::WeakSingleton<MPIExecutive> {
 public:
     MPIExecutive() = default; // prevent aggregate initialization
 
-    auto StartSession(const Geant4CLI& cli, auto&& macFileOrCmdList) const -> void;
-    template<typename T>
-    auto StartSession(const Geant4CLI& cli, std::initializer_list<T> cmdList = {}) const -> void;
+    template<std::derived_from<Env::CLI::ModuleBase>... Ms>
+        requires muc::tuple_contains_v<std::tuple<Ms...>, Env::CLI::Geant4Module>
+    auto StartSession(const Env::CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) const -> void;
+    template<std::derived_from<Env::CLI::ModuleBase>... Ms, typename T>
+        requires muc::tuple_contains_v<std::tuple<Ms...>, Env::CLI::Geant4Module>
+    auto StartSession(const Env::CLI::CLI<Ms...>& cli, std::initializer_list<T> cmdList = {}) const -> void;
 
     auto StartSession(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
     template<typename T>
@@ -58,7 +65,9 @@ public:
     auto StartBatchSession(std::initializer_list<T> cmdList) const -> void;
 
 private:
-    auto StartSessionImpl(const Geant4CLI& cli, auto&& macFileOrCmdList) const -> void;
+    template<std::derived_from<Env::CLI::ModuleBase>... Ms>
+        requires muc::tuple_contains_v<std::tuple<Ms...>, Env::CLI::Geant4Module>
+    auto StartSessionImpl(const Env::CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) const -> void;
     auto StartSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
     auto StartInteractiveSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
     auto StartBatchSessionImpl(auto&& macFileOrCmdList) const -> void;

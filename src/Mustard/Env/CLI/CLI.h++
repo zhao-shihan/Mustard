@@ -23,6 +23,8 @@
 
 #include "argparse/argparse.hpp"
 
+#include "muc/type_traits"
+
 #include <concepts>
 #include <memory>
 #include <optional>
@@ -31,6 +33,7 @@
 namespace Mustard::Env::CLI {
 
 template<std::derived_from<ModuleBase>... AModules>
+    requires muc::is_type_set_v<AModules...>
 class CLI;
 
 template<>
@@ -64,6 +67,7 @@ private:
 };
 
 template<std::derived_from<ModuleBase>... AModules>
+    requires muc::is_type_set_v<AModules...>
 class CLI : public CLI<>,
             public AModules... {
 public:

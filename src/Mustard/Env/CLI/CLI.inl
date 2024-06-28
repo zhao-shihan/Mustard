@@ -19,6 +19,7 @@
 namespace Mustard::Env::CLI {
 
 template<std::derived_from<ModuleBase>... AModules>
+    requires muc::is_type_set_v<AModules...>
 CLI<AModules...>::CLI() :
     CLI<>{},
     AModules{ArgParser()}... {}

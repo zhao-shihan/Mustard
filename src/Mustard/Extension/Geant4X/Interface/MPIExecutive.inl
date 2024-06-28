@@ -18,12 +18,15 @@
 
 namespace Mustard::inline Extension::Geant4X::inline Interface {
 
-auto MPIExecutive::StartSession(const Geant4CLI& cli, auto&& macFileOrCmdList) const -> void {
+template<std::derived_from<Env::CLI::ModuleBase>... Ms>
+    requires muc::tuple_contains_v<std::tuple<Ms...>, Env::CLI::Geant4Module>
+auto MPIExecutive::StartSession(const Env::CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) const -> void {
     StartSessionImpl(cli, std::forward<decltype(macFileOrCmdList)>(macFileOrCmdList));
 }
 
-template<typename T>
-auto MPIExecutive::StartSession(const Geant4CLI& cli, std::initializer_list<T> cmdList) const -> void {
+template<std::derived_from<Env::CLI::ModuleBase>... Ms, typename T>
+    requires muc::tuple_contains_v<std::tuple<Ms...>, Env::CLI::Geant4Module>
+auto MPIExecutive::StartSession(const Env::CLI::CLI<Ms...>& cli, std::initializer_list<T> cmdList) const -> void {
     StartSessionImpl(cli, cmdList);
 }
 
@@ -54,7 +57,9 @@ auto MPIExecutive::StartBatchSession(std::initializer_list<T> cmdList) const -> 
     StartBatchSessionImpl(cmdList);
 }
 
-auto MPIExecutive::StartSessionImpl(const Geant4CLI& cli, auto&& macFileOrCmdList) const -> void {
+template<std::derived_from<Env::CLI::ModuleBase>... Ms>
+    requires muc::tuple_contains_v<std::tuple<Ms...>, Env::CLI::Geant4Module>
+auto MPIExecutive::StartSessionImpl(const Env::CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) const -> void {
     if (cli.IsInteractive()) {
         const auto [argc, argv]{cli.ArgcArgv()};
         auto macro{cli.Macro()};
