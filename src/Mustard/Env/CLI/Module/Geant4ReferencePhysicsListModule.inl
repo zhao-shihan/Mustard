@@ -25,6 +25,7 @@ Geant4ReferencePhysicsListModule<ADefault>::Geant4ReferencePhysicsListModule(arg
     ArgParser()
         .add_argument("--physics-list")
         .default_value(ADefault.s())
+        .required()
         .help("Set reference physics list use in the simulation.");
 }
 
