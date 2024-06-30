@@ -29,7 +29,6 @@
 
 #include "fmt/core.h"
 
-#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -40,10 +39,10 @@ class Geant4ReferencePhysicsListModule : public ModuleBase {
 public:
     Geant4ReferencePhysicsListModule(argparse::ArgumentParser& argParser);
 
-    auto PhysicsList() const -> G4VModularPhysicsList*;
+    auto PhysicsList() -> G4VModularPhysicsList*;
 
 private:
-    std::unique_ptr<G4VModularPhysicsList> fReferencePhysicsList;
+    G4VModularPhysicsList* fReferencePhysicsList;
 };
 
 } // namespace Mustard::Env::CLI::inline Module

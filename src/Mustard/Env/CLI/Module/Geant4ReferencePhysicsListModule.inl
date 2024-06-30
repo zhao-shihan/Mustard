@@ -20,28 +20,29 @@ namespace Mustard::Env::CLI::inline Module {
 
 template<muc::ceta_string ADefault>
 Geant4ReferencePhysicsListModule<ADefault>::Geant4ReferencePhysicsListModule(argparse::ArgumentParser& argParser) :
-    ModuleBase{argParser} {
+    ModuleBase{argParser},
+    fReferencePhysicsList{} {
     ArgParser()
         .add_argument("--physics-list")
-        .default_value(ADefault.sv())
+        .default_value(ADefault.s())
         .help("Set reference physics list use in the simulation.");
 }
 
 template<muc::ceta_string ADefault>
-auto Geant4ReferencePhysicsListModule<ADefault>::PhysicsList() const -> G4VModularPhysicsList* {
+auto Geant4ReferencePhysicsListModule<ADefault>::PhysicsList() -> G4VModularPhysicsList* {
     if (fReferencePhysicsList) {
-        throw std::logic_error{fmt::format("Geant4ReferencePhysicsListModule<\"{}\">::PhysicsList() called twice", ADefault.sv())};
+        return fReferencePhysicsList;
     }
 
     const auto physicsList{ArgParser().get("--physics-list")};
     G4PhysListFactory physicsListFactory{muc::to_underlying(BasicEnv::Instance().VerboseLevel())};
 
     if (not physicsListFactory.IsReferencePhysList(physicsList)) {
-        throw std::runtime_error{fmt::format("{} is not a reference physics list")};
+        throw std::runtime_error{fmt::format("{} is not a reference physics list", physicsList)};
     }
 
     fReferencePhysicsList = physicsListFactory.GetReferencePhysList(physicsList);
-    return fReferencePhysicsList.get();
+    return fReferencePhysicsList;
 }
 
 } // namespace Mustard::Env::CLI::inline Module
