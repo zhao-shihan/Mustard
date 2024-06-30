@@ -91,6 +91,9 @@ protected:
     };
 
 protected:
+    using DescriptionBase<>::ImportValue;
+    using DescriptionBase<>::ExportValue;
+
     template<typename AValue, typename AReadAs = AValue>
         requires std::assignable_from<AValue&, AReadAs>
     auto ImportValue(const YAML::Node& node, Simple<AValue>& value, std::convertible_to<std::string> auto&&... names) -> void;
