@@ -30,13 +30,13 @@ namespace Mustard::Env::CLI::inline Module {
 MonteCarloModule::MonteCarloModule(argparse::ArgumentParser& argParser) :
     ModuleBase{argParser} {
     ArgParser()
-        .add_argument("-s", "--seed")
+        .add_argument("--seed")
         .help("Set random seed. 0 means using random device (non deterministic random seed). Predefined deterministic seed is used by default.")
         .scan<'i', long>();
 }
 
 auto MonteCarloModule::SeedRandomIfFlagged() const -> bool {
-    auto seed{ArgParser().present<long>("-s")};
+    auto seed{ArgParser().present<long>("--seed")};
     if (not seed.has_value()) { return false; }
     const auto theSeed{*seed != 0 ? *seed :
                                     std::bit_cast<int>(std::random_device{}())};
