@@ -28,11 +28,13 @@
 #include "TLeaf.h"
 #include "TTree.h"
 
+#include "muc/time"
 #include "muc/utility"
 
 #include "fmt/format.h"
 
 #include <algorithm>
+#include <chrono>
 #include <concepts>
 #include <cstddef>
 #include <filesystem>
@@ -43,8 +45,6 @@
 #include <string>
 #include <type_traits>
 
-class TFile;
-
 namespace Mustard::Data {
 
 template<TupleModelizable... Ts>
@@ -52,14 +52,22 @@ class Output : public NonMoveableBase {
 public:
     using Model = TupleModel<Ts...>;
 
+private:
+    using Second = std::chrono::duration<double>;
+
 public:
-    explicit Output(const std::string& name, const std::string& title = {});
+    explicit Output(const std::string& name, const std::string& title = {},
+                    bool enableTimedAutoSave = true, Second timedAutoSavePeriod = std::chrono::minutes{3}); // Warning: ROOT uses `short` as cycle number type (32767 max), 3 min period -> cycle overflow in ~60 days. Long simulation needs larger value.
+
+    auto TimedAutoSaveEnabled() const -> auto { return fTimedAutoSaveEnabled; }
+    auto EnableTimedAutoSave() -> void { fTimedAutoSaveEnabled = true; }
+    auto DisableTimedAutoSave() -> void { fTimedAutoSaveEnabled = false; }
+
+    auto TimedAutoSavePeriod() const -> auto { return fTimedAutoSavePeriod; }
+    auto TimedAutoSavePeriod(Second t) -> void { fTimedAutoSavePeriod = t; }
 
     template<typename T = Tuple<Ts...>>
-        requires std::assignable_from<Tuple<Ts...>&, T&&>
-    auto Fill(T&& tuple) -> std::size_t;
-    template<typename T>
-        requires ProperSubTuple<Tuple<Ts...>, std::decay_t<T>>
+        requires std::assignable_from<Tuple<Ts...>&, T&&> or ProperSubTuple<Tuple<Ts...>, std::decay_t<T>>
     auto Fill(T&& tuple) -> std::size_t;
 
     template<std::ranges::input_range R = std::initializer_list<Tuple<Ts...>>>
@@ -75,7 +83,17 @@ public:
 
     auto Entry() -> auto { return OutputIterator{this}; }
 
-    auto Write(int option = 0, int bufferSize = 0) const -> auto;
+    auto Write(int option = 0, int bufferSize = 0) const -> std::size_t;
+
+private:
+    template<typename T = Tuple<Ts...>>
+        requires std::assignable_from<Tuple<Ts...>&, T&&>
+    auto FillImpl(T&& tuple) -> std::size_t;
+    template<typename T>
+        requires ProperSubTuple<Tuple<Ts...>, std::decay_t<T>>
+    auto FillImpl(T&& tuple) -> std::size_t;
+
+    auto TimedAutoSaveIfNecessary() -> std::size_t;
 
 private:
     class OutputIterator final {
@@ -102,8 +120,13 @@ private:
 
 private:
     Tuple<Ts...> fEntry;
-    std::string fROOTPath;
-    std::unique_ptr<TTree> fTree;
+    TDirectory* fDirectory;
+    TTree* fTree;
+
+    bool fTimedAutoSaveEnabled;
+    Second fTimedAutoSavePeriod;
+
+    muc::wall_time_stopwatch<double> fTimedAutoSaveStopwatch;
     internal::BranchHelper<Tuple<Ts...>> fBranchHelper;
 };
 
