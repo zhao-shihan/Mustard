@@ -114,8 +114,8 @@ auto Output<Ts...>::FillImpl(T&& tuple) -> std::size_t {
 
 template<TupleModelizable... Ts>
 auto Output<Ts...>::TimedAutoSaveIfNecessary() -> std::size_t {
-    if (fTimedAutoSaveEnabled and
-        Second{fTimedAutoSaveStopwatch.s_elapsed()} < fTimedAutoSavePeriod) { return 0; }
+    if (not fTimedAutoSaveEnabled) { return 0; }
+    if (Second{fTimedAutoSaveStopwatch.s_elapsed()} < fTimedAutoSavePeriod) { return 0; }
     fTimedAutoSaveStopwatch = {};
     return fTree->AutoSave("SaveSelf");
 }
