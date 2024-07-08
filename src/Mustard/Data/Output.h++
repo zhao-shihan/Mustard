@@ -120,7 +120,7 @@ private:
 
 private:
     Tuple<Ts...> fEntry;
-    TDirectory* fDirectory;
+    std::string fDirectory;
     TTree* fTree;
 
     bool fTimedAutoSaveEnabled;

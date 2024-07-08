@@ -29,13 +29,15 @@ Output<Ts...>::Output(const std::string& name, const std::string& title,
     fTimedAutoSavePeriod{timedAutoSavePeriod},
     fTimedAutoSaveStopwatch{},
     fBranchHelper{fEntry} {
-    if (const auto iName{name.find_last_of('/') + 1};
-        iName == std::string::npos) {
-        fDirectory = gDirectory;
-        fTree = new TTree{name.c_str(), title.c_str(), 99, fDirectory};
+    if (const auto iSlash{name.find_last_of('/')};
+        iSlash == std::string::npos) {
+        fDirectory = gDirectory->GetPath();
+        fTree = new TTree{name.c_str(), title.c_str()};
     } else {
-        fDirectory = gDirectory->mkdir(name.substr(0, iName).c_str(), "", true);
-        fTree = new TTree{name.substr(iName, -1).c_str(), title.c_str(), 99, fDirectory};
+        const auto iName{iSlash + 1};
+        const auto directory{gDirectory->mkdir(name.substr(0, iName).c_str(), "", true)};
+        fDirectory = directory->GetPath();
+        fTree = new TTree{name.substr(iName, -1).c_str(), title.c_str(), 99, directory};
     }
     [this]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         (...,
@@ -90,7 +92,7 @@ auto Output<Ts...>::Fill(R&& data) -> std::size_t {
 template<TupleModelizable... Ts>
 auto Output<Ts...>::Write(int option, int bufferSize) const -> std::size_t {
     const std::string cwd{gDirectory->GetPath()};
-    gDirectory->cd(fDirectory->GetPath());
+    gDirectory->cd(fDirectory.c_str());
     const auto nByte{fTree->Write(nullptr, option, bufferSize)};
     gDirectory->cd(cwd.c_str());
     return nByte;
