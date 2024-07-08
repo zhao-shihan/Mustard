@@ -33,7 +33,7 @@ auto DefinitionBase::NewDaughter(bool checkOverlaps) -> ADefinition& {
     const auto& daughter{iterator->second};
     daughter->fMother = this;
 
-    if (Topmost() and Enabled()) {
+    if (Topmost() and Enabled() and not Ready()) {
         Construct(checkOverlaps);
     }
     if (Ready() and daughter->Enabled()) {
