@@ -39,7 +39,7 @@ public:
 
     auto MetropolisDelta(double delta) -> void { fMetropolisDelta = muc::clamp<"()">(delta, 0., 0.5); }
     auto MetropolisDiscard(int n) -> void { fMetropolisDiscard = std::max(0, n); }
-    auto PassCut(std::function<bool(const CLHEPX::RAMBO<5>::Event&)> PassCut) -> void { fPassCut = std::move(PassCut); }
+    auto PassCut(std::function<bool(const CLHEPX::RAMBO<5>::State&)> PassCut) -> void { fPassCut = std::move(PassCut); }
 
     auto DecayIt(G4double) -> G4DecayProducts* override;
 
@@ -54,7 +54,7 @@ protected:
 private:
     double fMetropolisDelta;
     int fMetropolisDiscard;
-    std::function<bool(const CLHEPX::RAMBO<5>::Event&)> fPassCut;
+    std::function<bool(const CLHEPX::RAMBO<5>::State&)> fPassCut;
 
     CLHEPX::RAMBO<5> fRAMBO;
     std::array<double, 5 * 4> fRawState;

@@ -99,7 +99,7 @@ auto MuonInternalPairProductionDecayChannel::DecayIt(G4double) -> G4DecayProduct
         do {
             std::ranges::generate(fRawState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });
             fEvent = fRAMBO(fRawState);
-        } while (fPassCut(fEvent) == false);
+        } while (fPassCut(fEvent.state) == false);
         fWeightedM2 = WeightedM2(fEvent);
         // thermalize
         constexpr long double deltaSA0{0.1};
@@ -145,7 +145,7 @@ auto MuonInternalPairProductionDecayChannel::UpdateState(double delta) -> void {
                                        return u;
                                    });
             newEvent = fRAMBO(newRawState);
-        } while (fPassCut(newEvent) == false);
+        } while (fPassCut(newEvent.state) == false);
         const auto newWeightedM2{WeightedM2(newEvent)};
         if (newWeightedM2 >= fWeightedM2 or
             newWeightedM2 >= fWeightedM2 * Math::Random::Distribution::Uniform<double>{}(fXoshiro256Plus)) {

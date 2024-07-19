@@ -46,9 +46,10 @@ public:
     constexpr RAMBO(double eCM, std::array<double, N> mass);
 
 public:
+    using State = std::array<CLHEP::HepLorentzVector, N>;
     struct Event {
         double weight;
-        std::array<CLHEP::HepLorentzVector, N> state;
+        State state;
     };
 
 public:
