@@ -1,8 +1,8 @@
 namespace Mustard::Simulation {
 
-template<typename Analysis>
-AnalysisBaseMessenger<Analysis>::AnalysisBaseMessenger() :
-    Geant4X::SingletonMessenger<AnalysisBaseMessenger<Analysis>, Analysis>{},
+template<typename AReceiver>
+AnalysisBaseMessenger<AReceiver>::AnalysisBaseMessenger() :
+    Geant4X::SingletonMessenger<AnalysisBaseMessenger<AReceiver>, AReceiver>{},
     fDirectory{},
     fFilePath{},
     fFileMode{} {
@@ -21,14 +21,14 @@ AnalysisBaseMessenger<Analysis>::AnalysisBaseMessenger() :
     fFileMode->AvailableForStates(G4State_Idle);
 }
 
-template<typename Analysis>
-auto AnalysisBaseMessenger<Analysis>::SetNewValue(G4UIcommand* command, G4String value) -> void {
+template<typename AReceiver>
+auto AnalysisBaseMessenger<AReceiver>::SetNewValue(G4UIcommand* command, G4String value) -> void {
     if (command == fFilePath.get()) {
-        this->template Deliver<Analysis>([&](auto&& r) {
+        this->template Deliver<AReceiver>([&](auto&& r) {
             r.FilePath(std::string_view(value));
         });
     } else if (command == fFileMode.get()) {
-        this->template Deliver<Analysis>([&](auto&& r) {
+        this->template Deliver<AReceiver>([&](auto&& r) {
             r.FileMode(value);
         });
     }
