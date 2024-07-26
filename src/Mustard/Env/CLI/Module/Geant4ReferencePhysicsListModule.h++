@@ -34,7 +34,7 @@
 
 namespace Mustard::Env::CLI::inline Module {
 
-template<muc::ceta_string ADefault = "FTFP_BERT">
+template<muc::ceta_string ADefault>
 class Geant4ReferencePhysicsListModule : public ModuleBase {
 public:
     Geant4ReferencePhysicsListModule(argparse::ArgumentParser& argParser);
