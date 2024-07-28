@@ -105,7 +105,7 @@ private:
         };
 
     private:
-        DynamicScheduler<T>* const fDS;
+        DynamicScheduler<T>* fDS;
         Supervisor fSupervisor;
         T fBatchCounter;
     };
@@ -122,7 +122,7 @@ private:
         auto PostLoopAction() -> void;
 
     private:
-        DynamicScheduler<T>* const fDS;
+        DynamicScheduler<T>* fDS;
         T fTaskIDRecv;
         std::array<MPI_Request, 2> fRequest;
         T fBatchCounter;
@@ -130,7 +130,7 @@ private:
     friend class Worker;
 
 private:
-    const Comm fComm;
+    Comm fComm;
     T fBatchSize;
     std::variant<Dummy, Master, Worker> fContext;
 

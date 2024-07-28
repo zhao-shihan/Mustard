@@ -38,7 +38,7 @@
 namespace Mustard::inline Utility {
 
 template<std::integral T = int>
-auto RDFEventSplitPoint(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName = "EvtID") -> std::vector<unsigned> {
+auto RDFEventSplitPoint(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName) -> std::vector<unsigned> {
     std::vector<unsigned> eventSplitPoint;
 
     if (Env::MPIEnv::Instance().OnCommWorldMaster()) {

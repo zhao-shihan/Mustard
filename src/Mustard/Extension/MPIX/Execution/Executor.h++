@@ -55,6 +55,9 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 class Executor final {
 public:
+    using Index = T;
+
+public:
     template<template<typename> typename S = DynamicScheduler>
         requires std::derived_from<S<T>, Scheduler<T>>
     Executor(ScheduleBy<S> = {});
