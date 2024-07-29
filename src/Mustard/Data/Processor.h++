@@ -19,30 +19,32 @@
 #pragma once
 
 #include "Mustard/Data/TakeFrom.h++"
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
 #include "Mustard/Extension/ROOTX/RDataFrame.h++"
 #include "Mustard/Utility/RDFEventSplitPoint.h++"
 
-#include "muc/ceta_string"
 #include "muc/concepts"
 
 #include <algorithm>
-#include <ranges>
 #include <memory>
+#include <ranges>
+#include <string_view>
 #include <vector>
 
 namespace Mustard::Data {
 
-/// @brief A parallel data processor.
+/// @brief A distributed data processor.
 /// @tparam AExecutor Underlying MPI executor type.
 template<muc::instantiated_from<MPIX::Executor> AExecutor = MPIX::Executor<unsigned>>
 class Processor {
 public:
     Processor(AExecutor executor = {}, typename AExecutor::Index batchSize = 1000);
 
-    template<muc::ceta_string AEventIDBranchName, TupleModelizable... Ts>
-    auto Process(ROOTX::RDataFrame auto&& rdf,
+    template<TupleModelizable... Ts>
+    auto Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
+                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> typename AExecutor::Index;
+    template<TupleModelizable... Ts>
+    auto Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsigned>& eventSplitPoint,
                  std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> typename AExecutor::Index;
 
     auto Executor() const -> const auto& { return fExecutor; }
