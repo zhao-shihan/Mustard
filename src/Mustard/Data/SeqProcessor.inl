@@ -28,8 +28,13 @@ auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventI
 
 template<TupleModelizable... Ts>
 auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf,
-             std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
+                           std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
     const auto nEntry{static_cast<Index>(*rdf.Count())};
+    if (nEntry == 0) {
+        Env::PrintLnWarning("Warning from Mustard::Data::SeqProcessor: Empty dataset");
+        return 0;
+    }
+
     const auto nBatch{std::max(static_cast<Index>(1), nEntry / this->fBatchSizeProposal)};
     const auto nEPBQuot{nEntry / nBatch};
     const auto nEPBRem{nEntry % nBatch};
@@ -53,7 +58,17 @@ auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, const std::vector<Index
     const auto& esp{eventSplitPoint};
 
     const auto nEntry{static_cast<Index>(esp.back() - esp.front())};
+    if (nEntry == 0) {
+        Env::PrintLnWarning("Warning from Mustard::Data::SeqProcessor: Empty dataset");
+        return 0;
+    }
+
     const auto nEvent{static_cast<Index>(esp.size() - 1)};
+    if (nEvent == 0) {
+        Env::PrintLnWarning("Warning from Mustard::Data::SeqProcessor: Empty dataset");
+        return 0;
+    }
+
     const auto nBatch{std::clamp(nEntry / fBatchSizeProposal, static_cast<Index>(1), nEvent)};
     const auto nEPBQuot{nEvent / nBatch};
     const auto nEPBRem{nEvent % nBatch};

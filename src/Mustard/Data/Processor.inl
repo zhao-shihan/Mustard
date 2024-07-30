@@ -31,6 +31,11 @@ template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf,
                                    std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
     const auto nEntry{static_cast<Index>(*rdf.Count())};
+    if (nEntry == 0) {
+        Env::PrintLnWarning("Warning from Mustard::Data::Processor: Empty dataset");
+        return 0;
+    }
+
     const auto nBatch{std::max(static_cast<Index>(1), nEntry / this->fBatchSizeProposal)};
     const auto nEPBQuot{nEntry / nBatch};
     const auto nEPBRem{nEntry % nBatch};
@@ -73,7 +78,17 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
     const auto& esp{eventSplitPoint};
 
     const auto nEntry{static_cast<Index>(esp.back() - esp.front())};
+    if (nEntry == 0) {
+        Env::PrintLnWarning("Warning from Mustard::Data::Processor: Empty dataset");
+        return 0;
+    }
+
     const auto nEvent{static_cast<Index>(esp.size() - 1)};
+    if (nEvent == 0) {
+        Env::PrintLnWarning("Warning from Mustard::Data::Processor: Empty dataset");
+        return 0;
+    }
+
     const auto nBatch{std::clamp(nEntry / this->fBatchSizeProposal, static_cast<Index>(1), nEvent)};
     const auto nEPBQuot{nEvent / nBatch};
     const auto nEPBRem{nEvent % nBatch};
