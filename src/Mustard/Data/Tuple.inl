@@ -18,11 +18,15 @@
 
 namespace Mustard::Data {
 
+namespace internal {
+
 template<typename ADerived>
 constexpr EnableGet<ADerived>::EnableGet() {
     static_assert(std::derived_from<ADerived, EnableGet>);
     static_assert(TupleLike<ADerived>);
 }
+
+} // namespace internal
 
 template<TupleModelizable... Ts>
 template<TupleLike ATuple>
@@ -57,6 +61,86 @@ constexpr auto Tuple<Ts...>::AsImpl() const -> ATuple {
         }(gslx::make_index_sequence<ATuple::Size()>{}, std::integral_constant<gsl::index, Is>{}));
     }(gslx::make_index_sequence<Size()>{});
     return tuple;
+}
+
+/* not good for small data model */
+// #define MUSTARD_DATA_TUPLE_VISIT_IMPL(GetImpl)                                                                                         \
+//     if constexpr (L > R) {                                                                                                             \
+//         throw std::out_of_range{fmt::format("Mustard::Data::Tuple::VisitImpl: Index {} out of range", i)};                             \
+//     } else {                                                                                                                           \
+//         constexpr auto idx{std::midpoint(L, R)};                                                                                       \
+//         if (i == idx) {                                                                                                                \
+//             if constexpr (requires { std::invoke(std::forward<decltype(F)>(F), *GetImpl); }) {                                         \
+//                 std::invoke(std::forward<decltype(F)>(F), *GetImpl);                                                                   \
+//                 return;                                                                                                                \
+//             }                                                                                                                          \
+//             throw std::invalid_argument(fmt::format("Mustard::Data::Tuple::VisitImpl: The function provided is not invocable with {}", \
+//                                                     typeid(*GetImpl).name()));                                                         \
+//         } else if (i < idx) {                                                                                                          \
+//             return VisitImpl<L, idx - 1>(i, std::forward<decltype(F)>(F));                                                             \
+//         } else {                                                                                                                       \
+//             return VisitImpl<idx + 1, R>(i, std::forward<decltype(F)>(F));                                                             \
+//         }                                                                                                                              \
+//     }
+
+/* better, seems to be optimized as a jump table */
+#define MUSTARD_DATA_TUPLE_VISIT_IMPL(GetImpl)                                                                                             \
+    if constexpr (L > R) {                                                                                                                 \
+        throw std::out_of_range{fmt::format("Mustard::Data::Tuple::VisitImpl: Index {} out of range", i)};                                 \
+    } else {                                                                                                                               \
+        if (i == L) {                                                                                                                      \
+            constexpr auto idx{L};                                                                                                         \
+            if constexpr (requires { std::invoke(std::forward<decltype(F)>(F), *GetImpl); }) {                                             \
+                std::invoke(std::forward<decltype(F)>(F), *GetImpl);                                                                       \
+                return;                                                                                                                    \
+            } else {                                                                                                                       \
+                throw std::invalid_argument(fmt::format("Mustard::Data::Tuple::VisitImpl: The function provided is not invocable with {}", \
+                                                        typeid(*GetImpl).name()));                                                         \
+            }                                                                                                                              \
+        } else {                                                                                                                           \
+            return VisitImpl<L + 1, R>(i, std::forward<decltype(F)>(F));                                                                   \
+        }                                                                                                                                  \
+    }
+
+template<TupleModelizable... Ts>
+template<gsl::index L, gsl::index R>
+MUSTARD_ALWAYS_INLINE auto Tuple<Ts...>::VisitImpl(gsl::index i, auto&& F) const& -> void {
+    MUSTARD_DATA_TUPLE_VISIT_IMPL(GetImpl<idx>())
+}
+
+template<TupleModelizable... Ts>
+template<gsl::index L, gsl::index R>
+MUSTARD_ALWAYS_INLINE auto Tuple<Ts...>::VisitImpl(gsl::index i, auto&& F) & -> void {
+    MUSTARD_DATA_TUPLE_VISIT_IMPL(GetImpl<idx>())
+}
+
+template<TupleModelizable... Ts>
+template<gsl::index L, gsl::index R>
+MUSTARD_ALWAYS_INLINE auto Tuple<Ts...>::VisitImpl(gsl::index i, auto&& F) && -> void {
+    MUSTARD_DATA_TUPLE_VISIT_IMPL(std::move(GetImpl<idx>()))
+}
+
+template<TupleModelizable... Ts>
+template<gsl::index L, gsl::index R>
+MUSTARD_ALWAYS_INLINE auto Tuple<Ts...>::VisitImpl(gsl::index i, auto&& F) const&& -> void {
+    MUSTARD_DATA_TUPLE_VISIT_IMPL(std::move(GetImpl<idx>()))
+}
+
+#undef MUSTARD_DATA_TUPLE_VISIT_IMPL
+
+template<TupleModelizable... Ts>
+auto Tuple<Ts...>::DynIndex(std::string_view name) -> gsl::index {
+    static const auto index{
+        []<gsl::index... Is>(gslx::index_sequence<Is...>) { // clang-format off
+            return std::unordered_map<std::string_view, gsl::index>{
+                {std::tuple_element_t<Is, typename Model::StdTuple>::Name().sv(), Is}...}; // clang-format on
+        }(gslx::make_index_sequence<Size()>{})};
+    try {
+        return index.at(name);
+    } catch (const std::out_of_range& e) {
+        Env::PrintLnError("Error in Mustard::Data::Tuple::DynIndex: No field named '{}'", name);
+        throw e;
+    }
 }
 
 } // namespace Mustard::Data

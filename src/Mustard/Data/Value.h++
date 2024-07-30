@@ -104,12 +104,12 @@ public:
     { return std::move(fObject)[std::forward<decltype(i)>(i)]; }
 
     template<ValueAcceptable U, muc::ceta_string N, muc::ceta_string D>
-    constexpr auto operator==(const Value<U, N, D>& that) const -> auto { return **this == *that; }
+    constexpr auto operator==(const Value<U, N, D>& that) const -> bool { return **this == *that; }
     template<ValueAcceptable U, muc::ceta_string N, muc::ceta_string D>
     constexpr auto operator<=>(const Value<U, N, D>& that) const -> auto { return **this <=> *that; }
 
-    static constexpr auto Name() { return AName; }
-    static constexpr auto Description() { return ADescription; }
+    static constexpr auto Name() -> const auto& { return AName; }
+    static constexpr auto Description() -> const auto& { return ADescription; }
 
 private:
     T fObject;

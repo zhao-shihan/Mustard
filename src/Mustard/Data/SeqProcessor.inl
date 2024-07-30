@@ -30,14 +30,25 @@ template<TupleModelizable... Ts>
 auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsigned>& eventSplitPoint,
                            std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> unsigned {
     const auto& esp{eventSplitPoint};
+
+    const auto nEntry{static_cast<unsigned>(esp.back() - esp.front())};
     const auto nEvent{static_cast<unsigned>(esp.size() - 1)};
-    const auto nBatch{nEvent / fBatchSize + 1};
+    const auto nBatch{std::clamp(nEntry / fBatchSizeProposal, static_cast<unsigned>(1), nEvent)};
+    const auto nEPBQuot{nEvent / nBatch};
+    const auto nEPBRem{nEvent % nBatch};
 
     unsigned nEventProcessed{};
-    for (unsigned k{}; k < nBatch; ++k) {
-        const auto iFirst{k * fBatchSize};
-        if (iFirst >= nEvent) { break; }
-        const auto iLast{std::min(iFirst + fBatchSize, nEvent)};
+    for (unsigned k{}; k < nBatch; ++k) { // k is batch index
+        unsigned iFirst; // event index
+        unsigned iLast;  // event index
+        if (k < nEPBRem) {
+            const auto size{nEPBQuot + 1};
+            iFirst = k * size;
+            iLast = iFirst + size;
+        } else {
+            iFirst = nEPBRem * (nEPBQuot + 1) + (k - nEPBRem) * nEPBQuot;
+            iLast = iFirst + nEPBQuot;
+        }
         const auto data{Take<Ts...>::From(rdf.Range(esp[iFirst], esp[iLast]))};
 
         std::vector<std::shared_ptr<Tuple<Ts...>>> event;
@@ -47,7 +58,7 @@ auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsig
             event.clear();
             event.resize(eventData.size());
             std::ranges::copy(eventData, event.begin());
-            F(event);
+            std::invoke(std::forward<decltype(F)>(F), event);
         }
         nEventProcessed += iLast - iFirst;
     }

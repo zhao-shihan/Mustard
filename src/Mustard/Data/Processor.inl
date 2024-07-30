@@ -60,7 +60,7 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
         [&](auto k) { // k is batch index
             using Event = std::vector<std::shared_ptr<Tuple<Ts...>>>;
             if (byPass) {
-                F(/*byPass =*/true, Event{});
+                std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, Event{});
                 return;
             }
 
@@ -83,7 +83,7 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
                 event.clear();
                 event.resize(eventData.size());
                 std::ranges::copy(eventData, event.begin());
-                F(/*byPass =*/false, event);
+                std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, event);
             }
 
             nEventProcessed += iLast - iFirst;

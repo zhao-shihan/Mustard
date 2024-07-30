@@ -20,7 +20,7 @@
 
 namespace Mustard::Data {
 
-SeqProcessor::SeqProcessor(unsigned batchSize) :
-    fBatchSize{batchSize} {}
+SeqProcessor::SeqProcessor(unsigned batchSizeProposal) :
+    fBatchSizeProposal{batchSizeProposal} {}
 
 } // namespace Mustard::Data

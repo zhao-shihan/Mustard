@@ -27,10 +27,12 @@
 #include "muc/concepts"
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <numeric>
 #include <ranges>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace Mustard::Data {
@@ -43,6 +45,7 @@ public:
     Processor(AExecutor executor = {}, typename AExecutor::Index batchSizeProposal = 5000000);
 
     auto BatchSizeProposal() const -> auto { return fBatchSizeProposal; }
+
     auto BatchSizeProposal(typename AExecutor::Index val) -> auto { fBatchSizeProposal = val; }
 
     template<TupleModelizable... Ts>

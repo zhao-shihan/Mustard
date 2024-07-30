@@ -20,16 +20,26 @@
 
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/Value.h++"
+#include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/gslx/index_sequence.h++"
+#include "Mustard/Utility/InlineMacro.h++"
 
 #include "muc/ceta_string"
 #include "muc/concepts"
+#include "muc/utility"
 
 #include "gsl/gsl"
 
+#include "fmt/core.h"
+
 #include <concepts>
+#include <functional>
+#include <numeric>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
+#include <unordered_map>
 #include <utility>
 
 namespace Mustard::Data {
@@ -98,6 +108,9 @@ struct tuple_element<I, T>
 
 namespace Mustard::Data {
 
+namespace internal {
+
+/// @brief Helper class for `Tuple` friend `Get` function.
 template<typename ADerived>
 class EnableGet {
     template<muc::ceta_string... ANames>
@@ -127,8 +140,11 @@ protected:
     constexpr ~EnableGet() = default;
 };
 
+} // namespace internal
+
+/// @brief Data model defined tuple.
 template<TupleModelizable... Ts>
-class Tuple : public EnableGet<Tuple<Ts...>> {
+class Tuple : public internal::EnableGet<Tuple<Ts...>> {
 public:
     using Model = TupleModel<Ts...>;
 
@@ -182,6 +198,11 @@ public:
     template<TupleLike ATuple>
     constexpr auto operator<=>(const ATuple&) const -> auto = delete;
 
+    auto Visit(std::string_view name, auto&& F) const& -> void { VisitImpl<0, Size() - 1>(DynIndex(name), std::forward<decltype(F)>(F)); }
+    auto Visit(std::string_view name, auto&& F) & -> void { VisitImpl<0, Size() - 1>(DynIndex(name), std::forward<decltype(F)>(F)); }
+    auto Visit(std::string_view name, auto&& F) && -> void { VisitImpl<0, Size() - 1>(DynIndex(name), std::forward<decltype(F)>(F)); }
+    auto Visit(std::string_view name, auto&& F) const&& -> void { VisitImpl<0, Size() - 1>(DynIndex(name), std::forward<decltype(F)>(F)); }
+
     static constexpr auto Size() -> auto { return Model::Size(); }
 
 private:
@@ -210,6 +231,17 @@ private:
 
     template<TupleLike ATuple>
     constexpr auto AsImpl() const -> ATuple;
+
+    template<gsl::index L, gsl::index R>
+    MUSTARD_ALWAYS_INLINE auto VisitImpl(gsl::index i, auto&& F) const& -> void;
+    template<gsl::index L, gsl::index R>
+    MUSTARD_ALWAYS_INLINE auto VisitImpl(gsl::index i, auto&& F) & -> void;
+    template<gsl::index L, gsl::index R>
+    MUSTARD_ALWAYS_INLINE auto VisitImpl(gsl::index i, auto&& F) && -> void;
+    template<gsl::index L, gsl::index R>
+    MUSTARD_ALWAYS_INLINE auto VisitImpl(gsl::index i, auto&& F) const&& -> void;
+
+    static auto DynIndex(std::string_view name) -> gsl::index;
 
 private:
     typename Model::StdTuple fTuple;

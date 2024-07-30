@@ -23,9 +23,11 @@
 #include "Mustard/Utility/RDFEventSplitPoint.h++"
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <ranges>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace Mustard::Data {
@@ -33,7 +35,11 @@ namespace Mustard::Data {
 /// @brief A sequential data processor.
 class SeqProcessor {
 public:
-    SeqProcessor(unsigned batchSize = 1000);
+    SeqProcessor(unsigned batchSizeProposal = 1000);
+
+    auto BatchSizeProposal() const -> auto { return fBatchSizeProposal; }
+
+    auto BatchSizeProposal(unsigned val) -> auto { fBatchSizeProposal = val; }
 
     template<TupleModelizable... Ts>
     auto Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
@@ -42,9 +48,8 @@ public:
     auto Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsigned>& eventSplitPoint,
                  std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> unsigned;
 
-
 private:
-    unsigned fBatchSize;
+    unsigned fBatchSizeProposal;
 };
 
 } // namespace Mustard::Data
