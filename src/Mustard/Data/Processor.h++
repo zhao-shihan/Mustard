@@ -64,7 +64,7 @@ public:
     auto Executor() -> auto& { return fExecutor; }
 
 private:
-    static auto ByPassCheck(Index nBatch) -> bool;
+    static auto ByPassCheck(Index nBatch) -> void;
 
 private:
     AExecutor fExecutor;

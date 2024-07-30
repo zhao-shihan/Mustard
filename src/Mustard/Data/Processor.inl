@@ -40,13 +40,13 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf,
     const auto nEPBQuot{nEntry / nBatch};
     const auto nEPBRem{nEntry % nBatch};
 
-    const auto byPass{ByPassCheck(nBatch)};
+    ByPassCheck(nBatch);
 
     Index nEntryProcessed{};
     fExecutor.Execute( // below: allow to by pass when there are too many processors
         std::max(static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize()), nBatch),
         [&](auto k) { // k is batch index
-            if (byPass) {
+            if (k >= nBatch) {
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, std::shared_ptr<Tuple<Ts...>>{});
                 return;
             }
@@ -93,14 +93,14 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
     const auto nEPBQuot{nEvent / nBatch};
     const auto nEPBRem{nEvent % nBatch};
 
-    const auto byPass{ByPassCheck(nBatch)};
+    ByPassCheck(nBatch);
 
     Index nEventProcessed{};
     fExecutor.Execute( // below: allow to by pass when there are too many processors
         std::max(static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize()), nBatch),
         [&](auto k) { // k is batch index
             using Event = std::vector<std::shared_ptr<Tuple<Ts...>>>;
-            if (byPass) {
+            if (k >= nBatch) {
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, Event{});
                 return;
             }
@@ -123,13 +123,12 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
 }
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
-auto Processor<AExecutor>::ByPassCheck(Index nBatch) -> bool {
+auto Processor<AExecutor>::ByPassCheck(Index nBatch) -> void {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     if (mpiEnv.OnCommWorldMaster() and mpiEnv.CommWorldSize() > nBatch) {
         Env::PrintLnWarning("Warning from Mustard::Data::Processor: #Processors ({}) are more than #batches ({})",
                             mpiEnv.CommWorldSize(), nBatch);
     }
-    return mpiEnv.CommWorldRank() >= nBatch;
 }
 
 } // namespace Mustard::Data
