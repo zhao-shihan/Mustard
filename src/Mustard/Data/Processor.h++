@@ -18,11 +18,12 @@
 
 #pragma once
 
+#include "Mustard/Data/RDFEventSplitPoint.h++"
 #include "Mustard/Data/TakeFrom.h++"
+#include "Mustard/Data/internal/ProcessorBase.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
 #include "Mustard/Extension/ROOTX/RDataFrame.h++"
-#include "Mustard/Utility/RDFEventSplitPoint.h++"
 
 #include "muc/concepts"
 
@@ -40,28 +41,33 @@ namespace Mustard::Data {
 /// @brief A distributed data processor.
 /// @tparam AExecutor Underlying MPI executor type.
 template<muc::instantiated_from<MPIX::Executor> AExecutor = MPIX::Executor<unsigned>>
-class Processor {
+class Processor : public internal::ProcessorBase<typename AExecutor::Index> {
+private:
+    using Base = internal::ProcessorBase<typename AExecutor::Index>;
+    using Index = typename Base::Index;
+
 public:
-    Processor(AExecutor executor = {}, typename AExecutor::Index batchSizeProposal = 5000000);
+    Processor(AExecutor executor = {}, Index batchSizeProposal = 5'000'000);
 
-    auto BatchSizeProposal() const -> auto { return fBatchSizeProposal; }
-
-    auto BatchSizeProposal(typename AExecutor::Index val) -> auto { fBatchSizeProposal = val; }
+    template<TupleModelizable... Ts>
+    auto Process(ROOTX::RDataFrame auto&& rdf,
+                 std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index;
 
     template<TupleModelizable... Ts>
     auto Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
-                 std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> typename AExecutor::Index;
+                 std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index;
     template<TupleModelizable... Ts>
     auto Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsigned>& eventSplitPoint,
-                 std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> typename AExecutor::Index;
+                 std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index;
 
     auto Executor() const -> const auto& { return fExecutor; }
     auto Executor() -> auto& { return fExecutor; }
 
 private:
-    AExecutor fExecutor;
+    static auto ByPassCheck(Index nBatch) -> bool;
 
-    typename AExecutor::Index fBatchSizeProposal;
+private:
+    AExecutor fExecutor;
 };
 
 } // namespace Mustard::Data

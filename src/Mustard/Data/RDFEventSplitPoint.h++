@@ -35,7 +35,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace Mustard::inline Utility {
+namespace Mustard::Data {
 
 template<std::integral T = int>
 auto RDFEventSplitPoint(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName) -> std::vector<unsigned> {
@@ -78,4 +78,4 @@ auto RDFEventSplitPoint(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBr
     return eventSplitPoint;
 }
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::Data

@@ -20,35 +20,47 @@ namespace Mustard::Data {
 
 template<TupleModelizable... Ts>
 auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
-                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> unsigned {
+                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
     return Process<Ts...>(std::forward<decltype(rdf)>(rdf),
                           RDFEventSplitPoint(std::forward<decltype(rdf)>(rdf), eventIDBranchName),
                           std::forward<decltype(F)>(F));
 }
 
 template<TupleModelizable... Ts>
-auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsigned>& eventSplitPoint,
-                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> unsigned {
+auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf,
+             std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
+    const auto nEntry{static_cast<Index>(*rdf.Count())};
+    const auto nBatch{std::max(static_cast<Index>(1), nEntry / this->fBatchSizeProposal)};
+    const auto nEPBQuot{nEntry / nBatch};
+    const auto nEPBRem{nEntry % nBatch};
+
+    Index nEntryProcessed{};
+    for (Index k{}; k < nBatch; ++k) {                                               // k is batch index
+        const auto [iFirst, iLast]{this->CalculateIndexRange(k, nEPBQuot, nEPBRem)}; // entry index
+        const auto data{Take<Ts...>::From(rdf.Range(iFirst, iLast))};
+
+        for (auto&& entry : data) {
+            std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, entry);
+        }
+        nEntryProcessed += data.size();
+    }
+    return nEntryProcessed;
+}
+
+template<TupleModelizable... Ts>
+auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, const std::vector<Index>& eventSplitPoint,
+                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
     const auto& esp{eventSplitPoint};
 
-    const auto nEntry{static_cast<unsigned>(esp.back() - esp.front())};
-    const auto nEvent{static_cast<unsigned>(esp.size() - 1)};
-    const auto nBatch{std::clamp(nEntry / fBatchSizeProposal, static_cast<unsigned>(1), nEvent)};
+    const auto nEntry{static_cast<Index>(esp.back() - esp.front())};
+    const auto nEvent{static_cast<Index>(esp.size() - 1)};
+    const auto nBatch{std::clamp(nEntry / fBatchSizeProposal, static_cast<Index>(1), nEvent)};
     const auto nEPBQuot{nEvent / nBatch};
     const auto nEPBRem{nEvent % nBatch};
 
-    unsigned nEventProcessed{};
-    for (unsigned k{}; k < nBatch; ++k) { // k is batch index
-        unsigned iFirst; // event index
-        unsigned iLast;  // event index
-        if (k < nEPBRem) {
-            const auto size{nEPBQuot + 1};
-            iFirst = k * size;
-            iLast = iFirst + size;
-        } else {
-            iFirst = nEPBRem * (nEPBQuot + 1) + (k - nEPBRem) * nEPBQuot;
-            iLast = iFirst + nEPBQuot;
-        }
+    Index nEventProcessed{};
+    for (Index k{}; k < nBatch; ++k) {                                         // k is batch index
+        const auto [iFirst, iLast]{CalculateIndexRange(k, nEPBQuot, nEPBRem)}; // event index
         const auto data{Take<Ts...>::From(rdf.Range(esp[iFirst], esp[iLast]))};
 
         std::vector<std::shared_ptr<Tuple<Ts...>>> event;

@@ -18,9 +18,10 @@
 
 #pragma once
 
+#include "Mustard/Data/RDFEventSplitPoint.h++"
 #include "Mustard/Data/TakeFrom.h++"
+#include "Mustard/Data/internal/ProcessorBase.h++"
 #include "Mustard/Extension/ROOTX/RDataFrame.h++"
-#include "Mustard/Utility/RDFEventSplitPoint.h++"
 
 #include <algorithm>
 #include <functional>
@@ -33,23 +34,20 @@
 namespace Mustard::Data {
 
 /// @brief A sequential data processor.
-class SeqProcessor {
+class SeqProcessor : public internal::ProcessorBase<unsigned> {
 public:
-    SeqProcessor(unsigned batchSizeProposal = 1000);
+    SeqProcessor(Index batchSizeProposal = 5'000'000);
 
-    auto BatchSizeProposal() const -> auto { return fBatchSizeProposal; }
-
-    auto BatchSizeProposal(unsigned val) -> auto { fBatchSizeProposal = val; }
+    template<TupleModelizable... Ts>
+    auto Process(ROOTX::RDataFrame auto&& rdf,
+                 std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index;
 
     template<TupleModelizable... Ts>
     auto Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
-                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> unsigned;
+                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index;
     template<TupleModelizable... Ts>
-    auto Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsigned>& eventSplitPoint,
-                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> unsigned;
-
-private:
-    unsigned fBatchSizeProposal;
+    auto Process(ROOTX::RDataFrame auto&& rdf, const std::vector<Index>& eventSplitPoint,
+                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index;
 };
 
 } // namespace Mustard::Data

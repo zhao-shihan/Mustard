@@ -16,11 +16,34 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Data/SeqProcessor.h++"
+#pragma once
 
-namespace Mustard::Data {
+#include <concepts>
+#include <utility>
 
-SeqProcessor::SeqProcessor(Index batchSizeProposal) :
-    ProcessorBase{batchSizeProposal} {}
+namespace Mustard::Data::internal {
 
-} // namespace Mustard::Data
+template<std::integral T>
+class ProcessorBase {
+public:
+    using Index = T;
+
+protected:
+    ProcessorBase(T batchSizeProposal = 5'000'000);
+    ~ProcessorBase() = default;
+
+public:
+    auto BatchSizeProposal() const -> auto { return fBatchSizeProposal; }
+
+    auto BatchSizeProposal(T val) -> void { fBatchSizeProposal = val; }
+
+protected:
+    static auto CalculateIndexRange(T iBatch, T nEPBQuot, T nEPBRem) -> std::pair<T, T>;
+
+protected:
+    T fBatchSizeProposal;
+};
+
+} // namespace Mustard::Data::internal
+
+#include "Mustard/Data/internal/ProcessorBase.inl"

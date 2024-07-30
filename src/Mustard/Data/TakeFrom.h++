@@ -30,6 +30,7 @@
 
 #include "gsl/gsl"
 
+#include <algorithm>
 #include <concepts>
 #include <memory>
 #include <string>

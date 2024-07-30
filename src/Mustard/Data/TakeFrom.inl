@@ -48,17 +48,43 @@ private:
     };
 
     template<gsl::index I>
-    using ReadType = std::conditional_t<internal::IsStdArray<typename std::tuple_element_t<I, Tuple<Ts...>>::Type>{} or
-                                            muc::instantiated_from<typename std::tuple_element_t<I, Tuple<Ts...>>::Type, std::vector>,
-                                        ROOT::RVec<typename ValueTypeHelper<typename std::tuple_element_t<I, Tuple<Ts...>>::Type>::Type>,
-                                        typename std::tuple_element_t<I, Tuple<Ts...>>::Type>;
+    using TargetType = typename std::tuple_element_t<I, Tuple<Ts...>>::Type;
+
+    template<gsl::index I>
+    using ReadType = std::conditional_t<internal::IsStdArray<TargetType<I>>{} or
+                                            muc::instantiated_from<TargetType<I>, std::vector>,
+                                        ROOT::RVec<typename ValueTypeHelper<TargetType<I>>::Type>,
+                                        TargetType<I>>;
 
 public:
     TakeOne(std::vector<std::shared_ptr<Tuple<Ts...>>>& data, gslx::index_sequence<Is...>) :
         fData{data} {}
 
     auto operator()(const ReadType<Is>&... value) -> void {
-        fData.emplace_back(std::make_shared<Tuple<Ts...>>(value...));
+        fData.emplace_back(std::make_shared<Tuple<Ts...>>(As<TargetType<Is>>(value)...));
+    }
+
+private:
+    template<typename>
+    static auto As(auto&& value) -> decltype(auto) {
+        return std::forward<decltype(value)>(value);
+    }
+
+    template<muc::instantiated_from<std::vector> T, typename U>
+        requires std::same_as<typename T::value_type, U>
+    static auto As(const ROOT::RVec<U>& src) -> T {
+        T dest;
+        dest.reserve(src.size());
+        for (auto&& val : src) { dest.emplace_back(val); }
+        return dest;
+    }
+
+    template<typename T, typename U>
+        requires internal::IsStdArray<T>::value and std::same_as<typename T::value_type, U>
+    static auto As(const ROOT::RVec<U>& src) -> T {
+        T dest;
+        std::ranges::copy(src, dest.begin());
+        return dest;
     }
 
 private:

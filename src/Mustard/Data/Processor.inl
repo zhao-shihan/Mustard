@@ -19,17 +19,48 @@
 namespace Mustard::Data {
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
-Processor<AExecutor>::Processor(AExecutor executor, typename AExecutor::Index batchSizeProposal) :
-    fExecutor{std::move(executor)},
-    fBatchSizeProposal{batchSizeProposal} {
+Processor<AExecutor>::Processor(AExecutor executor, Index batchSizeProposal) :
+    Base{batchSizeProposal},
+    fExecutor{std::move(executor)} {
     fExecutor.ExecutionName("Event loop");
     fExecutor.TaskName("Batch");
 }
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
+auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf,
+                                   std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
+    const auto nEntry{static_cast<Index>(*rdf.Count())};
+    const auto nBatch{std::max(static_cast<Index>(1), nEntry / this->fBatchSizeProposal)};
+    const auto nEPBQuot{nEntry / nBatch};
+    const auto nEPBRem{nEntry % nBatch};
+
+    const auto byPass{ByPassCheck(nBatch)};
+
+    Index nEntryProcessed{};
+    fExecutor.Execute( // below: allow to by pass when there are too many processors
+        std::max(static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize()), nBatch),
+        [&](auto k) { // k is batch index
+            if (byPass) {
+                std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, std::shared_ptr<Tuple<Ts...>>{});
+                return;
+            }
+
+            const auto [iFirst, iLast]{this->CalculateIndexRange(k, nEPBQuot, nEPBRem)}; // entry index
+            const auto data{Take<Ts...>::From(rdf.Range(iFirst, iLast))};
+
+            for (auto&& entry : data) {
+                std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, entry);
+            }
+            nEntryProcessed += data.size();
+        });
+    return nEntryProcessed;
+}
+
+template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
-                                   std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> typename AExecutor::Index {
+                                   std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
     return Process<Ts...>(std::forward<decltype(rdf)>(rdf),
                           RDFEventSplitPoint(std::forward<decltype(rdf)>(rdf), eventIDBranchName),
                           std::forward<decltype(F)>(F));
@@ -38,25 +69,20 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, std::string_vie
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsigned>& eventSplitPoint,
-                                   std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> typename AExecutor::Index {
+                                   std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
     const auto& esp{eventSplitPoint};
 
-    const auto nEntry{static_cast<typename AExecutor::Index>(esp.back() - esp.front())};
-    const auto nEvent{static_cast<typename AExecutor::Index>(esp.size() - 1)};
-    const auto nBatch{std::clamp(nEntry / fBatchSizeProposal, static_cast<typename AExecutor::Index>(1), nEvent)};
+    const auto nEntry{static_cast<Index>(esp.back() - esp.front())};
+    const auto nEvent{static_cast<Index>(esp.size() - 1)};
+    const auto nBatch{std::clamp(nEntry / this->fBatchSizeProposal, static_cast<Index>(1), nEvent)};
     const auto nEPBQuot{nEvent / nBatch};
     const auto nEPBRem{nEvent % nBatch};
 
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    const auto byPass{mpiEnv.CommWorldRank() >= nBatch};
-    if (mpiEnv.OnCommWorldMaster() and mpiEnv.CommWorldSize() > nBatch) {
-        Env::PrintLnWarning("Warning from Mustard::Data::Processor::Process: #Processors ({}) are more than #batches ({})",
-                            mpiEnv.CommWorldSize(), nBatch);
-    }
+    const auto byPass{ByPassCheck(nBatch)};
 
-    typename AExecutor::Index nEventProcessed{};
+    Index nEventProcessed{};
     fExecutor.Execute( // below: allow to by pass when there are too many processors
-        std::max(static_cast<typename AExecutor::Index>(mpiEnv.CommWorldSize()), nBatch),
+        std::max(static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize()), nBatch),
         [&](auto k) { // k is batch index
             using Event = std::vector<std::shared_ptr<Tuple<Ts...>>>;
             if (byPass) {
@@ -64,16 +90,7 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
                 return;
             }
 
-            typename AExecutor::Index iFirst; // event index
-            typename AExecutor::Index iLast;  // event index
-            if (k < nEPBRem) {
-                const auto size{nEPBQuot + 1};
-                iFirst = k * size;
-                iLast = iFirst + size;
-            } else {
-                iFirst = nEPBRem * (nEPBQuot + 1) + (k - nEPBRem) * nEPBQuot;
-                iLast = iFirst + nEPBQuot;
-            }
+            const auto [iFirst, iLast]{this->CalculateIndexRange(k, nEPBQuot, nEPBRem)}; // event index
             const auto data{Take<Ts...>::From(rdf.Range(esp[iFirst], esp[iLast]))};
 
             Event event;
@@ -85,10 +102,19 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
                 std::ranges::copy(eventData, event.begin());
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, event);
             }
-
             nEventProcessed += iLast - iFirst;
         });
     return nEventProcessed;
+}
+
+template<muc::instantiated_from<MPIX::Executor> AExecutor>
+auto Processor<AExecutor>::ByPassCheck(Index nBatch) -> bool {
+    const auto& mpiEnv{Env::MPIEnv::Instance()};
+    if (mpiEnv.OnCommWorldMaster() and mpiEnv.CommWorldSize() > nBatch) {
+        Env::PrintLnWarning("Warning from Mustard::Data::Processor: #Processors ({}) are more than #batches ({})",
+                            mpiEnv.CommWorldSize(), nBatch);
+    }
+    return mpiEnv.CommWorldRank() >= nBatch;
 }
 
 } // namespace Mustard::Data

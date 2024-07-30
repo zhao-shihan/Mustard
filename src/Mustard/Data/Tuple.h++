@@ -167,11 +167,7 @@ public:
         fTuple{std::move(tuple.fTuple)} {}
 
     template<typename... Us>
-        requires(sizeof...(Us) == Model::Size() and
-                 []<gsl::index... Is>(gslx::index_sequence<Is...>) {
-                     return (... and std::constructible_from<std::tuple_element_t<Is, typename Model::StdTuple>,
-                                                             std::tuple_element_t<Is, std::tuple<Us...>>&&>);
-                 }(gslx::make_index_sequence<sizeof...(Us)>()))
+        requires std::constructible_from<typename Model::StdTuple, Us&&...>
     constexpr explicit(sizeof...(Us) == 1) Tuple(Us&&... values) :
         fTuple{std::forward<Us>(values)...} {}
 
