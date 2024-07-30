@@ -39,6 +39,7 @@
 #include <cmath>
 #include <concepts>
 #include <cstdio>
+#include <functional>
 #include <memory>
 #include <numeric>
 #include <optional>

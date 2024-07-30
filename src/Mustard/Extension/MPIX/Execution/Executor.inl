@@ -83,7 +83,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
         fScheduler->PreTaskAction();
         const auto taskID{ExecutingTask()};
         assert(taskID <= Task().last);
-        F(taskID);
+        std::invoke(std::forward<decltype(F)>(F), taskID);
         ++fScheduler->fNLocalExecutedTask;
         fScheduler->PostTaskAction();
         PostTaskReport(taskID);
