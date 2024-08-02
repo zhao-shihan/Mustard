@@ -29,11 +29,26 @@
 #include "G4VSensitiveDetector.hh"
 #include "G4VSolid.hh"
 
-#include "fmt/format.h"
-
 #include <stdexcept>
 
 namespace Mustard::Detector::Definition {
+
+auto DefinitionBase::FindDaughter(std::type_index definition) const -> DefinitionBase* {
+    if (const auto existedDaughter{fDaughters.find(definition)};
+        existedDaughter != fDaughters.cend()) {
+        return existedDaughter->second.get();
+    } else {
+        return {};
+    }
+}
+
+auto DefinitionBase::RemoveDaughter(std::type_index definition) -> void {
+    if (fDaughters.erase(definition) == 0) {
+        throw std::runtime_error{
+            fmt::format("Mustard::Detector::Definition::DefinitionBase::RemoveDaughter: {} is not a daughter of {}",
+                        definition.name(), typeid(*this).name())};
+    }
+}
 
 namespace internal {
 namespace {

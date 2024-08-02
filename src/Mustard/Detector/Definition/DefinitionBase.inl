@@ -43,16 +43,6 @@ auto DefinitionBase::NewDaughter(bool checkOverlaps) -> ADefinition& {
     return static_cast<ADefinition&>(*daughter);
 }
 
-template<std::derived_from<DefinitionBase> ADefinition>
-auto DefinitionBase::FindDaughter() const -> ADefinition* {
-    if (const auto existedDaughter{fDaughters.find(typeid(ADefinition))};
-        existedDaughter != fDaughters.cend()) {
-        return static_cast<ADefinition*>(existedDaughter->second.get());
-    } else {
-        return {};
-    }
-}
-
 template<std::derived_from<G4VSolid> ASolid>
 auto DefinitionBase::Make(auto&&... args) -> gsl::not_null<ASolid*> {
     return static_cast<ASolid*>(

@@ -27,6 +27,8 @@
 
 #include "gsl/gsl"
 
+#include "fmt/core.h"
+
 #include <cassert>
 #include <concepts>
 #include <filesystem>
@@ -60,10 +62,16 @@ public:
 
     template<std::derived_from<DefinitionBase> ADefinition>
     auto NewDaughter(bool checkOverlaps) -> ADefinition&;
+
+    auto FindDaughter(std::type_index definition) const -> DefinitionBase*;
     template<std::derived_from<DefinitionBase> ADefinition>
-    auto FindDaughter() const -> ADefinition*;
+    auto FindDaughter() const -> ADefinition* { return dynamic_cast<ADefinition*>(FindDaughter(typeid(ADefinition))); }
+
+    auto RemoveDaughter(std::type_index definition) -> void;
     template<std::derived_from<DefinitionBase> ADefinition>
-    auto RemoveDaughter() -> bool { return fDaughters.erase(typeid(ADefinition)) > 0; }
+    auto RemoveDaughter() -> void { return RemoveDaughter(typeid(ADefinition)); }
+
+    auto FindSibling(std::type_index definition) const -> auto { return Mother().FindDaughter(definition); }
     template<std::derived_from<DefinitionBase> ADefinition>
     auto FindSibling() const -> auto { return Mother().FindDaughter<ADefinition>(); }
 
