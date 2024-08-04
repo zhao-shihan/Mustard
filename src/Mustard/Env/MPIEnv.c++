@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstddef>
 #include <cstring>
 #include <iomanip>
@@ -31,6 +32,7 @@
 #include <map>
 #include <memory>
 #include <stdexcept>
+#include <thread>
 #include <utility>
 
 namespace Mustard::Env {
@@ -233,7 +235,15 @@ MPIEnv::~MPIEnv() {
     auto commNode{fCommNode};
     MPI_Comm_free(&commNode);
     // Wait all processes before finalizing
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Request barrier;
+    MPI_Ibarrier(MPI_COMM_WORLD, &barrier);
+    while (true) {
+        int reached;
+        MPI_Test(&barrier, &reached, MPI_STATUS_IGNORE);
+        if (reached) { break; }
+        using std::chrono_literals::operator""ms;
+        std::this_thread::sleep_for(500ms);
+    }
     // Finalize MPI
     MPI_Finalize();
     // Show exit banner

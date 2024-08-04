@@ -18,6 +18,8 @@
 
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
+using std::chrono_literals::operator""ms;
+
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 template<template<typename> typename S>
@@ -29,6 +31,7 @@ Executor<T>::Executor(ScheduleBy<S>) :
     fPrintProgressModulo{},
     fExecutionName{"Execution"},
     fTaskName{"Task"},
+    fFinalPollingPeriod{50ms},
     fExecutionBeginSystemTime{},
     fWallTimeStopwatch{},
     fCPUTimeStopwatch{},
@@ -91,6 +94,8 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     // finalize
     fExecutionWallTime = fWallTimeStopwatch.s_elapsed();
     fExecutionCPUTime = fCPUTimeStopwatch.s_used();
+    MPI_Request barrierRequest;
+    MPI_Ibarrier(MPI_COMM_WORLD, &barrierRequest);
     struct GatheringDataType {
         T nLocalExecutedTask;
         double wallTime;
@@ -131,8 +136,13 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     MPI_Type_free(&gatheringDataType);
     fScheduler->PostLoopAction();
     fExecuting = false;
-    MPI_Wait(&gatherRequest,     // request
-             MPI_STATUS_IGNORE); // status
+    while (true) {
+        int reached;
+        MPI_Test(&barrierRequest, &reached, MPI_STATUS_IGNORE);
+        if (reached) { break; }
+        std::this_thread::sleep_for(fFinalPollingPeriod);
+    }
+    MPI_Wait(&gatherRequest, MPI_STATUS_IGNORE);
     if (mpiEnv.OnCommWorldMaster()) {
         for (int rank{}; rank < mpiEnv.CommWorldSize(); ++rank) {
             fNLocalExecutedTaskOfAllProcessKeptByMaster[rank] = masterGatheredData[rank].nLocalExecutedTask;

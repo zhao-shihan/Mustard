@@ -44,6 +44,7 @@
 #include <numeric>
 #include <optional>
 #include <stdexcept>
+#include <thread>
 #include <tuple>
 #include <utility>
 
@@ -71,6 +72,7 @@ public:
     auto PrintProgressModulo(long long mod) -> void { fPrintProgressModulo = mod; }
     auto ExecutionName(std::string name) -> void { fExecutionName = std::move(name); }
     auto TaskName(std::string name) -> void { fTaskName = std::move(name); }
+    auto FinalPollingPeriod(std::chrono::milliseconds t) -> void { fFinalPollingPeriod = std::move(t); }
 
     auto Task() const -> auto { return fScheduler->fTask; }
     auto NTask() const -> T { return fScheduler->NTask(); }
@@ -104,6 +106,8 @@ private:
 
     std::string fExecutionName;
     std::string fTaskName;
+
+    std::chrono::milliseconds fFinalPollingPeriod;
 
     scsc::time_point fExecutionBeginSystemTime;
     muc::wall_time_stopwatch<> fWallTimeStopwatch;
