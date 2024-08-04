@@ -50,6 +50,15 @@ auto DefinitionBase::RemoveDaughter(std::type_index definition) -> void {
     }
 }
 
+auto DefinitionBase::FindDescendant(std::type_index definition) const -> DefinitionBase* {
+    for (auto&& [daughterType, daughter] : fDaughters) {
+        if (daughterType == definition) { return daughter.get(); }
+        const auto granddaughter{daughter->FindDescendant(definition)};
+        if (granddaughter) { return granddaughter; }
+    }
+    return {};
+}
+
 namespace internal {
 namespace {
 
@@ -91,7 +100,7 @@ auto RegisterField(gsl::not_null<G4LogicalVolume*> logic, gsl::not_null<G4FieldM
     logic->SetFieldManager(fieldManager, forceToAllDaughters);
 }
 
-auto Export(const std::filesystem::path& gdmlFile, gsl::not_null<G4LogicalVolume*> logic) {
+/* auto ParallelExport(const std::filesystem::path& gdmlFile, gsl::not_null<G4LogicalVolume*> logic) {
     G4GDMLParser gdml;
     gdml.SetAddPointerToName(true);
     gdml.SetOutputFileOverwrite(true);
@@ -100,6 +109,14 @@ auto Export(const std::filesystem::path& gdmlFile, gsl::not_null<G4LogicalVolume
                     gdmlFile)
                    .generic_string(),
                logic);
+} */
+
+auto Export(const std::filesystem::path& gdmlFile, gsl::not_null<G4LogicalVolume*> logic) {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    G4GDMLParser gdml;
+    gdml.SetAddPointerToName(true);
+    gdml.SetOutputFileOverwrite(true);
+    gdml.Write(gdmlFile.generic_string(), logic);
 }
 
 } // namespace

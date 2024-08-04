@@ -71,6 +71,10 @@ public:
     template<std::derived_from<DefinitionBase> ADefinition>
     auto RemoveDaughter() -> void { return RemoveDaughter(typeid(ADefinition)); }
 
+    auto FindDescendant(std::type_index definition) const -> DefinitionBase*;
+    template<std::derived_from<DefinitionBase> ADefinition>
+    auto FindDescendant() const -> ADefinition* { return dynamic_cast<ADefinition*>(FindDescendant(typeid(ADefinition))); }
+
     auto FindSibling(std::type_index definition) const -> auto { return Mother().FindDaughter(definition); }
     template<std::derived_from<DefinitionBase> ADefinition>
     auto FindSibling() const -> auto { return Mother().FindDaughter<ADefinition>(); }
