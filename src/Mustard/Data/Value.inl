@@ -72,7 +72,7 @@ template<typename U>
 constexpr auto Value<T, AName, ADescription>::As() const& -> std::conditional_t<std::same_as<T, U>, const T&, U> {
     if constexpr (std::same_as<T, U> or std::convertible_to<const T&, U>) {
         return fObject;
-    } else if constexpr (requires { static_cast<U>(fObject); }) {
+    } else if constexpr (std::convertible_to<const T&, U>) {
         return static_cast<U>(fObject);
     } else if constexpr (requires { VectorCast<U>(fObject); }) {
         return VectorCast<U>(fObject);
