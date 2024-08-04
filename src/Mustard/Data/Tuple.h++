@@ -126,6 +126,11 @@ class EnableGet {
         requires(sizeof...(ANames) >= 1)
     friend constexpr auto Get(const ADerived&& t) -> decltype(auto) { return std::move(t).template Get<ANames...>(); }
 
+    template<muc::ceta_string AName, typename T>
+    friend constexpr auto GetAs(const ADerived& t) -> decltype(auto) { return t.template Get<AName>().template As<T>(); }
+    template<muc::ceta_string AName, typename T>
+    friend constexpr auto GetAs(ADerived&& t) -> decltype(auto) { return std::move(t).template Get<AName>().template As<T>(); }
+
     template<gsl::index I>
     friend constexpr auto get(const ADerived& t) -> decltype(auto) { return t.template Get<std::tuple_element_t<I, ADerived>::Name()>(); }
     template<gsl::index I>
