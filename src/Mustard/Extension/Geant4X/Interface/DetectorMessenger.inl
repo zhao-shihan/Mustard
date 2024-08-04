@@ -60,9 +60,9 @@ auto DetectorMessenger<ADerived, ADetectorConstruction, AAppName>::SetNewValue(G
     if (command == fImportDescription.get()) {
         DescriptionIO::Import<DescriptionInUse>(std::string_view{value});
     } else if (command == fExportDescription.get()) {
-        DescriptionIO::Export<DescriptionInUse>(std::string_view{value}, annotation);
+        DescriptionIO::ParallelExport<DescriptionInUse>(std::string_view{value}, annotation);
     } else if (command == fIxportDescription.get()) {
-        DescriptionIO::Ixport<DescriptionInUse>(std::string_view{value}, annotation);
+        DescriptionIO::ParallelIxport<DescriptionInUse>(std::string_view{value}, annotation);
     }
 }
 

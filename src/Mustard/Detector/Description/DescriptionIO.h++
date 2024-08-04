@@ -20,7 +20,6 @@
 
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Detector/Description/DescriptionBase.h++"
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/MPIX/ParallelizePath.h++"
 #include "Mustard/Utility/CreateTemporaryFile.h++"
@@ -36,7 +35,6 @@
 
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <concepts>
 #include <cstdio>
 #include <filesystem>
@@ -48,6 +46,7 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace Mustard::Detector::Description {
@@ -55,17 +54,25 @@ namespace Mustard::Detector::Description {
 class DescriptionIO final : public NonConstructibleBase {
 public:
     template<Description... Ds>
-    static auto Import(const std::filesystem::path& yamlFile) -> void { Import<std::tuple<Ds...>>(yamlFile); }
+    static auto Import(const std::filesystem::path& yamlFile) -> void;
     template<Description... Ds>
-    static auto Export(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> void { Export<std::tuple<Ds...>>(yamlFile, fileComment); }
+    static auto Export(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> void;
     template<Description... Ds>
-    static auto Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> void { Ixport<std::tuple<Ds...>>(yamlFile, fileComment); }
+    static auto Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    template<Description... Ds>
+    static auto ParallelExport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::filesystem::path;
+    template<Description... Ds>
+    static auto ParallelIxport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
     template<muc::tuple_like T>
     static auto Import(const std::filesystem::path& yamlFile) -> void;
     template<muc::tuple_like T>
     static auto Export(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> void;
     template<muc::tuple_like T>
-    static auto Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> void;
+    static auto Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    template<muc::tuple_like T>
+    static auto ParallelExport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::filesystem::path;
+    template<muc::tuple_like T>
+    static auto ParallelIxport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
 
     template<typename... ArgsOfImport>
     static auto Import(const std::ranges::range auto& yamlText) -> void
@@ -78,7 +85,9 @@ public:
 private:
     static auto ImportImpl(const std::filesystem::path& yamlFile, std::ranges::input_range auto& descriptions) -> void;
     static auto ExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> void;
-    static auto IxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> void;
+    static auto IxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    static auto ParallelExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path;
+    static auto ParallelIxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
 
 private:
     static std::set<gsl::not_null<DescriptionBase<>*>> fgInstanceSet;

@@ -24,7 +24,7 @@ namespace {
 template<std::intmax_t i, typename T>
 struct FillDescriptionArray {
     constexpr void operator()(std::array<DescriptionBase<>*, std::tuple_size_v<T>>& descriptions) const {
-        std::get<i>(descriptions) = std::addressof(std::tuple_element_t<i, T>::Instance());
+        std::get<i>(descriptions) = &std::tuple_element_t<i, T>::Instance();
     }
 };
 
@@ -45,6 +45,31 @@ constexpr void StaticForEach(auto&&... args) {
 } // namespace
 } // namespace internal
 
+template<Description... Ds>
+auto Import(const std::filesystem::path& yamlFile) -> void {
+    Import<std::tuple<Ds...>>(yamlFile);
+}
+
+template<Description... Ds>
+auto DescriptionIO::Export(const std::filesystem::path& yamlFile, const std::string& fileComment) -> void {
+    Export<std::tuple<Ds...>>(yamlFile, fileComment);
+}
+
+template<Description... Ds>
+auto DescriptionIO::Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment) -> std::pair<std::filesystem::path, std::filesystem::path> {
+    return Ixport<std::tuple<Ds...>>(yamlFile, fileComment);
+}
+
+template<Description... Ds>
+auto DescriptionIO::ParallelExport(const std::filesystem::path& yamlFile, const std::string& fileComment) -> std::filesystem::path {
+    return ParallelExport<std::tuple<Ds...>>(yamlFile, fileComment);
+}
+
+template<Description... Ds>
+auto DescriptionIO::ParallelIxport(const std::filesystem::path& yamlFile, const std::string& fileComment) -> std::pair<std::filesystem::path, std::filesystem::path> {
+    return ParallelIxport<std::tuple<Ds...>>(yamlFile, fileComment);
+}
+
 template<muc::tuple_like T>
 auto DescriptionIO::Import(const std::filesystem::path& yamlFile) -> void {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
@@ -62,11 +87,27 @@ auto DescriptionIO::Export(const std::filesystem::path& yamlFile, const std::str
 }
 
 template<muc::tuple_like T>
-auto DescriptionIO::Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment) -> void {
+auto DescriptionIO::Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment) -> std::pair<std::filesystem::path, std::filesystem::path> {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
     internal::StaticForEach<0, descriptions.size(),
                             internal::FillDescriptionArray, T>(descriptions);
-    IxportImpl(yamlFile, fileComment, descriptions);
+    return IxportImpl(yamlFile, fileComment, descriptions);
+}
+
+template<muc::tuple_like T>
+auto DescriptionIO::ParallelExport(const std::filesystem::path& yamlFile, const std::string& fileComment) -> std::filesystem::path {
+    std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
+    internal::StaticForEach<0, descriptions.size(),
+                            internal::FillDescriptionArray, T>(descriptions);
+    return ParallelExportImpl(yamlFile, fileComment, descriptions);
+}
+
+template<muc::tuple_like T>
+auto DescriptionIO::ParallelIxport(const std::filesystem::path& yamlFile, const std::string& fileComment) -> std::pair<std::filesystem::path, std::filesystem::path> {
+    std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
+    internal::StaticForEach<0, descriptions.size(),
+                            internal::FillDescriptionArray, T>(descriptions);
+    return ParallelIxportImpl(yamlFile, fileComment, descriptions);
 }
 
 template<typename... ArgsOfImport>
@@ -116,13 +157,9 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlFile, const std:
 
         std::ofstream yamlOut;
         try {
-            if (Env::MPIEnv::Available()) {
-                yamlOut.open(MPIX::ParallelizePath(yamlFile), std::ios::out);
-            } else {
-                const auto parent{yamlFile.parent_path()};
-                if (not parent.empty()) { std::filesystem::create_directories(parent); }
-                yamlOut.open(yamlFile, std::ios::out);
-            }
+            const auto parent{yamlFile.parent_path()};
+            if (not parent.empty()) { std::filesystem::create_directories(parent); }
+            yamlOut.open(yamlFile, std::ios::out);
         } catch (const std::filesystem::filesystem_error&) { throw InvalidFile{}; }
         if (not yamlOut.is_open()) { throw InvalidFile{}; }
 
@@ -139,10 +176,26 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlFile, const std:
     }
 }
 
-auto DescriptionIO::IxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> void {
-    ExportImpl(std::filesystem::path(yamlFile).replace_extension(".prev.yaml"), fileComment, descriptions);
+auto DescriptionIO::IxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path> {
+    auto path1{std::filesystem::path{yamlFile}.replace_extension(".prev.yaml")};
+    auto path2{std::filesystem::path{yamlFile}.replace_extension(".curr.yaml")};
+    ExportImpl(path1, fileComment, descriptions);
     ImportImpl(yamlFile, descriptions);
-    ExportImpl(std::filesystem::path(yamlFile).replace_extension(".curr.yaml"), fileComment, descriptions);
+    ExportImpl(path2, fileComment, descriptions);
+    return {std::move(path1), std::move(path2)};
+}
+
+auto DescriptionIO::ParallelExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path {
+    auto truePath{MPIX::ParallelizePath(yamlFile)};
+    ExportImpl(truePath, fileComment, descriptions);
+    return truePath;
+}
+
+auto DescriptionIO::ParallelIxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path> {
+    auto path1{ParallelExportImpl(std::filesystem::path{yamlFile}.replace_extension(".prev.yaml"), fileComment, descriptions)};
+    ImportImpl(yamlFile, descriptions);
+    auto path2{ParallelExportImpl(std::filesystem::path{yamlFile}.replace_extension(".curr.yaml"), fileComment, descriptions)};
+    return {std::move(path1), std::move(path2)};
 }
 
 } // namespace Mustard::Detector::Description
