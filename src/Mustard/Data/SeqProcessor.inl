@@ -19,16 +19,8 @@
 namespace Mustard::Data {
 
 template<TupleModelizable... Ts>
-auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
-                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
-    return Process<Ts...>(std::forward<decltype(rdf)>(rdf),
-                          RDFEventSplitPoint(std::forward<decltype(rdf)>(rdf), eventIDBranchName),
-                          std::forward<decltype(F)>(F));
-}
-
-template<TupleModelizable... Ts>
 auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf,
-                           std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
+                           std::invocable<std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
     const auto nEntry{static_cast<Index>(*rdf.Count())};
     if (nEntry == 0) {
         Env::PrintLnWarning("Warning from Mustard::Data::SeqProcessor: Empty dataset");
@@ -45,11 +37,19 @@ auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf,
         const auto data{Take<Ts...>::From(rdf.Range(iFirst, iLast))};
 
         for (auto&& entry : data) {
-            std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, entry);
+            std::invoke(std::forward<decltype(F)>(F), entry);
         }
         nEntryProcessed += data.size();
     }
     return nEntryProcessed;
+}
+
+template<TupleModelizable... Ts>
+auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
+                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
+    return Process<Ts...>(std::forward<decltype(rdf)>(rdf),
+                          RDFEventSplitPoint(std::forward<decltype(rdf)>(rdf), eventIDBranchName),
+                          std::forward<decltype(F)>(F));
 }
 
 template<TupleModelizable... Ts>

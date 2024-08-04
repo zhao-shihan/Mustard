@@ -36,17 +36,18 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf,
         return 0;
     }
 
-    const auto nBatch{std::max(static_cast<Index>(1), nEntry / this->fBatchSizeProposal)};
+    const auto nProc{static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize())};
+    const auto byPass{ByPassCheck(nEntry, "entries")};
+
+    const auto nBatch{std::max(nProc, nEntry / this->fBatchSizeProposal)};
     const auto nEPBQuot{nEntry / nBatch};
     const auto nEPBRem{nEntry % nBatch};
 
-    ByPassCheck(nBatch);
-
     Index nEntryProcessed{};
-    fExecutor.Execute( // below: allow to by pass when there are too many processors
-        std::max(static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize()), nBatch),
-        [&](auto k) { // k is batch index
-            if (k >= nBatch) {
+    fExecutor.Execute(
+        nBatch,
+        [&](auto k) {                     // k is batch index
+            if (byPass and k >= nEntry) { // by pass when there are too many processors
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, std::shared_ptr<Tuple<Ts...>>{});
                 return;
             }
@@ -89,18 +90,19 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
         return 0;
     }
 
-    const auto nBatch{std::clamp(nEntry / this->fBatchSizeProposal, static_cast<Index>(1), nEvent)};
+    const auto nProc{static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize())};
+    const auto byPass{ByPassCheck(nEvent, "events")};
+
+    const auto nBatch{std::max(nProc, nEntry / this->fBatchSizeProposal)};
     const auto nEPBQuot{nEvent / nBatch};
     const auto nEPBRem{nEvent % nBatch};
 
-    ByPassCheck(nBatch);
-
     Index nEventProcessed{};
-    fExecutor.Execute( // below: allow to by pass when there are too many processors
-        std::max(static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize()), nBatch),
+    fExecutor.Execute(
+        nBatch,
         [&](auto k) { // k is batch index
             using Event = std::vector<std::shared_ptr<Tuple<Ts...>>>;
-            if (k >= nBatch) {
+            if (byPass and k >= nEvent) { // by pass when there are too many processors
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, Event{});
                 return;
             }
@@ -123,12 +125,14 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
 }
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
-auto Processor<AExecutor>::ByPassCheck(Index nBatch) -> void {
+auto Processor<AExecutor>::ByPassCheck(Index n, std::string_view what) -> bool {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
-    if (mpiEnv.OnCommWorldMaster() and mpiEnv.CommWorldSize() > nBatch) {
-        Env::PrintLnWarning("Warning from Mustard::Data::Processor: #Processors ({}) are more than #batches ({})",
-                            mpiEnv.CommWorldSize(), nBatch);
+    const auto byPass{mpiEnv.CommWorldSize() > n};
+    if (mpiEnv.OnCommWorldMaster() and byPass) {
+        Env::PrintLnWarning("Warning from Mustard::Data::Processor: #processors ({}) are more than #{} ({})",
+                            mpiEnv.CommWorldSize(), what, n);
     }
+    return byPass;
 }
 
 } // namespace Mustard::Data

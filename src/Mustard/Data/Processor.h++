@@ -64,7 +64,7 @@ public:
     auto Executor() -> auto& { return fExecutor; }
 
 private:
-    static auto ByPassCheck(Index nBatch) -> void;
+    static auto ByPassCheck(Index n, std::string_view what) -> bool;
 
 private:
     AExecutor fExecutor;

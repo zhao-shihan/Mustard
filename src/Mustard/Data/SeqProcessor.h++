@@ -40,7 +40,7 @@ public:
 
     template<TupleModelizable... Ts>
     auto Process(ROOTX::RDataFrame auto&& rdf,
-                 std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index;
+                 std::invocable<std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index;
 
     template<TupleModelizable... Ts>
     auto Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
