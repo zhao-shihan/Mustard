@@ -7,6 +7,9 @@
 #include "muc/ceta_string"
 #include "muc/concepts"
 #include "muc/math"
+#include "muc/utility"
+
+#include <type_traits>
 
 namespace Mustard::inline Utility {
 
@@ -48,9 +51,9 @@ constexpr auto ToG3(const U& x) -> U {
         return x * (E * T * pow<-2>(Q));
     } else if constexpr (ACategory == "Electric capacitance") {
         return x * (pow<2>(Q) * pow<-1>(E));
-    } else if constexpr (ACategory == "Magnetic Flux") {
+    } else if constexpr (ACategory == "Magnetic flux") {
         return x * (T * E * pow<-1>(Q));
-    } else if constexpr (ACategory == "Magnetic Field") {
+    } else if constexpr (ACategory == "Magnetic field") {
         return x * (T * E * pow<-1>(Q) * pow<-2>(L));
     } else if constexpr (ACategory == "Inductance") {
         return x * (pow<2>(T) * E * pow<-2>(Q));
@@ -69,7 +72,7 @@ constexpr auto ToG3(const U& x) -> U {
     } else if constexpr (ACategory == "Illuminance") {
         return x * (TGeoUnit::lux / CLHEP::lux);
     } else {
-        static_assert("No such unit category");
+        static_assert(muc::dependent_false<U>, "No such unit category");
     }
 }
 
@@ -132,7 +135,7 @@ constexpr auto ToG4(const U& x) -> U {
     } else if constexpr (ACategory == "Illuminance") {
         return x * (CLHEP::lux / TGeoUnit::lux);
     } else {
-        static_assert("No such unit category");
+        static_assert(muc::dependent_false<U>, "No such unit category");
     }
 }
 
