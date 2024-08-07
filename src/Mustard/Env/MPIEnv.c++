@@ -242,7 +242,7 @@ MPIEnv::~MPIEnv() {
         MPI_Test(&barrier, &reached, MPI_STATUS_IGNORE);
         if (reached) { break; }
         using std::chrono_literals::operator""ms;
-        std::this_thread::sleep_for(500ms);
+        std::this_thread::sleep_for(100ms);
     }
     // Finalize MPI
     MPI_Finalize();
