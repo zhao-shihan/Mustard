@@ -31,7 +31,7 @@ Executor<T>::Executor(ScheduleBy<S>) :
     fPrintProgressModulo{},
     fExecutionName{"Execution"},
     fTaskName{"Task"},
-    fFinalPollingPeriod{50ms},
+    fFinalPollingPeriod{20ms},
     fExecutionBeginSystemTime{},
     fWallTimeStopwatch{},
     fCPUTimeStopwatch{},
