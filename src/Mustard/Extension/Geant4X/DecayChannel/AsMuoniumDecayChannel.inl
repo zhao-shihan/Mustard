@@ -53,19 +53,26 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4Dec
 
     Env::PrintLn<'V'>("AsMuoniumDecayChannel::DecayIt");
 
-    const auto [pStar, converged]{muc::find_root::secant(
-        // CDF - x
-        [x = G4UniformRand()](auto p) {
-            const auto cdf{(2 / 3_pi) * (Math::Polynomial({0, -3, 0, 8, 0, 3}, p) / muc::pow<3>(p * p + 1) +
-                                         3 * std::atan(p))};
-            return cdf - x;
-        },
-        // most probable p*
-        27 / 8_pi)};
-    if (not converged) {
-        Env::PrintLnError("AsMuoniumDecayChannel: atomic shell e+/e- momentum disconverged");
+    G4ThreeVector p{};
+    for (auto i{0};; ++i) {
+        if (i == 100) {
+            Env::PrintLnError("AsMuoniumDecayChannel: atomic shell e+/e- momentum disconverged");
+            break;
+        }
+        const auto [pStar, converged]{muc::find_root::secant(
+            // CDF - x
+            [x = G4UniformRand()](auto p) {
+                const auto cdf{(2 / 3_pi) * (Math::Polynomial({0, -3, 0, 8, 0, 3}, p) / muc::pow<3>(p * p + 1) +
+                                             3 * std::atan(p))};
+                return cdf - x;
+            },
+            // most probable p*
+            27 / 8_pi)};
+        if (not converged) {
+            continue;
+        }
+        p = fine_structure_const * muonium_reduced_mass_c2 * pStar * G4RandomDirection();
     }
-    const auto p{fine_structure_const * muonium_reduced_mass_c2 * pStar * G4RandomDirection()};
 
     const auto products{AMuonDecayChannel::DecayIt(muon_mass_c2)};
     products->Boost(-p.x() / muon_mass_c2, -p.y() / muon_mass_c2, -p.z() / muon_mass_c2); // recoil boost
