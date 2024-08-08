@@ -68,10 +68,10 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4Dec
             },
             // most probable p*
             27 / 8_pi)};
-        if (not converged) {
-            continue;
+        if (converged) {
+            p = fine_structure_const * muonium_reduced_mass_c2 * pStar * G4RandomDirection();
+            break;
         }
-        p = fine_structure_const * muonium_reduced_mass_c2 * pStar * G4RandomDirection();
     }
 
     const auto products{AMuonDecayChannel::DecayIt(muon_mass_c2)};
