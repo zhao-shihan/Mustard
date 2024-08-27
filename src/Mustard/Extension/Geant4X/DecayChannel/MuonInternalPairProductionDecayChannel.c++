@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalPairProductionDecayChannel.h++"
+#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
@@ -38,8 +38,8 @@ namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
 using namespace PhysicalConstant;
 
-MuonInternalPairProductionDecayChannel::MuonInternalPairProductionDecayChannel(const G4String& parentName, G4double br, G4int verbose) : // clang-format off
-    G4VDecayChannel{"MuonIPPDecay", verbose}, // clang-format on
+MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4String& parentName, G4double br, G4int verbose) : // clang-format off
+    G4VDecayChannel{"MuonICDecay", verbose}, // clang-format on
     fThermalized{},
     fMetropolisDelta{0.05},
     fMetropolisDiscard{100},
@@ -69,7 +69,7 @@ MuonInternalPairProductionDecayChannel::MuonInternalPairProductionDecayChannel(c
     } else {
 #ifdef G4VERBOSE
         if (GetVerboseLevel() > 0) {
-            G4cout << "MuonInternalPairProductionDecayChannel::(Constructor) says\n"
+            G4cout << "MuonInternalConversionDecayChannel::(Constructor) says\n"
                       "\tParent particle is not mu+ or mu- but "
                    << parentName << G4endl;
         }
@@ -77,10 +77,10 @@ MuonInternalPairProductionDecayChannel::MuonInternalPairProductionDecayChannel(c
     }
 }
 
-auto MuonInternalPairProductionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
+auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
 #ifdef G4VERBOSE
     if (GetVerboseLevel() > 1) {
-        G4cout << "MuonInternalPairProductionDecayChannel::DecayIt ";
+        G4cout << "MuonInternalConversionDecayChannel::DecayIt ";
     }
 #endif
 
@@ -122,7 +122,7 @@ auto MuonInternalPairProductionDecayChannel::DecayIt(G4double) -> G4DecayProduct
 
 #ifdef G4VERBOSE
     if (GetVerboseLevel() > 1) {
-        G4cout << "MuonInternalPairProductionDecayChannel::DecayIt\n"
+        G4cout << "MuonInternalConversionDecayChannel::DecayIt\n"
                   "\tCreate decay products in rest frame."
                << G4endl;
         products->DumpInfo();
@@ -131,7 +131,7 @@ auto MuonInternalPairProductionDecayChannel::DecayIt(G4double) -> G4DecayProduct
     return products;
 }
 
-auto MuonInternalPairProductionDecayChannel::UpdateState(double delta) -> void {
+auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
     decltype(fRawState) newRawState;
     decltype(fEvent) newEvent;
     while (true) {
@@ -158,7 +158,7 @@ auto MuonInternalPairProductionDecayChannel::UpdateState(double delta) -> void {
     }
 }
 
-auto MuonInternalPairProductionDecayChannel::WeightedM2(const CLHEPX::RAMBO<5>::Event& event) -> double {
+auto MuonInternalConversionDecayChannel::WeightedM2(const CLHEPX::RAMBO<5>::Event& event) -> double {
     // Tree level mu -> eeevv (2 diagrams)
 
     const auto& [p, p1, p2, k1, k2]{event.state};

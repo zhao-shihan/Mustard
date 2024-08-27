@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Extension/Geant4X/DecayChannel/MuoniumDecayChannelWithSpin.h++"
-#include "Mustard/Extension/Geant4X/DecayChannel/MuoniumInternalPairProductionDecayChannel.h++"
+#include "Mustard/Extension/Geant4X/DecayChannel/MuoniumInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
 #include "Mustard/Extension/Geant4X/Particle/Antimuonium.h++"
 #include "Mustard/Extension/Geant4X/Particle/Muonium.h++"
@@ -34,7 +34,7 @@ namespace Mustard::inline Extension::Geant4X::inline Physics {
 MuoniumTwoBodyDecayPhysics::MuoniumTwoBodyDecayPhysics(G4int verbose) :
     DecayPhysicsBase{"MuoniumTwoBodyDecayPhysics", verbose},
     fRadiativeDecayBR{},
-    fIPPDecayBR{},
+    fICDecayBR{},
     fAnnihilationDecayBR{},
     fM2eeDecayBR{},
     fMessengerRegister{this} {}
@@ -81,7 +81,7 @@ auto MuoniumTwoBodyDecayPhysics::InsertDecayChannel(const G4String& parentName, 
     // sort by initial BR! we firstly write random BRs in decrease order...
     decay->Insert(new MuoniumDecayChannelWithSpin{parentName, 1e-1, verboseLevel});
     decay->Insert(new MuoniumRadiativeDecayChannelWithSpin{parentName, 1e-2, verboseLevel});
-    decay->Insert(new MuoniumInternalPairProductionDecayChannel{parentName, 1e-3, verboseLevel});
+    decay->Insert(new MuoniumInternalConversionDecayChannel{parentName, 1e-3, verboseLevel});
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-4, 2, "gamma", "gamma"});
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-5, 2, "e+", "e-"});
 }
@@ -89,7 +89,7 @@ auto MuoniumTwoBodyDecayPhysics::InsertDecayChannel(const G4String& parentName, 
 auto MuoniumTwoBodyDecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // set BR here
     decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
-    decay->GetDecayChannel(2)->SetBR(fIPPDecayBR);
+    decay->GetDecayChannel(2)->SetBR(fICDecayBR);
     decay->GetDecayChannel(3)->SetBR(fAnnihilationDecayBR);
     decay->GetDecayChannel(4)->SetBR(fM2eeDecayBR);
 }

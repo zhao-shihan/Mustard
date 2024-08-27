@@ -36,7 +36,7 @@ public:
     MuoniumTwoBodyDecayPhysics(G4int verbose);
 
     auto RadiativeDecayBR(double br) -> void { fRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
-    auto IPPDecayBR(double br) -> void { fIPPDecayBR = muc::clamp<"[]">(br, 0., 1.); }
+    auto ICDecayBR(double br) -> void { fICDecayBR = muc::clamp<"[]">(br, 0., 1.); }
     auto AnnihilationDecayBR(double br) -> void { fAnnihilationDecayBR = muc::clamp<"[]">(br, 0., 1.); }
     auto M2eeDecayBR(double br) -> void { fM2eeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
 
@@ -50,7 +50,7 @@ protected:
 
 protected:
     double fRadiativeDecayBR;
-    double fIPPDecayBR;
+    double fICDecayBR;
     double fAnnihilationDecayBR;
     double fM2eeDecayBR;
 

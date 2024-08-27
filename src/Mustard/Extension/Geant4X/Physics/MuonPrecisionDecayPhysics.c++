@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalPairProductionDecayChannel.h++"
+#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysics.h++"
 
 #include "G4DecayTable.hh"
@@ -39,7 +39,7 @@ namespace Mustard::inline Extension::Geant4X::inline Physics {
 MuonPrecisionDecayPhysics::MuonPrecisionDecayPhysics(G4int verbose) :
     DecayPhysicsBase{"MuonPrecisionDecayPhysics", verbose},
     fRadiativeDecayBR{0.014},
-    fIPPDecayBR{3.4e-5},
+    fICDecayBR{3.6054e-5}, // QED leading-order
     fMessengerRegister{this} {}
 
 auto MuonPrecisionDecayPhysics::ConstructParticle() -> void {
@@ -102,13 +102,13 @@ auto MuonPrecisionDecayPhysics::InsertDecayChannel(const G4String& parentName, g
     // sort by initial BR! we firstly write random BRs in decrease order...
     decay->Insert(new G4MuonDecayChannelWithSpin{parentName, 1e-1}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
     decay->Insert(new G4MuonRadiativeDecayChannelWithSpin{parentName, 1e-2}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
-    decay->Insert(new MuonInternalPairProductionDecayChannel{parentName, 1e-3, verboseLevel});
+    decay->Insert(new MuonInternalConversionDecayChannel{parentName, 1e-3, verboseLevel});
 }
 
 auto MuonPrecisionDecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // set BR here
     decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
-    decay->GetDecayChannel(2)->SetBR(fIPPDecayBR);
+    decay->GetDecayChannel(2)->SetBR(fICDecayBR);
 }
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics

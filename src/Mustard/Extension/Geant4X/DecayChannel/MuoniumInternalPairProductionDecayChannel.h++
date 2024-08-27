@@ -19,11 +19,11 @@
 #pragma once
 
 #include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalPairProductionDecayChannel.h++"
+#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-using MuoniumInternalPairProductionDecayChannel = Geant4X::AsMuoniumDecayChannel<MuonInternalPairProductionDecayChannel,
-                                                                                 "MuoniumIPPDecay">;
+using MuoniumInternalConversionDecayChannel = Geant4X::AsMuoniumDecayChannel<MuonInternalConversionDecayChannel,
+                                                                                 "MuoniumICDecay">;
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel

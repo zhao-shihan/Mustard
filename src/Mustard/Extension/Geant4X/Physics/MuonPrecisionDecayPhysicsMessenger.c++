@@ -30,7 +30,7 @@ MuonPrecisionDecayPhysicsMessenger::MuonPrecisionDecayPhysicsMessenger() :
     SingletonMessenger{},
     fDirectory{},
     fRadiativeDecayBR{},
-    fIPPDecayBR{},
+    fICDecayBR{},
     fUpdateDecayBR{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuonDecay/");
@@ -42,11 +42,11 @@ MuonPrecisionDecayPhysicsMessenger::MuonPrecisionDecayPhysicsMessenger() :
     fRadiativeDecayBR->SetRange("0 <= BR && BR <= 1");
     fRadiativeDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    fIPPDecayBR = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuonDecay/IPPDecay/BR", this);
-    fIPPDecayBR->SetGuidance("Set branching ratio for muon(ium) internal pair production decay channel.");
-    fIPPDecayBR->SetParameterName("BR", false);
-    fIPPDecayBR->SetRange("0 <= BR && BR <= 1");
-    fIPPDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
+    fICDecayBR = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuonDecay/ICDecay/BR", this);
+    fICDecayBR->SetGuidance("Set branching ratio for muon(ium) internal pair production decay channel.");
+    fICDecayBR->SetParameterName("BR", false);
+    fICDecayBR->SetRange("0 <= BR && BR <= 1");
+    fICDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     fUpdateDecayBR = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuonDecay/UpdateDecayBR", this);
     fUpdateDecayBR->SetGuidance("Update decay branching ratio.");
@@ -60,9 +60,9 @@ auto MuonPrecisionDecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4Str
         Deliver<MuonPrecisionDecayPhysics>([&](auto&& r) {
             r.RadiativeDecayBR(fRadiativeDecayBR->GetNewDoubleValue(value));
         });
-    } else if (command == fIPPDecayBR.get()) {
+    } else if (command == fICDecayBR.get()) {
         Deliver<MuonPrecisionDecayPhysics>([&](auto&& r) {
-            r.IPPDecayBR(fIPPDecayBR->GetNewDoubleValue(value));
+            r.ICDecayBR(fICDecayBR->GetNewDoubleValue(value));
         });
     } else if (command == fUpdateDecayBR.get()) {
         Deliver<MuonPrecisionDecayPhysics>([&](auto&& r) {

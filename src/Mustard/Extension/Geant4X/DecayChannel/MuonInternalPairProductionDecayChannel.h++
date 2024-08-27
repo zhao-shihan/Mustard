@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Extension/CLHEPX/RAMBO.h++"
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalPairProductionDecayChannelMessenger.h++"
+#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannelMessenger.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
 
 #include "G4VDecayChannel.hh"
@@ -33,9 +33,9 @@
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-class MuonInternalPairProductionDecayChannel : public G4VDecayChannel {
+class MuonInternalConversionDecayChannel : public G4VDecayChannel {
 public:
-    MuonInternalPairProductionDecayChannel(const G4String& parentName, G4double br, G4int verbose = 1);
+    MuonInternalConversionDecayChannel(const G4String& parentName, G4double br, G4int verbose = 1);
 
     auto MetropolisDelta(double delta) -> void { fMetropolisDelta = muc::clamp<"()">(delta, 0., 0.5); }
     auto MetropolisDiscard(int n) -> void { fMetropolisDiscard = std::max(0, n); }
@@ -64,7 +64,7 @@ private:
     Math::Random::Xoshiro256Plus fXoshiro256Plus;
     unsigned int fReseedCounter : 8;
 
-    MuonInternalPairProductionDecayChannelMessenger::Register<MuonInternalPairProductionDecayChannel> fMessengerRegister;
+    MuonInternalConversionDecayChannelMessenger::Register<MuonInternalConversionDecayChannel> fMessengerRegister;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel

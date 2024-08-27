@@ -28,15 +28,15 @@ class G4UIdirectory;
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-class MuonInternalPairProductionDecayChannel;
+class MuonInternalConversionDecayChannel;
 
-class MuonInternalPairProductionDecayChannelMessenger final : public Geant4X::SingletonMessenger<MuonInternalPairProductionDecayChannelMessenger,
-                                                                                                 MuonInternalPairProductionDecayChannel> {
+class MuonInternalConversionDecayChannelMessenger final : public Geant4X::SingletonMessenger<MuonInternalConversionDecayChannelMessenger,
+                                                                                                 MuonInternalConversionDecayChannel> {
     friend class Env::Memory::SingletonInstantiator;
 
 private:
-    MuonInternalPairProductionDecayChannelMessenger();
-    ~MuonInternalPairProductionDecayChannelMessenger();
+    MuonInternalConversionDecayChannelMessenger();
+    ~MuonInternalConversionDecayChannelMessenger();
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

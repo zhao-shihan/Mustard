@@ -36,7 +36,7 @@ public:
     MuonPrecisionDecayPhysics(G4int verbose);
 
     auto RadiativeDecayBR(double br) -> void { fRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
-    auto IPPDecayBR(double br) -> void { fIPPDecayBR = muc::clamp<"[]">(br, 0., 1.); }
+    auto ICDecayBR(double br) -> void { fICDecayBR = muc::clamp<"[]">(br, 0., 1.); }
     virtual auto UpdateDecayBR() -> void override;
 
     virtual auto ConstructParticle() -> void override;
@@ -48,7 +48,7 @@ protected:
 
 protected:
     double fRadiativeDecayBR;
-    double fIPPDecayBR;
+    double fICDecayBR;
 
 private:
     MuonPrecisionDecayPhysicsMessenger::Register<MuonPrecisionDecayPhysics> fMessengerRegister;
