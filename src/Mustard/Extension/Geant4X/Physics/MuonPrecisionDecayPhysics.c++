@@ -42,6 +42,11 @@ MuonPrecisionDecayPhysics::MuonPrecisionDecayPhysics(G4int verbose) :
     fICDecayBR{3.6054e-5}, // QED leading-order
     fMessengerRegister{this} {}
 
+auto MuonPrecisionDecayPhysics::UpdateDecayBR() -> void {
+    UpdateDecayBRFor(G4MuonPlus::Definition());
+    UpdateDecayBRFor(G4MuonMinus::Definition());
+}
+
 auto MuonPrecisionDecayPhysics::ConstructParticle() -> void {
     G4EmBuilder::ConstructMinimalEmSet();
 
@@ -91,11 +96,6 @@ auto MuonPrecisionDecayPhysics::ConstructProcess() -> void {
         }};
     ReplacePionDecayPhysics(G4PionPlus::Definition());
     ReplacePionDecayPhysics(G4PionMinus::Definition());
-}
-
-auto MuonPrecisionDecayPhysics::UpdateDecayBR() -> void {
-    UpdateDecayBRFor(G4MuonPlus::Definition());
-    UpdateDecayBRFor(G4MuonMinus::Definition());
 }
 
 auto MuonPrecisionDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {

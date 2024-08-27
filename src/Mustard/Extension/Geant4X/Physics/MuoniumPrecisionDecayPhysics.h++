@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Extension/Geant4X/Physics/DecayPhysicsBase.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysicsMessenger.h++"
 
 #include "muc/math"
 
@@ -35,18 +36,21 @@ public:
 
     auto RadiativeDecayBR(double br) -> void { fRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
     auto ICDecayBR(double br) -> void { fICDecayBR = muc::clamp<"[]">(br, 0., 1.); }
+    virtual auto UpdateDecayBR() -> void override;
 
     virtual auto ConstructParticle() -> void override;
     virtual auto ConstructProcess() -> void override;
 
 protected:
-    virtual auto UpdateDecayBR() -> void override;
     virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void override;
     virtual auto AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void override;
 
 protected:
     double fRadiativeDecayBR;
     double fICDecayBR;
+
+private:
+    MuonPrecisionDecayPhysicsMessenger::Register<MuoniumPrecisionDecayPhysics> fMessengerRegister;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics

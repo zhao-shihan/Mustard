@@ -32,8 +32,14 @@ namespace Mustard::inline Extension::Geant4X::inline Physics {
 
 MuoniumPrecisionDecayPhysics::MuoniumPrecisionDecayPhysics(G4int verbose) :
     DecayPhysicsBase{"MuoniumPrecisionDecayPhysics", verbose},
-    fRadiativeDecayBR{},
-    fICDecayBR{} {}
+    fRadiativeDecayBR{0.014},
+    fICDecayBR{3.6054e-5}, // QED leading-order
+    fMessengerRegister{this} {}
+
+auto MuoniumPrecisionDecayPhysics::UpdateDecayBR() -> void {
+    UpdateDecayBRFor(Muonium::Definition());
+    UpdateDecayBRFor(Antimuonium::Definition());
+}
 
 auto MuoniumPrecisionDecayPhysics::ConstructParticle() -> void {
     G4EmBuilder::ConstructMinimalEmSet();
@@ -66,11 +72,6 @@ auto MuoniumPrecisionDecayPhysics::ConstructProcess() -> void {
         }};
     ReplaceDecayPhysics(Muonium::Definition());
     ReplaceDecayPhysics(Antimuonium::Definition());
-}
-
-auto MuoniumPrecisionDecayPhysics::UpdateDecayBR() -> void {
-    UpdateDecayBRFor(Muonium::Definition());
-    UpdateDecayBRFor(Antimuonium::Definition());
 }
 
 auto MuoniumPrecisionDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {

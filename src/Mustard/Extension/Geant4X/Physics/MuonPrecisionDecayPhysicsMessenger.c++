@@ -18,6 +18,7 @@
 
 #include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysics.h++"
 #include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysicsMessenger.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumPrecisionDecayPhysics.h++"
 
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithoutParameter.hh"
@@ -57,15 +58,15 @@ MuonPrecisionDecayPhysicsMessenger::~MuonPrecisionDecayPhysicsMessenger() = defa
 
 auto MuonPrecisionDecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
     if (command == fRadiativeDecayBR.get()) {
-        Deliver<MuonPrecisionDecayPhysics>([&](auto&& r) {
+        Deliver<MuonPrecisionDecayPhysics, MuoniumPrecisionDecayPhysics>([&](auto&& r) {
             r.RadiativeDecayBR(fRadiativeDecayBR->GetNewDoubleValue(value));
         });
     } else if (command == fICDecayBR.get()) {
-        Deliver<MuonPrecisionDecayPhysics>([&](auto&& r) {
+        Deliver<MuonPrecisionDecayPhysics, MuoniumPrecisionDecayPhysics>([&](auto&& r) {
             r.ICDecayBR(fICDecayBR->GetNewDoubleValue(value));
         });
     } else if (command == fUpdateDecayBR.get()) {
-        Deliver<MuonPrecisionDecayPhysics>([&](auto&& r) {
+        Deliver<MuonPrecisionDecayPhysics, MuoniumPrecisionDecayPhysics>([&](auto&& r) {
             r.UpdateDecayBR();
         });
     }

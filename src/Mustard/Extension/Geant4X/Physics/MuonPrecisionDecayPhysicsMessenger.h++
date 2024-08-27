@@ -29,9 +29,11 @@ class G4UIdirectory;
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
 class MuonPrecisionDecayPhysics;
+class MuoniumPrecisionDecayPhysics;
 
 class MuonPrecisionDecayPhysicsMessenger final : public Geant4X::SingletonMessenger<MuonPrecisionDecayPhysicsMessenger,
-                                                                                    MuonPrecisionDecayPhysics> {
+                                                                                    MuonPrecisionDecayPhysics,
+                                                                                    MuoniumPrecisionDecayPhysics> {
     friend Env::Memory::SingletonInstantiator;
 
 private:
