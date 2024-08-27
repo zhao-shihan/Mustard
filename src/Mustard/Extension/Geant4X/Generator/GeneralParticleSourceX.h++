@@ -34,7 +34,7 @@ public:
     auto NVertex(int n) -> void { fNVertex = std::max(0, n); }
     auto PulseWidth(double val) -> void { fPulseWidth = val; }
 
-    auto GeneratePrimaryVertex(G4Event*) -> void override;
+    auto GeneratePrimaryVertex(G4Event* event) -> void override;
 
 private:
     int fNVertex;
