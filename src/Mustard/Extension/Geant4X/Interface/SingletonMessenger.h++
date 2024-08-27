@@ -30,6 +30,7 @@
 
 #include <concepts>
 #include <exception>
+#include <functional>
 #include <tuple>
 #include <typeinfo>
 #include <unordered_set>
@@ -60,6 +61,10 @@ protected:
     template<typename ARecipient>
         requires muc::tuple_contains_unique_v<std::tuple<ARecipients...>, ARecipient>
     auto Deliver(std::invocable<ARecipient&> auto&& Action) const -> void;
+    template<typename... Rs, typename F>
+        requires(sizeof...(Rs) >= 2 and
+                 (... and (std::invocable<F &&, Rs&> and muc::tuple_contains_unique_v<std::tuple<ARecipients...>, Rs>)))
+    auto Deliver(F&& Action) const -> void;
 
 private:
     mutable bool fDelivering;

@@ -59,9 +59,17 @@ auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecip
     }
     fDelivering = true;
     for (auto&& recipient : recipientSet) {
-        Action(*recipient);
+        std::invoke(Action, *recipient);
     }
     fDelivering = false;
+}
+
+template<typename ADerived, typename... ARecipients>
+template<typename... Rs, typename F>
+    requires(sizeof...(Rs) >= 2 and
+             (... and (std::invocable<F &&, Rs&> and muc::tuple_contains_unique_v<std::tuple<ARecipients...>, Rs>)))
+auto SingletonMessenger<ADerived, ARecipients...>::Deliver(F&& Action) const -> void {
+    (..., Deliver<Rs>(std::forward<F>(Action)));
 }
 
 } // namespace Mustard::inline Extension::Geant4X::inline Interface
