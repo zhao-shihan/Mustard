@@ -1,6 +1,6 @@
 message(STATUS "Looking for argparse")
 
-set(MUSTARD_ARGPARSE_MINIMUM_REQUIRED 3.0)
+set(MUSTARD_ARGPARSE_MINIMUM_REQUIRED 3.1)
 
 if(NOT MUSTARD_BUILTIN_ARGPARSE)
     find_package(argparse ${MUSTARD_ARGPARSE_MINIMUM_REQUIRED}.0)
@@ -18,8 +18,8 @@ if(MUSTARD_BUILTIN_ARGPARSE)
         set(MUSTARD_BUILTIN_ARGPARSE_VERSION ${MUSTARD_ARGPARSE_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MUSTARD_BUILTIN_ARGPARSE_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/argparse-master")
-    set(MUSTARD_BUILTIN_ARGPARSE_URL "https://github.com/p-ranav/argparse/archive/refs/heads/master.zip")
+    set(MUSTARD_BUILTIN_ARGPARSE_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/argparse-${MUSTARD_BUILTIN_ARGPARSE_VERSION})")
+    set(MUSTARD_BUILTIN_ARGPARSE_URL "https://github.com/p-ranav/argparse/archive/refs/tags/v${MUSTARD_BUILTIN_ARGPARSE_VERSION}.zip")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_ARGPARSE_SRC_DIR}/CMakeLists.txt")
