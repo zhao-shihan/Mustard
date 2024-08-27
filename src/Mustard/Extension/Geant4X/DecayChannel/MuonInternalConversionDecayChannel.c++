@@ -18,10 +18,13 @@
 
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
+#include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "G4DecayProducts.hh"
 #include "G4DynamicParticle.hh"
+#include "G4RandomTools.hh"
+#include "G4RotationMatrix.hh"
 #include "Randomize.hh"
 
 #include "muc/math"
@@ -37,6 +40,7 @@
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
 using namespace PhysicalConstant;
+using namespace MathConstant;
 
 MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4String& parentName, G4double br, G4int verbose) : // clang-format off
     G4VDecayChannel{"MuonICDecay", verbose}, // clang-format on
@@ -114,10 +118,13 @@ auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
         UpdateState(fMetropolisDelta);
     }
     UpdateState(fMetropolisDelta);
+
     // clang-format off
     auto products{new G4DecayProducts{G4DynamicParticle{G4MT_parent, {}, 0}}}; // clang-format on
+    G4RotationMatrix randomRotation{G4RandomDirection(),
+                                    Math::Random::Uniform<double>{}(fXoshiro256Plus, {0, 2 * pi})};
     for (int i{}; i < 5; ++i) {
-        products->PushProducts(new G4DynamicParticle{G4MT_daughters[i], fEvent.state[i]});
+        products->PushProducts(new G4DynamicParticle{G4MT_daughters[i], fEvent.state[i].transform(randomRotation)});
     }
 
 #ifdef G4VERBOSE
