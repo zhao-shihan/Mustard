@@ -13,7 +13,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-set(MUSTARD_VERSION 0.4.0)
+set(MUSTARD_VERSION 0.5.0)
 
 project(Mustard VERSION ${MUSTARD_VERSION}
                 LANGUAGES C CXX)
