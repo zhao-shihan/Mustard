@@ -19,7 +19,7 @@ if(MUSTARD_BUILTIN_ARGPARSE)
     endif()
     # set download dest and URL
     set(MUSTARD_BUILTIN_ARGPARSE_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/argparse-${MUSTARD_BUILTIN_ARGPARSE_VERSION}")
-    set(MUSTARD_BUILTIN_ARGPARSE_URL "https://github.com/p-ranav/argparse/archive/refs/tags/v${MUSTARD_BUILTIN_ARGPARSE_VERSION}.zip")
+    set(MUSTARD_BUILTIN_ARGPARSE_URL "https://github.com/p-ranav/argparse/archive/refs/tags/v${MUSTARD_BUILTIN_ARGPARSE_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_ARGPARSE_SRC_DIR}/CMakeLists.txt")
