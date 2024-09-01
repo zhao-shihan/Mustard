@@ -29,16 +29,13 @@ class G4DecayTable;
 class G4String;
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
+
 class MuoniumRareDecayPhysics : public MuoniumPrecisionDecayPhysics {
 public:
     MuoniumRareDecayPhysics(G4int verbose);
 
     auto DoubleRadiativeDecayBR(double br) -> void { fDoubleRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
     auto ElectronPairDecayBR(double br) -> void { fElectronPairDecayBR = muc::clamp<"[]">(br, 0., 1.); }
-    virtual auto UpdateDecayBR() -> void override;
-
-    virtual auto ConstructParticle() -> void override;
-    virtual auto ConstructProcess() -> void override;
 
 protected:
     virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void override;

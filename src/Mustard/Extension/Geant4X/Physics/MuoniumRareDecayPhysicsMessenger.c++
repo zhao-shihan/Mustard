@@ -34,7 +34,7 @@ MuoniumRareDecayPhysicsMessenger::MuoniumRareDecayPhysicsMessenger() :
     fUpdateDecayBR{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumDecay/");
-    fDirectory->SetGuidance("About muonium rare decay channel and decay generators.");
+    fDirectory->SetGuidance("About muonium rare decay channels.");
 
     fDoubleRadiativeDecayBR = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuoniumDecay/DoubleRadiativeDecay/BR", this);
     fDoubleRadiativeDecayBR->SetGuidance("Set branching ratio for muonium double radiative decay channel.");

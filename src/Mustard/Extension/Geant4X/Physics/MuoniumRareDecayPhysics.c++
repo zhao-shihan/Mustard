@@ -24,10 +24,7 @@
 #include "Mustard/Extension/Geant4X/Physics/MuoniumRareDecayPhysics.h++"
 
 #include "G4DecayTable.hh"
-#include "G4DecayWithSpin.hh"
-#include "G4EmBuilder.hh"
 #include "G4PhaseSpaceDecayChannel.hh"
-#include "G4ProcessTable.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
@@ -37,56 +34,14 @@ MuoniumRareDecayPhysics::MuoniumRareDecayPhysics(G4int verbose) :
     fElectronPairDecayBR{},
     fMessengerRegister{this} {}
 
-auto MuoniumRareDecayPhysics::UpdateDecayBR() -> void {
-    UpdateDecayBRFor(Muonium::Definition());
-    const auto decay{Muonium::Instance().GetDecayTable()};
-    decay->DumpInfo();
-}
-
-auto MuoniumRareDecayPhysics::ConstructParticle() -> void {
-    G4EmBuilder::ConstructMinimalEmSet();
-
-    const auto NewDecayTableFor{
-        [this](G4ParticleDefinition* muonium) {
-            const auto decay{new G4DecayTable};
-            InsertDecayChannel(muonium->GetParticleName(), decay);
-            delete muonium->GetDecayTable();
-            muonium->SetDecayTable(decay);
-        }};
-    NewDecayTableFor(Muonium::Definition());
-
-    UpdateDecayBR(); // set BR here
-}
-
-auto MuoniumRareDecayPhysics::ConstructProcess() -> void {
-    const auto ReplaceDecayPhysics{
-        [decayWithSpin = new G4DecayWithSpin,
-         processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* muonium) {
-            const auto manager{muonium->GetProcessManager()};
-            if (manager == nullptr) { return; }
-            const auto decay{processTable->FindProcess("Decay", muonium)};
-            if (decay) { manager->RemoveProcess(decay); }
-            manager->AddProcess(decayWithSpin);
-            // set ordering for PostStepDoIt and AtRestDoIt
-            manager->SetProcessOrdering(decayWithSpin, idxPostStep);
-            manager->SetProcessOrdering(decayWithSpin, idxAtRest);
-        }};
-    ReplaceDecayPhysics(Muonium::Definition());
-}
-
 auto MuoniumRareDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
-    // sort by initial BR! we firstly write random BRs in decrease order...
-    decay->Insert(new MuoniumDecayChannelWithSpin{parentName, 1e-1, verboseLevel});
-    decay->Insert(new MuoniumRadiativeDecayChannelWithSpin{parentName, 1e-2, verboseLevel});
-    decay->Insert(new MuoniumInternalConversionDecayChannel{parentName, 1e-3, verboseLevel});
+    MuoniumPrecisionDecayPhysics::InsertDecayChannel(parentName, decay);
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-4, 2, "gamma", "gamma"});
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-5, 2, "e+", "e-"});
 }
 
 auto MuoniumRareDecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
-    // set BR here
-    decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
-    decay->GetDecayChannel(2)->SetBR(fICDecayBR);
+    MuoniumPrecisionDecayPhysics::AssignRareDecayBR(decay);
     decay->GetDecayChannel(3)->SetBR(fDoubleRadiativeDecayBR);
     decay->GetDecayChannel(4)->SetBR(fElectronPairDecayBR);
 }
