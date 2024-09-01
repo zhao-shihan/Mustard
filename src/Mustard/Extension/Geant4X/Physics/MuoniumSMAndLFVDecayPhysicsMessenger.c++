@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Extension/Geant4X/Physics/MuoniumRareDecayPhysics.h++"
-#include "Mustard/Extension/Geant4X/Physics/MuoniumRareDecayPhysicsMessenger.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumSMAndLFVDecayPhysics.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumSMAndLFVDecayPhysicsMessenger.h++"
 
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithoutParameter.hh"
@@ -26,7 +26,7 @@
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-MuoniumRareDecayPhysicsMessenger::MuoniumRareDecayPhysicsMessenger() :
+MuoniumSMAndLFVDecayPhysicsMessenger::MuoniumSMAndLFVDecayPhysicsMessenger() :
     SingletonMessenger{},
     fDirectory{},
     fDoubleRadiativeDecayBR{},
@@ -53,19 +53,19 @@ MuoniumRareDecayPhysicsMessenger::MuoniumRareDecayPhysicsMessenger() :
     fUpdateDecayBR->AvailableForStates(G4State_Idle);
 }
 
-MuoniumRareDecayPhysicsMessenger::~MuoniumRareDecayPhysicsMessenger() = default;
+MuoniumSMAndLFVDecayPhysicsMessenger::~MuoniumSMAndLFVDecayPhysicsMessenger() = default;
 
-auto MuoniumRareDecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
+auto MuoniumSMAndLFVDecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
     if (command == fDoubleRadiativeDecayBR.get()) {
-        Deliver<MuoniumRareDecayPhysics>([&](auto&& r) {
+        Deliver<MuoniumSMAndLFVDecayPhysics>([&](auto&& r) {
             r.DoubleRadiativeDecayBR(fDoubleRadiativeDecayBR->GetNewDoubleValue(value));
         });
     } else if (command == fElectronPairDecayBR.get()) {
-        Deliver<MuoniumRareDecayPhysics>([&](auto&& r) {
+        Deliver<MuoniumSMAndLFVDecayPhysics>([&](auto&& r) {
             r.ElectronPairDecayBR(fElectronPairDecayBR->GetNewDoubleValue(value));
         });
     } else if (command == fUpdateDecayBR.get()) {
-        Deliver<MuoniumRareDecayPhysics>([&](auto&& r) {
+        Deliver<MuoniumSMAndLFVDecayPhysics>([&](auto&& r) {
             r.UpdateDecayBR();
         });
     }

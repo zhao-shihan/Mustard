@@ -18,40 +18,35 @@
 
 #pragma once
 
-#include "Mustard/Extension/Geant4X/Physics/DecayPhysicsBase.h++"
-#include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysicsMessenger.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumSMAndLFVDecayPhysicsMessenger.h++"
 
 #include "muc/math"
 
 #include "gsl/gsl"
 
 class G4DecayTable;
-class G4ParticleDefinition;
 class G4String;
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-class MuonPrecisionDecayPhysics : public DecayPhysicsBase {
+class MuoniumSMAndLFVDecayPhysics : public MuoniumNLODecayPhysics {
 public:
-    MuonPrecisionDecayPhysics(G4int verbose);
+    MuoniumSMAndLFVDecayPhysics(G4int verbose);
 
-    auto RadiativeDecayBR(double br) -> void { fRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
-    auto ICDecayBR(double br) -> void { fICDecayBR = muc::clamp<"[]">(br, 0., 1.); }
-    virtual auto UpdateDecayBR() -> void override;
-
-    virtual auto ConstructParticle() -> void override;
-    virtual auto ConstructProcess() -> void override;
+    auto DoubleRadiativeDecayBR(double br) -> void { fDoubleRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
+    auto ElectronPairDecayBR(double br) -> void { fElectronPairDecayBR = muc::clamp<"[]">(br, 0., 1.); }
 
 protected:
     virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void override;
     virtual auto AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void override;
 
 protected:
-    double fRadiativeDecayBR;
-    double fICDecayBR;
+    double fDoubleRadiativeDecayBR;
+    double fElectronPairDecayBR;
 
 private:
-    MuonPrecisionDecayPhysicsMessenger::Register<MuonPrecisionDecayPhysics> fMessengerRegister;
+    MuoniumSMAndLFVDecayPhysicsMessenger::Register<MuoniumSMAndLFVDecayPhysics> fMessengerRegister;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics

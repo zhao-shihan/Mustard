@@ -20,28 +20,28 @@
 #include "Mustard/Extension/Geant4X/DecayChannel/MuoniumInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
 #include "Mustard/Extension/Geant4X/Particle/Muonium.h++"
-#include "Mustard/Extension/Geant4X/Physics/MuoniumPrecisionDecayPhysics.h++"
-#include "Mustard/Extension/Geant4X/Physics/MuoniumRareDecayPhysics.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumSMAndLFVDecayPhysics.h++"
 
 #include "G4DecayTable.hh"
 #include "G4PhaseSpaceDecayChannel.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-MuoniumRareDecayPhysics::MuoniumRareDecayPhysics(G4int verbose) :
-    MuoniumPrecisionDecayPhysics{verbose},
+MuoniumSMAndLFVDecayPhysics::MuoniumSMAndLFVDecayPhysics(G4int verbose) :
+    MuoniumNLODecayPhysics{verbose},
     fDoubleRadiativeDecayBR{},
     fElectronPairDecayBR{},
     fMessengerRegister{this} {}
 
-auto MuoniumRareDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
-    MuoniumPrecisionDecayPhysics::InsertDecayChannel(parentName, decay);
+auto MuoniumSMAndLFVDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
+    MuoniumNLODecayPhysics::InsertDecayChannel(parentName, decay);
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-4, 2, "gamma", "gamma"});
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-5, 2, "e+", "e-"});
 }
 
-auto MuoniumRareDecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
-    MuoniumPrecisionDecayPhysics::AssignRareDecayBR(decay);
+auto MuoniumSMAndLFVDecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
+    MuoniumNLODecayPhysics::AssignRareDecayBR(decay);
     decay->GetDecayChannel(3)->SetBR(fDoubleRadiativeDecayBR);
     decay->GetDecayChannel(4)->SetBR(fElectronPairDecayBR);
 }

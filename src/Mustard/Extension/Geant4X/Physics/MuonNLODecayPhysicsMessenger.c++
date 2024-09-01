@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysics.h++"
-#include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysicsMessenger.h++"
-#include "Mustard/Extension/Geant4X/Physics/MuoniumPrecisionDecayPhysics.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysics.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysicsMessenger.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
 
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithoutParameter.hh"
@@ -27,7 +27,7 @@
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-MuonPrecisionDecayPhysicsMessenger::MuonPrecisionDecayPhysicsMessenger() :
+MuonNLODecayPhysicsMessenger::MuonNLODecayPhysicsMessenger() :
     SingletonMessenger{},
     fDirectory{},
     fRadiativeDecayBR{},
@@ -54,19 +54,19 @@ MuonPrecisionDecayPhysicsMessenger::MuonPrecisionDecayPhysicsMessenger() :
     fUpdateDecayBR->AvailableForStates(G4State_Idle);
 }
 
-MuonPrecisionDecayPhysicsMessenger::~MuonPrecisionDecayPhysicsMessenger() = default;
+MuonNLODecayPhysicsMessenger::~MuonNLODecayPhysicsMessenger() = default;
 
-auto MuonPrecisionDecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
+auto MuonNLODecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
     if (command == fRadiativeDecayBR.get()) {
-        Deliver<MuonPrecisionDecayPhysics, MuoniumPrecisionDecayPhysics>([&](auto&& r) {
+        Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
             r.RadiativeDecayBR(fRadiativeDecayBR->GetNewDoubleValue(value));
         });
     } else if (command == fICDecayBR.get()) {
-        Deliver<MuonPrecisionDecayPhysics, MuoniumPrecisionDecayPhysics>([&](auto&& r) {
+        Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
             r.ICDecayBR(fICDecayBR->GetNewDoubleValue(value));
         });
     } else if (command == fUpdateDecayBR.get()) {
-        Deliver<MuonPrecisionDecayPhysics, MuoniumPrecisionDecayPhysics>([&](auto&& r) {
+        Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
             r.UpdateDecayBR();
         });
     }

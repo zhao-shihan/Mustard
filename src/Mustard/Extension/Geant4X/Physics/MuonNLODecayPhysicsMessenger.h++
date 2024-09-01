@@ -28,23 +28,25 @@ class G4UIdirectory;
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-class MuoniumRareDecayPhysics;
+class MuonNLODecayPhysics;
+class MuoniumNLODecayPhysics;
 
-class MuoniumRareDecayPhysicsMessenger final : public Geant4X::SingletonMessenger<MuoniumRareDecayPhysicsMessenger,
-                                                                                  MuoniumRareDecayPhysics> {
+class MuonNLODecayPhysicsMessenger final : public Geant4X::SingletonMessenger<MuonNLODecayPhysicsMessenger,
+                                                                                    MuonNLODecayPhysics,
+                                                                                    MuoniumNLODecayPhysics> {
     friend Env::Memory::SingletonInstantiator;
 
 private:
-    MuoniumRareDecayPhysicsMessenger();
-    ~MuoniumRareDecayPhysicsMessenger();
+    MuonNLODecayPhysicsMessenger();
+    ~MuonNLODecayPhysicsMessenger();
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
 
 private:
     std::unique_ptr<G4UIdirectory> fDirectory;
-    std::unique_ptr<G4UIcmdWithADouble> fDoubleRadiativeDecayBR;
-    std::unique_ptr<G4UIcmdWithADouble> fElectronPairDecayBR;
+    std::unique_ptr<G4UIcmdWithADouble> fRadiativeDecayBR;
+    std::unique_ptr<G4UIcmdWithADouble> fICDecayBR;
     std::unique_ptr<G4UIcmdWithoutParameter> fUpdateDecayBR;
 };
 

@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
-#include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysics.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysics.h++"
 
 #include "G4DecayTable.hh"
 #include "G4DecayWithSpin.hh"
@@ -36,18 +36,20 @@
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-MuonPrecisionDecayPhysics::MuonPrecisionDecayPhysics(G4int verbose) :
-    DecayPhysicsBase{"MuonPrecisionDecayPhysics", verbose},
+MuonNLODecayPhysics::MuonNLODecayPhysics(G4int verbose) :
+    DecayPhysicsBase{"MuonNLODecayPhysics"},
     fRadiativeDecayBR{0.014},
     fICDecayBR{3.6054e-5}, // QED leading-order
-    fMessengerRegister{this} {}
+    fMessengerRegister{this} {
+    verboseLevel = verbose;
+}
 
-auto MuonPrecisionDecayPhysics::UpdateDecayBR() -> void {
+auto MuonNLODecayPhysics::UpdateDecayBR() -> void {
     UpdateDecayBRFor(G4MuonPlus::Definition());
     UpdateDecayBRFor(G4MuonMinus::Definition());
 }
 
-auto MuonPrecisionDecayPhysics::ConstructParticle() -> void {
+auto MuonNLODecayPhysics::ConstructParticle() -> void {
     G4EmBuilder::ConstructMinimalEmSet();
 
     const auto NewDecayTableFor{
@@ -61,12 +63,9 @@ auto MuonPrecisionDecayPhysics::ConstructParticle() -> void {
     NewDecayTableFor(G4MuonMinus::Definition());
 
     UpdateDecayBR(); // set BR here
-
-    G4PionPlus::Definition();
-    G4PionMinus::Definition();
 }
 
-auto MuonPrecisionDecayPhysics::ConstructProcess() -> void {
+auto MuonNLODecayPhysics::ConstructProcess() -> void {
     const auto ReplaceMuonDecayPhysics{
         [decayWithSpin = new G4DecayWithSpin,
          processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* muon) {
@@ -98,14 +97,14 @@ auto MuonPrecisionDecayPhysics::ConstructProcess() -> void {
     ReplacePionDecayPhysics(G4PionMinus::Definition());
 }
 
-auto MuonPrecisionDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
+auto MuonNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
     // sort by initial BR! we firstly write random BRs in decrease order...
     decay->Insert(new G4MuonDecayChannelWithSpin{parentName, 1e-1}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
     decay->Insert(new G4MuonRadiativeDecayChannelWithSpin{parentName, 1e-2}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
     decay->Insert(new MuonInternalConversionDecayChannel{parentName, 1e-3, verboseLevel});
 }
 
-auto MuonPrecisionDecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
+auto MuonNLODecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // set BR here
     decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
     decay->GetDecayChannel(2)->SetBR(fICDecayBR);

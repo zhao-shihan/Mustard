@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Extension/Geant4X/Physics/DecayPhysicsBase.h++"
-#include "Mustard/Extension/Geant4X/Physics/MuonPrecisionDecayPhysicsMessenger.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysicsMessenger.h++"
 
 #include "muc/math"
 
@@ -30,9 +30,9 @@ class G4String;
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-class MuoniumPrecisionDecayPhysics : public DecayPhysicsBase {
+class MuoniumNLODecayPhysics : public DecayPhysicsBase {
 public:
-    MuoniumPrecisionDecayPhysics(G4int verbose);
+    MuoniumNLODecayPhysics(G4int verbose);
 
     auto RadiativeDecayBR(double br) -> void { fRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
     auto ICDecayBR(double br) -> void { fICDecayBR = muc::clamp<"[]">(br, 0., 1.); }
@@ -50,7 +50,7 @@ protected:
     double fICDecayBR;
 
 private:
-    MuonPrecisionDecayPhysicsMessenger::Register<MuoniumPrecisionDecayPhysics> fMessengerRegister;
+    MuonNLODecayPhysicsMessenger::Register<MuoniumNLODecayPhysics> fMessengerRegister;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics
