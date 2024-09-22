@@ -26,6 +26,9 @@ class BiasedMuonDecayChannelWithSpin : public G4MuonDecayChannelWithSpin {
 public:
     BiasedMuonDecayChannelWithSpin(const G4String& parentName, G4double br, G4int verbose = 1);
 
+    auto EnergyCut() const -> auto { return EnergyCut; }
+    auto EnergyCut(double cut) -> void { fEnergyCut = cut; }
+
     auto DecayIt(G4double) -> G4DecayProducts* override;
 
 private:
