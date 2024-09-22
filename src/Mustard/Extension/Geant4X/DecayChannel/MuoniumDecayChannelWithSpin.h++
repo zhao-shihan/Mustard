@@ -19,12 +19,13 @@
 #pragma once
 
 #include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
+#include "Mustard/Extension/Geant4X/DecayChannel/BiasedMuonDecayChannelWithSpin.h++"
 
 #include "G4MuonDecayChannelWithSpin.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-using MuoniumDecayChannelWithSpin = AsMuoniumDecayChannel<G4MuonDecayChannelWithSpin,
+using MuoniumDecayChannelWithSpin = AsMuoniumDecayChannel<BiasedMuonDecayChannelWithSpin,
                                                           "MuoniumDecayWithSpin">;
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel

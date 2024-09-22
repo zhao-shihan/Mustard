@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Extension/Geant4X/DecayChannel/BiasedMuonDecayChannelWithSpin.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysics.h++"
 
@@ -99,7 +100,7 @@ auto MuonNLODecayPhysics::ConstructProcess() -> void {
 
 auto MuonNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
     // sort by initial BR! we firstly write random BRs in decrease order...
-    decay->Insert(new G4MuonDecayChannelWithSpin{parentName, 1e-1}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
+    decay->Insert(new BiasedMuonDecayChannelWithSpin{parentName, 1e-1}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
     decay->Insert(new G4MuonRadiativeDecayChannelWithSpin{parentName, 1e-2}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
     decay->Insert(new MuonInternalConversionDecayChannel{parentName, 1e-3, verboseLevel});
 }
