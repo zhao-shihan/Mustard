@@ -17,6 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Extension/Geant4X/DecayChannel/BiasedMuonDecayChannelWithSpin.h++"
+#include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "G4DecayProducts.hh"
@@ -24,35 +25,22 @@
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
+using namespace LiteralUnit::Energy;
 using namespace PhysicalConstant;
 
 BiasedMuonDecayChannelWithSpin::BiasedMuonDecayChannelWithSpin(const G4String& parentName, G4double br, G4int verbose) :
     G4MuonDecayChannelWithSpin{parentName, br},
-    fEnergyCut{40.} {}
+    fEnergyCut{40_MeV} {}
 
 auto BiasedMuonDecayChannelWithSpin::DecayIt(G4double) -> G4DecayProducts* {
-
-    G4DecayProducts* products;
-    G4DynamicParticle* e;
-    G4DynamicParticle* v1;
-    G4DynamicParticle* v2;
-
-    double positronEnergy{};
-
-    while (positronEnergy < fEnergyCut) {
-        products = G4MuonDecayChannelWithSpin::DecayIt(muon_mass_c2);
-        v2 = products->PopProducts();
-        v1 = products->PopProducts();
-        e = products->PopProducts();
-
-        positronEnergy = e->GetKineticEnergy();
+    while (true) {
+        const auto products{G4MuonDecayChannelWithSpin::DecayIt(muon_mass_c2)};
+        const auto positron{(*products)[0]};
+        if (positron->GetKineticEnergy() > fEnergyCut) {
+            return products;
+        }
+        delete products;
     }
-
-    products->PushProducts(e);
-    products->PushProducts(v1);
-    products->PushProducts(v2);
-
-    return products;
 }
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
