@@ -16,8 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Extension/Geant4X/DecayChannel/BiasedMuonDecayChannelWithSpin.h++"
-#include "Mustard/Utility/LiteralUnit.h++"
+#include "Mustard/Extension/Geant4X/DecayChannel/MuonBiasedDecayChannelWithSpin.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "G4DecayProducts.hh"
@@ -25,14 +24,14 @@
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-using namespace LiteralUnit::Energy;
 using namespace PhysicalConstant;
 
-BiasedMuonDecayChannelWithSpin::BiasedMuonDecayChannelWithSpin(const G4String& parentName, G4double br, G4int verbose) :
+MuonBiasedDecayChannelWithSpin::MuonBiasedDecayChannelWithSpin(const G4String& parentName, G4double br) :
     G4MuonDecayChannelWithSpin{parentName, br},
-    fEnergyCut{40_MeV} {}
+    fEnergyCut{0.},
+    fMessengerRegister{this} {}
 
-auto BiasedMuonDecayChannelWithSpin::DecayIt(G4double) -> G4DecayProducts* {
+auto MuonBiasedDecayChannelWithSpin::DecayIt(G4double) -> G4DecayProducts* {
     while (true) {
         const auto products{G4MuonDecayChannelWithSpin::DecayIt(muon_mass_c2)};
         const auto positron{(*products)[0]};

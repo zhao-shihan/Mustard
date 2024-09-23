@@ -18,21 +18,25 @@
 
 #pragma once
 
+#include "Mustard/Extension/Geant4X/DecayChannel/MuonBiasedDecayChannelWithSpinMessenger.h++"
+
 #include "G4MuonDecayChannelWithSpin.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-class BiasedMuonDecayChannelWithSpin : public G4MuonDecayChannelWithSpin {
+class MuonBiasedDecayChannelWithSpin : public G4MuonDecayChannelWithSpin {
 public:
-    BiasedMuonDecayChannelWithSpin(const G4String& parentName, G4double br, G4int verbose = 1);
+    MuonBiasedDecayChannelWithSpin(const G4String& parentName, G4double br);
 
-    auto EnergyCut() const -> auto { return EnergyCut; }
+    auto EnergyCut() const -> auto { return fEnergyCut; }
     auto EnergyCut(double cut) -> void { fEnergyCut = cut; }
 
     auto DecayIt(G4double) -> G4DecayProducts* override;
 
 private:
     double fEnergyCut;
+
+    MuonBiasedDecayChannelWithSpinMessenger::Register<MuonBiasedDecayChannelWithSpin> fMessengerRegister;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
