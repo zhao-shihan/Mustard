@@ -28,7 +28,7 @@ namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 using namespace LiteralUnit::Energy;
 using namespace PhysicalConstant;
 
-MuonBiasedDecayChannelWithSpin::MuonBiasedDecayChannelWithSpin(const G4String& parentName, G4double br, G4int verbose) :
+MuonBiasedDecayChannelWithSpin::MuonBiasedDecayChannelWithSpin(const G4String& parentName, G4double br) :
     G4MuonDecayChannelWithSpin{parentName, br},
     fEnergyCut{0_MeV},
     fMessengerRegister{this} {}

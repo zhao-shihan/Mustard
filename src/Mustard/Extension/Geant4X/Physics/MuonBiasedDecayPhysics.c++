@@ -41,8 +41,6 @@ MuonBiasedDecayPhysics::MuonBiasedDecayPhysics(G4int verbose) :
     verboseLevel = verbose;
 }
 
-auto MuonBiasedDecayPhysics::UpdateDecayBR() -> void {}
-
 auto MuonBiasedDecayPhysics::ConstructParticle() -> void {
     G4EmBuilder::ConstructMinimalEmSet();
 
@@ -93,7 +91,5 @@ auto MuonBiasedDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl:
     // sort by initial BR! we firstly write random BRs in decrease order...
     decay->Insert(new MuonBiasedDecayChannelWithSpin{parentName, 1}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
 }
-
-auto MuonBiasedDecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {}
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics

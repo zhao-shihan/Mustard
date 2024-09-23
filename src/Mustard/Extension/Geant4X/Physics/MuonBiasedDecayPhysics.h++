@@ -34,14 +34,14 @@ class MuonBiasedDecayPhysics : public DecayPhysicsBase {
 public:
     MuonBiasedDecayPhysics(G4int verbose);
 
-    virtual auto UpdateDecayBR() -> void override;
+    virtual auto UpdateDecayBR() -> void override {};
 
     virtual auto ConstructParticle() -> void override;
     virtual auto ConstructProcess() -> void override;
 
 protected:
     virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void override;
-    virtual auto AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void override;
+    virtual auto AssignRareDecayBR(gsl::not_null<G4DecayTable*>) -> void override{};
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics
