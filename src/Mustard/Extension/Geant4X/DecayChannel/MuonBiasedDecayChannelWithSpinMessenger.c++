@@ -32,7 +32,7 @@ MuonBiasedDecayChannelWithSpinMessenger::MuonBiasedDecayChannelWithSpinMessenger
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuonDecay/Biasing/");
     fDirectory->SetGuidance("Muon(ium) decay channel biasing.");
 
-    fEnergyCut = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/Physics/MuonDecay/Biasing/Energy", this);
+    fEnergyCut = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/Physics/MuonDecay/Biasing/EnergyCut", this);
     fEnergyCut->SetGuidance("Set energy cut for muon(ium) decay channel.");
     fEnergyCut->SetParameterName("E", false);
     fEnergyCut->SetDefaultValue(0.);
