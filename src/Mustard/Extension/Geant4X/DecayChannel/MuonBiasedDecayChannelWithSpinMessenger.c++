@@ -19,9 +19,7 @@
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonBiasedDecayChannelWithSpin.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonBiasedDecayChannelWithSpinMessenger.h++"
 
-#include "G4UIcmdWithADouble.hh"
-#include "G4UIcmdWithoutParameter.hh"
-#include "G4UIcommand.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIdirectory.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
@@ -31,13 +29,15 @@ MuonBiasedDecayChannelWithSpinMessenger::MuonBiasedDecayChannelWithSpinMessenger
     fDirectory{},
     fEnergyCut{} {
 
-    fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuonDecay/");
-    fDirectory->SetGuidance("About muon(ium) decay channel and decay generators.");
+    fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuonDecay/Biasing/");
+    fDirectory->SetGuidance("Muon(ium) decay channel biasing.");
 
-    fEnergyCut = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuonDecay/Biasing/Energy", this);
+    fEnergyCut = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/Physics/MuonDecay/Biasing/Energy", this);
     fEnergyCut->SetGuidance("Set energy cut for muon(ium) decay channel.");
     fEnergyCut->SetParameterName("E", false);
-    fEnergyCut->SetRange("0 <= E");
+    fEnergyCut->SetDefaultValue(0.);
+    fEnergyCut->SetDefaultUnit("MeV");
+    fEnergyCut->SetRange("E >= 0");
     fEnergyCut->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 

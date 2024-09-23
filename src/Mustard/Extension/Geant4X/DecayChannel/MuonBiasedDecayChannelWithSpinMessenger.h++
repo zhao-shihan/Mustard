@@ -22,7 +22,7 @@
 
 #include <memory>
 
-class G4UIcmdWithADouble;
+class G4UIcmdWithADoubleAndUnit;
 class G4UIdirectory;
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
@@ -42,7 +42,7 @@ public:
 
 private:
     std::unique_ptr<G4UIdirectory> fDirectory;
-    std::unique_ptr<G4UIcmdWithADouble> fEnergyCut;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fEnergyCut;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
