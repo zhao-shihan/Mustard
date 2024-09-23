@@ -18,13 +18,30 @@
 
 #pragma once
 
-#include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
+#include "Mustard/Extension/Geant4X/Physics/DecayPhysicsBase.h++"
 
-#include "G4MuonDecayChannelWithSpin.hh"
+#include "muc/math"
 
-namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
+#include "gsl/gsl"
 
-using MuoniumDecayChannelWithSpin = AsMuoniumDecayChannel<G4MuonDecayChannelWithSpin,
-                                                          "MuoniumDecayWithSpin">;
+class G4DecayTable;
+class G4ParticleDefinition;
+class G4String;
 
-} // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
+namespace Mustard::inline Extension::Geant4X::inline Physics {
+
+class MuonBiasedDecayPhysics : public DecayPhysicsBase {
+public:
+    MuonBiasedDecayPhysics(G4int verbose);
+
+    virtual auto UpdateDecayBR() -> void override;
+
+    virtual auto ConstructParticle() -> void override;
+    virtual auto ConstructProcess() -> void override;
+
+protected:
+    virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void override;
+    virtual auto AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void override;
+};
+
+} // namespace Mustard::inline Extension::Geant4X::inline Physics

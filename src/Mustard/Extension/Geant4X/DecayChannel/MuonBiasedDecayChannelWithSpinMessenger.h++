@@ -18,13 +18,31 @@
 
 #pragma once
 
-#include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
+#include "Mustard/Extension/Geant4X/Interface/SingletonMessenger.h++"
 
-#include "G4MuonDecayChannelWithSpin.hh"
+#include <memory>
+
+class G4UIcmdWithADouble;
+class G4UIdirectory;
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-using MuoniumDecayChannelWithSpin = AsMuoniumDecayChannel<G4MuonDecayChannelWithSpin,
-                                                          "MuoniumDecayWithSpin">;
+class MuonBiasedDecayChannelWithSpin;
+
+class MuonBiasedDecayChannelWithSpinMessenger final : public Geant4X::SingletonMessenger<MuonBiasedDecayChannelWithSpinMessenger,
+                                                                                         MuonBiasedDecayChannelWithSpin> {
+    friend Env::Memory::SingletonInstantiator;
+
+private:
+    MuonBiasedDecayChannelWithSpinMessenger();
+    ~MuonBiasedDecayChannelWithSpinMessenger();
+
+public:
+    auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
+
+private:
+    std::unique_ptr<G4UIdirectory> fDirectory;
+    std::unique_ptr<G4UIcmdWithADouble> fEnergyCut;
+};
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
