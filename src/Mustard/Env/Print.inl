@@ -31,6 +31,12 @@ auto PrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
 }
 
 template<char L, typename... Ts>
+auto Print(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (not Env::VerboseLevelReach<L>()) { return; }
+    fmt::print(ts, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
 auto Print(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) { return; }
     fmt::print(f, std::move(fmt), std::forward<Ts>(args)...);
@@ -40,6 +46,12 @@ template<char L, typename... Ts>
 auto PrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) { return; }
     fmt::println(f, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto Print(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (not Env::VerboseLevelReach<L>()) { return; }
+    fmt::print(f, ts, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
@@ -55,6 +67,12 @@ auto PrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> v
 }
 
 template<char L, typename... Ts>
+auto Print(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (not Env::VerboseLevelReach<L>()) { return; }
+    fmt::print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
 auto Print(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) { return; }
     fmt::print(os, std::move(fmt), std::forward<Ts>(args)...);
@@ -64,6 +82,12 @@ template<char L, typename... Ts>
 auto PrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) { return; }
     fmt::println(os, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto Print(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+    if (not Env::VerboseLevelReach<L>()) { return; }
+    fmt::print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L>
@@ -83,6 +107,11 @@ auto PrintLnInfo(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
 }
 
 template<typename... Ts>
+auto PrintInfo(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    Print<'I'>(ts, stderr, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<typename... Ts>
 auto VPrintInfo(auto&&... args) -> void {
     VPrint<'I'>(stderr, std::forward<decltype(args)>(args)...);
 }
@@ -98,6 +127,11 @@ auto PrintLnWarning(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
 }
 
 template<typename... Ts>
+auto PrintWarning(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    Print<'W'>(stderr, ts, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<typename... Ts>
 auto VPrintWarning(auto&&... args) -> void {
     VPrint<'W'>(stderr, std::forward<decltype(args)>(args)...);
 }
@@ -110,6 +144,11 @@ auto PrintError(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
 template<typename... Ts>
 auto PrintLnError(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     PrintLn<'E'>(stderr, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<typename... Ts>
+auto PrintError(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    Print<'E'>(stderr, ts, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<typename... Ts>

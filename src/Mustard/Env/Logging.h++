@@ -21,6 +21,8 @@
 #include "Mustard/Env/Print.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
+#include "fmt/color.h"
+
 #include <source_location>
 #include <string_view>
 

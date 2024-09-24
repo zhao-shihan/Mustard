@@ -20,10 +20,12 @@
 
 #include "Mustard/Utility/InlineMacro.h++"
 
-#include <iostream>
+#include "fmt/color.h"
+
+#include <cstdio>
 
 namespace Mustard::inline Utility {
 
-MUSTARD_NOINLINE auto PrintStackTrace(int depth = 64, int skip = 0, std::ostream& os = std::clog) -> void;
+MUSTARD_NOINLINE auto PrintStackTrace(int depth = 64, int skip = 0, std::FILE* f = stderr, const fmt::text_style& ts = {}) -> void;
 
 } // namespace Mustard::inline Utility

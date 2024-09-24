@@ -23,7 +23,7 @@
 
 #include "muc/bit"
 
-#include "fmt/format.h"
+#include "fmt/color.h"
 
 #include <limits>
 
@@ -38,9 +38,9 @@
 
 #    include <chrono>
 #    include <csignal>
+#    include <cstdio>
 #    include <cstdlib>
 #    include <ctime>
-#    include <iostream>
 
 #endif
 
@@ -65,23 +65,33 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
             const auto lineHeader{MPIEnv::Available() ?
                                       fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
                                       ""};
-            PrintLn(std::clog, "");
+            const auto textStyle{fmt::emphasis::bold};
+            Print(stderr, "\n");
             switch (sig) {
             case SIGINT:
-                PrintLn(std::clog, "{}***** INTERRUPT (SIGINT) received", lineHeader);
+                Print(stderr, textStyle, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
                 break;
             case SIGTERM:
-                PrintLn(std::clog, "{}***** TERMINATE (SIGTERM) received", lineHeader);
+                Print(stderr, textStyle, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
                 break;
             }
             if (MPIEnv::Available()) {
                 const auto& mpi{MPIEnv::Instance()};
-                PrintLn(std::clog, "{}***** on MPI process {} (node: {})", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+                Print(stderr, textStyle, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
             }
-            PrintLn(std::clog, "{}***** at {:%FT%T%z}", lineHeader, fmt::localtime(now));
-            PrintStackTrace(64, 2);
-            PrintLn(std::clog, "");
-            flush(std::clog);
+            Print(stderr, textStyle, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+            PrintStackTrace(64, 2, stderr, textStyle);
+            Print(stderr, "\n");
+            switch (sig) {
+            case SIGINT:
+                Print(stderr, textStyle, "Ctrl-C has been pressed or an external interrupt received."); // no '\n' looks good for now
+                break;
+            case SIGTERM:
+                Print(stderr, textStyle, "The process is terminated.\n");
+                break;
+            }
+            Print(stderr, "\n");
+            std::fflush(stderr);
             std::raise(sig);
         }
     } handler{sig};
@@ -93,16 +103,19 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
     const auto lineHeader{MPIEnv::Available() ?
                               fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
                               ""};
-    PrintLn(std::clog, "");
-    PrintLn(std::clog, "{}***** ABORT (SIGABRT) received", lineHeader);
+    const auto textStyle{fmt::emphasis::bold | fg(fmt::color::orange)};
+    Print(stderr, "\n");
+    Print(stderr, textStyle, "{}***** ABORT (SIGABRT) received\n", lineHeader);
     if (MPIEnv::Available()) {
         const auto& mpi{MPIEnv::Instance()};
-        PrintLn(std::clog, "{}***** on MPI process {} (node: {})", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+        Print(stderr, textStyle, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
     }
-    PrintLn(std::clog, "{}***** at {:%FT%T%z}", lineHeader, fmt::localtime(now));
-    PrintStackTrace(64, 2);
-    PrintLn(std::clog, "");
-    flush(std::clog);
+    Print(stderr, textStyle, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+    PrintStackTrace(64, 2, stderr, textStyle);
+    Print(stderr, "\n");
+    Print(stderr, textStyle, "It is very likely that an exception has been thrown. View the logs just before receiving SIGABRT for more information.\n");
+    Print(stderr, "\n");
+    std::fflush(stderr);
     std::abort();
 }
 
@@ -120,26 +133,29 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
             const auto lineHeader{MPIEnv::Available() ?
                                       fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
                                       ""};
-            PrintLn(std::clog, "");
+            const auto textStyle{fmt::emphasis::bold | fg(fmt::color::red)};
+            Print(stderr, "\n");
             switch (sig) {
             case SIGFPE:
-                PrintLn(std::clog, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received", lineHeader);
+                Print(stderr, textStyle, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
                 break;
             case SIGILL:
-                PrintLn(std::clog, "{}***** ILLEGAL INSTRUCTION (SIGILL) received", lineHeader);
+                Print(stderr, textStyle, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
                 break;
             case SIGSEGV:
-                PrintLn(std::clog, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received", lineHeader);
+                Print(stderr, textStyle, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
                 break;
             }
             if (MPIEnv::Available()) {
                 const auto& mpi{MPIEnv::Instance()};
-                PrintLn(std::clog, "{}***** on MPI process {} (node: {})", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+                Print(stderr, textStyle, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
             }
-            PrintLn(std::clog, "{}***** at {:%FT%T%z}", lineHeader, fmt::localtime(now));
-            PrintStackTrace(64, 2);
-            PrintLn(std::clog, "");
-            flush(std::clog);
+            Print(stderr, textStyle, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+            PrintStackTrace(64, 2, stderr, textStyle);
+            Print(stderr, "\n");
+            Print(stderr, textStyle, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");
+            Print(stderr, "\n");
+            std::fflush(stderr);
             std::raise(sig);
         }
     } handler{sig};
@@ -211,26 +227,26 @@ auto EnvBase::CheckFundamentalType() -> void {
                         muc::bit_size<void*> == 64};
     if constexpr (not lp64) {
         if constexpr (llp64) {
-            fmt::println(stderr, "Warning: The fundamental data model is LLP64 (not LP64)");
+            fmt::print(stderr, fg(fmt::color::orange), "Warning: The fundamental data model is LLP64 (not LP64)\n");
         } else if constexpr (ilp32) {
-            fmt::println(stderr, "Warning: The fundamental data model is ILP32 (not LP64)");
+            fmt::print(stderr, fg(fmt::color::orange), "Warning: The fundamental data model is ILP32 (not LP64)\n");
         } else if constexpr (lp32) {
-            fmt::println(stderr, "Warning: The fundamental data model is LP32 (not LP64)");
+            fmt::print(stderr, fg(fmt::color::orange), "Warning: The fundamental data model is LP32 (not LP64)\n");
         } else {
-            fmt::println(stderr, "Warning: Using a rare fundamental data model "
-                                 "[{}-bits char, {}-bits short, {}-bits int, {}-bits long, {}-bits long long, {}-bits pointer], "
-                                 "run at your own risk",
-                         muc::bit_size<char>, muc::bit_size<short>, muc::bit_size<int>, muc::bit_size<long>, muc::bit_size<long long>, muc::bit_size<void*>);
+            fmt::print(stderr, fg(fmt::color::orange), "Warning: Using a rare fundamental data model "
+                                                       "[{}-bits char, {}-bits short, {}-bits int, {}-bits long, {}-bits long long, {}-bits pointer], "
+                                                       "run at your own risk\n",
+                       muc::bit_size<char>, muc::bit_size<short>, muc::bit_size<int>, muc::bit_size<long>, muc::bit_size<long long>, muc::bit_size<void*>);
         }
     }
     if (not std::numeric_limits<float>::is_iec559) {
-        fmt::println(stderr, "Warning: 'float' does not fulfill the requirements of IEC 559 (IEEE 754)");
+        fmt::print(stderr, fg(fmt::color::orange), "Warning: 'float' does not fulfill the requirements of IEC 559 (IEEE 754)\n");
     }
     if (not std::numeric_limits<double>::is_iec559) {
-        fmt::println(stderr, "Warning: 'double' does not fulfill the requirements of IEC 559 (IEEE 754)");
+        fmt::print(stderr, fg(fmt::color::orange), "Warning: 'double' does not fulfill the requirements of IEC 559 (IEEE 754)\n");
     }
     if (not std::numeric_limits<long double>::is_iec559) {
-        fmt::println(stderr, "Warning: 'long double' does not fulfill the requirements of IEC 559 (IEEE 754)");
+        fmt::print(stderr, fg(fmt::color::orange), "Warning: 'long double' does not fulfill the requirements of IEC 559 (IEEE 754)\n");
     }
 }
 

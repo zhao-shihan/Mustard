@@ -20,17 +20,20 @@ namespace Mustard::Env {
 
 template<typename... Ts>
 auto PrintPrettyInfo(std::string_view message, const std::source_location& location) -> void {
-    PrintLnInfo("{}", PrettyInfo(message, location));
+    PrintInfo(fg(fmt::color::deep_sky_blue), "{}", PrettyInfo(message, location));
+    PrintInfo("\n");
 }
 
 template<typename... Ts>
 auto PrintPrettyWarning(std::string_view message, const std::source_location& location) -> void {
-    PrintLnWarning("{}", PrettyWarning(message, location));
+    PrintWarning(fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::dark_orange), "{}", PrettyWarning(message, location));
+    PrintWarning("\n");
 }
 
 template<typename... Ts>
 auto PrintPrettyError(std::string_view message, const std::source_location& location) -> void {
-    PrintLnError("{}", PrettyError(message, location));
+    PrintError(fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red), "{}", PrettyError(message, location));
+    PrintError("\n");
 }
 
 } // namespace Mustard::Env

@@ -28,7 +28,7 @@
 
 namespace Mustard::inline Utility {
 
-MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::ostream& os) -> void {
+MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const fmt::text_style& ts) -> void {
     const auto trueSkip{skip + 1};
     backward::StackTrace stack;
     stack.load_here(depth + trueSkip);
@@ -59,7 +59,7 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::ostream& os) -> 
         text += '\n';
     }
 
-    Env::Print(os, "{}", text);
+    Env::Print(f, ts, "{}", text);
 }
 
 } // namespace Mustard::inline Utility
