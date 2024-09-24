@@ -18,64 +18,56 @@
 
 #pragma once
 
+#include "Mustard/Env/Logging.h++"
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/MPIX/DataType.h++"
-#include "Mustard/Extension/ROOTX/RDataFrame.h++"
+#include "Mustard/Utility/PrettyLog.h++"
+
+#include "ROOT/RDataFrame.hxx"
 
 #include "mpi.h"
 
-#include "fmt/format.h"
+#include "gsl/gsl"
 
-#include <cassert>
+#include "fmt/core.h"
+
 #include <concepts>
-#include <cstdio>
+#include <limits>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace Mustard::Data {
 
 template<std::integral T = int>
-auto RDFEventSplitPoint(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName) -> std::vector<unsigned> {
-    std::vector<unsigned> eventSplitPoint;
+auto RDFEventSplitPoint(ROOT::RDF::RNode rdf, std::string_view eventIDBranchName) -> std::vector<unsigned>;
 
-    if (Env::MPIEnv::Instance().OnCommWorldMaster()) {
-        unsigned index{};
-        T lastEventID{-1};
-        std::unordered_set<T> eventIDSet;
-        rdf.Foreach(
-            [&](T eventID) {
-                assert(eventID >= 0);
-                if (eventID != lastEventID) {
-                    if (not eventIDSet.emplace(eventID).second) {
-                        Env::PrintLnWarning("Warning: Disordered dataset (event {} has appeared before)", eventID);
-                    }
-                    lastEventID = eventID;
-                    eventSplitPoint.emplace_back(index);
-                }
-                ++index;
-            },
-            {std::string{eventIDBranchName}});
-        eventSplitPoint.emplace_back(index);
-    }
+template<std::integral T>
+struct MasterSlaveRDFEventSplitPoint {
+    struct MasterEventSplitPoint {
+        T eventID;
+        unsigned entry;
+    };
 
-    auto eventSplitPointSize{eventSplitPoint.size()};
-    MPI_Bcast(&eventSplitPointSize,                // buffer
-              1,                                   // count
-              MPIX::DataType(eventSplitPointSize), // datatype
-              0,                                   // root
-              MPI_COMM_WORLD);                     // comm
-    eventSplitPoint.resize(eventSplitPointSize);
+    struct SlaveEventRange {
+        unsigned first;
+        unsigned last;
+    };
 
-    MPI_Bcast(eventSplitPoint.data(), // buffer
-              eventSplitPoint.size(), // count
-              MPI_UNSIGNED,           // datatype
-              0,                      // root
-              MPI_COMM_WORLD);        // comm
+    std::vector<MasterEventSplitPoint> master;
+    std::vector<std::unordered_map<T, SlaveEventRange>> slave;
+};
 
-    return eventSplitPoint;
-}
+template<std::integral T = int>
+auto RDFEventSplitPoint(ROOT::RDF::RNode masterRDF,
+                        std::vector<ROOT::RDF::RNode> slaveRDF,
+                        std::string_view masterEventIDBranchName,
+                        std::vector<std::string> slaveEventIDBranchName = {}) -> MasterSlaveRDFEventSplitPoint<T>;
 
 } // namespace Mustard::Data
+
+#include "Mustard/Data/RDFEventSplitPoint.inl"
