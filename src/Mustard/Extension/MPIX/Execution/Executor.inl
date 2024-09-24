@@ -184,7 +184,7 @@ auto Executor<T>::PreLoopReport() const -> void {
     Env::Print("+----------------------------------> Start <----------------------------------+\n"
                "| {:75} |\n"
                "+----------------------------------> Start <----------------------------------+\n",
-               fmt::format("{:%FT%T%z} > {} has started on {} process{}",
+               fmt::format("[{:%FT%T%z}] {} has started on {} process{}",
                            fmt::localtime(scsc::to_time_t(fExecutionBeginSystemTime)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""));
 }
 
@@ -203,7 +203,7 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
         if ((iEnded + 1) % fPrintProgressModulo != 0) { return; }
     }
     const auto& mpiEnv{Env::MPIEnv::Instance()};
-    Env::Print("MPI{}> {:%FT%T%z} > {} {} has ended\n"
+    Env::Print("MPI{}> [{:%FT%T%z}] {} {} has ended\n"
                "MPI{}>   {} elaps., {}\n",
                mpiEnv.CommWorldRank(), fmt::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
                mpiEnv.CommWorldRank(), SToDHMS(secondsElapsed),
@@ -234,7 +234,7 @@ auto Executor<T>::PostLoopReport() const -> void {
                "| {:75} |\n"
                "| {:75} |\n"
                "+-----------------------------------> End <-----------------------------------+\n",
-               fmt::format("{:%FT%T%z} > {} has ended on {} process{}", fmt::localtime(scsc::to_time_t(now)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""),
+               fmt::format("[{:%FT%T%z}] {} has ended on {} process{}", fmt::localtime(scsc::to_time_t(now)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""),
                fmt::format("  Start time: {:%FT%T%z}", fmt::localtime(scsc::to_time_t(fExecutionBeginSystemTime))),
                fmt::format("   Wall time: {:.3f} seconds{}", maxWallTime, maxWallTime <= 60 ? "" : " (" + SToDHMS(maxWallTime) + ')'),
                fmt::format("    CPU time: {:.3f} seconds{}", totalCpuTime, totalCpuTime <= 60 ? "" : " (" + SToDHMS(totalCpuTime) + ')'));
