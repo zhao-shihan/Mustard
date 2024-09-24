@@ -109,6 +109,20 @@ auto PrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_iden
 template<char L = 'E'>
 auto VPrint(auto&&... args) -> void;
 
+/// @brief Same as `Print<'I'>(stderr, ...)`
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<typename... Ts>
+auto PrintInfo(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+/// @brief Same as `PrintLn<'I'>(stderr, ...)`
+/// @param fmt Same as `fmt::println`
+/// @param ...args Same as `fmt::println`
+template<typename... Ts>
+auto PrintLnInfo(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+/// @brief Same as `VPrint<'I'>(stderr, ...)`
+/// @param ...args Same as `fmt::vprint`
+template<typename... Ts>
+auto VPrintInfo(auto&&... args) -> void;
 /// @brief Same as `Print<'W'>(stderr, ...)`
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
