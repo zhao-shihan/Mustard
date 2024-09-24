@@ -20,7 +20,7 @@
 
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/Value.h++"
-#include "Mustard/Env/Print.h++"
+#include "Mustard/Env/Logging.h++"
 #include "Mustard/Extension/gslx/index_sequence.h++"
 #include "Mustard/Utility/InlineMacro.h++"
 

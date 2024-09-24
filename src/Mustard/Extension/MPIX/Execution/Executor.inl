@@ -160,7 +160,7 @@ auto Executor<T>::PrintExecutionSummary() const -> void {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     if (not mpiEnv.OnCommWorldMaster()) { return; }
     if (fExecuting) {
-        Env::PrintLnWarning("Execution summary not available for now.");
+        Env::PrintPrettyWarning("Execution summary not available for now");
         return;
     }
     Env::Print("+------------------+--------------> Summary <-------------+-------------------+\n"

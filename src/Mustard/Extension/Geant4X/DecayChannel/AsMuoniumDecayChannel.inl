@@ -56,7 +56,7 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4Dec
     G4ThreeVector p{};
     for (auto i{0};; ++i) {
         if (i == 100) {
-            Env::PrintLnError("AsMuoniumDecayChannel: atomic shell e+/e- momentum disconverged");
+            Env::PrintPrettyError("Atomic shell e+/e- momentum disconverged");
             break;
         }
         const auto [pStar, converged]{muc::find_root::secant(

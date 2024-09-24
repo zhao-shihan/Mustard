@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Env/Print.h++"
+#include "Mustard/Env/Logging.h++"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/Random.h"
@@ -29,6 +29,8 @@
 
 #include "muc/math"
 #include "muc/numeric"
+
+#include "fmt/core.h"
 
 #include <algorithm>
 #include <array>

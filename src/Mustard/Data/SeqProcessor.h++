@@ -21,6 +21,7 @@
 #include "Mustard/Data/RDFEventSplitPoint.h++"
 #include "Mustard/Data/TakeFrom.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
+#include "Mustard/Env/Logging.h++"
 #include "Mustard/Extension/ROOTX/RDataFrame.h++"
 
 #include <algorithm>

@@ -92,7 +92,7 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
         },
         0., 1.)};
     if (not xiConverged) [[unlikely]] {
-        Env::PrintLnWarning("Mustard::CLHEPX::RAMBO: Momentum scale (xi = {}) not converged", xi);
+        Env::PrintPrettyWarning(fmt::format("Momentum scale (xi = {}) not converged", xi));
     }
     for (auto iMom{0}; iMom < N; iMom++) {
         p[iMom][0] = muc::hypot(fMass[iMom], xi * p[iMom][0]);

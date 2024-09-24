@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/Env/Logging.h++"
 #include "Mustard/Env/Memory/Singleton.h++"
 #include "Mustard/Env/Print.h++"
 
@@ -27,6 +28,8 @@
 #include "muc/tuple"
 
 #include "gsl/gsl"
+
+#include "fmt/core.h"
 
 #include <concepts>
 #include <exception>

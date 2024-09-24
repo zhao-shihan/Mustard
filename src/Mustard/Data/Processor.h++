@@ -21,11 +21,14 @@
 #include "Mustard/Data/RDFEventSplitPoint.h++"
 #include "Mustard/Data/TakeFrom.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
+#include "Mustard/Env/Logging.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
 #include "Mustard/Extension/ROOTX/RDataFrame.h++"
 
 #include "muc/concepts"
+
+#include "fmt/core.h"
 
 #include <algorithm>
 #include <functional>

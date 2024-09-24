@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Concept/MPIPredefined.h++"
+#include "Mustard/Env/Logging.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/MPIX/Execution/DynamicScheduler.h++"

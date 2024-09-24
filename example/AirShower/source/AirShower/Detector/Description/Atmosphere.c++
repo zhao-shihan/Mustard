@@ -1,6 +1,6 @@
 #include "AirShower/Detector/Description/Atmosphere.h++"
 
-#include "Mustard/Env/Print.h++"
+#include "Mustard/Env/Logging.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 
 #include "G4SystemOfUnits.hh"
@@ -199,7 +199,7 @@ auto Atmosphere::CalculateAltitudeSlice() const -> std::vector<double> {
         const auto [alt, converged]{
             muc::find_root::zbrent([&, p = pressure[i]](auto z) { return CalculateP(z) - p; },
                                    0., *fMaxAltitude)};
-        if (not converged) { Mustard::Env::PrintLnWarning("Warning: Slice altitude not converged"); }
+        if (not converged) { Mustard::Env::PrintPrettyWarning("Slice altitude not converged"); }
         altitude[i] = alt;
     }
     altitude.back() = fMaxAltitude;
