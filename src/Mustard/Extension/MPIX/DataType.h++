@@ -42,8 +42,8 @@ auto DataType() -> MPI_Datatype {
         return MPI_LONG;
     } else if constexpr (std::same_as<U, signed long long>) {
         return MPI_LONG_LONG_INT;
-    } else if constexpr (std::same_as<U, signed long long>) {
-        return MPI_LONG_LONG;
+        /* } else if constexpr (std::same_as<U, signed long long>) {
+            return MPI_LONG_LONG; */
     } else if constexpr (std::same_as<U, signed char>) {
         return MPI_SIGNED_CHAR;
     } else if constexpr (std::same_as<U, unsigned char>) {
