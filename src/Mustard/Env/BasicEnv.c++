@@ -22,6 +22,7 @@
 #include "Mustard/Version.h++"
 
 #include "fmt/chrono.h"
+#include "fmt/color.h"
 
 #include <chrono>
 #include <filesystem>
@@ -73,14 +74,16 @@ BasicEnv::~BasicEnv() {
 
 auto BasicEnv::PrintExitBanner() const -> void {
     using scsc = std::chrono::system_clock;
-    Print("===============================================================================\n"
+    Print(fmt::emphasis::bold,
+          "===============================================================================\n"
           " Exit Mustard environment at {:%FT%T%z}\n"
           "===============================================================================\n",
           fmt::localtime(scsc::to_time_t(scsc::now())));
 }
 
 auto BasicEnv::PrintStartBannerSplitLine() const -> void {
-    Print("\n===============================================================================\n");
+    Print(fmt::emphasis::bold,
+          "\n===============================================================================\n");
 }
 
 auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
@@ -89,13 +92,16 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     auto cwd{std::filesystem::current_path(cwdError).generic_string()};
     if (cwdError) { cwd = "<Error getting current working directory>"; }
     using scsc = std::chrono::system_clock;
-    Print(" ______  ___             _____              _________\n"
+    Print(fmt::emphasis::bold,
+          " ______  ___             _____              _________\n"
           " ___   |/  /___  __________  /______ _____________  /\n"
           " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
           " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n"
           " /_/  /_/  \\____/ /____/ \\__/ \\____/ /_/    \\____/   " MUSTARD_VERSION_STRING "\n"
-          "\n"
-          " An offline software framework for HEP experiments\n"
+          "\n");
+    Print(fmt::emphasis::bold | fmt::emphasis::italic,
+          " An offline software framework for HEP experiments\n");
+    Print(fmt::emphasis::bold,
           " Copyright 2020-2024  The Mustard development team\n"
           "\n"
           " Start at {:%FT%T%z}\n"
@@ -103,9 +109,10 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
           fmt::localtime(scsc::to_time_t(scsc::now())),
           exe);
     for (auto i{1}; i < argc; ++i) {
-        Print(" {}", argv[i]);
+        Print(fmt::emphasis::bold, " {}", argv[i]);
     }
-    Print("\n"
+    Print(fmt::emphasis::bold,
+          "\n"
           " CWD: {}\n",
           cwd);
     Print<'I'>("\n"
