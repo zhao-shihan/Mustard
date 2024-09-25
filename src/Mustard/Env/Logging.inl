@@ -26,13 +26,17 @@ auto PrintPrettyInfo(std::string_view message, const std::source_location& locat
 
 template<typename... Ts>
 auto PrintPrettyWarning(std::string_view message, const std::source_location& location) -> void {
-    PrintWarning(fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::dark_orange), "{}", PrettyWarning(message, location));
+    const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::dark_orange)};
+    PrintWarning(ts | fmt::emphasis::blink, "***");
+    PrintWarning(ts, " {}", PrettyWarning(message, location));
     PrintWarning("\n");
 }
 
 template<typename... Ts>
 auto PrintPrettyError(std::string_view message, const std::source_location& location) -> void {
-    PrintError(fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red), "{}", PrettyError(message, location));
+    const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
+    PrintError(ts | fmt::emphasis::blink, "***");
+    PrintError(ts, " {}", PrettyError(message, location));
     PrintError("\n");
 }
 
