@@ -108,7 +108,7 @@ auto PrintLnInfo(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
 
 template<typename... Ts>
 auto PrintInfo(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    Print<'I'>(ts, stderr, std::move(fmt), std::forward<Ts>(args)...);
+    Print<'I'>(stderr, ts, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<typename... Ts>
