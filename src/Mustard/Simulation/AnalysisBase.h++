@@ -5,6 +5,7 @@
 #include "Mustard/Extension/Geant4X/Utility/ConvertGeometry.h++"
 #include "Mustard/Extension/MPIX/ParallelizePath.h++"
 #include "Mustard/Simulation/AnalysisBaseMessenger.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "TFile.h"
 #include "TMacro.h"

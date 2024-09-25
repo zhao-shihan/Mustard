@@ -22,6 +22,7 @@
 #include "Mustard/Env/Memory/internal/WeakSingletonBase.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
 #include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "fmt/format.h"
 

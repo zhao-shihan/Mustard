@@ -23,6 +23,7 @@
 #include "Mustard/Env/Memory/internal/SingletonPool.h++"
 #include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "fmt/format.h"
 

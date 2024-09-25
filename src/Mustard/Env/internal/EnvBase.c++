@@ -20,6 +20,7 @@
 #include "Mustard/Env/Memory/internal/SingletonPool.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/bit"
 
@@ -242,7 +243,7 @@ EnvBase::EnvBase() :
 
     if (static bool gInstantiated{false};
         gInstantiated) {
-        throw std::logic_error("Mustard::Env::internal::EnvBase: Trying to construct environment twice");
+        throw std::logic_error(PrettyException("Trying to construct environment twice"));
     } else {
         gInstantiated = true;
     }

@@ -19,6 +19,7 @@
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/Geant4X/Run/MPIRunManager.h++"
 #include "Mustard/Utility/MPIReseedRandomEngine.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4ApplicationState.hh"
 #include "G4Exception.hh"
@@ -118,7 +119,7 @@ auto MPIRunManager::DoEventLoop(G4int nEvent, const char* macroFile, G4int nSele
                       [this](auto eventID) {
                           ProcessOneEvent(eventID);
                           TerminateOneEvent();
-                          if (runAborted) { throw std::runtime_error{"G4Run aborted"}; }
+                          if (runAborted) { throw std::runtime_error{PrettyException("G4Run aborted")}; }
                       });
     // If multi-threading, TerminateEventLoop() is invoked after all threads are finished.
     // MPIRunManager::runManagerType is sequentialRM.

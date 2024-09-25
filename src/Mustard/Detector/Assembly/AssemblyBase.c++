@@ -18,6 +18,7 @@
 
 #include "Mustard/Detector/Assembly/AssemblyBase.h++"
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 namespace Mustard::Detector::Assembly {
 
@@ -27,8 +28,7 @@ auto AssemblyBase::Get(std::type_index definition) const -> const Definition::De
         const auto descendant{top->FindDescendant(definition)};
         if (descendant) { return *descendant; }
     }
-    throw std::logic_error{fmt::format("Mustard::Detector::Assembly::AssemblyBase::Get: No {} in assembly",
-                                       definition.name())};
+    throw std::logic_error{PrettyException(fmt::format("No {} in assembly", definition.name()))};
 }
 
 auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase& {
@@ -37,14 +37,13 @@ auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase
         const auto descendant{top->FindDescendant(definition)};
         if (descendant) { return *descendant; }
     }
-    throw std::logic_error{fmt::format("Mustard::Detector::Assembly::AssemblyBase::Get: No {} in assembly",
-                                       definition.name())};
+    throw std::logic_error{PrettyException(fmt::format("No {} in assembly", definition.name()))};
 }
 
 auto AssemblyBase::TopComplete() -> void {
     // check not empty
     if (fTop.empty()) {
-        throw std::logic_error{"Mustard::Detector::Assembly::AssemblyBase::TopComplete: Empty assembly"};
+        throw std::logic_error{PrettyException("Empty assembly")};
     }
     // check not mother-daughter
     for (auto&& [topType, pTop] : fTop) {
@@ -52,8 +51,7 @@ auto AssemblyBase::TopComplete() -> void {
         if (topType == typeid(top)) { continue; }
         for (auto&& [anotherTop, _] : fTop) {
             if (top.FindDaughter(anotherTop)) {
-                throw std::logic_error{fmt::format("Mustard::Detector::Assembly::AssemblyBase::TopComplete: {} is mother of {}",
-                                                   topType.name(), anotherTop.name())};
+                throw std::logic_error{PrettyException(fmt::format("{} is mother of {}", topType.name(), anotherTop.name()))};
             }
         }
     }
@@ -67,7 +65,7 @@ auto AssemblyBase::TopComplete() -> void {
         mother.emplace(myMother);
     }
     if (mother.size() != 1) {
-        throw std::logic_error{"Mustard::Detector::Assembly::AssemblyBase::TopComplete: Assembly has many first ancestors"};
+        throw std::logic_error{PrettyException("Assembly has many first ancestors")};
     }
 }
 

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4FieldManager.hh"
 #include "G4LogicalVolume.hh"

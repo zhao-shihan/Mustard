@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "Mustard/Utility/PrettyLog.h++"
+
 #include "fmt/core.h"
 
 #include <concepts>

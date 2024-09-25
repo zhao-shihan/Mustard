@@ -53,7 +53,7 @@ template<std::integral T>
 template<template<typename> typename AScheduler>
     requires std::derived_from<AScheduler<T>, Scheduler<T>>
 auto Executor<T>::SwitchScheduler() -> void {
-    if (fExecuting) { throw std::logic_error{"switch scheduler kernel during processing"}; }
+    if (fExecuting) { throw std::logic_error{PrettyException("Try switching scheduler kernel during processing")}; }
     auto task{std::move(fScheduler->fTask)};
     fScheduler = std::make_unique_for_overwrite<AScheduler<T>>();
     fScheduler->fTask = std::move(task);
@@ -63,10 +63,10 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
-    if (task.last < task.first) { throw std::invalid_argument{"task.last < task.first"}; }
+    if (task.last < task.first) { throw std::invalid_argument{PrettyException("task.last < task.first")}; }
     if (task.last == task.first) { return 0; }
     if (task.last - task.first < static_cast<T>(Env::MPIEnv::Instance().CommWorldSize())) {
-        throw std::runtime_error{"number of tasks < size of MPI_COMM_WORLD"};
+        throw std::runtime_error{PrettyException("Number of tasks < size of MPI_COMM_WORLD")};
     }
     fScheduler->fTask = task;
     fScheduler->Reset();

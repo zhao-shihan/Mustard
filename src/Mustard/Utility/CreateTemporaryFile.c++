@@ -19,6 +19,7 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Utility/CreateTemporaryFile.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include <chrono>
 #include <cstdio>
@@ -51,7 +52,7 @@ auto CreateTemporaryFile(std::string_view signature, std::filesystem::path exten
         file = std::fopen(path.generic_string().c_str(), "wx");
         if (file) { break; }
     }
-    if (file == nullptr) { throw std::runtime_error{"failed to create a temporary file"}; }
+    if (file == nullptr) { throw std::runtime_error{PrettyException("Failed to create a temporary file")}; }
     std::fclose(file);
 
     static class RemoveTemporaryFileAtExitHelper {

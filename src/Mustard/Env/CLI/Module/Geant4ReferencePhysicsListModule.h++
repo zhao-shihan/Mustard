@@ -20,6 +20,7 @@
 
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/CLI/Module/ModuleBase.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4PhysListFactory.hh"
 #include "G4VModularPhysicsList.hh"

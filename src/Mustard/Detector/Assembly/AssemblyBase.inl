@@ -23,8 +23,7 @@ template<std::derived_from<Definition::DefinitionBase> ADefinition>
 auto AssemblyBase::AddTop(ADefinition& top) -> void {
     const auto [_, inserted]{fTop.try_emplace(typeid(ADefinition), &top)};
     if (not inserted) {
-        throw std::logic_error{fmt::format("Mustard::Detector::Assembly::AssemblyBase::AddTop: {} added twice",
-                                           typeid(ADefinition).name())};
+        throw std::logic_error{PrettyException(fmt::format("{} added twice", typeid(ADefinition).name()))};
     }
 }
 
@@ -32,8 +31,7 @@ template<std::derived_from<Definition::DefinitionBase> ADefinition>
     requires(not std::same_as<ADefinition, Definition::DefinitionBase>)
 auto AssemblyBase::AddTop(std::unique_ptr<ADefinition> top) -> void {
     if (not top->Topmost()) {
-        throw std::logic_error{fmt::format("Mustard::Detector::Assembly::AssemblyBase::AddTop: {} is not topmost",
-                                           typeid(ADefinition).name())};
+        throw std::logic_error{PrettyException(fmt::format("{} is not topmost", typeid(ADefinition).name()))};
     }
     AddTop(*top.release());
 }

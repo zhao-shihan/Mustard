@@ -20,6 +20,7 @@
 
 #include "Mustard/Env/Memory/WeakSingletonified.h++"
 #include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "gsl/gsl"
 

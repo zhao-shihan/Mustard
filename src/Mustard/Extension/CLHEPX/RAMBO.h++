@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/Logging.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/Random.h"
@@ -68,7 +69,7 @@ private:
     std::array<double, N> fMass;
     bool fAllMassAreTiny;
 
-    static constexpr auto fgTiny = 1e-9;
+    static constexpr auto fgTiny{1e-9};
 };
 
 } // namespace Mustard::inline Extension::CLHEPX

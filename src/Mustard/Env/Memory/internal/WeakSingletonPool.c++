@@ -17,8 +17,10 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/Env/Logging.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
-#include "Mustard/Env/Print.h++"
+
+#include "fmt/core.h"
 
 #include <utility>
 
@@ -32,23 +34,18 @@ WeakSingletonPool::WeakSingletonPool() :
     if (fgInstance == nullptr) {
         fgInstance = this;
     } else {
-        throw std::logic_error{"Mustard::Env::Memory::internal::WeakSingletonPool::WeakSingletonPool(): "
-                               "Trying to instantiate the pool twice"};
+        throw std::logic_error{PrettyException("Trying to instantiate the pool twice")};
     }
 }
 
 WeakSingletonPool::~WeakSingletonPool() {
     for (auto&& [type, instance] : std::as_const(fInstanceMap)) {
         if (instance.expired()) {
-            PrintLnError("Mustard::Env::Memory::internal::WeakSingletonPool::~WeakSingletonPool(): "
-                         "Instance pointer of {} expired",
-                         type.name());
+            PrintPrettyError(fmt::format("Instance pointer of {} expired", type.name()));
         }
         if (*instance.lock() != nullptr) [[unlikely]] {
-            PrintLnError("Mustard::Env::Memory::internal::WeakSingletonPool::~WeakSingletonPool(): "
-                         "Instance of {} survives, "
-                         "implies memory leak or following undefined behavior",
-                         type.name());
+            PrintPrettyError(fmt::format("Instance of {} survives, implies memory leak or following undefined behavior",
+                                         type.name()));
         }
     }
     fgInstance = nullptr;
@@ -58,9 +55,8 @@ auto WeakSingletonPool::Instance() -> WeakSingletonPool& {
     if (fgInstance != nullptr) {
         return *fgInstance;
     } else {
-        throw std::logic_error{"Mustard::Env::Memory::internal::WeakSingletonPool::Instance(): "
-                               "The pool has not been instantiated or has been destructed "
-                               "(maybe you forgot to instantiate an environment?)"};
+        throw std::logic_error{PrettyException("The pool has not been instantiated or has been destructed "
+                                               "(maybe you forgot to instantiate an environment?)")};
     }
 }
 

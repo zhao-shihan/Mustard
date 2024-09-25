@@ -17,6 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/CLI/CLI.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Version.h++"
 
 #include "fmt/core.h"
@@ -32,7 +33,7 @@ CLI<>::CLI() :
     fArgcArgv{},
     fArgParser{std::make_unique<argparse::ArgumentParser>("", MUSTARD_VERSION_STRING, argparse::default_arguments::none)} {
     if (static bool gInstantiated{}; gInstantiated) {
-        throw std::logic_error{"Mustard::Env::CLI::CLI<>: Trying to construct CLI twice"};
+        throw std::logic_error{PrettyException("Trying to construct CLI twice")};
     } else {
         gInstantiated = true;
     }
@@ -64,11 +65,11 @@ auto CLI<>::ArgcArgv() const -> ArgcArgvType {
 }
 
 [[noreturn]] auto CLI<>::ThrowParsed() -> void {
-    throw std::logic_error{"Mustard::Env::CLI: Command line arguments has been parsed"};
+    throw std::logic_error{PrettyException("Command line arguments has been parsed")};
 }
 
 [[noreturn]] auto CLI<>::ThrowNotParsed() -> void {
-    throw std::logic_error{"Mustard::Env::CLI: Command line arguments has not been parsed"};
+    throw std::logic_error{PrettyException("Command line arguments has not been parsed")};
 }
 
 } // namespace Mustard::Env::CLI

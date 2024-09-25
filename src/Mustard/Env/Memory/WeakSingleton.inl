@@ -29,9 +29,8 @@ WeakSingleton<ADerived>::WeakSingleton() :
         not weakSingletonPool.Contains<ADerived>()) {
         fgInstance = weakSingletonPool.Insert<ADerived>(static_cast<ADerived*>(this));
     } else {
-        throw std::logic_error{fmt::format("Mustard::Env::Memory::WeakSingleton::WeakSingleton(): "
-                                           "Trying to construct {} (weak singleton in environment) twice",
-                                           typeid(ADerived).name())};
+        throw std::logic_error{PrettyException(fmt::format("Trying to construct {} (weak singleton in environment) twice",
+                                                           typeid(ADerived).name()))};
     }
 }
 

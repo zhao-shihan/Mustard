@@ -22,6 +22,7 @@
 #include "Mustard/Env/Memory/WeakSingleton.h++"
 #include "Mustard/Env/Memory/internal/PassiveSingletonBase.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/utility"
 

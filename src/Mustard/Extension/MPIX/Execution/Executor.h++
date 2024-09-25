@@ -24,6 +24,7 @@
 #include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/MPIX/Execution/DynamicScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpi.h"
 

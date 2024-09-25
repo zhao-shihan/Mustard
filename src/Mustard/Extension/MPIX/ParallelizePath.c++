@@ -26,10 +26,10 @@ namespace Mustard::inline Extension::MPIX {
 auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path {
     auto stem{path.stem()};
     if (stem.empty()) {
-        throw std::invalid_argument{"Mustard::MPIX::ParallelizePath: Empty file name"};
+        throw std::invalid_argument{PrettyException("Empty file name")};
     }
     if (stem == "." or stem == "..") {
-        throw std::invalid_argument{fmt::format("Mustard::MPIX::ParallelizePath: Invalid file name '{}'", stem.c_str())};
+        throw std::invalid_argument{PrettyException(fmt::format("Invalid file name '{}'", stem.c_str()))};
     }
 
     if (const auto& mpiEnv{Env::MPIEnv::Instance()};

@@ -24,6 +24,7 @@
 #include "Mustard/Extension/MPIX/ParallelizePath.h++"
 #include "Mustard/Utility/CreateTemporaryFile.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "yaml-cpp/yaml.h"
 

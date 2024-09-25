@@ -22,6 +22,7 @@
 #include "Mustard/Extension/MPIX/DataType.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpi.h"
 

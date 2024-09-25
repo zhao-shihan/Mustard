@@ -19,8 +19,10 @@
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/Geant4X/Interface/MPIExecutive.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include <ostream>
+#include <source_location>
 #include <stdexcept>
 
 namespace Mustard::inline Extension::Geant4X::inline Interface {
@@ -28,14 +30,13 @@ namespace Mustard::inline Extension::Geant4X::inline Interface {
 auto MPIExecutive::CheckSequential() const -> void {
     const auto& mpiEnv = Env::MPIEnv::Instance();
     if (mpiEnv.Parallel()) {
-        std::string where("Mustard::Geant4X::MPIExecutive::CheckSequential");
         if (mpiEnv.OnCommWorldMaster()) {
-            G4Exception(where.c_str(),
+            G4Exception(std::source_location::current().function_name(),
                         "InteractiveSessionMustBeSequential",
                         JustWarning,
                         "Interactive session must be run with only 1 process.\nThrowing an instance of std::logic_error.");
         }
-        throw std::logic_error(where.append(": Interactive session must be sequential"));
+        throw std::logic_error{PrettyException("Interactive session must be sequential")};
     }
 }
 

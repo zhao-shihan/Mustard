@@ -2,6 +2,7 @@
 
 #include "Mustard/Env/Logging.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4SystemOfUnits.hh"
 
@@ -83,7 +84,7 @@ public:
 
                 result = state;
             } else {
-                throw std::runtime_error("Altitude out of range!");
+                throw std::runtime_error{Mustard::PrettyException("Altitude out of range")};
             }
         } catch (const std::exception& e) {
             result = std::nullopt;
