@@ -23,9 +23,17 @@
 
 #include "muc/bit"
 
+#include "gsl/gsl"
+
 #include "fmt/color.h"
 
+#include <exception>
 #include <limits>
+#include <typeinfo>
+
+#if __has_include(<cxxabi.h>)
+#    include <cxxabi.h>
+#endif
 
 #if MUSTARD_SIGNAL_HANDLER
 
@@ -46,9 +54,52 @@
 
 namespace Mustard::Env::internal {
 
+namespace {
+
+[[noreturn]] auto TerminateHandler() -> void {
+    constexpr auto Demangle{
+        [](gsl::czstring name) -> gsl::czstring {
+            if constexpr (requires(int status) { abi::__cxa_demangle(name, nullptr, nullptr, &status); }) {
+                int status;
+                return abi::__cxa_demangle(name, nullptr, nullptr, &status);
+            } else {
+                return name;
+            }
+        }};
+    try {
+        const auto exception{std::current_exception()};
+        if (exception) {
+            std::rethrow_exception(exception);
+        } else {
+            const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::dark_orange)};
+            PrintError(ts | fmt::emphasis::blink, "***");
+            PrintError(ts, " terminate called without an active exception");
+            PrintError("\n");
+        }
+    } catch (const std::exception& e) {
+        std::string_view what{e.what()};
+        if (not what.empty() and what.ends_with('\n')) { what.remove_suffix(1); }
+        const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
+        PrintError(ts | fmt::emphasis::blink, "***");
+        PrintError(ts, " terminate called after throwing an instance of '{}'\n", Demangle(typeid(e).name()));
+        PrintError(ts | fmt::emphasis::blink, "***");
+        PrintError(ts, "   what(): {}", what);
+        PrintError("\n");
+    } catch (...) {
+        const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
+        PrintError(ts | fmt::emphasis::blink, "***");
+        if constexpr (requires { std::current_exception().__cxa_exception_type()->name(); }) {
+            PrintError(ts, " terminate called after throwing an instance of '{}'", Demangle(std::current_exception().__cxa_exception_type()->name()));
+        } else {
+            PrintError(ts, " terminate called after throwing an instance of unknown type");
+        }
+        PrintError("\n");
+    }
+    std::abort();
+}
+
 #if MUSTARD_SIGNAL_HANDLER
 
-namespace {
 extern "C" {
 
 auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
@@ -65,32 +116,32 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
             const auto lineHeader{MPIEnv::Available() ?
                                       fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
                                       ""};
-            const auto textStyle{fmt::emphasis::bold};
-            Print(stderr, "\n");
+            const auto ts{fmt::emphasis::bold};
+            PrintError("\n");
             switch (sig) {
             case SIGINT:
-                Print(stderr, textStyle, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
+                PrintError(ts, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
                 break;
             case SIGTERM:
-                Print(stderr, textStyle, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
+                PrintError(ts, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
                 break;
             }
             if (MPIEnv::Available()) {
                 const auto& mpi{MPIEnv::Instance()};
-                Print(stderr, textStyle, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+                PrintError(ts, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
             }
-            Print(stderr, textStyle, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
-            PrintStackTrace(64, 2, stderr, textStyle);
-            Print(stderr, "\n");
+            PrintError(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+            PrintStackTrace(64, 2, stderr, ts);
+            PrintError("\n");
             switch (sig) {
             case SIGINT:
-                Print(stderr, textStyle, "Ctrl-C has been pressed or an external interrupt received."); // no '\n' looks good for now
+                PrintError(ts, "Ctrl-C has been pressed or an external interrupt received."); // no '\n' looks good for now
                 break;
             case SIGTERM:
-                Print(stderr, textStyle, "The process is terminated.\n");
+                PrintError(ts, "The process is terminated.\n");
                 break;
             }
-            Print(stderr, "\n");
+            PrintError("\n");
             std::fflush(stderr);
             std::raise(sig);
         }
@@ -103,18 +154,18 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
     const auto lineHeader{MPIEnv::Available() ?
                               fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
                               ""};
-    const auto textStyle{fmt::emphasis::bold | fg(fmt::color::orange)};
-    Print(stderr, "\n");
-    Print(stderr, textStyle, "{}***** ABORT (SIGABRT) received\n", lineHeader);
+    const auto ts{fmt::emphasis::bold | fg(fmt::color::orange)};
+    PrintError("\n");
+    PrintError(ts, "{}***** ABORT (SIGABRT) received\n", lineHeader);
     if (MPIEnv::Available()) {
         const auto& mpi{MPIEnv::Instance()};
-        Print(stderr, textStyle, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+        PrintError(ts, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
     }
-    Print(stderr, textStyle, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
-    PrintStackTrace(64, 2, stderr, textStyle);
-    Print(stderr, "\n");
-    Print(stderr, textStyle, "It is very likely that an exception has been thrown. View the logs just before receiving SIGABRT for more information.\n");
-    Print(stderr, "\n");
+    PrintError(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+    PrintStackTrace(64, 2, stderr, ts);
+    PrintError("\n");
+    PrintError(ts, "It is likely that an exception has been thrown. View the logs just before receiving SIGABRT for more information.\n");
+    PrintError("\n");
     std::fflush(stderr);
     std::abort();
 }
@@ -133,28 +184,28 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
             const auto lineHeader{MPIEnv::Available() ?
                                       fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
                                       ""};
-            const auto textStyle{fmt::emphasis::bold | fg(fmt::color::red)};
-            Print(stderr, "\n");
+            const auto ts{fmt::emphasis::bold | fg(fmt::color::red)};
+            PrintError("\n");
             switch (sig) {
             case SIGFPE:
-                Print(stderr, textStyle, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
+                PrintError(ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
                 break;
             case SIGILL:
-                Print(stderr, textStyle, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
+                PrintError(ts, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
                 break;
             case SIGSEGV:
-                Print(stderr, textStyle, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
+                PrintError(ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
                 break;
             }
             if (MPIEnv::Available()) {
                 const auto& mpi{MPIEnv::Instance()};
-                Print(stderr, textStyle, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+                PrintError(ts, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
             }
-            Print(stderr, textStyle, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
-            PrintStackTrace(64, 2, stderr, textStyle);
-            Print(stderr, "\n");
-            Print(stderr, textStyle, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");
-            Print(stderr, "\n");
+            PrintError(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+            PrintStackTrace(64, 2, stderr, ts);
+            PrintError("\n");
+            PrintError(ts, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");
+            PrintError("\n");
             std::fflush(stderr);
             std::raise(sig);
         }
@@ -162,9 +213,10 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
 }
 
 } // extern "C"
-} // namespace
 
 #endif
+
+} // namespace
 
 EnvBase::EnvBase() :
     NonMoveableBase{},
@@ -177,13 +229,15 @@ EnvBase::EnvBase() :
 
     CheckFundamentalType();
 
+    std::set_terminate(internal::TerminateHandler);
+
 #if MUSTARD_SIGNAL_HANDLER
-    std::signal(SIGABRT, MUSTARD_SIGABRT_Handler);
-    std::signal(SIGFPE, MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGILL, MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGINT, MUSTARD_SIGINT_SIGTERM_Handler);
-    std::signal(SIGSEGV, MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGTERM, MUSTARD_SIGINT_SIGTERM_Handler);
+    std::signal(SIGABRT, internal::MUSTARD_SIGABRT_Handler);
+    std::signal(SIGFPE, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGILL, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGINT, internal::MUSTARD_SIGINT_SIGTERM_Handler);
+    std::signal(SIGSEGV, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGTERM, internal::MUSTARD_SIGINT_SIGTERM_Handler);
 #endif
 
     if (static bool gInstantiated{false};
