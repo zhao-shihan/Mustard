@@ -23,7 +23,7 @@
 #endif
 
 #define MUSTARD_VERSION_MAJOR 0
-#define MUSTARD_VERSION_MINOR 7
+#define MUSTARD_VERSION_MINOR 8
 #define MUSTARD_VERSION_PATCH 0
 
 #define MUSTARD_VERSION_STRING_HELPER1(major, minor, patch) major.minor.patch
