@@ -57,7 +57,8 @@ private:
 
 public:
     explicit Output(const std::string& name, const std::string& title = {},
-                    bool enableTimedAutoSave = true, Second timedAutoSavePeriod = std::chrono::minutes{3}); // Warning: ROOT uses `short` as cycle number type (32767 max), 3 min period -> cycle overflow in ~60 days. Long simulation needs larger value.
+                    bool enableTimedAutoSave = true, Second timedAutoSavePeriod = std::chrono::minutes{5});
+    // Warning: ROOT uses `short` as cycle number type (32767 max), 5 min period => cycle overflow in less than 110 days. Long simulation needs larger value.
 
     auto TimedAutoSaveEnabled() const -> auto { return fTimedAutoSaveEnabled; }
     auto EnableTimedAutoSave() -> void { fTimedAutoSaveEnabled = true; }
