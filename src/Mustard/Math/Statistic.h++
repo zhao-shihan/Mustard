@@ -20,13 +20,13 @@
 
 #include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Concept/InputVector.h++"
-#include "Mustard/Math/Polynomial.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "Eigen/Core"
 
 #include "muc/math"
+#include "muc/numeric"
 
 #include <cmath>
 #include <concepts>

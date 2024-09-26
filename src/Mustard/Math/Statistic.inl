@@ -85,8 +85,8 @@ constexpr auto Statistic<1>::CentralMoment() const -> double {
     if constexpr (K == 0) { return 1; }
     if constexpr (K == 1) { return 0; }
     if constexpr (K == 2) { return Moment<2>() - muc::pow<2>(Moment<1>()); }
-    if constexpr (K == 3) { return Math::Polynomial({Moment<3>(), -3 * Moment<2>(), 0, 2}, Moment<1>()); }
-    if constexpr (K == 4) { return Math::Polynomial({Moment<4>(), -4 * Moment<3>(), 6 * Moment<2>(), 0, -3}, Moment<1>()); }
+    if constexpr (K == 3) { return muc::polynomial({Moment<3>(), -3 * Moment<2>(), 0, 2}, Moment<1>()); }
+    if constexpr (K == 4) { return muc::polynomial({Moment<4>(), -4 * Moment<3>(), 6 * Moment<2>(), 0, -3}, Moment<1>()); }
 }
 
 template<int N>
@@ -189,8 +189,8 @@ auto Statistic<N>::CentralMoment(int i) const -> double {
     if constexpr (K == 0) { return 1; }
     if constexpr (K == 1) { return 0; }
     if constexpr (K == 2) { return Moment<2>(i) - muc::pow<2>(Moment<1>(i)); }
-    if constexpr (K == 3) { return Math::Polynomial({Moment<3>(i), -3 * Moment<2>(i), 0, 2}, Moment<1>(i)); }
-    if constexpr (K == 4) { return Math::Polynomial({Moment<4>(i), -4 * Moment<3>(i), 6 * Moment<2>(i), 0, -3}, Moment<1>(i)); }
+    if constexpr (K == 3) { return muc::polynomial({Moment<3>(i), -3 * Moment<2>(i), 0, 2}, Moment<1>(i)); }
+    if constexpr (K == 4) { return muc::polynomial({Moment<4>(i), -4 * Moment<3>(i), 6 * Moment<2>(i), 0, -3}, Moment<1>(i)); }
 }
 
 template<int N>

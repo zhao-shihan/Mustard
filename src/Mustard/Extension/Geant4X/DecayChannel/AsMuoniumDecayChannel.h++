@@ -21,7 +21,6 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/Logging.h++"
 #include "Mustard/Env/Print.h++"
-#include "Mustard/Math/Polynomial.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/PrettyLog.h++"

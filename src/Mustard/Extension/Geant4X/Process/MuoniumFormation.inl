@@ -55,7 +55,7 @@ auto MuoniumFormation<ATarget>::AtRestDoIt(const G4Track& track, const G4Step&) 
         const auto [tStar, converged]{muc::find_root::secant(
             // CDF - x
             [x = rng.flat()](const auto t) {
-                const auto cdf{1 - std::exp(-t) * Math::Polynomial({2, 2, 1}, t) / 2};
+                const auto cdf{1 - std::exp(-t) * muc::polynomial({2, 2, 1}, t) / 2};
                 return cdf - x;
             },
             // most probable t*
