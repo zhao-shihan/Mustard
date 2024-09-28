@@ -72,4 +72,11 @@ constexpr auto muonium_mass_c2 = muon_mass_c2 + electron_mass_c2 -
 constexpr auto muonium_lifetime = muon_lifetime;
 // --        Extra constants         -- //
 
+// --            Methods             -- //
+auto ConvertToEnergy(std::vector<G4double>& wavelength) {
+    std::vector<G4double> energy(wavelength.size());
+    std::ranges::transform(wavelength, energy.begin(),
+                           [](auto val) { return CLHEP::h_Planck * CLHEP::c_light / val; });
+}
+
 } // namespace Mustard::inline Utility::PhysicalConstant
