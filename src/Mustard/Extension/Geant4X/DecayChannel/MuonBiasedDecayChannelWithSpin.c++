@@ -31,9 +31,9 @@ MuonBiasedDecayChannelWithSpin::MuonBiasedDecayChannelWithSpin(const G4String& p
     fEnergyCut{0.},
     fMessengerRegister{this} {}
 
-auto MuonBiasedDecayChannelWithSpin::DecayIt(G4double) -> G4DecayProducts* {
+auto MuonBiasedDecayChannelWithSpin::DecayIt(G4double mass) -> G4DecayProducts* {
     while (true) {
-        const auto products{G4MuonDecayChannelWithSpin::DecayIt(muon_mass_c2)};
+        const auto products{G4MuonDecayChannelWithSpin::DecayIt(mass)};
         const auto positron{(*products)[0]};
         if (positron->GetKineticEnergy() > fEnergyCut) {
             return products;

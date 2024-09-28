@@ -31,7 +31,7 @@ public:
     auto EnergyCut() const -> auto { return fEnergyCut; }
     auto EnergyCut(double cut) -> void { fEnergyCut = cut; }
 
-    auto DecayIt(G4double) -> G4DecayProducts* override;
+    auto DecayIt(G4double mass) -> G4DecayProducts* override;
 
 private:
     double fEnergyCut;
