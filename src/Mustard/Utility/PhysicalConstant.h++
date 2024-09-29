@@ -23,6 +23,8 @@
 
 #include "muc/math"
 
+#include <vector>
+
 namespace Mustard::inline Utility::PhysicalConstant {
 
 // -- same as G4PhysicalConstants.hh -- //
@@ -73,11 +75,15 @@ constexpr auto muonium_lifetime = muon_lifetime;
 // --        Extra constants         -- //
 
 // --            Methods             -- //
-inline auto WavelengthToEnergy(const std::vector<double>& wavelength) -> auto {
-    std::vector<double> energy(wavelength.size());
-    std::ranges::transform(wavelength, energy.begin(),
-                           [](auto val) { return CLHEP::h_Planck * CLHEP::c_light / (val * CLHEP::nm); });
+constexpr auto WavelengthToEnergy(double lambda) -> auto {
+    return (CLHEP::h_Planck * CLHEP::c_light) / lambda;
+}
+
+constexpr auto WavelengthToEnergy(const std::vector<double>& lambda) -> auto {
+    std::vector<double> energy(lambda.size());
+    std::ranges::transform(lambda, energy.begin(), [](auto val) { return WavelengthToEnergy(val); });
     return energy;
 }
+// --            Methods             -- //
 
 } // namespace Mustard::inline Utility::PhysicalConstant
