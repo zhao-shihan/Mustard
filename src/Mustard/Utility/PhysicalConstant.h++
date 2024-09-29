@@ -23,6 +23,7 @@
 
 #include "muc/math"
 
+#include <algorithm>
 #include <vector>
 
 namespace Mustard::inline Utility::PhysicalConstant {
