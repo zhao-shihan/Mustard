@@ -34,16 +34,16 @@ FromDataPrimaryGeneratorMessenger::FromDataPrimaryGeneratorMessenger() :
     fEventData{},
     fNVertex{} {
 
-    fDirectory = std::make_unique<G4UIdirectory>("/Mustard/FromDataPrimaryGenerator/");
+    fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Generator/FromDataPrimaryGenerator/");
     fDirectory->SetGuidance("Vertex generator imported from event data.");
 
-    fEventData = std::make_unique<G4UIcommand>("/Mustard/FromDataPrimaryGenerator/EventData", this);
+    fEventData = std::make_unique<G4UIcommand>("/Mustard/Generator/FromDataPrimaryGenerator/EventData", this);
     fEventData->SetGuidance("Set beam data ROOT file and dataset name.");
     fEventData->SetParameter(new G4UIparameter{"file", 's', false});
     fEventData->SetParameter(new G4UIparameter{"data", 's', false});
     fEventData->AvailableForStates(G4State_Idle);
 
-    fNVertex = std::make_unique<G4UIcmdWithAnInteger>("/Mustard/FromDataPrimaryGenerator/NVertex", this);
+    fNVertex = std::make_unique<G4UIcmdWithAnInteger>("/Mustard/Generator/FromDataPrimaryGenerator/NVertex", this);
     fNVertex->SetGuidance("Set number of particles to generate in an event.");
     fNVertex->SetParameterName("N", false);
     fNVertex->SetRange("N >= 0");

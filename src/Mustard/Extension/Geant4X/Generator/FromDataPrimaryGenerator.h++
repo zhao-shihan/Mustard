@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "Mustard/Extension/Geant4X/Generator/FromDataPrimaryGeneratorMessenger.h++"
+
 #include "G4VPrimaryGenerator.hh"
 
 #include <filesystem>
@@ -49,6 +51,9 @@ protected:
     std::unique_ptr<struct EventData> fEventData;
 
     int fNVertex; // Do not change this within a G4 run
+
+private:
+    FromDataPrimaryGeneratorMessenger::Register<FromDataPrimaryGenerator> fFromDataPrimaryGeneratorMessengerRegister;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Generator

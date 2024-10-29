@@ -44,15 +44,20 @@ namespace Mustard::inline Extension::Geant4X::inline Generator {
 struct FromDataPrimaryGenerator::EventData {
     TTreeReader reader;
     TTreeReaderValue<double> t{reader, "t"};
-    TTreeReaderValue<muc::array3f> x{reader, "x"};
+    TTreeReaderValue<float> x{reader, "x"};
+    TTreeReaderValue<float> y{reader, "y"};
+    TTreeReaderValue<float> z{reader, "z"};
     TTreeReaderValue<std::vector<int>> pdgID{reader, "pdgID"};
-    TTreeReaderValue<std::vector<muc::array3f>> p{reader, "p"};
+    TTreeReaderValue<std::vector<float>> px{reader, "px"};
+    TTreeReaderValue<std::vector<float>> py{reader, "py"};
+    TTreeReaderValue<std::vector<float>> pz{reader, "pz"};
 };
 
 FromDataPrimaryGenerator::FromDataPrimaryGenerator() :
     fBeamFile{},
     fEventData{std::make_unique_for_overwrite<struct EventData>()},
-    fNVertex{1} {}
+    fNVertex{1},
+    fFromDataPrimaryGeneratorMessengerRegister{this} {}
 
 FromDataPrimaryGenerator::FromDataPrimaryGenerator(const std::filesystem::path& file, const std::string& data) :
     FromDataPrimaryGenerator{} {
@@ -73,7 +78,7 @@ auto FromDataPrimaryGenerator::EventData(const std::filesystem::path& file, cons
 }
 
 auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
-    auto& [reader, t, x, particlePdgID, momentum]{*fEventData};
+    auto& [reader, t, x, y, z, particlePdgID, momentumX, momentumY, momentumZ]{*fEventData};
     if (reader.IsInvalid()) {
         throw std::runtime_error{Mustard::PrettyException(fmt::format("TTreeReader is invalid", reader.GetTree()->GetName()))};
     }
@@ -88,15 +93,16 @@ auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
             reader.Next();
         }
 
-        const auto& [pdgID, p]{std::tie(*particlePdgID, *momentum)};
-        if (pdgID.size() != p.size()) {
-            throw std::runtime_error{Mustard::PrettyException(fmt::format("pdgID.size() ({}) != p.size() ({})", pdgID.size(), p.size()))};
+        const auto& [pdgID, px, py, pz]{std::tie(*particlePdgID, *momentumX, *momentumY, *momentumZ)};
+        if (pdgID.size() != px.size() or pdgID.size() != py.size() or pdgID.size() != pz.size()) {
+            throw std::runtime_error{Mustard::PrettyException(fmt::format("pdgID.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent",
+                                                                          pdgID.size(), px.size(), py.size(), pz.size()))};
         }
 
         // clang-format off
-        const auto primaryVertex{new G4PrimaryVertex{Mustard::VectorCast<G4ThreeVector>(*x), *t}}; // clang-format on
+        const auto primaryVertex{new G4PrimaryVertex{*x, *y, *z, *t}}; // clang-format on
         for (gsl::index i{}; i < ssize(pdgID); ++i) {
-            primaryVertex->SetPrimary(new G4PrimaryParticle{pdgID[i], p[i][0], p[i][1], p[i][2]});
+            primaryVertex->SetPrimary(new G4PrimaryParticle{pdgID[i], px[i], py[i], pz[i]});
         }
         event->AddPrimaryVertex(primaryVertex);
     }
