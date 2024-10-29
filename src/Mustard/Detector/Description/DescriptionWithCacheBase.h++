@@ -79,7 +79,7 @@ protected:
     template<typename T>
     class Cached : private CacheBase {
     public:
-        Cached(DescriptionWithCacheBase<>* description, std::function<T()> CalculateValue);
+        Cached(DescriptionWithCacheBase<>* description, std::function<auto()->T> CalculateValue);
 
         auto operator*() const -> const T& { return static_cast<const T&>(*this); }
         auto operator->() const -> auto { return &static_cast<const T&>(*this); }
@@ -87,7 +87,7 @@ protected:
 
     private:
         mutable T fValue;
-        std::function<T()> fCalculateValue;
+        std::function<auto()->T> fCalculateValue;
     };
 
 protected:

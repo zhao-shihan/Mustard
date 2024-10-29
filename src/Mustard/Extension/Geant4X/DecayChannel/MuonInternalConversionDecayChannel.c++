@@ -79,7 +79,7 @@ MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4S
     }
 }
 
-auto MuonInternalConversionDecayChannel::Bias(std::function<double(const CLHEPX::RAMBO<5>::State&)> b) -> void {
+auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> b) -> void {
     fBias = std::move(b);
     fReady = false;
 }

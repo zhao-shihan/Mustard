@@ -41,7 +41,7 @@ public:
 
     auto MetropolisDelta(double delta) -> void { fMetropolisDelta = muc::clamp<"()">(delta, 0., 0.5); }
     auto MetropolisDiscard(int n) -> void { fMetropolisDiscard = std::max(0, n); }
-    auto Bias(std::function<double(const CLHEPX::RAMBO<5>::State&)> b) -> void;
+    auto Bias(std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> b) -> void;
 
     auto DecayIt(G4double) -> G4DecayProducts* override;
 
@@ -56,7 +56,7 @@ protected:
 
     double fMetropolisDelta;
     int fMetropolisDiscard;
-    std::function<double(const CLHEPX::RAMBO<5>::State&)> fBias;
+    std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> fBias;
 
     CLHEPX::RAMBO<5> fRAMBO;
     std::array<double, 5 * 4> fRawState;

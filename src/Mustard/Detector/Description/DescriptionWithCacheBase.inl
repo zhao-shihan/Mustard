@@ -43,7 +43,7 @@ auto DescriptionWithCacheBase<>::Simple<T>::operator=(U&& other) -> auto& {
 }
 
 template<typename T>
-DescriptionWithCacheBase<>::Cached<T>::Cached(DescriptionWithCacheBase<>* description, std::function<T()> CalculateValue) :
+DescriptionWithCacheBase<>::Cached<T>::Cached(DescriptionWithCacheBase<>* description, std::function<auto()->T> CalculateValue) :
     CacheBase{description},
     fValue{},
     fCalculateValue{std::move(CalculateValue)} {}
