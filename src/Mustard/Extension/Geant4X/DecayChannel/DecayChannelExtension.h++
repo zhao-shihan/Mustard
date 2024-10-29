@@ -18,12 +18,18 @@
 
 #pragma once
 
-#include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
-
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-using MuoniumInternalConversionDecayChannel = Geant4X::AsMuoniumDecayChannel<MuonInternalConversionDecayChannel,
-                                                                             "MuoniumICDecay">;
+class DecayChannelExtension {
+protected:
+    DecayChannelExtension() = default;
+    ~DecayChannelExtension() = default;
+
+public:
+    auto Weight() const -> auto { return fWeight; }
+
+protected:
+    double fWeight{1};
+};
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel

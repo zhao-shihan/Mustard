@@ -37,14 +37,16 @@ public:
 
     auto RadiativeDecayBR(double br) -> void { fRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
     auto ICDecayBR(double br) -> void { fICDecayBR = muc::clamp<"[]">(br, 0., 1.); }
-    virtual auto UpdateDecayBR() -> void override;
 
+    virtual auto UpdateDecayBR() -> void override;
+    virtual auto ResetDecayBR() -> void override;
     virtual auto ConstructParticle() -> void override;
     virtual auto ConstructProcess() -> void override;
 
 protected:
     virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void override;
-    virtual auto AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void override;
+    virtual auto AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void override;
+    virtual auto ResetMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void override;
 
 protected:
     double fRadiativeDecayBR;

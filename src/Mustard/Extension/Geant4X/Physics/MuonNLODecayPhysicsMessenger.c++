@@ -32,7 +32,8 @@ MuonNLODecayPhysicsMessenger::MuonNLODecayPhysicsMessenger() :
     fDirectory{},
     fRadiativeDecayBR{},
     fICDecayBR{},
-    fUpdateDecayBR{} {
+    fUpdateDecayBR{},
+    fResetDecayBR{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuonDecay/");
     fDirectory->SetGuidance("About muon(ium) decay channel and decay generators.");
@@ -50,8 +51,12 @@ MuonNLODecayPhysicsMessenger::MuonNLODecayPhysicsMessenger() :
     fICDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     fUpdateDecayBR = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuonDecay/UpdateDecayBR", this);
-    fUpdateDecayBR->SetGuidance("Update decay branching ratio.");
+    fUpdateDecayBR->SetGuidance("Update decay branching ratios.");
     fUpdateDecayBR->AvailableForStates(G4State_Idle);
+
+    fResetDecayBR = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuonDecay/ResetDecayBR", this);
+    fResetDecayBR->SetGuidance("Reset decay branching ratios.");
+    fResetDecayBR->AvailableForStates(G4State_Idle);
 }
 
 MuonNLODecayPhysicsMessenger::~MuonNLODecayPhysicsMessenger() = default;
@@ -68,6 +73,10 @@ auto MuonNLODecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String va
     } else if (command == fUpdateDecayBR.get()) {
         Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
             r.UpdateDecayBR();
+        });
+    } else if (command == fResetDecayBR.get()) {
+        Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
+            r.ResetDecayBR();
         });
     }
 }

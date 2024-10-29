@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Extension/Geant4X/Decay/ExtendedDecayWithSpin.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuoniumDecayChannelWithSpin.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuoniumInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
@@ -24,7 +25,6 @@
 #include "Mustard/Extension/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
 
 #include "G4DecayTable.hh"
-#include "G4DecayWithSpin.hh"
 #include "G4EmBuilder.hh"
 #include "G4ProcessTable.hh"
 
@@ -41,6 +41,11 @@ MuoniumNLODecayPhysics::MuoniumNLODecayPhysics(G4int verbose) :
 auto MuoniumNLODecayPhysics::UpdateDecayBR() -> void {
     UpdateDecayBRFor(Muonium::Definition());
     UpdateDecayBRFor(Antimuonium::Definition());
+}
+
+auto MuoniumNLODecayPhysics::ResetDecayBR() -> void {
+    ResetDecayBRFor(Muonium::Definition());
+    ResetDecayBRFor(Antimuonium::Definition());
 }
 
 auto MuoniumNLODecayPhysics::ConstructParticle() -> void {
@@ -61,7 +66,7 @@ auto MuoniumNLODecayPhysics::ConstructParticle() -> void {
 
 auto MuoniumNLODecayPhysics::ConstructProcess() -> void {
     const auto ReplaceDecayPhysics{
-        [decayWithSpin = new G4DecayWithSpin,
+        [decayWithSpin = new ExtendedDecayWithSpin,
          processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* muonium) {
             const auto manager{muonium->GetProcessManager()};
             if (manager == nullptr) { return; }
@@ -83,10 +88,16 @@ auto MuoniumNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl:
     decay->Insert(new MuoniumInternalConversionDecayChannel{parentName, 1e-3, verboseLevel});
 }
 
-auto MuoniumNLODecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
+auto MuoniumNLODecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // set BR here
     decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
     decay->GetDecayChannel(2)->SetBR(fICDecayBR);
+}
+
+auto MuoniumNLODecayPhysics::ResetMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
+    // reset BR here
+    decay->GetDecayChannel(1)->SetBR(0.014);
+    decay->GetDecayChannel(2)->SetBR(3.6054e-5);
 }
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics

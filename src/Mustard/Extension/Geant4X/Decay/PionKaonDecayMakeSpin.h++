@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
+#include "G4PionDecayMakeSpin.hh"
 
-namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
+namespace Mustard::inline Extension::Geant4X::inline Decay {
 
-using MuoniumInternalConversionDecayChannel = Geant4X::AsMuoniumDecayChannel<MuonInternalConversionDecayChannel,
-                                                                             "MuoniumICDecay">;
+class PionKaonDecayMakeSpin : public G4PionDecayMakeSpin {
+    using G4PionDecayMakeSpin::G4PionDecayMakeSpin;
+};
 
-} // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
+} // namespace Mustard::inline Extension::Geant4X::inline Decay

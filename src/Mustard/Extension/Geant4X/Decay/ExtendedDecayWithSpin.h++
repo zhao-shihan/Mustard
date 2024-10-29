@@ -18,12 +18,19 @@
 
 #pragma once
 
-#include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
+#include "Mustard/Extension/Geant4X/Decay/internal/ExtendDecayIt.h++"
 
-namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
+#include "G4DecayWithSpin.hh"
 
-using MuoniumInternalConversionDecayChannel = Geant4X::AsMuoniumDecayChannel<MuonInternalConversionDecayChannel,
-                                                                             "MuoniumICDecay">;
+namespace Mustard::inline Extension::Geant4X::inline Decay {
 
-} // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
+class ExtendedDecayWithSpin : public internal::ExtendDecayIt<G4DecayWithSpin> {
+public:
+    ExtendedDecayWithSpin(const G4String& processName = "ExtendedDecayWithSpin");
+
+protected:
+    virtual auto PostStepDoIt(const G4Track& aTrack, const G4Step& aStep) -> G4VParticleChange* override;
+    virtual auto AtRestDoIt(const G4Track& aTrack, const G4Step& aStep) -> G4VParticleChange* override;
+};
+
+} // namespace Mustard::inline Extension::Geant4X::inline Decay

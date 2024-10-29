@@ -16,19 +16,16 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Extension/Geant4X/Decay/ExtendedDecayWithSpin.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysics.h++"
 
 #include "G4DecayTable.hh"
-#include "G4DecayWithSpin.hh"
 #include "G4EmBuilder.hh"
 #include "G4MuonDecayChannelWithSpin.hh"
 #include "G4MuonMinus.hh"
 #include "G4MuonPlus.hh"
 #include "G4MuonRadiativeDecayChannelWithSpin.hh"
-#include "G4PionDecayMakeSpin.hh"
-#include "G4PionMinus.hh"
-#include "G4PionPlus.hh"
 #include "G4ProcessTable.hh"
 
 #include <limits>
@@ -49,6 +46,11 @@ auto MuonNLODecayPhysics::UpdateDecayBR() -> void {
     UpdateDecayBRFor(G4MuonMinus::Definition());
 }
 
+auto MuonNLODecayPhysics::ResetDecayBR() -> void {
+    ResetDecayBRFor(G4MuonPlus::Definition());
+    ResetDecayBRFor(G4MuonMinus::Definition());
+}
+
 auto MuonNLODecayPhysics::ConstructParticle() -> void {
     G4EmBuilder::ConstructMinimalEmSet();
 
@@ -67,7 +69,7 @@ auto MuonNLODecayPhysics::ConstructParticle() -> void {
 
 auto MuonNLODecayPhysics::ConstructProcess() -> void {
     const auto ReplaceMuonDecayPhysics{
-        [decayWithSpin = new G4DecayWithSpin,
+        [decayWithSpin = new ExtendedDecayWithSpin,
          processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* muon) {
             const auto manager{muon->GetProcessManager()};
             if (manager == nullptr) { return; }
@@ -80,21 +82,6 @@ auto MuonNLODecayPhysics::ConstructProcess() -> void {
         }};
     ReplaceMuonDecayPhysics(G4MuonPlus::Definition());
     ReplaceMuonDecayPhysics(G4MuonMinus::Definition());
-
-    const auto ReplacePionDecayPhysics{
-        [decayMakeSpin = new G4PionDecayMakeSpin,
-         processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* pion) {
-            const auto manager{pion->GetProcessManager()};
-            if (manager == nullptr) { return; }
-            const auto decay{processTable->FindProcess("Decay", pion)};
-            if (decay) { manager->RemoveProcess(decay); }
-            manager->AddProcess(decayMakeSpin);
-            // set ordering for PostStepDoIt and AtRestDoIt
-            manager->SetProcessOrdering(decayMakeSpin, idxPostStep);
-            manager->SetProcessOrdering(decayMakeSpin, idxAtRest);
-        }};
-    ReplacePionDecayPhysics(G4PionPlus::Definition());
-    ReplacePionDecayPhysics(G4PionMinus::Definition());
 }
 
 auto MuonNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
@@ -104,10 +91,16 @@ auto MuonNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::no
     decay->Insert(new MuonInternalConversionDecayChannel{parentName, 1e-3, verboseLevel});
 }
 
-auto MuonNLODecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
+auto MuonNLODecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // set BR here
     decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
     decay->GetDecayChannel(2)->SetBR(fICDecayBR);
+}
+
+auto MuonNLODecayPhysics::ResetMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
+    // reset BR here
+    decay->GetDecayChannel(1)->SetBR(0.014);
+    decay->GetDecayChannel(2)->SetBR(3.6054e-5);
 }
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics

@@ -31,7 +31,8 @@ MuoniumSMAndLFVDecayPhysicsMessenger::MuoniumSMAndLFVDecayPhysicsMessenger() :
     fDirectory{},
     fDoubleRadiativeDecayBR{},
     fElectronPairDecayBR{},
-    fUpdateDecayBR{} {
+    fUpdateDecayBR{},
+    fResetDecayBR{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumDecay/");
     fDirectory->SetGuidance("About muonium rare decay channels.");
@@ -49,8 +50,12 @@ MuoniumSMAndLFVDecayPhysicsMessenger::MuoniumSMAndLFVDecayPhysicsMessenger() :
     fElectronPairDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     fUpdateDecayBR = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuoniumDecay/UpdateDecayBR", this);
-    fUpdateDecayBR->SetGuidance("Update decay branching ratio.");
+    fUpdateDecayBR->SetGuidance("Update decay branching ratios.");
     fUpdateDecayBR->AvailableForStates(G4State_Idle);
+
+    fResetDecayBR = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuonDecay/ResetDecayBR", this);
+    fResetDecayBR->SetGuidance("Reset decay branching ratios.");
+    fResetDecayBR->AvailableForStates(G4State_Idle);
 }
 
 MuoniumSMAndLFVDecayPhysicsMessenger::~MuoniumSMAndLFVDecayPhysicsMessenger() = default;
@@ -67,6 +72,10 @@ auto MuoniumSMAndLFVDecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4S
     } else if (command == fUpdateDecayBR.get()) {
         Deliver<MuoniumSMAndLFVDecayPhysics>([&](auto&& r) {
             r.UpdateDecayBR();
+        });
+    } else if (command == fResetDecayBR.get()) {
+        Deliver<MuoniumSMAndLFVDecayPhysics>([&](auto&& r) {
+            r.ResetDecayBR();
         });
     }
 }

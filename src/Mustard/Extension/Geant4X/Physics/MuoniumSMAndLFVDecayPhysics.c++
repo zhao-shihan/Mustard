@@ -40,8 +40,8 @@ auto MuoniumSMAndLFVDecayPhysics::InsertDecayChannel(const G4String& parentName,
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-5, 2, "e+", "e-"});
 }
 
-auto MuoniumSMAndLFVDecayPhysics::AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
-    MuoniumNLODecayPhysics::AssignRareDecayBR(decay);
+auto MuoniumSMAndLFVDecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
+    MuoniumNLODecayPhysics::AssignMinorDecayBR(decay);
     decay->GetDecayChannel(3)->SetBR(fDoubleRadiativeDecayBR);
     decay->GetDecayChannel(4)->SetBR(fElectronPairDecayBR);
 }

@@ -18,12 +18,19 @@
 
 #pragma once
 
-#include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
+#include "Mustard/Utility/NonMoveableBase.h++"
 
-namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
+#include "G4VPhysicsConstructor.hh"
 
-using MuoniumInternalConversionDecayChannel = Geant4X::AsMuoniumDecayChannel<MuonInternalConversionDecayChannel,
-                                                                             "MuoniumICDecay">;
+namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-} // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
+class PionKaonDecayMakeSpinPhysics : public NonMoveableBase,
+                                     public G4VPhysicsConstructor {
+public:
+    PionKaonDecayMakeSpinPhysics(G4int verbose);
+
+    virtual auto ConstructParticle() -> void override;
+    virtual auto ConstructProcess() -> void override;
+};
+
+} // namespace Mustard::inline Extension::Geant4X::inline Physics

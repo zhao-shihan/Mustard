@@ -16,14 +16,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Mustard/Extension/Geant4X/Decay/ExtendedDecay.h++"
 
-#include "Mustard/Extension/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
-#include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
+namespace Mustard::inline Extension::Geant4X::inline Decay {
 
-namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
+ExtendedDecay::ExtendedDecay(const G4String& processName) :
+    ExtendDecayIt{processName} {}
 
-using MuoniumInternalConversionDecayChannel = Geant4X::AsMuoniumDecayChannel<MuonInternalConversionDecayChannel,
-                                                                             "MuoniumICDecay">;
-
-} // namespace Mustard::inline Extension::Geant4X::inline DecayChannel
+} // namespace Mustard::inline Extension::Geant4X::inline Decay

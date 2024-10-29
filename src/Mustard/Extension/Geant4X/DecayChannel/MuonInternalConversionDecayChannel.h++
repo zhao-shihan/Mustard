@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Extension/CLHEPX/RAMBO.h++"
+#include "Mustard/Extension/Geant4X/DecayChannel/DecayChannelExtension.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannelMessenger.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
 
@@ -33,37 +34,39 @@
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
-class MuonInternalConversionDecayChannel : public G4VDecayChannel {
+class MuonInternalConversionDecayChannel : public G4VDecayChannel,
+                                           public DecayChannelExtension {
 public:
     MuonInternalConversionDecayChannel(const G4String& parentName, G4double br, G4int verbose = 1);
 
     auto MetropolisDelta(double delta) -> void { fMetropolisDelta = muc::clamp<"()">(delta, 0., 0.5); }
     auto MetropolisDiscard(int n) -> void { fMetropolisDiscard = std::max(0, n); }
-    auto PassCut(std::function<bool(const CLHEPX::RAMBO<5>::State&)> PassCut) -> void { fPassCut = std::move(PassCut); }
+    auto Bias(std::function<double(const CLHEPX::RAMBO<5>::State&)> b) -> void;
 
     auto DecayIt(G4double) -> G4DecayProducts* override;
 
-private:
+protected:
+    auto BiasWithCheck(const CLHEPX::RAMBO<5>::State& state) const -> double;
     auto UpdateState(double delta) -> void;
 
-    static auto WeightedM2(const CLHEPX::RAMBO<5>::Event& event) -> double;
+    static auto UnbiasedM2(const CLHEPX::RAMBO<5>::Event& event) -> double;
 
 protected:
-    bool fThermalized;
+    bool fReady;
 
-private:
     double fMetropolisDelta;
     int fMetropolisDiscard;
-    std::function<bool(const CLHEPX::RAMBO<5>::State&)> fPassCut;
+    std::function<double(const CLHEPX::RAMBO<5>::State&)> fBias;
 
     CLHEPX::RAMBO<5> fRAMBO;
     std::array<double, 5 * 4> fRawState;
     CLHEPX::RAMBO<5>::Event fEvent;
-    double fWeightedM2;
+    double fBiasedM2;
 
     Math::Random::Xoshiro256Plus fXoshiro256Plus;
     unsigned int fReseedCounter : 8;
 
+private:
     MuonInternalConversionDecayChannelMessenger::Register<MuonInternalConversionDecayChannel> fMessengerRegister;
 };
 

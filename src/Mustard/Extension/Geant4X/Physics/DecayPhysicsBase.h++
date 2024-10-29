@@ -36,13 +36,17 @@ public:
     using G4VPhysicsConstructor::G4VPhysicsConstructor;
 
     virtual auto UpdateDecayBR() -> void = 0;
+    virtual auto ResetDecayBR() -> void = 0;
     virtual auto ConstructParticle() -> void = 0;
     virtual auto ConstructProcess() -> void = 0;
 
 protected:
     auto UpdateDecayBRFor(const G4ParticleDefinition* particle) -> void;
+    auto ResetDecayBRFor(const G4ParticleDefinition* particle) -> void;
+
     virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void = 0;
-    virtual auto AssignRareDecayBR(gsl::not_null<G4DecayTable*> decay) -> void = 0;
+    virtual auto AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void = 0;
+    virtual auto ResetMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void = 0;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics

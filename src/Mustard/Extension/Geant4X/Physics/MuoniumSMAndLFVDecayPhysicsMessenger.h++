@@ -46,6 +46,7 @@ private:
     std::unique_ptr<G4UIcmdWithADouble> fDoubleRadiativeDecayBR;
     std::unique_ptr<G4UIcmdWithADouble> fElectronPairDecayBR;
     std::unique_ptr<G4UIcmdWithoutParameter> fUpdateDecayBR;
+    std::unique_ptr<G4UIcmdWithoutParameter> fResetDecayBR;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics
