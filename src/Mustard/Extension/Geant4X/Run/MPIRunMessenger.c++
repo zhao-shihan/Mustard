@@ -21,7 +21,7 @@
 
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithAnInteger.hh"
-#include "G4UIcommand.hh"
+#include "G4UIcmdWithoutParameter.hh"
 #include "G4UIdirectory.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline Run {
@@ -46,7 +46,7 @@ MPIRunMessenger::MPIRunMessenger() :
     fPrintProgressModulo->SetParameterName("modulo", false);
     fPrintProgressModulo->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    fPrintRunSummary = std::make_unique<G4UIcommand>("/Mustard/Run/PrintRunSummary", this);
+    fPrintRunSummary = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Run/PrintRunSummary", this);
     fPrintRunSummary->SetGuidance("Print MPI run performace summary.");
     fPrintRunSummary->AvailableForStates(G4State_Idle);
 }
