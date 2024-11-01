@@ -16,12 +16,20 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannelMessenger.h++"
 
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithoutParameter.hh"
+#include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
+
+#include "fmt/core.h"
+
+#include <sstream>
+#include <string>
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
 
@@ -29,7 +37,9 @@ MuonInternalConversionDecayChannelMessenger::MuonInternalConversionDecayChannelM
     SingletonMessenger{},
     fDirectory{},
     fMetropolisDelta{},
-    fMetropolisDiscard{} {
+    fMetropolisDiscard{},
+    fInitialize{},
+    fEstimateBiasScale{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuonDecay/ICDecay/");
     fDirectory->SetGuidance("Muon(ium) internal pair production decay channel (mu->eeevv / M->eeevve).");
@@ -51,6 +61,18 @@ MuonInternalConversionDecayChannelMessenger::MuonInternalConversionDecayChannelM
     fMetropolisDiscard->SetParameterName("n", false);
     fMetropolisDiscard->SetRange("n >= 0");
     fMetropolisDiscard->AvailableForStates(G4State_Idle);
+
+    fInitialize = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuonDecay/Initialize", this);
+    fInitialize->SetGuidance("Manaually (re)initialize random state.");
+    fInitialize->AvailableForStates(G4State_Idle);
+
+    fEstimateBiasScale = std::make_unique<G4UIcommand>("/Mustard/Physics/MuonDecay/ICDecay/EstimateBiasScale", this);
+    fEstimateBiasScale->SetGuidance("Estimate the bias scale with error of the user-defined bias with 1000*n samples.");
+    fEstimateBiasScale->SetParameter(new G4UIparameter{"kinematics_name", 's', false});
+    fEstimateBiasScale->SetParameter(new G4UIparameter{"parent_name", 's', false});
+    fEstimateBiasScale->SetParameter(new G4UIparameter{"n_kilo_sample", 'l', false});
+    fEstimateBiasScale->SetRange("n_kilo_sample >= 0");
+    fEstimateBiasScale->AvailableForStates(G4State_Idle);
 }
 
 MuonInternalConversionDecayChannelMessenger::~MuonInternalConversionDecayChannelMessenger() = default;
@@ -63,6 +85,28 @@ auto MuonInternalConversionDecayChannelMessenger::SetNewValue(G4UIcommand* comma
     } else if (command == fMetropolisDiscard.get()) {
         Deliver<MuonInternalConversionDecayChannel>([&](auto&& r) {
             r.MetropolisDiscard(fMetropolisDiscard->GetNewIntValue(value));
+        });
+    } else if (command == fInitialize.get()) {
+        Deliver<MuonInternalConversionDecayChannel>([&](auto&& r) {
+            r.Initialize();
+        });
+    } else if (command == fEstimateBiasScale.get()) {
+        std::string kinematicsName;
+        std::string parentName;
+        unsigned long long nKiloSample;
+        std::istringstream is{value};
+        is >> kinematicsName >> parentName >> nKiloSample;
+        Deliver<MuonInternalConversionDecayChannel>([&](auto&& r) {
+            if (r.GetKinematicsName() == kinematicsName and r.GetParentName() == parentName) {
+                const auto [scale, error, nEff]{r.EstimateBiasScale(1000 * nKiloSample)};
+                if (Env::MPIEnv::Instance().OnCommWorldMaster()) {
+                    fmt::println("Bias scale of user-defined bias on mu->eeevv ({} decay according to {}):\n"
+                                 "    {} +/- {}\n"
+                                 "      rel. err. = {:.2}% ,  N_eff = {:.2f}\n"
+                                 "(Multiply event weights with this bias scale to normalize the histogram to number of events)",
+                                 parentName, kinematicsName, scale, error, error / scale * 100., nEff);
+                }
+            }
         });
     }
 }

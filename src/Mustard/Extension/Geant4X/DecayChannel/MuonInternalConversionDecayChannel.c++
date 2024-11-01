@@ -17,6 +17,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
+#include "Mustard/Extension/MPIX/DataType.h++"
+#include "Mustard/Extension/MPIX/Execution/Executor.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/PrettyLog.h++"
@@ -25,13 +27,14 @@
 #include "G4DynamicParticle.hh"
 #include "Randomize.hh"
 
+#include "mpi.h"
+
 #include "muc/math"
 
 #include "gsl/gsl"
 
 #include "fmt/format.h"
 
-#include <algorithm>
 #include <bit>
 #include <limits>
 #include <stdexcept>
@@ -42,11 +45,11 @@ using namespace PhysicalConstant;
 
 MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4String& parentName, G4double br, G4int verbose) : // clang-format off
     G4VDecayChannel{"MuonICDecay", verbose}, // clang-format on
-    fReady{},
     fMetropolisDelta{0.05},
     fMetropolisDiscard{100},
     fBias{[](auto&&) { return 1; }},
     fRAMBO{muon_mass_c2, {electron_mass_c2, electron_mass_c2, electron_mass_c2, 0, 0}},
+    fReady{},
     fRawState{},
     fEvent{},
     fBiasedM2{},
@@ -84,6 +87,84 @@ auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const CLHEPX::R
     fReady = false;
 }
 
+auto MuonInternalConversionDecayChannel::Initialize() -> void {
+    if (fReady) { return; }
+    // initialize
+    while (true) {
+        std::ranges::generate(fRawState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });
+        fEvent = fRAMBO(fRawState);
+        if (const auto bias{BiasWithCheck(fEvent.state)};
+            bias >= std::numeric_limits<double>::min()) {
+            fBiasedM2 = bias * UnbiasedM2(fEvent);
+            break;
+        }
+    }
+    // thermalize
+    constexpr long double deltaSA0{0.1};
+    constexpr auto nSA{100000};
+    for (auto deltaSA{deltaSA0}; deltaSA > std::numeric_limits<double>::epsilon(); deltaSA -= deltaSA0 / nSA) {
+        UpdateState(deltaSA);
+    }
+    fReady = true;
+}
+
+auto MuonInternalConversionDecayChannel::EstimateBiasScale(unsigned long long n) -> std::tuple<double, double, double> {
+    if (n == 0) {
+        return {std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), 0};
+    }
+
+    // store state
+    auto originalBias{std::move(fBias)};
+    auto originalReady{std::move(fReady)};
+    auto originalRawState{std::move(fRawState)};
+    auto originalEvent{std::move(fEvent)};
+    auto originalBiasedM2{std::move(fBiasedM2)};
+
+    // --- above is protected ---
+
+    Bias([](auto&&) { return 1; }); // to evaluate the bias scale of user-defined bias, temporarily switch to unbiased function
+    Initialize();
+
+    long double biasScale{};
+    long double biasScaleError{};
+    {
+        const auto partialSumThreshold{muc::llround(std::sqrt(n / Env::MPIEnv::Instance().CommWorldSize()))};
+        long double biasPartialSum{};  // improve numeric stability
+        long double bias2PartialSum{}; // improve numeric stability
+        MPIX::Executor<unsigned long long>{"Estimation", "Sample"}
+            .Execute(n, [&](auto i) {
+                MainSamplingLoop();
+                const auto bias{originalBias(fEvent.state)};
+                biasPartialSum += bias;
+                bias2PartialSum += muc::pow<2>(bias);
+                if ((i + 1) % partialSumThreshold == 0) {
+                    biasScale += biasPartialSum;
+                    biasScaleError += bias2PartialSum;
+                    biasPartialSum = 0;
+                    bias2PartialSum = 0;
+                }
+            });
+        biasScale += biasPartialSum;
+        biasScaleError += bias2PartialSum;
+    }
+    MPI_Allreduce(MPI_IN_PLACE, &biasScale, 1, MPIX::DataType(biasScale), MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &biasScaleError, 1, MPIX::DataType(biasScaleError), MPI_SUM, MPI_COMM_WORLD);
+    const auto nEff{muc::pow<2>(biasScale) / biasScaleError};
+    biasScale /= n;
+    biasScaleError = std::sqrt(biasScaleError) / n;
+
+    // --- below is protected ---
+
+    // restore state
+    fBias = std::move(originalBias);
+    fReady = std::move(originalReady);
+    fRawState = std::move(originalRawState);
+    fEvent = std::move(originalEvent);
+    fBiasedM2 = std::move(originalBiasedM2);
+
+    return {biasScale, biasScaleError, nEff};
+}
+
 auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
 #ifdef G4VERBOSE
     if (GetVerboseLevel() > 1) {
@@ -93,38 +174,7 @@ auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
 
     CheckAndFillParent();
     CheckAndFillDaughters();
-
-    if (fReseedCounter++ == 0) {
-        static_assert(sizeof(Math::Random::SplitMix64::SeedType) % sizeof(unsigned int) == 0);
-        std::array<unsigned int, sizeof(Math::Random::SplitMix64::SeedType) / sizeof(unsigned int)> seed;
-        std::ranges::generate(seed, [&rng = *G4Random::getTheEngine()] { return rng.operator unsigned int(); });
-        fXoshiro256Plus.Seed(std::bit_cast<Math::Random::SplitMix64::SeedType>(seed));
-    }
-
-    if (not fReady) {
-        // initialize
-        while (true) {
-            std::ranges::generate(fRawState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });
-            fEvent = fRAMBO(fRawState);
-            if (const auto bias{BiasWithCheck(fEvent.state)};
-                bias >= std::numeric_limits<double>::min()) {
-                fBiasedM2 = bias * UnbiasedM2(fEvent);
-                break;
-            }
-        }
-        // thermalize
-        constexpr long double deltaSA0{0.1};
-        constexpr auto nSA{100000};
-        for (auto deltaSA{deltaSA0}; deltaSA > std::numeric_limits<double>::epsilon(); deltaSA -= deltaSA0 / nSA) {
-            UpdateState(deltaSA);
-        }
-        fReady = true;
-    }
-
-    for (int i{}; i < fMetropolisDiscard; ++i) {
-        UpdateState(fMetropolisDelta);
-    }
-    UpdateState(fMetropolisDelta);
+    MainSamplingLoop();
 
     // clang-format off
     auto products{new G4DecayProducts{G4DynamicParticle{G4MT_parent, {}, 0}}}; // clang-format on
@@ -177,6 +227,20 @@ auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
             return;
         }
     }
+}
+
+auto MuonInternalConversionDecayChannel::MainSamplingLoop() -> void {
+    if (fReseedCounter++ == 0) {
+        static_assert(sizeof(Math::Random::SplitMix64::SeedType) % sizeof(unsigned int) == 0);
+        std::array<unsigned int, sizeof(Math::Random::SplitMix64::SeedType) / sizeof(unsigned int)> seed;
+        std::ranges::generate(seed, [&rng = *G4Random::getTheEngine()] { return rng.operator unsigned int(); });
+        fXoshiro256Plus.Seed(std::bit_cast<Math::Random::SplitMix64::SeedType>(seed));
+    }
+    Initialize();
+    for (int i{}; i < fMetropolisDiscard; ++i) {
+        UpdateState(fMetropolisDelta);
+    }
+    UpdateState(fMetropolisDelta);
 }
 
 auto MuonInternalConversionDecayChannel::UnbiasedM2(const CLHEPX::RAMBO<5>::Event& event) -> double {

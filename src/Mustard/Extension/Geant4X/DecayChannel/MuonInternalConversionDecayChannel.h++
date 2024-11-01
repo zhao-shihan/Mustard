@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <array>
 #include <functional>
+#include <tuple>
 #include <utility>
 
 namespace Mustard::inline Extension::Geant4X::inline DecayChannel {
@@ -43,22 +44,26 @@ public:
     auto MetropolisDiscard(int n) -> void { fMetropolisDiscard = std::max(0, n); }
     auto Bias(std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> b) -> void;
 
+    auto Initialize() -> void;
+    auto EstimateBiasScale(unsigned long long n) -> std::tuple<double, double, double>; // return: scale, error, Neff
+
     auto DecayIt(G4double) -> G4DecayProducts* override;
 
 protected:
     auto BiasWithCheck(const CLHEPX::RAMBO<5>::State& state) const -> double;
     auto UpdateState(double delta) -> void;
+    auto MainSamplingLoop() -> void;
 
     static auto UnbiasedM2(const CLHEPX::RAMBO<5>::Event& event) -> double;
 
 protected:
-    bool fReady;
-
     double fMetropolisDelta;
     int fMetropolisDiscard;
     std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> fBias;
 
     CLHEPX::RAMBO<5> fRAMBO;
+
+    bool fReady;
     std::array<double, 5 * 4> fRawState;
     CLHEPX::RAMBO<5>::Event fEvent;
     double fBiasedM2;
