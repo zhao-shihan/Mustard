@@ -65,6 +65,9 @@ public:
     template<template<typename> typename S = DynamicScheduler>
         requires std::derived_from<S<T>, Scheduler<T>>
     Executor(ScheduleBy<S> = {});
+    template<template<typename> typename S = DynamicScheduler>
+        requires std::derived_from<S<T>, Scheduler<T>>
+    Executor(std::string executionName, std::string taskName, ScheduleBy<S> = {});
 
     template<template<typename> typename AScheduler>
         requires std::derived_from<AScheduler<T>, Scheduler<T>>

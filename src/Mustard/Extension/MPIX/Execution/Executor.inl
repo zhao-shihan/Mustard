@@ -25,12 +25,19 @@ template<std::integral T>
 template<template<typename> typename S>
     requires std::derived_from<S<T>, Scheduler<T>>
 Executor<T>::Executor(ScheduleBy<S>) :
+    Executor{"Execution", "Task", ScheduleBy<S>{}} {}
+
+template<std::integral T>
+    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+template<template<typename> typename S>
+    requires std::derived_from<S<T>, Scheduler<T>>
+Executor<T>::Executor(std::string executionName, std::string taskName, ScheduleBy<S>) :
     fScheduler{std::make_unique_for_overwrite<S<T>>()},
     fExecuting{},
     fPrintProgress{true},
     fPrintProgressModulo{},
-    fExecutionName{"Execution"},
-    fTaskName{"Task"},
+    fExecutionName{std::move(executionName)},
+    fTaskName{std::move(taskName)},
     fFinalPollingPeriod{20ms},
     fExecutionBeginSystemTime{},
     fWallTimeStopwatch{},
