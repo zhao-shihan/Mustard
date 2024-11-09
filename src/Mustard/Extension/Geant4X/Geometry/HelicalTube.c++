@@ -1,7 +1,6 @@
 #include "Mustard/Extension/Geant4X/Geometry/HelicalTube.h++"
 #include "Mustard/Math/Parity.h++"
 #include "Mustard/Utility/MathConstant.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4TriangularFacet.hh"
 
@@ -11,8 +10,6 @@
 #include "muc/numeric"
 
 #include <cmath>
-#include <numeric>
-#include <source_location>
 #include <utility>
 
 namespace Mustard::inline Extension::Geant4X::inline Geometry {
@@ -25,8 +22,18 @@ HelicalTube::HelicalTube(std::string name,
                          double pitch,
                          double phi0,
                          double phiTotal,
-                         double tolerance) :
+                         double majorTolerance,
+                         double minorTolerance) :
     G4TessellatedSolid{std::move(name)},
+    fMajorRadius{majorRadius},
+    fMinorRadius{minorRadius},
+    fPitch{pitch},
+    fPhi0{phi0},
+    fPhiTotal{phiTotal},
+    fMajorTolerance{majorTolerance},
+    fMinorTolerance{minorTolerance},
+    fTotalLength{},
+    fZLength{},
     fFrontEndPosition{},
     fFrontEndNormal{},
     fBackEndPosition{},
@@ -36,10 +43,12 @@ HelicalTube::HelicalTube(std::string name,
     const auto tanA{sinA / cosA};
     const auto tanAR{majorRadius * tanA};
     const auto zOffset{(phi0 + phiTotal / 2) * tanAR};
+    fTotalLength = majorRadius * phiTotal / cosA;
+    fZLength = tanAR * phiTotal;
 
     // prepare uv mesh
-    const auto deltaV0{std::sqrt(8 * tolerance)};
-    const auto deltaU0{deltaV0 * cosA};
+    const auto deltaU0{std::sqrt(8 * majorTolerance) * cosA};
+    const auto deltaV0{std::sqrt(8 * minorTolerance)};
     const auto nU{muc::llround(phiTotal / deltaU0) + 2};
     const auto nV{muc::llround(2 * pi / deltaV0) + 3};
     const auto deltaU{phiTotal / (nU - 1)};
@@ -75,32 +84,34 @@ HelicalTube::HelicalTube(std::string name,
 
     // make main tube
     const auto AddDoubleTwistedFacet{
-        [&](int i1, int i2, int j1, int j2) {
+        [&](int i, int j) {
+            const auto i1{i + 1};
+            const auto j1{j + 1};
             if (tanAR >= 0) {
-                /* tan{\alpha} >= 0, these facets are concave:
+                /* tan{\alpha} < 0, these facets are concave:
                 //
-                //  (i1,j2)--(i2,j2)
+                //  (i ,j1)--(i1,j1)
                 //    \      /    \
                 //     \    /      \
-                //    (i1,j1)--(i2,j1)
+                //    (i ,j )--(i1,j )
                 */
-                AddFacet(new G4TriangularFacet{x(i2, j2), x(i1, j2), x(i1, j1), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i1, j1), x(i2, j1), x(i2, j2), ABSOLUTE});
+                AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), x(i, j), ABSOLUTE});
+                AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), x(i1, j1), ABSOLUTE});
             } else {
                 /* tan{\alpha} < 0, these facets are concave:
                 //
-                //    (i1,j2)--(i2,j2)
+                //    (i ,j1)--(i1,j1)
                 //     /    \      /
                 //    /      \    /
-                //  (i1,j1)--(i2,j1)
+                //  (i ,j )--(i1,j )
                 */
-                AddFacet(new G4TriangularFacet{x(i1, j2), x(i1, j1), x(i2, j1), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i2, j1), x(i2, j2), x(i1, j2), ABSOLUTE});
+                AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), x(i1, j), ABSOLUTE});
+                AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), x(i, j1), ABSOLUTE});
             }
         }};
     for (auto i{0ll}; i < nU - 1; ++i) {
         for (auto j{0ll}; j < nV - 1; ++j) {
-            AddDoubleTwistedFacet(i, i + 1, j, j + 1);
+            AddDoubleTwistedFacet(i, j);
         }
     }
 
