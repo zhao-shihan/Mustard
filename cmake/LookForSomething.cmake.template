@@ -4,11 +4,11 @@
 # 3. Replace <lib_name> with the full lowercase version of <LIB_NAME>.
 # 4. Replace <min_version> with the minimum version required for this library.
 # 5. Replace <src_dir_with_version> with the directory name same as what the library archive extracts to, which should includes ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is yaml-cpp-${MUSTARD_BUILTIN_YAML_CPP_VERSION}).
-# 6. Replace <url_with_version> with the library archive download URL template, which should includes ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is https://github.com/jbeder/<lib_cmake_name>/archive/refs/tags/${MUSTARD_BUILTIN_<LIB_NAME>_VERSION}.tar.gz)
+# 6. Replace <url_with_version> with the library archive download URL template, which should includes ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is https://github.com/jbeder/yaml-cpp/archive/refs/tags/${MUSTARD_BUILTIN_<LIB_NAME>_VERSION}.tar.gz)
 # 7. Add proper options between "reuse or download" section and "configure it" section.
 # 8. Set options MUSTARD_BUILTIN_<LIB_NAME> and MUSTARD_BUILTIN_<LIB_NAME>_VERSION in the main CMakeLists.txt.
-# 9. Delete this guide text, and make other parts of this file prettier.
-# 10. Add a find_dependency(<lib_cmake_name>) line to ${CMAKE_PROJECT_NAME}Config.cmake.in in need.
+# 9. Add a find_dependency(<lib_cmake_name>) line to ${CMAKE_PROJECT_NAME}Config.cmake.in in need.
+# 10. Delete this guide text, and make other parts of this file prettier.
 
 message(STATUS "Looking for <lib_cmake_name>")
 
