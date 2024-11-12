@@ -2,7 +2,7 @@ file(GLOB_RECURSE MUSTARD_SRC ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/*.c++)
 add_library(Mustard ${MUSTARD_SRC})
 add_library(Mustard::Mustard ALIAS Mustard)
 
-# Mustrad
+# Mustard
 target_include_directories(Mustard PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_options(Mustard PRIVATE ${MUSTARD_PRIVATE_COMPILE_OPTIONS})
