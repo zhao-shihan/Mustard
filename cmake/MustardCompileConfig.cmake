@@ -56,6 +56,7 @@ endif()
 # Compile options and definitions for Mustard
 # =============================================================================
 
+set(MUSTARD_PUBLIC_COMPILE_OPTIONS "")
 set(MUSTARD_PRIVATE_COMPILE_OPTIONS "")
 set(MUSTARD_PUBLIC_COMPILE_DEFINITIONS "")
 
@@ -65,11 +66,11 @@ set(MUSTARD_PUBLIC_COMPILE_DEFINITIONS "")
 
 # More warnings
 if(CMAKE_COMPILER_IS_GNUCXX)
-    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros -Wno-gnu-zero-variadic-macro-arguments)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros -Wno-gnu-zero-variadic-macro-arguments)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /W4)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS /W4)
 endif()
 
 # Surpress some, if required
@@ -124,7 +125,7 @@ endif()
 
 if(MUSTARD_ENABLE_MSVC_STD_CONFORMITY AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Enable standard-conformity
-    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /permissive- /Zc:__cplusplus /Zc:inline)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS /permissive- /Zc:__cplusplus /Zc:inline)
     message(STATUS "MSVC standard-conformity enabled (/permissive- /Zc:__cplusplus /Zc:inline)")
     # Be permissive to standard cfunctions
     list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS=1)
