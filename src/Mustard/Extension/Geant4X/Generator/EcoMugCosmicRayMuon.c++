@@ -17,12 +17,17 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Extension/Geant4X/Generator/EcoMugCosmicRayMuon.h++"
+#include "Mustard/Math/Random/Generator/SplitMix64.h++"
+#include "Mustard/Utility/LiteralUnit.h++"
+#include "Mustard/Utility/VectorCast.h++"
 
 #include "G4Event.hh"
 #include "G4MuonMinus.hh"
 #include "G4MuonPlus.hh"
-#include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "Randomize.hh"
+
+#include "muc/array"
 
 #include <array>
 #include <bit>
@@ -121,7 +126,7 @@ public:
                     EMMaximization,
                     UNKNOWN };
 
-    EMLog(){};
+    EMLog() {};
     virtual ~EMLog() {
         os << std::endl;
         fprintf(stderr, "%s", os.str().c_str());
@@ -1242,13 +1247,16 @@ private:
 
 namespace Mustard::inline Extension::Geant4X::inline Generator {
 
+using namespace LiteralUnit::Length;
+
 EcoMugCosmicRayMuon::EcoMugCosmicRayMuon() :
     G4VPrimaryGenerator{},
-    fEcoMug{EcoMug{}} {
+    fEcoMug{EcoMug{}},
+    fReseedCounter{} {
     auto& ecoMug{std::any_cast<EcoMug&>(fEcoMug)};
     ecoMug.SetUseSky();
-    ecoMug.SetSkySize({50. * CLHEP::m, 50. * CLHEP::m});
-    ecoMug.SetSkyCenterPosition({0., 0., 20. * CLHEP::m});
+    ecoMug.SetSkySize({50_m, 50_m});
+    ecoMug.SetSkyCenterPosition({0, 0, 20_m});
 }
 
 EcoMugCosmicRayMuon::~EcoMugCosmicRayMuon() = default;
@@ -1258,11 +1266,11 @@ auto EcoMugCosmicRayMuon::UseSky() -> void {
 }
 
 auto EcoMugCosmicRayMuon::SkySize(G4TwoVector xy) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetSkySize({xy.x(), xy.y()});
+    std::any_cast<EcoMug&>(fEcoMug).SetSkySize(VectorCast<muc::array2d>(xy));
 }
 
 auto EcoMugCosmicRayMuon::SkyCenterPosition(G4ThreeVector x0) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetSkyCenterPosition({x0.z(), x0.y(), x0.z()});
+    std::any_cast<EcoMug&>(fEcoMug).SetSkyCenterPosition(VectorCast<muc::array3d>(x0));
 }
 
 auto EcoMugCosmicRayMuon::UseCylinder() -> void {
@@ -1278,7 +1286,7 @@ auto EcoMugCosmicRayMuon::CylinderHeight(double h) -> void {
 }
 
 auto EcoMugCosmicRayMuon::CylinderCenterPosition(G4ThreeVector x0) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetCylinderCenterPosition({x0.z(), x0.y(), x0.z()});
+    std::any_cast<EcoMug&>(fEcoMug).SetCylinderCenterPosition(VectorCast<muc::array3d>(x0));
 }
 
 auto EcoMugCosmicRayMuon::UseHSphere() -> void {
@@ -1290,11 +1298,18 @@ auto EcoMugCosmicRayMuon::HSphereRadius(double r) -> void {
 }
 
 auto EcoMugCosmicRayMuon::HSphereCenterPosition(G4ThreeVector x0) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetHSphereCenterPosition({x0.z(), x0.y(), x0.z()});
+    std::any_cast<EcoMug&>(fEcoMug).SetHSphereCenterPosition(VectorCast<muc::array3d>(x0));
 }
 
 auto EcoMugCosmicRayMuon::GeneratePrimaryVertex(G4Event* event) -> void {
     auto& ecoMug{std::any_cast<EcoMug&>(fEcoMug)};
+
+    if (fReseedCounter++ == 0) {
+        static_assert(sizeof(std::uint64_t) % sizeof(unsigned int) == 0);
+        std::array<unsigned int, sizeof(std::uint64_t) / sizeof(unsigned int)> seed;
+        std::ranges::generate(seed, [&rng = *G4Random::getTheEngine()] { return rng.operator unsigned int(); });
+        ecoMug.SetSeed(std::bit_cast<std::uint64_t>(seed));
+    }
     ecoMug.Generate();
 
     // The following are all transformed to the Geant4 coordinate system convention

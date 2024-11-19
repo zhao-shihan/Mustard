@@ -52,6 +52,7 @@ public:
 
 private:
     std::any fEcoMug;
+    unsigned int fReseedCounter : 8;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Generator
