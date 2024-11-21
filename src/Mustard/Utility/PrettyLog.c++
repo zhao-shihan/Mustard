@@ -65,21 +65,25 @@ auto PrettyException(std::string_view message, const std::source_location& locat
 }
 
 auto PrintInfo(std::string_view message, const std::source_location& location) -> void {
-    Env::Print<'I'>(fg(fmt::color::deep_sky_blue), "{}", PrettyInfo(message, location));
+    const auto ts{fg(fmt::color::deep_sky_blue)};
+    Env::Print<'I'>(ts, "{}: ", internal::PrettyLogHead("Information from ", location));
+    Env::Print<'I'>(ts | fmt::emphasis::bold, "{}", message);
     Env::Print<'I'>("\n");
 }
 
 auto PrintWarning(std::string_view message, const std::source_location& location) -> void {
-    const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::dark_orange)};
-    Env::Print<'W'>(ts | fmt::emphasis::blink, "***");
-    Env::Print<'W'>(ts, " {}", PrettyWarning(message, location));
+    const auto ts{fg(fmt::color::white) | bg(fmt::color::dark_orange)};
+    Env::Print<'W'>(ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
+    Env::Print<'W'>(ts, " {}: ", internal::PrettyLogHead("Warning from ", location));
+    Env::Print<'W'>(ts | fmt::emphasis::bold, " {}", message);
     Env::Print<'W'>("\n");
 }
 
 auto PrintError(std::string_view message, const std::source_location& location) -> void {
-    const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
-    Env::Print<'E'>(ts | fmt::emphasis::blink, "***");
-    Env::Print<'E'>(ts, " {}", PrettyError(message, location));
+    const auto ts{fg(fmt::color::white) | bg(fmt::color::red)};
+    Env::Print<'E'>(ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
+    Env::Print<'E'>(ts, " {}: ", internal::PrettyLogHead("Error from ", location));
+    Env::Print<'E'>(ts | fmt::emphasis::bold, " {}", message);
     Env::Print<'E'>("\n");
 }
 
