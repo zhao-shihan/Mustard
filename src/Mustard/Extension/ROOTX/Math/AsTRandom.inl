@@ -35,7 +35,7 @@ auto AsTRandom<PRBG>::RndmArray(Int_t n, Double_t* array) -> void {
 
 template<Mustard::Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto AsTRandom<PRBG>::GetSeed() const -> UInt_t {
-    Env::PrintPrettyError("AsTRandom<PRBG>::GetSeed has no effect. Do not use");
+    PrintError("AsTRandom<PRBG>::GetSeed has no effect. Do not use");
     return 0;
 }
 

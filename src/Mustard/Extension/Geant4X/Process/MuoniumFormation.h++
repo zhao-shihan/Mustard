@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Env/Logging.h++"
 #include "Mustard/Extension/Geant4X/Particle/Antimuonium.h++"
 #include "Mustard/Extension/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Extension/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
@@ -26,6 +25,7 @@
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4MuonPlus.hh"
 #include "G4ParticleChange.hh"

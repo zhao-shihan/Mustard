@@ -138,7 +138,7 @@ auto Tuple<Ts...>::DynIndex(std::string_view name) -> gsl::index {
     try {
         return index.at(name);
     } catch (const std::out_of_range& e) {
-        Env::PrintPrettyError(fmt::format("No field named '{}'", name));
+        PrintError(fmt::format("No field named '{}'", name));
         throw e;
     }
 }

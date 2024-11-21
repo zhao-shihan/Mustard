@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Env/Logging.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/DataType.h++"
 #include "Mustard/Utility/PrettyLog.h++"

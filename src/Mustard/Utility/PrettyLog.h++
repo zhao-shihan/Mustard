@@ -29,4 +29,17 @@ auto PrettyWarning(std::string_view message, const std::source_location& locatio
 auto PrettyError(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
 auto PrettyException(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
 
+/// @brief Print pretty information.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty warning.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty error.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintError(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+
 } // namespace Mustard::inline Utility

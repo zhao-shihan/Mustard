@@ -31,7 +31,7 @@ auto MakeFlatRDFEventSplitPoint(ROOT::RDF::RNode rdf, std::string eventIDBranchN
         [&](T eventID) {
             if (eventIDList.empty() or eventID != eventIDList.back()) {
                 if (not eventIDSet.emplace(eventID).second) {
-                    Env::PrintPrettyWarning(fmt::format("Disordered dataset (event {} has appeared before)", eventID));
+                    PrintWarning(fmt::format("Disordered dataset (event {} has appeared before)", eventID));
                 }
                 eventIDList.emplace_back(eventID);
                 eventSplitPoint.emplace_back(index);

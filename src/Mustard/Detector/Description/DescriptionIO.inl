@@ -172,7 +172,7 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlFile, const std:
         yamlEmitter << geomYaml
                     << YAML::Newline;
     } catch (const InvalidFile&) {
-        Env::PrintPrettyError("Cannot open yaml file, export failed");
+        PrintError("Cannot open yaml file, export failed");
     }
 }
 

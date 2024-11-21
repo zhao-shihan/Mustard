@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Env/Logging.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Random/RandFlat.h"

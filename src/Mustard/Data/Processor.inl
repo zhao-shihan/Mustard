@@ -32,7 +32,7 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf,
                                    std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
     const auto nEntry{static_cast<Index>(*rdf.Count())};
     if (nEntry == 0) {
-        Env::PrintPrettyWarning("Empty dataset");
+        PrintWarning("Empty dataset");
         return 0;
     }
 
@@ -80,13 +80,13 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
 
     const auto nEntry{static_cast<Index>(esp.back() - esp.front())};
     if (nEntry == 0) {
-        Env::PrintPrettyWarning("Empty dataset");
+        PrintWarning("Empty dataset");
         return 0;
     }
 
     const auto nEvent{static_cast<Index>(esp.size() - 1)};
     if (nEvent == 0) {
-        Env::PrintPrettyWarning("Empty dataset");
+        PrintWarning("Empty dataset");
         return 0;
     }
 
@@ -129,7 +129,7 @@ auto Processor<AExecutor>::ByPassCheck(Index n, std::string_view what) -> bool {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     const auto byPass{mpiEnv.CommWorldSize() > n};
     if (mpiEnv.OnCommWorldMaster() and byPass) {
-        Env::PrintPrettyWarning(fmt::format("#processors ({}) are more than #{} ({})",
+        PrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
                                             mpiEnv.CommWorldSize(), what, n));
     }
     return byPass;

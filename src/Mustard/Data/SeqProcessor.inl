@@ -23,7 +23,7 @@ auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf,
                            std::invocable<std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
     const auto nEntry{static_cast<Index>(*rdf.Count())};
     if (nEntry == 0) {
-        Env::PrintPrettyWarning("Empty dataset");
+        PrintWarning("Empty dataset");
         return 0;
     }
 
@@ -59,13 +59,13 @@ auto SeqProcessor::Process(ROOTX::RDataFrame auto&& rdf, const std::vector<Index
 
     const auto nEntry{static_cast<Index>(esp.back() - esp.front())};
     if (nEntry == 0) {
-        Env::PrintPrettyWarning("Empty dataset");
+        PrintWarning("Empty dataset");
         return 0;
     }
 
     const auto nEvent{static_cast<Index>(esp.size() - 1)};
     if (nEvent == 0) {
-        Env::PrintPrettyWarning("Empty dataset");
+        PrintWarning("Empty dataset");
         return 0;
     }
 

@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include "Mustard/Env/Logging.h++"
 #include "Mustard/Math/Parity.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/UniformPseudoRandomBitGenerator.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Random/RandomEngine.h"
 

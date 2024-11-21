@@ -86,12 +86,13 @@ auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, std::conv
 }
 
 auto DescriptionBase<>::PrintNodeNotFoundNotice(std::convertible_to<std::string> auto&&... names) const -> void {
-    Env::PrintInfo("Notice: YAML node '{}", fName);
+    auto info{fmt::format("Notice: YAML node '{}", fName)};
     internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
-                           [](auto&& name) {
-                               Env::PrintInfo(".{}", name);
+                           [&info](auto&& name) {
+                               info.append(fmt::format(".{}", name));
                            });
-    Env::PrintLnInfo("' not defined, skipping");
+    info.append("' not defined, skipping");
+    PrintInfo(info);
 }
 
 template<typename ADerived>

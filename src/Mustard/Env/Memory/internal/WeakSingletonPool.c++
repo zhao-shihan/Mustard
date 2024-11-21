@@ -17,7 +17,6 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Logging.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
 
 #include "fmt/core.h"
@@ -41,10 +40,10 @@ WeakSingletonPool::WeakSingletonPool() :
 WeakSingletonPool::~WeakSingletonPool() {
     for (auto&& [type, instance] : std::as_const(fInstanceMap)) {
         if (instance.expired()) {
-            PrintPrettyError(fmt::format("Instance pointer of {} expired", type.name()));
+            PrintError(fmt::format("Instance pointer of {} expired", type.name()));
         }
         if (*instance.lock() != nullptr) [[unlikely]] {
-            PrintPrettyError(fmt::format("Instance of {} survives, implies memory leak or following undefined behavior",
+            PrintError(fmt::format("Instance of {} survives, implies memory leak or following undefined behavior",
                                          type.name()));
         }
     }

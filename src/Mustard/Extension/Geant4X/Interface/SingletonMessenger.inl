@@ -42,7 +42,7 @@ SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::~Register() 
     if (SingletonMessenger::Expired()) { return; }
     auto& messenger{SingletonMessenger::Instance()};
     if (messenger.fDelivering) {
-        Env::PrintPrettyError("De-register from SingletonMessenger during delivering (fatal error)");
+        PrintError("De-register from SingletonMessenger during delivering (fatal error)");
         std::terminate();
     }
     get<std::unordered_set<ARecipient*>>(messenger.fRecipientSetTuple).erase(fRecipient);
@@ -54,7 +54,7 @@ template<typename ARecipient>
 auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& Action) const -> void {
     const auto& recipientSet{get<std::unordered_set<ARecipient*>>(fRecipientSetTuple)};
     if (recipientSet.empty()) {
-        Env::PrintPrettyError(fmt::format("Error: {} not registered", typeid(ARecipient).name()));
+        PrintError(fmt::format("Error: {} not registered", typeid(ARecipient).name()));
         return;
     }
     fDelivering = true;

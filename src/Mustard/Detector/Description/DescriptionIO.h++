@@ -20,7 +20,6 @@
 
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Detector/Description/DescriptionBase.h++"
-#include "Mustard/Env/Logging.h++"
 #include "Mustard/Extension/MPIX/ParallelizePath.h++"
 #include "Mustard/Utility/CreateTemporaryFile.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
