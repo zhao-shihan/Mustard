@@ -16,10 +16,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+// ===========================================================================
+// This file is auto generated, any modification to it will lost. DO NOT EDIT.
+// ===========================================================================
 
-#if __cplusplus < 202002L
-#    error "Mustard need at least C++20"
-#endif
-
-#include "Mustard/Version.inl"
+#define MUSTARD_VERSION_MAJOR @MUSTARD_VERSION_MAJOR@
+#define MUSTARD_VERSION_MINOR @MUSTARD_VERSION_MINOR@
+#define MUSTARD_VERSION_PATCH @MUSTARD_VERSION_PATCH@
+#define MUSTARD_VERSION_STRING "@MUSTARD_VERSION@"
