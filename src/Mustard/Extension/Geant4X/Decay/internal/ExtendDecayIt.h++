@@ -20,6 +20,8 @@
 
 #include "Mustard/Extension/Geant4X/DecayChannel/DecayChannelExtension.h++"
 
+#include "CLHEP/Units/SystemOfUnits.h"
+
 #include "G4Decay.hh"
 #include "G4DecayProducts.hh"
 #include "G4DecayTable.hh"
@@ -27,7 +29,6 @@
 #include "G4ParticleChangeForDecay.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4PhysicsLogVector.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
 #include "G4VDecayChannel.hh"
 #include "G4VExtDecayer.hh"

@@ -20,6 +20,7 @@
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
+#include "TChain.h"
 #include "TFile.h"
 #include "TTreeReader.h"
 #include "TTreeReaderValue.h"
@@ -27,6 +28,8 @@
 #include "G4Event.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4PrimaryVertex.hh"
+#include "G4Run.hh"
+#include "G4RunManager.hh"
 #include "G4ThreeVector.hh"
 
 #include "muc/array"
@@ -35,6 +38,7 @@
 
 #include "fmt/core.h"
 
+#include <limits>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
@@ -51,12 +55,15 @@ struct FromDataPrimaryGenerator::EventData {
     TTreeReaderValue<std::vector<float>> px{reader, "px"};
     TTreeReaderValue<std::vector<float>> py{reader, "py"};
     TTreeReaderValue<std::vector<float>> pz{reader, "pz"};
+    TTreeReaderValue<float> w{reader, "w"};
 };
 
 FromDataPrimaryGenerator::FromDataPrimaryGenerator() :
-    fBeamFile{},
+    fChain{},
     fEventData{std::make_unique_for_overwrite<struct EventData>()},
     fNVertex{1},
+    fCurrentRun{},
+    fEndEntryForCurrentRun{},
     fFromDataPrimaryGeneratorMessengerRegister{this} {}
 
 FromDataPrimaryGenerator::FromDataPrimaryGenerator(const std::filesystem::path& file, const std::string& data) :
@@ -67,36 +74,47 @@ FromDataPrimaryGenerator::FromDataPrimaryGenerator(const std::filesystem::path& 
 FromDataPrimaryGenerator::~FromDataPrimaryGenerator() = default;
 
 auto FromDataPrimaryGenerator::EventData(const std::filesystem::path& file, const std::string& data) -> void {
-    fBeamFile = std::unique_ptr<TFile>{TFile::Open(file.generic_string().c_str())};
-    if (fBeamFile == nullptr) {
-        throw std::runtime_error{Mustard::PrettyException(fmt::format("Cannot open '{}'", file.c_str()))};
-    }
-    fEventData->reader.SetTree(data.c_str(), fBeamFile.get());
-    if (fEventData->reader.IsInvalid()) {
-        throw std::runtime_error{Mustard::PrettyException(fmt::format("Cannot read '{}' from '{}'", data, file.c_str()))};
-    }
+    fChain = std::make_unique<TChain>(data.c_str());
+    fChain->Add(file.generic_string().c_str());
+    fEventData->reader.SetTree(fChain.get());
+    // Reset entry index reference
+    fEndEntryForCurrentRun = 0;
 }
 
 auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
-    auto& [reader, t, x, y, z, particlePdgID, momentumX, momentumY, momentumZ]{*fEventData};
-    if (reader.IsInvalid()) {
-        throw std::runtime_error{Mustard::PrettyException(fmt::format("TTreeReader is invalid", reader.GetTree()->GetName()))};
+    const auto run{G4RunManager::GetRunManager()->GetCurrentRun()};
+    if (fCurrentRun != std::pair{run, run->GetRunID()}) {
+        fCurrentRun = {run, run->GetRunID()};
+        fEndEntryForCurrentRun += run->GetNumberOfEventToBeProcessed();
     }
-    if (reader.GetEntries() == 0) {
-        throw std::runtime_error{Mustard::PrettyException(fmt::format("'{}' has no entry", reader.GetTree()->GetName()))};
+    // use 'last entry' as reference index looks not good but G4Run may be destructed so I have to do so
+    const auto iBegin{fEndEntryForCurrentRun - run->GetNumberOfEventToBeProcessed() + event->GetEventID()};
+
+    auto& [reader, t, x, y, z, particlePdgID, momentumX, momentumY, momentumZ, weight]{*fEventData};
+    if (reader.IsInvalid()) [[unlikely]] {
+        Mustard::PrintError("TTreeReader is invalid");
+        return;
     }
-    reader.SetEntry((event->GetEventID() * fNVertex) % reader.GetEntries());
+    if (reader.GetEntries() == 0) [[unlikely]] {
+        Mustard::PrintError("TTreeReader has no entry to read");
+        return;
+    }
+    reader.SetEntry((iBegin * fNVertex) % reader.GetEntries());
 
     for (int iVertex{}; iVertex < fNVertex; ++iVertex) {
         if (not reader.Next()) {
             reader.Restart();
-            reader.Next();
+            if (not reader.Next()) [[unlikely]] {
+                Mustard::PrintError("Failed to read event data");
+                return;
+            }
         }
 
         const auto& [pdgID, px, py, pz]{std::tie(*particlePdgID, *momentumX, *momentumY, *momentumZ)};
         if (pdgID.size() != px.size() or pdgID.size() != py.size() or pdgID.size() != pz.size()) {
-            throw std::runtime_error{Mustard::PrettyException(fmt::format("pdgID.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent",
-                                                                          pdgID.size(), px.size(), py.size(), pz.size()))};
+            Mustard::PrintError(fmt::format("pdgID.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent, skipping",
+                                            pdgID.size(), px.size(), py.size(), pz.size()));
+            return;
         }
 
         // clang-format off
@@ -104,6 +122,7 @@ auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
         for (gsl::index i{}; i < ssize(pdgID); ++i) {
             primaryVertex->SetPrimary(new G4PrimaryParticle{pdgID[i], px[i], py[i], pz[i]});
         }
+        primaryVertex->SetWeight(*weight);
         event->AddPrimaryVertex(primaryVertex);
     }
 }

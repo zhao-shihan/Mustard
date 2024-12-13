@@ -129,13 +129,13 @@ auto ExtendDecayIt<Decay>::DecayIt(const G4Track& aTrack, const G4Step&) -> G4VP
             ed << "Can not determine decay channel for "
                << aParticleDef->GetParticleName() << G4endl
                << "  mass of dynamic particle: "
-               << massParent / GeV << " (GEV)" << G4endl
+               << massParent / CLHEP::GeV << " (GeV)" << G4endl
                << "  dacay table has " << decaytable->entries()
                << " entries" << G4endl;
             G4double checkedmass = massParent;
             if (massParent < 0.) {
                 checkedmass = aParticleDef->GetPDGMass();
-                ed << "Using PDG mass (" << checkedmass / GeV
+                ed << "Using PDG mass (" << checkedmass / CLHEP::GeV
                    << "(GeV)) in IsOKWithParentMass" << G4endl;
             }
             for (G4int ic = 0; ic < decaytable->entries(); ++ic) {
@@ -186,8 +186,8 @@ auto ExtendDecayIt<Decay>::DecayIt(const G4Track& aTrack, const G4Step&) -> G4VP
         G4ExceptionDescription ed;
         ed << "Total Energy is less than its mass - increased the energy"
            << "\n Particle: " << aParticle->GetDefinition()->GetParticleName()
-           << "\n Energy:" << ParentEnergy / MeV << "[MeV]"
-           << "\n Mass:" << ParentMass / MeV << "[MeV]";
+           << "\n Energy:" << ParentEnergy / CLHEP::MeV << "[MeV]"
+           << "\n Mass:" << ParentMass / CLHEP::MeV << "[MeV]";
         G4Exception("G4Decay::DecayIt ",
                     "DECAY102", JustWarning, ed);
         ParentEnergy = ParentMass;
@@ -218,10 +218,10 @@ auto ExtendDecayIt<Decay>::DecayIt(const G4Track& aTrack, const G4Step&) -> G4VP
 #ifdef G4VERBOSE
     if (this->GetVerboseLevel() > 1) {
         G4cout << "G4Decay::DoIt  : Decay vertex :";
-        G4cout << " Time: " << finalGlobalTime / ns << "[ns]";
-        G4cout << " X:" << (aTrack.GetPosition()).x() / cm << "[cm]";
-        G4cout << " Y:" << (aTrack.GetPosition()).y() / cm << "[cm]";
-        G4cout << " Z:" << (aTrack.GetPosition()).z() / cm << "[cm]";
+        G4cout << " Time: " << finalGlobalTime / CLHEP::ns << "[ns]";
+        G4cout << " X:" << (aTrack.GetPosition()).x() / CLHEP::cm << "[cm]";
+        G4cout << " Y:" << (aTrack.GetPosition()).y() / CLHEP::cm << "[cm]";
+        G4cout << " Z:" << (aTrack.GetPosition()).z() / CLHEP::cm << "[cm]";
         G4cout << G4endl;
         G4cout << "G4Decay::DoIt  : decay products in Lab. Frame" << G4endl;
         products->DumpInfo();

@@ -75,7 +75,7 @@ auto PrintWarning(std::string_view message, const std::source_location& location
     const auto ts{fg(fmt::color::white) | bg(fmt::color::dark_orange)};
     Print<'W'>(ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
     Print<'W'>(ts, " {}: ", internal::PrettyLogHead("Warning from ", location));
-    Print<'W'>(ts | fmt::emphasis::bold, " {}", message);
+    Print<'W'>(ts | fmt::emphasis::bold, "{}", message);
     Print<'W'>("\n");
 }
 
@@ -83,7 +83,7 @@ auto PrintError(std::string_view message, const std::source_location& location) 
     const auto ts{fg(fmt::color::white) | bg(fmt::color::red)};
     Print<'E'>(ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
     Print<'E'>(ts, " {}: ", internal::PrettyLogHead("Error from ", location));
-    Print<'E'>(ts | fmt::emphasis::bold, " {}", message);
+    Print<'E'>(ts | fmt::emphasis::bold, "{}", message);
     Print<'E'>("\n");
 }
 

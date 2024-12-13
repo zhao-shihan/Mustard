@@ -72,7 +72,7 @@ BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
         .nargs(0)
         .action([this](auto&&) { --fVerboseLevelValue; });
     ArgParser()
-        .add_argument("-l", "--lite")
+        .add_argument("--lite")
         .flag()
         .help("Do not show the Mustard banner.");
 }

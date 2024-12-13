@@ -38,6 +38,8 @@
 #include <random>
 #include <sstream>
 
+namespace Mustard::inline Extension::Geant4X::inline Generator {
+
 namespace {
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -702,7 +704,7 @@ public:
         return rate;
     };
     /// Get the estimated corresponding to the provided statistics
-    double GetEstimatedTime(int nmuons) {
+    double GetEstimatedTime(double nmuons) {
         if (mCustomJ) return 0.;
         return (nmuons / (GetGenSurfaceArea() / EMUnits::m2)) / (GetAverageGenRate() / EMUnits::hertz * EMUnits::m2);
     };
@@ -1245,16 +1247,22 @@ private:
 
 } // namespace
 
-namespace Mustard::inline Extension::Geant4X::inline Generator {
-
 using namespace LiteralUnit::Length;
+
+auto EcoMugCosmicRayMuon::EcoMuG() const -> const auto& {
+    return std::any_cast<const EcoMug&>(fEcoMug);
+}
+
+auto EcoMugCosmicRayMuon::EcoMuG() -> auto& {
+    return std::any_cast<EcoMug&>(fEcoMug);
+}
 
 EcoMugCosmicRayMuon::EcoMugCosmicRayMuon(Coordinate c) :
     G4VPrimaryGenerator{},
     fEcoMug{EcoMug{}},
     fCoordinate{c},
     fReseedCounter{} {
-    auto& ecoMug{std::any_cast<EcoMug&>(fEcoMug)};
+    auto& ecoMug{EcoMuG()};
     ecoMug.SetUseSky();
     ecoMug.SetSkySize({50_m, 50_m});
     ecoMug.SetSkyCenterPosition({0, 0, 20_m});
@@ -1263,47 +1271,59 @@ EcoMugCosmicRayMuon::EcoMugCosmicRayMuon(Coordinate c) :
 EcoMugCosmicRayMuon::~EcoMugCosmicRayMuon() = default;
 
 auto EcoMugCosmicRayMuon::UseSky() -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetUseSky();
+    EcoMuG().SetUseSky();
 }
 
 auto EcoMugCosmicRayMuon::SkySize(double x, double y) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetSkySize({x, y});
+    EcoMuG().SetSkySize({x / m, y / m});
 }
 
 auto EcoMugCosmicRayMuon::SkyCenterPosition(G4ThreeVector x0) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetSkyCenterPosition(ToEcoMug(x0));
+    EcoMuG().SetSkyCenterPosition(ToEcoMug(x0 / m));
 }
 
 auto EcoMugCosmicRayMuon::UseCylinder() -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetUseCylinder();
+    EcoMuG().SetUseCylinder();
 }
 
 auto EcoMugCosmicRayMuon::CylinderRadius(double r) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetCylinderRadius(r);
+    EcoMuG().SetCylinderRadius(r / m);
 }
 
 auto EcoMugCosmicRayMuon::CylinderHeight(double h) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetCylinderHeight(h);
+    EcoMuG().SetCylinderHeight(h / m);
 }
 
 auto EcoMugCosmicRayMuon::CylinderCenterPosition(G4ThreeVector x0) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetCylinderCenterPosition(ToEcoMug(x0));
+    EcoMuG().SetCylinderCenterPosition(ToEcoMug(x0 / m));
 }
 
 auto EcoMugCosmicRayMuon::UseHSphere() -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetUseHSphere();
+    EcoMuG().SetUseHSphere();
 }
 
 auto EcoMugCosmicRayMuon::HSphereRadius(double r) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetHSphereRadius(r);
+    EcoMuG().SetHSphereRadius(r / m);
 }
 
 auto EcoMugCosmicRayMuon::HSphereCenterPosition(G4ThreeVector x0) -> void {
-    std::any_cast<EcoMug&>(fEcoMug).SetHSphereCenterPosition(ToEcoMug(x0));
+    EcoMuG().SetHSphereCenterPosition(ToEcoMug(x0 / m));
+}
+
+auto EcoMugCosmicRayMuon::MaxTheta(double thetaMax) -> void {
+    EcoMuG().SetMaximumTheta(thetaMax);
+}
+
+auto EcoMugCosmicRayMuon::MinMomentum(double pMin) -> void {
+    EcoMuG().SetMinimumMomentum(pMin / GeV);
+}
+
+auto EcoMugCosmicRayMuon::MaxMomentum(double pMax) -> void {
+    EcoMuG().SetMaximumMomentum(pMax / GeV);
 }
 
 auto EcoMugCosmicRayMuon::GeneratePrimaryVertex(G4Event* event) -> void {
-    auto& ecoMug{std::any_cast<EcoMug&>(fEcoMug)};
+    auto& ecoMug{EcoMuG()};
 
     if (fReseedCounter++ == 0) {
         static_assert(sizeof(std::uint64_t) % sizeof(unsigned int) == 0);
@@ -1316,7 +1336,7 @@ auto EcoMugCosmicRayMuon::GeneratePrimaryVertex(G4Event* event) -> void {
     muc::array3d ecoMugP;
     ecoMug.GetGenerationMomentum(ecoMugP);
     const auto p{ToGeant4(ecoMugP) * GeV};
-    const auto x{ToGeant4(ecoMug.GetGenerationPosition())};
+    const auto x{ToGeant4(ecoMug.GetGenerationPosition()) * m};
 
     // clang-format off
     const auto primaryVertex{new G4PrimaryVertex{x, 0}}; // clang-format on
@@ -1324,6 +1344,15 @@ auto EcoMugCosmicRayMuon::GeneratePrimaryVertex(G4Event* event) -> void {
                                   new G4PrimaryParticle{G4MuonPlus::Definition(), p.x(), p.y(), p.z()} :
                                   new G4PrimaryParticle{G4MuonMinus::Definition(), p.x(), p.y(), p.z()});
     event->AddPrimaryVertex(primaryVertex);
+}
+
+auto EcoMugCosmicRayMuon::EstimatedTime(double nMuon, double horizontalFlux) -> double {
+    auto& ecoMug{EcoMuG()};
+    const auto oldFlux{ecoMug.GetHorizontalRate()};
+    ecoMug.SetHorizontalRate(horizontalFlux / 1_m_2_s_1);
+    const auto t{ecoMug.GetEstimatedTime(nMuon) * s};
+    ecoMug.SetHorizontalRate(oldFlux);
+    return t;
 }
 
 auto EcoMugCosmicRayMuon::ToEcoMug(G4ThreeVector x) -> muc::array3d {

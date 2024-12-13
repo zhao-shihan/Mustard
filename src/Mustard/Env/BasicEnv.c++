@@ -77,13 +77,15 @@ auto BasicEnv::PrintExitBanner() const -> void {
     Print(fmt::emphasis::bold,
           "===============================================================================\n"
           " Exit Mustard environment at {:%FT%T%z}\n"
-          "===============================================================================\n",
+          "===============================================================================",
           fmt::localtime(scsc::to_time_t(scsc::now())));
+    Print("\n");
 }
 
 auto BasicEnv::PrintStartBannerSplitLine() const -> void {
     Print(fmt::emphasis::bold,
-          "\n===============================================================================\n");
+          "\n===============================================================================");
+    Print("\n");
 }
 
 auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {

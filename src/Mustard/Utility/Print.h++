@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/Env/MPIEnv.h++"
 
 #include "fmt/color.h"
 #include "fmt/core.h"
@@ -153,6 +154,131 @@ auto Print(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_strin
 /// @param ...args Same as `fmt::vprint`
 template<char L = 'E'>
 auto VPrint(auto&&... args) -> void;
+
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<char L = 'E', typename... Ts>
+auto MasterPrint(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param fmt Same as `fmt::println`
+/// @param ...args Same as `fmt::println`
+template<char L = 'E', typename... Ts>
+auto MasterPrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param ts Same as `fmt::print`
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<char L = 'E', typename... Ts>
+auto MasterPrint(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<char L = 'E', typename... Ts>
+auto MasterPrint(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param fmt Same as `fmt::println`
+/// @param ...args Same as `fmt::println`
+template<char L = 'E', typename... Ts>
+auto MasterPrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param ts Same as `fmt::print`
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<char L = 'E', typename... Ts>
+auto MasterPrint(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<char L = 'E', typename... Ts>
+auto MasterPrint(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param fmt Same as `fmt::println`
+/// @param ...args Same as `fmt::println`
+template<char L = 'E', typename... Ts>
+auto MasterPrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param ts Same as `fmt::print`
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<char L = 'E', typename... Ts>
+auto MasterPrint(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<char L = 'E', typename... Ts>
+auto MasterPrint(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param fmt Same as `fmt::println`
+/// @param ...args Same as `fmt::println`
+template<char L = 'E', typename... Ts>
+auto MasterPrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param ts Same as `fmt::print`
+/// @param fmt Same as `fmt::print`
+/// @param ...args Same as `fmt::print`
+template<char L = 'E', typename... Ts>
+auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+
+/// @brief Verbose level controlled master process print function.
+/// @tparam L Verbose level threshold. Available values are:
+///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
+///         Default to 'E' (always print except when verbose level is `Quiet`).
+///         Check `Env::VerboseLevel` and `Env::VerboseLevelReach` for details.
+/// @param ...args Same as `fmt::vprint`
+template<char L = 'E'>
+auto MasterVPrint(auto&&... args) -> void;
 
 } // namespace Mustard::inline Utility
 

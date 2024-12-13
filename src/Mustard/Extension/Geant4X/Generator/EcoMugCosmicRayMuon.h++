@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "Mustard/Utility/LiteralUnit.h++"
+
 #include "G4ThreeVector.hh"
 #include "G4VPrimaryGenerator.hh"
 
@@ -26,6 +28,8 @@
 #include <any>
 
 namespace Mustard::inline Extension::Geant4X::inline Generator {
+
+using namespace Mustard::LiteralUnit::NumberFlux;
 
 /// @brief EcoMug: Efficient COsmic MUon Generator
 /// Cite: Pagano, D., Bonomi, G., Donzella, A., Zenoni, A., Zumerle, G., & Zurlo, N. (2021).
@@ -65,9 +69,18 @@ public:
     auto HSphereRadius(double r) -> void;
     auto HSphereCenterPosition(G4ThreeVector x0) -> void;
 
+    auto MaxTheta(double thetaMax) -> void;
+    auto MinMomentum(double pMin) -> void;
+    auto MaxMomentum(double pMax) -> void;
+
     auto GeneratePrimaryVertex(G4Event* event) -> void override;
 
+    auto EstimatedTime(double nMuon, double horizontalFlux = 129_m_2_s_1) -> double;
+
 private:
+    auto EcoMuG() const -> const auto&;
+    auto EcoMuG() -> auto&;
+
     auto ToEcoMug(G4ThreeVector x) -> muc::array3d;
     auto ToGeant4(muc::array3d x) -> G4ThreeVector;
 

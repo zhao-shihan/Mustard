@@ -130,7 +130,7 @@ auto Processor<AExecutor>::ByPassCheck(Index n, std::string_view what) -> bool {
     const auto byPass{static_cast<Index>(mpiEnv.CommWorldSize()) > n};
     if (mpiEnv.OnCommWorldMaster() and byPass) {
         PrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
-                                            mpiEnv.CommWorldSize(), what, n));
+                                 mpiEnv.CommWorldSize(), what, n));
     }
     return byPass;
 }

@@ -85,6 +85,8 @@ public:
 
     auto Write(int option = 0, int bufferSize = 0) const -> std::size_t;
 
+    auto NEntry() const -> auto { return fTree->GetEntries(); }
+
 private:
     template<typename T = Tuple<Ts...>>
         requires std::assignable_from<Tuple<Ts...>&, T&&>
@@ -108,7 +110,7 @@ private:
         explicit OutputIterator(Output* output);
 
         template<typename T = Tuple<Ts...>>
-        auto operator=(T&& data) const -> auto& { return *fOutput << std::forward<T>(data), *this; }
+        auto operator=(T&& data) const -> auto& { return fOutput->Fill(std::forward<T>(data)), *this; }
 
         auto operator*() const -> auto& { return *this; }
         auto operator++() const -> auto& { return *this; }

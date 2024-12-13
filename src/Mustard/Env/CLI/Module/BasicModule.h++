@@ -31,7 +31,7 @@ public:
     BasicModule(argparse::ArgumentParser& argParser);
 
     auto VerboseLevel() const -> std::optional<enum VerboseLevel>;
-    auto ShowBanner() const -> auto { return not ArgParser().is_used("-l"); }
+    auto ShowBanner() const -> auto { return not ArgParser().is_used("--lite"); }
 
 private:
     std::underlying_type_t<enum VerboseLevel> fVerboseLevelValue;

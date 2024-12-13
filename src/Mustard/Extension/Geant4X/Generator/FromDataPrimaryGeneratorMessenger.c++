@@ -24,7 +24,8 @@
 #include "G4UIparameter.hh"
 #include "G4ios.hh"
 
-#include <ranges>
+#include <filesystem>
+#include <sstream>
 #include <string>
 
 namespace Mustard::inline Extension::Geant4X::inline Generator {
@@ -36,16 +37,16 @@ FromDataPrimaryGeneratorMessenger::FromDataPrimaryGeneratorMessenger() :
     fNVertex{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Generator/FromDataPrimaryGenerator/");
-    fDirectory->SetGuidance("Vertex generator imported from event data.");
+    fDirectory->SetGuidance("Primary vertex generator imported from event data.");
 
     fEventData = std::make_unique<G4UIcommand>("/Mustard/Generator/FromDataPrimaryGenerator/EventData", this);
-    fEventData->SetGuidance("Set beam data ROOT file and dataset name.");
+    fEventData->SetGuidance("Set primary vertices data ROOT file and dataset name.");
     fEventData->SetParameter(new G4UIparameter{"file", 's', false});
     fEventData->SetParameter(new G4UIparameter{"data", 's', false});
     fEventData->AvailableForStates(G4State_Idle);
 
     fNVertex = std::make_unique<G4UIcmdWithAnInteger>("/Mustard/Generator/FromDataPrimaryGenerator/NVertex", this);
-    fNVertex->SetGuidance("Set number of particles to generate in an event.");
+    fNVertex->SetGuidance("Set number of vertices to generate in an event.");
     fNVertex->SetParameterName("N", false);
     fNVertex->SetRange("N >= 0");
     fNVertex->AvailableForStates(G4State_Idle);
@@ -56,29 +57,17 @@ FromDataPrimaryGeneratorMessenger::~FromDataPrimaryGeneratorMessenger() = defaul
 auto FromDataPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
     if (command == fEventData.get()) {
         Deliver<FromDataPrimaryGenerator>([&](auto&& r) {
-            const auto [file, data]{ParseFileNameAndObjectName(value)};
-            try {
-                r.EventData(std::string{file}, std::string{data});
-            } catch (const std::runtime_error& e) {
-                G4cerr << e.what() << G4endl;
-            }
+            std::filesystem::path file;
+            std::string data;
+            std::istringstream is{value};
+            is >> file >> data;
+            r.EventData(file, data);
         });
     } else if (command == fNVertex.get()) {
         Deliver<FromDataPrimaryGenerator>([&](auto&& r) {
             r.NVertex(fNVertex->GetNewIntValue(value));
         });
     }
-}
-
-auto FromDataPrimaryGeneratorMessenger::ParseFileNameAndObjectName(std::string_view value) -> std::pair<std::string_view, std::string_view> {
-    std::vector<std::string_view> parameter;
-    parameter.reserve(2);
-    for (auto&& token : value | std::views::split(' ')) {
-        if (token.empty()) { continue; }
-        parameter.emplace_back(token.begin(), token.end());
-        if (parameter.size() == 2) { return {parameter.front(), parameter.back()}; }
-    }
-    return {};
 }
 
 } // namespace Mustard::inline Extension::Geant4X::inline Generator

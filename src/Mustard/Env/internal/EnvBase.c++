@@ -129,7 +129,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
             }
             if (MPIEnv::Available()) {
                 const auto& mpi{MPIEnv::Instance()};
-                Print<'E'>(ts, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+                Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
             }
             Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
             PrintStackTrace(64, 2, stderr, ts);
@@ -160,7 +160,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
     Print<'E'>(ts, "{}***** ABORT (SIGABRT) received\n", lineHeader);
     if (MPIEnv::Available()) {
         const auto& mpi{MPIEnv::Instance()};
-        Print<'E'>(ts, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+        Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
     }
     Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
     PrintStackTrace(64, 2, stderr, ts);
@@ -200,7 +200,7 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
             }
             if (MPIEnv::Available()) {
                 const auto& mpi{MPIEnv::Instance()};
-                Print<'E'>(ts, "{}***** on MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+                Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
             }
             Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
             PrintStackTrace(64, 2, stderr, ts);
@@ -294,13 +294,13 @@ auto EnvBase::CheckFundamentalType() -> void {
                        muc::bit_size<char>, muc::bit_size<short>, muc::bit_size<int>, muc::bit_size<long>, muc::bit_size<long long>, muc::bit_size<void*>);
         }
     }
-    if (not std::numeric_limits<float>::is_iec559) {
+    if constexpr (not std::numeric_limits<float>::is_iec559) {
         fmt::print(stderr, fg(fmt::color::orange), "Warning: 'float' does not fulfill the requirements of IEC 559 (IEEE 754)\n");
     }
-    if (not std::numeric_limits<double>::is_iec559) {
+    if constexpr (not std::numeric_limits<double>::is_iec559) {
         fmt::print(stderr, fg(fmt::color::orange), "Warning: 'double' does not fulfill the requirements of IEC 559 (IEEE 754)\n");
     }
-    if (not std::numeric_limits<long double>::is_iec559) {
+    if constexpr (not std::numeric_limits<long double>::is_iec559) {
         fmt::print(stderr, fg(fmt::color::orange), "Warning: 'long double' does not fulfill the requirements of IEC 559 (IEEE 754)\n");
     }
 }

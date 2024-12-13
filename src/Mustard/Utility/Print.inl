@@ -96,4 +96,82 @@ auto VPrint(auto&&... args) -> void {
     fmt::vprint(std::forward<decltype(args)>(args)...);
 }
 
+template<char L, typename... Ts>
+auto MasterPrint(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    Print(std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    PrintLn(std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrint(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    Print(ts, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrint(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    Print(f, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    PrintLn(f, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrint(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    Print(f, ts, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrint(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    Print(os, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrint(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrint(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    Print(os, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L, typename... Ts>
+auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+}
+
+template<char L>
+auto MasterVPrint(auto&&... args) -> void {
+    if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
+    VPrint(std::forward<decltype(args)>(args)...);
+}
+
 } // namespace Mustard::inline Utility

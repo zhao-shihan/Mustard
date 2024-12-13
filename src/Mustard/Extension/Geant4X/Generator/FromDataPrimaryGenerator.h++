@@ -25,8 +25,10 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <utility>
 
-class TFile;
+class G4Run;
+class TChain;
 
 namespace Mustard::inline Extension::Geant4X::inline Generator {
 
@@ -47,10 +49,13 @@ protected:
     struct EventData;
 
 protected:
-    std::unique_ptr<TFile> fBeamFile;
+    std::unique_ptr<TChain> fChain;
     std::unique_ptr<struct EventData> fEventData;
 
     int fNVertex; // Do not change this within a G4 run
+
+    std::pair<const G4Run*, int> fCurrentRun;
+    long long fEndEntryForCurrentRun;
 
 private:
     FromDataPrimaryGeneratorMessenger::Register<FromDataPrimaryGenerator> fFromDataPrimaryGeneratorMessengerRegister;

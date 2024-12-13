@@ -20,21 +20,23 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
+#include "muc/math"
+
 #include <numbers>
 
 namespace Mustard::inline Utility::LiteralUnit {
 
 #define MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION_IMPL(FloatType, fullSuffix, unit) \
-    constexpr FloatType operator""_##fullSuffix(long double value) {              \
+    constexpr auto operator""_##fullSuffix(long double value)->FloatType {        \
         return value * static_cast<long double>(unit);                            \
     }                                                                             \
-    constexpr FloatType operator""_##fullSuffix(unsigned long long value) {       \
+    constexpr auto operator""_##fullSuffix(unsigned long long value)->FloatType { \
         return value * static_cast<long double>(unit);                            \
     }
 #define MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(suffix, unit)             \
     MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION_IMPL(float, suffix##_f, unit) \
     MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION_IMPL(double, suffix, unit)    \
-    MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION_IMPL(long double, suffix##_l, unit)
+    // MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION_IMPL(long double, suffix##_l, unit)
 
 // Length [L] symbols
 inline namespace Length {
@@ -356,6 +358,66 @@ MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(kV_m, CLHEP::kilovolt / CLHEP::m)
 MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(kV_cm, CLHEP::kilovolt / CLHEP::cm)
 
 } // namespace ElectricFieldStrength
+
+// Number density [L^-3] symbols
+inline namespace NumberDensity {
+
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(mm_3, 1 / CLHEP::mm3)
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(cm_3, 1 / CLHEP::cm3)
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(m_3, 1 / CLHEP::m3)
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(km_3, 1 / CLHEP::km3)
+
+} // namespace NumberDensity
+
+// Surface number density [L^-2] symbols
+inline namespace SurfaceNumberDensity {
+
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(mm_2, 1 / CLHEP::mm2)
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(cm_2, 1 / CLHEP::cm2)
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(m_2, 1 / CLHEP::m2)
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(km_2, 1 / CLHEP::km2)
+
+} // namespace SurfaceNumberDensity
+
+// Number flux [L^-2][T^-1] symbols
+inline namespace NumberFlux {
+
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(km_2_ps_1, muc::pow<-2>(CLHEP::km) * muc::pow<-1>(CLHEP::ps))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(m_2_ps_1, muc::pow<-2>(CLHEP::m) * muc::pow<-1>(CLHEP::ps))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(cm_2_ps_1, muc::pow<-2>(CLHEP::cm) * muc::pow<-1>(CLHEP::ps))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(mm_2_ps_1, muc::pow<-2>(CLHEP::mm) * muc::pow<-1>(CLHEP::ps))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(um_2_ps_1, muc::pow<-2>(CLHEP::um) * muc::pow<-1>(CLHEP::ps))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(nm_2_ps_1, muc::pow<-2>(CLHEP::nm) * muc::pow<-1>(CLHEP::ps))
+
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(km_2_ns_1, muc::pow<-2>(CLHEP::km) * muc::pow<-2>(CLHEP::ns))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(m_2_ns_1, muc::pow<-2>(CLHEP::m) * muc::pow<-2>(CLHEP::ns))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(cm_2_ns_1, muc::pow<-2>(CLHEP::cm) * muc::pow<-2>(CLHEP::ns))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(mm_2_ns_1, muc::pow<-2>(CLHEP::mm) * muc::pow<-2>(CLHEP::ns))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(um_2_ns_1, muc::pow<-2>(CLHEP::um) * muc::pow<-2>(CLHEP::ns))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(nm_2_ns_1, muc::pow<-2>(CLHEP::nm) * muc::pow<-2>(CLHEP::ns))
+
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(km_2_us_1, muc::pow<-2>(CLHEP::km) * muc::pow<-1>(CLHEP::us))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(m_2_us_1, muc::pow<-2>(CLHEP::m) * muc::pow<-1>(CLHEP::us))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(cm_2_us_1, muc::pow<-2>(CLHEP::cm) * muc::pow<-1>(CLHEP::us))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(mm_2_us_1, muc::pow<-2>(CLHEP::mm) * muc::pow<-1>(CLHEP::us))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(um_2_us_1, muc::pow<-2>(CLHEP::um) * muc::pow<-1>(CLHEP::us))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(nm_2_us_1, muc::pow<-2>(CLHEP::nm) * muc::pow<-1>(CLHEP::us))
+
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(km_2_ms_1, muc::pow<-2>(CLHEP::km) * muc::pow<-1>(CLHEP::ms))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(m_2_ms_1, muc::pow<-2>(CLHEP::m) * muc::pow<-1>(CLHEP::ms))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(cm_2_ms_1, muc::pow<-2>(CLHEP::cm) * muc::pow<-1>(CLHEP::ms))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(mm_2_ms_1, muc::pow<-2>(CLHEP::mm) * muc::pow<-1>(CLHEP::ms))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(um_2_ms_1, muc::pow<-2>(CLHEP::um) * muc::pow<-1>(CLHEP::ms))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(nm_2_ms_1, muc::pow<-2>(CLHEP::nm) * muc::pow<-1>(CLHEP::ms))
+
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(km_2_s_1, muc::pow<-2>(CLHEP::km) * muc::pow<-1>(CLHEP::s))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(m_2_s_1, muc::pow<-2>(CLHEP::m) * muc::pow<-1>(CLHEP::s))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(cm_2_s_1, muc::pow<-2>(CLHEP::cm) * muc::pow<-1>(CLHEP::s))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(mm_2_s_1, muc::pow<-2>(CLHEP::mm) * muc::pow<-1>(CLHEP::s))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(um_2_s_1, muc::pow<-2>(CLHEP::um) * muc::pow<-1>(CLHEP::s))
+MUSTARD_UTILITY_LITERAL_UNIT_DEFINITION(nm_2_s_1, muc::pow<-2>(CLHEP::nm) * muc::pow<-1>(CLHEP::s))
+
+} // namespace NumberFlux
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
