@@ -53,7 +53,7 @@ cmake_dependent_option(MUSTARD_INSTALL "Install Mustard." ${PROJECT_IS_TOP_LEVEL
 # Options (ON/OFF)
 option(MUSTARD_ENABLE_IPO "Bulid Mustard with interprocedural optimization" ${BUILD_SHARED_LIBS})
 option(MUSTARD_ENABLE_MSVC_STD_CONFORMITY "Build Mustard with standard-conformity (MSVC only: /permissive- /Zc:__cplusplus /Zc:inline)." ON)
-option(MUSTARD_FULL_UNITY_BUILD "Building Mustard use unity build technique COMPLETELY." ON)
+option(MUSTARD_FULL_UNITY_BUILD "Building Mustard use unity build technique COMPLETELY." OFF)
 option(MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS "Add compiler flag to show even more compiler warnings (GCC: -Weffc++, Clang: -Weverything, MSVC: /Wall)." OFF)
 option(MUSTARD_USE_SHARED_MSVC_RT "Select the MSVC runtime library for use (MSVC only). ON for shared (.dll), OFF for static (.lib). If you run into link error related to MSVC runtime, you can try flip this." ON)
 cmake_dependent_option(MUSTARD_ENABLE_UNITY_BUILD "Build Mustard with unity build technique." OFF "NOT MUSTARD_FULL_UNITY_BUILD" ON)
