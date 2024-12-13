@@ -17,9 +17,9 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/Geant4X/Interface/MPIExecutive.h++"
 #include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/Utility/Print.h++"
 
 #include <ostream>
 #include <source_location>
@@ -46,14 +46,14 @@ auto MPIExecutive::ExecuteCommand(const std::string& command) -> bool {
                             [](unsigned char ch) {
                                 return std::isspace(ch);
                             })) {
-        Env::PrintLn(G4cout, "{}", command);
+        PrintLn(G4cout, "{}", command);
         return true;
     }
     if (const auto commandStatus = G4UImanager::GetUIpointer()->ApplyCommand(command);
         commandStatus == fCommandSucceeded) [[likely]] {
         return true;
     } else {
-        Env::PrintLn(G4cerr, "Mustard::Geant4X::MPIExecutive::Execute: Command '{}' failed (G4UIcommandStatus: {})", command, commandStatus), flush(G4cerr);
+        PrintLn(G4cerr, "Mustard::Geant4X::MPIExecutive::Execute: Command '{}' failed (G4UIcommandStatus: {})", command, commandStatus), flush(G4cerr);
         return false;
     }
 }

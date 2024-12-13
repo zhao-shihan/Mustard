@@ -1,7 +1,7 @@
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/MPIX/Execution/DynamicScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
+#include "Mustard/Utility/Print.h++"
 
 #include <string>
 #include <thread>
@@ -19,7 +19,7 @@ auto main(int argc, char* argv[]) -> int {
     executor.PrintProgress(false);
     executor.Execute(n,
                      [&](auto i) {
-                         Env::PrintLn("{},{}", i, env.CommWorldRank());
+                         PrintLn("{},{}", i, env.CommWorldRank());
                      });
 
     executor.PrintProgress(true);
@@ -32,13 +32,13 @@ auto main(int argc, char* argv[]) -> int {
     executor.Execute(n,
                      [&](auto i) {
                          std::this_thread::sleep_for(500ms);
-                         Env::PrintLn("{},{}", i, env.CommWorldRank());
+                         PrintLn("{},{}", i, env.CommWorldRank());
                      });
 
     executor.Execute(n,
                      [&](auto i) {
                          std::this_thread::sleep_for(500ms);
-                         Env::PrintLn("{},{}", i, env.CommWorldRank());
+                         PrintLn("{},{}", i, env.CommWorldRank());
                      });
 
     executor.PrintProgressModulo(1);

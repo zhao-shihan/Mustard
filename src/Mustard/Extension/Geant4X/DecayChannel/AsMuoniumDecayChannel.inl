@@ -51,7 +51,7 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4Dec
     using namespace LiteralUnit::MathConstantSuffix;
     using namespace PhysicalConstant;
 
-    Env::PrintLn<'V'>("AsMuoniumDecayChannel::DecayIt");
+    PrintLn<'V'>("AsMuoniumDecayChannel::DecayIt");
 
     G4ThreeVector p{};
     for (auto i{0};; ++i) {
@@ -78,7 +78,7 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4Dec
     products->Boost(-p.x() / muon_mass_c2, -p.y() / muon_mass_c2, -p.z() / muon_mass_c2); // recoil boost
     products->PushProducts(new G4DynamicParticle{this->G4MT_daughters[fAtomicShellProductIndex], p});
 
-    Env::PrintLn<'V'>("AsMuoniumDecayChannel::DecayIt\n"
+    PrintLn<'V'>("AsMuoniumDecayChannel::DecayIt\n"
                       "\tCreate decay products in rest frame.");
     if (Env::VerboseLevelReach<'V'>()) { products->DumpInfo(); }
 

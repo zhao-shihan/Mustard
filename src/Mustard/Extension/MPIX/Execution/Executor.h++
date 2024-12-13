@@ -20,10 +20,10 @@
 
 #include "Mustard/Concept/MPIPredefined.h++"
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/Print.h++"
 #include "Mustard/Extension/MPIX/Execution/DynamicScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/Utility/Print.h++"
 
 #include "mpi.h"
 

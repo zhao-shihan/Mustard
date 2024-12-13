@@ -39,8 +39,8 @@
 #if MUSTARD_SIGNAL_HANDLER
 
 #    include "Mustard/Env/MPIEnv.h++"
-#    include "Mustard/Env/Print.h++"
 #    include "Mustard/Utility/InlineMacro.h++"
+#    include "Mustard/Utility/Print.h++"
 #    include "Mustard/Utility/PrintStackTrace.h++"
 
 #    include "fmt/chrono.h"

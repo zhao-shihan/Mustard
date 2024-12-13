@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/Print.h++"
+#include "Mustard/Utility/Print.h++"
 #include "Mustard/Utility/PrintStackTrace.h++"
 
 #include "backward.hpp"
@@ -59,7 +59,7 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const f
         text += '\n';
     }
 
-    Env::Print(f, ts, "{}", text);
+    Print<'E'>(f, ts, "{}", text);
 }
 
 } // namespace Mustard::inline Utility

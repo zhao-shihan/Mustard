@@ -27,7 +27,7 @@
 #include <cstdio>
 #include <ostream>
 
-namespace Mustard::Env {
+namespace Mustard::inline Utility {
 
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -154,69 +154,6 @@ auto Print(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_strin
 template<char L = 'E'>
 auto VPrint(auto&&... args) -> void;
 
-// /// @brief Same as `Print<'I'>(stderr, ...)`
-// /// @param fmt Same as `fmt::print`
-// /// @param ...args Same as `fmt::print`
-// template<typename... Ts>
-// auto PrintInfo(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `PrintLn<'I'>(stderr, ...)`
-// /// @param fmt Same as `fmt::println`
-// /// @param ...args Same as `fmt::println`
-// template<typename... Ts>
-// auto PrintLnInfo(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `Print<'I'>(stderr, ...)`
-// /// @param ts Same as `fmt::println`
-// /// @param fmt Same as `fmt::print`
-// /// @param ...args Same as `fmt::print`
-// template<typename... Ts>
-// auto PrintInfo(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `VPrint<'I'>(stderr, ...)`
-// /// @param ...args Same as `fmt::vprint`
-// template<typename... Ts>
-// auto VPrintInfo(auto&&... args) -> void;
+} // namespace Mustard::inline Utility
 
-// /// @brief Same as `Print<'W'>(stderr, ...)`
-// /// @param fmt Same as `fmt::print`
-// /// @param ...args Same as `fmt::print`
-// template<typename... Ts>
-// auto PrintWarning(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `PrintLn<'W'>(stderr, ...)`
-// /// @param fmt Same as `fmt::println`
-// /// @param ...args Same as `fmt::println`
-// template<typename... Ts>
-// auto PrintLnWarning(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `Print<'W'>(stderr, ...)`
-// /// @param ts Same as `fmt::println`
-// /// @param fmt Same as `fmt::print`
-// /// @param ...args Same as `fmt::print`
-// template<typename... Ts>
-// auto PrintWarning(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `VPrint<'W'>(stderr, ...)`
-// /// @param ...args Same as `fmt::vprint`
-// template<typename... Ts>
-// auto VPrintWarning(auto&&... args) -> void;
-
-// /// @brief Same as `Print<'E'>(stderr, ...)`
-// /// @param fmt Same as `fmt::print`
-// /// @param ...args Same as `fmt::print`
-// template<typename... Ts>
-// auto PrintError(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `PrintLn<'E'>(stderr, ...)`
-// /// @param fmt Same as `fmt::println`
-// /// @param ...args Same as `fmt::println`
-// template<typename... Ts>
-// auto PrintLnError(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `Print<'E'>(stderr, ...)`
-// /// @param ts Same as `fmt::println`
-// /// @param fmt Same as `fmt::print`
-// /// @param ...args Same as `fmt::print`
-// template<typename... Ts>
-// auto PrintError(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
-// /// @brief Same as `VPrint<'E'>(stderr, ...)`
-// /// @param ...args Same as `fmt::vprint`
-// template<typename... Ts>
-// auto VPrintError(auto&&... args) -> void;
-
-} // namespace Mustard::Env
-
-#include "Mustard/Env/Print.inl"
+#include "Mustard/Utility/Print.inl"
