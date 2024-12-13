@@ -27,6 +27,7 @@ template<typename ADerived, muc::ceta_string AAppName>
 class AnalysisBase : public Env::Memory::PassiveSingleton<ADerived> {
 public:
     AnalysisBase();
+    virtual ~AnalysisBase() = default;
 
     auto FilePath(std::filesystem::path path) -> void { fFilePath = std::move(path); }
     auto FileMode(std::string mode) -> void { fFileMode = std::move(mode); }

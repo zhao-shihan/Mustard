@@ -127,7 +127,7 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 auto Processor<AExecutor>::ByPassCheck(Index n, std::string_view what) -> bool {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
-    const auto byPass{mpiEnv.CommWorldSize() > n};
+    const auto byPass{static_cast<Index>(mpiEnv.CommWorldSize()) > n};
     if (mpiEnv.OnCommWorldMaster() and byPass) {
         PrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
                                             mpiEnv.CommWorldSize(), what, n));
