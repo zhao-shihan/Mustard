@@ -24,6 +24,7 @@
 #include "G4UIparameter.hh"
 #include "G4ios.hh"
 
+#include <ranges>
 #include <string>
 
 namespace Mustard::inline Extension::Geant4X::inline Generator {

@@ -19,6 +19,7 @@
 #include "Mustard/Extension/Geant4X/Decay/ExtendedDecayWithSpin.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysics.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
 
 #include "G4DecayTable.hh"
 #include "G4EmBuilder.hh"

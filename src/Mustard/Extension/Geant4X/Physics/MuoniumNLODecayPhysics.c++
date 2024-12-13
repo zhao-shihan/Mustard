@@ -22,6 +22,7 @@
 #include "Mustard/Extension/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
 #include "Mustard/Extension/Geant4X/Particle/Antimuonium.h++"
 #include "Mustard/Extension/Geant4X/Particle/Muonium.h++"
+#include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysics.h++"
 #include "Mustard/Extension/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
 
 #include "G4DecayTable.hh"
