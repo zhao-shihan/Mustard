@@ -83,7 +83,7 @@ public:
 
                 result = state;
             } else {
-                throw std::runtime_error{Mustard::PrettyException("Altitude out of range")};
+                Mustard::Throw<std::runtime_error>("Altitude out of range");
             }
         } catch (const std::exception& e) {
             result = std::nullopt;

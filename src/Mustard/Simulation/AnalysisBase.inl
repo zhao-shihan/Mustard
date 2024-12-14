@@ -19,7 +19,7 @@ auto AnalysisBase<ADerived, AAppName>::RunBeginAction(int runID) -> void {
     fFile = TFile::Open(fullFilePath.c_str(), filePathChanged ? fFileMode.c_str() : "UPDATE",
                         "", ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose);
     if (fFile == nullptr) {
-        throw std::runtime_error{PrettyException(fmt::format("Cannot open file '{}' with mode '{}'", fullFilePath, fFileMode))};
+        Throw<std::runtime_error>(fmt::format("Cannot open file '{}' with mode '{}'", fullFilePath, fFileMode));
     }
     fLastUsedFullFilePath = std::move(fullFilePath);
     // save geometry

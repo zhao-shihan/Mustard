@@ -18,16 +18,14 @@
 
 #pragma once
 
+#include "Mustard/Utility/InlineMacro.h++"
+
+#include <concepts>
 #include <source_location>
 #include <string>
 #include <string_view>
 
 namespace Mustard::inline Utility {
-
-auto PrettyInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
-auto PrettyWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
-auto PrettyError(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
-auto PrettyException(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
 
 /// @brief Print pretty information.
 /// @param message The message.
@@ -41,5 +39,18 @@ auto PrintWarning(std::string_view message, const std::source_location& location
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto PrintError(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Throw pretty exception.
+/// @tparam AException The exception type.
+/// @param message The exception message.
+/// @param location Source location. Default is current.
+template<std::constructible_from<std::string> AException>
+[[noreturn]] MUSTARD_ALWAYS_INLINE auto Throw(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+
+auto PrettyInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
+auto PrettyWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
+auto PrettyError(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
+auto PrettyException(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
 
 } // namespace Mustard::inline Utility
+
+#include "Mustard/Utility/PrettyLog.inl"

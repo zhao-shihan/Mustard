@@ -37,7 +37,7 @@ SingletonPool::~SingletonPool() {
     for (auto&& [type, instanceInfo] : fInstanceMap) {
         auto&& [instance, index, base]{instanceInfo};
         if (instance.expired()) {
-            throw std::logic_error{PrettyException(fmt::format("Instance pointer of {} expired", type.name()))};
+            Throw<std::logic_error>(fmt::format("Instance pointer of {} expired", type.name()));
         }
         if (*instance.lock() != nullptr) {
             undeletedListWithID.emplace_back(index, base);

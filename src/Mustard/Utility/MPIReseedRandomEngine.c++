@@ -138,8 +138,8 @@ auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -
                 MPI_COMM_WORLD); // comm
     MPI_Type_free(&structSeed);
 
-    if (seedRecv.clhepNull xor (clhepRng == nullptr)) { throw std::logic_error{PrettyException("CLHEP random engine null/!null inconsistent")}; }
-    if (seedRecv.rootNull xor (tRandom == nullptr)) { throw std::logic_error{PrettyException("ROOT random engine null/!null inconsistent")}; }
+    if (seedRecv.clhepNull xor (clhepRng == nullptr)) { Throw<std::logic_error>("CLHEP random engine null/!null inconsistent"); }
+    if (seedRecv.rootNull xor (tRandom == nullptr)) { Throw<std::logic_error>("ROOT random engine null/!null inconsistent"); }
     if (clhepRng != nullptr) {
         assert(seedRecv.clhep != 0 and seedRecv.clhep != -1); // not 0x00...00 and not 0xff...ff
         clhepRng->setSeed(seedRecv.clhep, 3);

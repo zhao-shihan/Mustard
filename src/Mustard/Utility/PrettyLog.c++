@@ -48,22 +48,6 @@ auto PrettyLogHead(std::string_view prefix, const std::source_location& location
 } // namespace
 } // namespace internal
 
-auto PrettyInfo(std::string_view message, const std::source_location& location) -> std::string {
-    return fmt::format("{}: {}", internal::PrettyLogHead("Information from ", location), message);
-}
-
-auto PrettyWarning(std::string_view message, const std::source_location& location) -> std::string {
-    return fmt::format("{}: {}", internal::PrettyLogHead("Warning from ", location), message);
-}
-
-auto PrettyError(std::string_view message, const std::source_location& location) -> std::string {
-    return fmt::format("{}: {}", internal::PrettyLogHead("Error from ", location), message);
-}
-
-auto PrettyException(std::string_view message, const std::source_location& location) -> std::string {
-    return fmt::format("{}: {}", internal::PrettyLogHead("", location), message);
-}
-
 auto PrintInfo(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::deep_sky_blue)};
     Print<'I'>(ts, "{}: ", internal::PrettyLogHead("Information from ", location));
@@ -85,6 +69,22 @@ auto PrintError(std::string_view message, const std::source_location& location) 
     Print<'E'>(ts, " {}: ", internal::PrettyLogHead("Error from ", location));
     Print<'E'>(ts | fmt::emphasis::bold, "{}", message);
     Print<'E'>("\n");
+}
+
+auto PrettyInfo(std::string_view message, const std::source_location& location) -> std::string {
+    return fmt::format("{}: {}", internal::PrettyLogHead("Information from ", location), message);
+}
+
+auto PrettyWarning(std::string_view message, const std::source_location& location) -> std::string {
+    return fmt::format("{}: {}", internal::PrettyLogHead("Warning from ", location), message);
+}
+
+auto PrettyError(std::string_view message, const std::source_location& location) -> std::string {
+    return fmt::format("{}: {}", internal::PrettyLogHead("Error from ", location), message);
+}
+
+auto PrettyException(std::string_view message, const std::source_location& location) -> std::string {
+    return fmt::format("{}: {}", internal::PrettyLogHead("", location), message);
 }
 
 } // namespace Mustard::inline Utility

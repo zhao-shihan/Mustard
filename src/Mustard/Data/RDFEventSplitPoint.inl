@@ -66,14 +66,14 @@ auto RDFEventSplitPoint(ROOT::RDF::RNode masterRDF,
                         std::string_view masterEventIDBranchName,
                         std::vector<std::string> slaveEventIDBranchName) -> MasterSlaveRDFEventSplitPoint<T> {
     if (slaveRDF.empty()) {
-        throw std::invalid_argument{PrettyException("Empty slave RDF")};
+        Throw<std::invalid_argument>("Empty slave RDF");
     }
 
     if (slaveEventIDBranchName.empty()) {
         slaveEventIDBranchName.resize(slaveRDF.size());
         std::ranges::fill(slaveEventIDBranchName, masterEventIDBranchName);
     } else if (slaveRDF.size() != slaveEventIDBranchName.size()) {
-        throw std::invalid_argument{PrettyException("Inconsistent size between slave RDF and slave RDF event ID branch name")};
+        Throw<std::invalid_argument>("Inconsistent size between slave RDF and slave RDF event ID branch name");
     }
 
     // Parallel build all RDF event split point (1 (master RDF) + n (slave RDF))

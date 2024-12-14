@@ -52,7 +52,7 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                             MPI_THREAD_MULTIPLE, // required
                             &mpiThreadSupport);  // provided
             if (mpiThreadSupport < MPI_THREAD_FUNNELED) {
-                throw std::runtime_error{PrettyException("The MPI library thread support is less than MPI_THREAD_FUNNELED")};
+                Throw<std::runtime_error>("The MPI library thread support is less than MPI_THREAD_FUNNELED");
             }
             return mpiThreadSupport;
         }()},

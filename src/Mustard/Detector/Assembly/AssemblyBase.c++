@@ -28,7 +28,7 @@ auto AssemblyBase::Get(std::type_index definition) const -> const Definition::De
         const auto descendant{top->FindDescendant(definition)};
         if (descendant) { return *descendant; }
     }
-    throw std::logic_error{PrettyException(fmt::format("No {} in assembly", definition.name()))};
+    Throw<std::logic_error>(fmt::format("No {} in assembly", definition.name()));
 }
 
 auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase& {
@@ -37,13 +37,13 @@ auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase
         const auto descendant{top->FindDescendant(definition)};
         if (descendant) { return *descendant; }
     }
-    throw std::logic_error{PrettyException(fmt::format("No {} in assembly", definition.name()))};
+    Throw<std::logic_error>(fmt::format("No {} in assembly", definition.name()));
 }
 
 auto AssemblyBase::TopComplete() -> void {
     // check not empty
     if (fTop.empty()) {
-        throw std::logic_error{PrettyException("Empty assembly")};
+        Throw<std::logic_error>("Empty assembly");
     }
     // check not mother-daughter
     for (auto&& [topType, pTop] : fTop) {
@@ -51,7 +51,7 @@ auto AssemblyBase::TopComplete() -> void {
         if (topType == typeid(top)) { continue; }
         for (auto&& [anotherTop, _] : fTop) {
             if (top.FindDaughter(anotherTop)) {
-                throw std::logic_error{PrettyException(fmt::format("{} is mother of {}", topType.name(), anotherTop.name()))};
+                Throw<std::logic_error>(fmt::format("{} is mother of {}", topType.name(), anotherTop.name()));
             }
         }
     }
@@ -65,7 +65,7 @@ auto AssemblyBase::TopComplete() -> void {
         mother.emplace(myMother);
     }
     if (mother.size() != 1) {
-        throw std::logic_error{PrettyException("Assembly has many first ancestors")};
+        Throw<std::logic_error>("Assembly has many first ancestors");
     }
 }
 

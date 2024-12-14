@@ -243,7 +243,7 @@ EnvBase::EnvBase() :
 
     if (static bool gInstantiated{false};
         gInstantiated) {
-        throw std::logic_error(PrettyException("Trying to construct environment twice"));
+        Throw<std::logic_error>("Trying to construct environment twice");
     } else {
         gInstantiated = true;
     }

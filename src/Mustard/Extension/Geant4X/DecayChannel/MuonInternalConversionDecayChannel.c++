@@ -196,7 +196,7 @@ auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
 auto MuonInternalConversionDecayChannel::BiasWithCheck(const CLHEPX::RAMBO<5>::State& state) const -> double {
     const auto bias{fBias(state)};
     if (bias < 0) {
-        throw std::runtime_error{Mustard::PrettyException("Bias should be non-negative")};
+        Throw<std::runtime_error>("Bias should be non-negative");
     }
     return bias;
 }

@@ -59,7 +59,7 @@ template<std::ranges::input_range S, std::ranges::input_range W>
     requires std::convertible_to<std::ranges::range_value_t<S>, double> and std::convertible_to<std::ranges::range_value_t<W>, double>
 constexpr auto Statistic<1>::Fill(const S& sample, const W& weight) -> void {
     if (std::ranges::size(sample) > std::ranges::size(weight)) {
-        throw std::invalid_argument{PrettyException("Size of sample > size of weight")};
+        Throw<std::invalid_argument>("Size of sample > size of weight");
     }
     auto s = std::ranges::begin(sample);
     auto w = std::ranges::begin(weight);
@@ -147,7 +147,7 @@ template<std::ranges::input_range S, std::ranges::input_range W>
     requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N> and std::convertible_to<std::ranges::range_value_t<W>, double>
 auto Statistic<N>::Fill(const S& sample, const W& weight) -> void {
     if (std::ranges::size(sample) > std::ranges::size(weight)) {
-        throw std::invalid_argument{PrettyException("Size of sample > size of weight")};
+        Throw<std::invalid_argument>("Size of sample > size of weight");
     }
     auto s = std::ranges::begin(sample);
     auto w = std::ranges::begin(weight);

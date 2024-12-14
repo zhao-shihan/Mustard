@@ -137,14 +137,14 @@ auto DynamicScheduler<T>::Master::Supervisor::Start() -> void {
     // Check MPI thread support
     switch (Env::MPIEnv::Instance().MPIThreadSupport()) {
     case MPI_THREAD_SINGLE:
-        throw std::runtime_error{PrettyException("The MPI library provides MPI_THREAD_SINGLE, "
-                                                 "but dynamic scheduler requires MPI_THREAD_MULTIPLE")};
+        Throw<std::runtime_error>("The MPI library provides MPI_THREAD_SINGLE, "
+                                  "but dynamic scheduler requires MPI_THREAD_MULTIPLE");
     case MPI_THREAD_FUNNELED:
-        throw std::runtime_error{PrettyException("The MPI library provides MPI_THREAD_FUNNELED, "
-                                                 "but dynamic scheduler requires MPI_THREAD_MULTIPLE")};
+        Throw<std::runtime_error>("The MPI library provides MPI_THREAD_FUNNELED, "
+                                  "but dynamic scheduler requires MPI_THREAD_MULTIPLE");
     case MPI_THREAD_SERIALIZED:
-        throw std::runtime_error{PrettyException("The MPI library provides MPI_THREAD_SERIALIZED, "
-                                                 "but dynamic scheduler requires MPI_THREAD_MULTIPLE")};
+        Throw<std::runtime_error>("The MPI library provides MPI_THREAD_SERIALIZED, "
+                                  "but dynamic scheduler requires MPI_THREAD_MULTIPLE");
     }
     // wait for last supervision to end if needed
     if (fSupervisorThread.joinable()) { fSupervisorThread.join(); }

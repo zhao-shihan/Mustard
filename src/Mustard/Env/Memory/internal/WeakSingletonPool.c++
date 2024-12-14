@@ -33,7 +33,7 @@ WeakSingletonPool::WeakSingletonPool() :
     if (fgInstance == nullptr) {
         fgInstance = this;
     } else {
-        throw std::logic_error{PrettyException("Trying to instantiate the pool twice")};
+        Throw<std::logic_error>("Trying to instantiate the pool twice");
     }
 }
 
@@ -44,7 +44,7 @@ WeakSingletonPool::~WeakSingletonPool() {
         }
         if (*instance.lock() != nullptr) [[unlikely]] {
             PrintError(fmt::format("Instance of {} survives, implies memory leak or following undefined behavior",
-                                         type.name()));
+                                   type.name()));
         }
     }
     fgInstance = nullptr;
@@ -54,8 +54,8 @@ auto WeakSingletonPool::Instance() -> WeakSingletonPool& {
     if (fgInstance != nullptr) {
         return *fgInstance;
     } else {
-        throw std::logic_error{PrettyException("The pool has not been instantiated or has been destructed "
-                                               "(maybe you forgot to instantiate an environment?)")};
+        Throw<std::logic_error>("The pool has not been instantiated or has been destructed "
+                                "(maybe you forgot to instantiate an environment?)");
     }
 }
 

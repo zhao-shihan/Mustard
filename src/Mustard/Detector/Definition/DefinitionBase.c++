@@ -44,7 +44,7 @@ auto DefinitionBase::FindDaughter(std::type_index definition) const -> Definitio
 
 auto DefinitionBase::RemoveDaughter(std::type_index definition) -> void {
     if (fDaughters.erase(definition) == 0) {
-        throw std::runtime_error{PrettyException(fmt::format("{} is not a daughter of {}", definition.name(), typeid(*this).name()))};
+        Throw<std::runtime_error>(fmt::format("{} is not a daughter of {}", definition.name(), typeid(*this).name()));
     }
 }
 
@@ -116,7 +116,7 @@ auto ParallelExport(std::filesystem::path gdmlFile, gsl::not_null<G4LogicalVolum
 
 auto DefinitionBase::Mother() const -> const DefinitionBase& {
     if (Topmost()) {
-        throw std::logic_error{PrettyException("Topmost entity should not access Mother()")};
+        Throw<std::logic_error>("Topmost entity should not access Mother()");
     }
     return *fMother;
 }
@@ -258,13 +258,13 @@ auto DefinitionBase::ParallelExport(std::filesystem::path gdmlFile, std::string_
 }
 
 auto DefinitionBase::LogicalVolumes() const -> const std::vector<G4LogicalVolume*>& {
-    if (fFirstLogicalVolumes == nullptr) { throw std::logic_error{PrettyException("No logical volume")}; }
+    if (fFirstLogicalVolumes == nullptr) { Throw<std::logic_error>("No logical volume"); }
     assert(not fLogicalVolumes.empty());
     return *fFirstLogicalVolumes;
 }
 
 auto DefinitionBase::PhysicalVolumes() const -> const std::vector<G4VPhysicalVolume*>& {
-    if (fFirstPhysicalVolumes == nullptr) { throw std::logic_error{PrettyException("No physical volume")}; }
+    if (fFirstPhysicalVolumes == nullptr) { Throw<std::logic_error>("No physical volume"); }
     assert(not fPhysicalVolumes.empty());
     return *fFirstPhysicalVolumes;
 }

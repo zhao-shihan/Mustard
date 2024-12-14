@@ -21,12 +21,12 @@ namespace Mustard::Detector::Definition {
 template<std::derived_from<DefinitionBase> ADefinition>
 auto DefinitionBase::NewDaughter(bool checkOverlaps) -> ADefinition& {
     if (typeid(ADefinition) == typeid(*this)) {
-        throw std::logic_error{PrettyException("Trying to add the same geometry to itself as a daughter")};
+        Throw<std::logic_error>("Trying to add the same geometry to itself as a daughter");
     }
 
     const auto [iterator, emplaced]{fDaughters.try_emplace(typeid(ADefinition), std::make_unique_for_overwrite<ADefinition>())};
     if (not emplaced) {
-        throw std::logic_error{PrettyException("Trying to add the same geometry to itself as a daughter")};
+        Throw<std::logic_error>("Trying to add the same geometry to itself as a daughter");
     }
     const auto& daughter{iterator->second};
     daughter->fMother = this;

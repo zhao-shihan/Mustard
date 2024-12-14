@@ -36,7 +36,7 @@ auto MPIExecutive::CheckSequential() const -> void {
                         JustWarning,
                         "Interactive session must be run with only 1 process.\nThrowing an instance of std::logic_error.");
         }
-        throw std::logic_error{PrettyException("Interactive session must be sequential")};
+        Throw<std::logic_error>("Interactive session must be sequential");
     }
 }
 

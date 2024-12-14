@@ -26,7 +26,7 @@ template<WeakSingletonified AWeakSingleton>
     } else {
         const auto& [type, instance]{*existed};
         if (instance.expired()) {
-            throw std::logic_error{PrettyException(fmt::format("Instance pointer of {} expired", type.name()))};
+            Throw<std::logic_error>(fmt::format("Instance pointer of {} expired", type.name()));
         }
         return instance.lock();
     }
@@ -37,7 +37,7 @@ template<WeakSingletonified AWeakSingleton>
     const auto sharedInstance{std::make_shared<void*>(instance)};
     const auto [_, inserted]{fInstanceMap.try_emplace(typeid(AWeakSingleton), sharedInstance)};
     if (not inserted) {
-        throw std::logic_error{PrettyException(fmt::format("Instance of type {} already exists", typeid(AWeakSingleton).name()))};
+        Throw<std::logic_error>(fmt::format("Instance of type {} already exists", typeid(AWeakSingleton).name()));
     }
     return sharedInstance;
 }

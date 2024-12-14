@@ -34,7 +34,7 @@ AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4S
     } else if (parentName == "anti_muonium") {
         daughter.emplace_back("e+");
     } else {
-        throw std::invalid_argument{PrettyException(fmt::format("Parent particle is not muonium or anti_muonium but {}", parentName))};
+        Throw<std::invalid_argument>(fmt::format("Parent particle is not muonium or anti_muonium but {}", parentName));
     }
     // set muonium decay info
     this->kinematics_name = AName.sv();

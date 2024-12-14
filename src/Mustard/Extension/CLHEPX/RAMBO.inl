@@ -25,7 +25,7 @@ constexpr RAMBO<N>::RAMBO(double eCM, std::array<double, N> mass) :
     fMass{std::move(mass)},
     fAllMassAreTiny{std::ranges::all_of(fMass, [&](auto m) { return muc::pow<2>(m / fECM) < fgTiny; })} {
     if (eCM <= muc::ranges::reduce(fMass)) {
-        throw std::domain_error{PrettyException("No enough energy")};
+        Throw<std::domain_error>("No enough energy");
     }
 }
 
