@@ -25,8 +25,6 @@
 
 #include "muc/array"
 
-#include <any>
-
 namespace Mustard::inline Extension::Geant4X::inline Generator {
 
 using namespace Mustard::LiteralUnit::NumberFlux;
@@ -85,7 +83,7 @@ private:
     auto ToGeant4(muc::array3d x) -> G4ThreeVector;
 
 private:
-    std::any fEcoMug;
+    void* fEcoMug;
     enum Coordinate fCoordinate;
     unsigned int fReseedCounter : 8;
 };

@@ -1250,16 +1250,16 @@ private:
 using namespace LiteralUnit::Length;
 
 auto EcoMugCosmicRayMuon::EcoMuG() const -> const auto& {
-    return std::any_cast<const EcoMug&>(fEcoMug);
+    return *static_cast<const EcoMug*>(fEcoMug);
 }
 
 auto EcoMugCosmicRayMuon::EcoMuG() -> auto& {
-    return std::any_cast<EcoMug&>(fEcoMug);
+    return *static_cast<EcoMug*>(fEcoMug);
 }
 
 EcoMugCosmicRayMuon::EcoMugCosmicRayMuon(Coordinate c) :
     G4VPrimaryGenerator{},
-    fEcoMug{EcoMug{}},
+    fEcoMug{new EcoMug},
     fCoordinate{c},
     fReseedCounter{} {
     auto& ecoMug{EcoMuG()};
@@ -1268,7 +1268,9 @@ EcoMugCosmicRayMuon::EcoMugCosmicRayMuon(Coordinate c) :
     ecoMug.SetSkyCenterPosition({0, 0, 20_m});
 }
 
-EcoMugCosmicRayMuon::~EcoMugCosmicRayMuon() = default;
+EcoMugCosmicRayMuon::~EcoMugCosmicRayMuon() {
+    delete static_cast<EcoMug*>(fEcoMug);
+}
 
 auto EcoMugCosmicRayMuon::UseSky() -> void {
     EcoMuG().SetUseSky();
