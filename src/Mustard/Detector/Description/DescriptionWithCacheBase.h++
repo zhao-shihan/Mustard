@@ -54,6 +54,8 @@ protected:
         auto operator->() const -> auto { return &fValue; }
         operator const T&() const { return fValue; }
 
+        auto operator=(const T& other) -> auto& { return operator= <const T&>(other); }
+        auto operator=(T&& other) -> auto& { return operator= <T&&>(std::move(other)); }
         template<typename U>
             requires std::assignable_from<T&, U&&>
         auto operator=(U&& other) -> auto&;
