@@ -53,6 +53,9 @@ public:
     auto Parsed() const -> bool { return fArgcArgv.has_value(); }
     auto ArgcArgv() const -> ArgcArgvType;
 
+    auto operator->() const -> const auto* { return fArgParser.get(); }
+    auto operator->() -> auto* { return fArgParser.get(); }
+
 protected:
     auto ArgParser() const -> const auto& { return *fArgParser; }
     auto ArgParser() -> auto& { return *fArgParser; }

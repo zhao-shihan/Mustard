@@ -28,8 +28,8 @@ Geant4Module::Geant4Module(argparse::ArgumentParser& argParser) :
         .nargs(argparse::nargs_pattern::optional);
     ArgParser()
         .add_argument("-i", "--interactive")
-        .help("Run in interactive session despite of a provided macro. The macro will initialize the session.")
-        .nargs(0);
+        .flag()
+        .help("Run in interactive session despite of a provided macro. The macro will initialize the session.");
 }
 
 } // namespace Mustard::Env::CLI::inline Module
