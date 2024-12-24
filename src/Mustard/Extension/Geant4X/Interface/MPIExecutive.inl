@@ -73,6 +73,14 @@ auto MPIExecutive::StartSessionImpl(const Env::CLI::CLI<Ms...>& cli, auto&& macF
     }
 }
 
+auto MPIExecutive::StartSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) const -> void {
+    if (argc == 1) {
+        StartInteractiveSessionImpl(argc, argv, std::forward<decltype(macFileOrCmdList)>(macFileOrCmdList));
+    } else {
+        StartBatchSessionImpl(argv[1]);
+    }
+}
+
 auto MPIExecutive::StartInteractiveSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) const -> void {
     CheckSequential();
 #if MUSTARD_USE_G4VIS
