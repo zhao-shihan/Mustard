@@ -25,13 +25,16 @@
 
 namespace Mustard::Env::Memory::internal {
 
-WeakSingletonPool* WeakSingletonPool::fgInstance = nullptr;
+WeakSingletonPool* WeakSingletonPool::fgInstance{};
+bool WeakSingletonPool::fgInstantiated{};
+bool WeakSingletonPool::fgExpired{};
 
 WeakSingletonPool::WeakSingletonPool() :
     NonMoveableBase{},
     fInstanceMap{} {
-    if (fgInstance == nullptr) {
+    if (not fgInstantiated) {
         fgInstance = this;
+        fgInstantiated = true;
     } else {
         Throw<std::logic_error>("Trying to instantiate the pool twice");
     }
@@ -48,14 +51,15 @@ WeakSingletonPool::~WeakSingletonPool() {
         }
     }
     fgInstance = nullptr;
+    fgExpired = true;
 }
 
 auto WeakSingletonPool::Instance() -> WeakSingletonPool& {
     if (fgInstance != nullptr) {
         return *fgInstance;
     } else {
-        Throw<std::logic_error>("The pool has not been instantiated or has been destructed "
-                                "(maybe you forgot to instantiate an environment?)");
+        Throw<std::runtime_error>("The pool has not been instantiated or has been destructed "
+                                  "(maybe you forgot to instantiate an environment?)");
     }
 }
 

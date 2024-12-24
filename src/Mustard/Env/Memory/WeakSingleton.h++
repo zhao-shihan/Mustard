@@ -42,7 +42,8 @@ class WeakSingleton : public internal::WeakSingletonBase {
     friend class PassiveSingleton<ADerived>;
 
 protected:
-    WeakSingleton();
+    [[deprecated]] WeakSingleton();
+    WeakSingleton(ADerived* self);
     ~WeakSingleton();
 
 public:

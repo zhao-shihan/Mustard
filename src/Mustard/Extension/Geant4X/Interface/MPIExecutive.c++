@@ -27,6 +27,9 @@
 
 namespace Mustard::inline Extension::Geant4X::inline Interface {
 
+MPIExecutive::MPIExecutive() :
+    WeakSingleton{this} {}
+
 auto MPIExecutive::CheckSequential() const -> void {
     const auto& mpiEnv = Env::MPIEnv::Instance();
     if (mpiEnv.Parallel()) {

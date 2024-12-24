@@ -43,7 +43,7 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                enum VerboseLevel verboseLevel,
                bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
-    PassiveSingleton<MPIEnv>{},
+    PassiveSingleton<MPIEnv>{this},
     fMPIThreadSupport{
         [&argc, &argv] {
             int mpiThreadSupport;

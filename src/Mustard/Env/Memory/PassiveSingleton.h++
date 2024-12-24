@@ -39,7 +39,8 @@ template<typename ADerived>
 class PassiveSingleton : public internal::PassiveSingletonBase,
                          public WeakSingleton<ADerived> {
 protected:
-    PassiveSingleton();
+    [[deprecated]] PassiveSingleton() = default;
+    PassiveSingleton(ADerived* self);
     ~PassiveSingleton() = default;
 
 public:

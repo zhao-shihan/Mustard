@@ -1,13 +1,17 @@
 namespace Mustard::Simulation {
 
 template<typename ADerived, muc::ceta_string AAppName>
-AnalysisBase<ADerived, AAppName>::AnalysisBase() :
-    Env::Memory::PassiveSingleton<ADerived>{},
+[[deprecated]] AnalysisBase<ADerived, AAppName>::AnalysisBase() :
+    AnalysisBase{static_cast<ADerived*>(this)} {}
+
+template<typename ADerived, muc::ceta_string AAppName>
+AnalysisBase<ADerived, AAppName>::AnalysisBase(ADerived* self) :
+    Env::Memory::PassiveSingleton<ADerived>{self},
     fFilePath{fmt::format("{}_untitled", AAppName.sv())},
     fFileMode{"NEW"},
     fLastUsedFullFilePath{},
     fFile{},
-    fMessengerRegister{static_cast<ADerived*>(this)} {
+    fMessengerRegister{self} {
     static_assert(std::derived_from<ADerived, AnalysisBase<ADerived, AAppName>>);
 }
 

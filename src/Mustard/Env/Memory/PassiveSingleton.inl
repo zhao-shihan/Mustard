@@ -19,9 +19,9 @@
 namespace Mustard::Env::Memory {
 
 template<typename ADerived>
-PassiveSingleton<ADerived>::PassiveSingleton() :
+PassiveSingleton<ADerived>::PassiveSingleton(ADerived* self) :
     PassiveSingletonBase{},
-    Base{} {
+    Base{self} {
     static_assert(PassiveSingletonified<ADerived>);
 }
 

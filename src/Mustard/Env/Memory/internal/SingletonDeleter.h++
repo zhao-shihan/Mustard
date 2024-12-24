@@ -26,6 +26,7 @@ namespace Mustard::Env::Memory::internal {
 /// Not API.
 class SingletonDeleter final : public WeakSingleton<SingletonDeleter> {
 public:
+    SingletonDeleter();
     ~SingletonDeleter();
 };
 

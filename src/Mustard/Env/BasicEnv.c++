@@ -36,7 +36,7 @@ BasicEnv::BasicEnv(NoBanner, int argc, char* argv[],
                    enum VerboseLevel verboseLevel,
                    bool showBannerHint) :
     EnvBase{},
-    PassiveSingleton{},
+    PassiveSingleton{this},
     fShowBanner{showBannerHint},
     fArgc{argc},
     fArgv{argv},

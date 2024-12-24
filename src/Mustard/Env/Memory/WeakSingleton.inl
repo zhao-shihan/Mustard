@@ -22,12 +22,16 @@ template<typename ADerived>
 std::shared_ptr<void*> WeakSingleton<ADerived>::fgInstance{};
 
 template<typename ADerived>
-WeakSingleton<ADerived>::WeakSingleton() :
+[[deprecated]] WeakSingleton<ADerived>::WeakSingleton() :
+    WeakSingleton{static_cast<ADerived*>(this)} {}
+
+template<typename ADerived>
+WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
     WeakSingletonBase{} {
     static_assert(WeakSingletonified<ADerived>);
-    if (auto& weakSingletonPool = internal::WeakSingletonPool::Instance();
+    if (auto& weakSingletonPool{internal::WeakSingletonPool::Instance()};
         not weakSingletonPool.Contains<ADerived>()) {
-        fgInstance = weakSingletonPool.Insert<ADerived>(static_cast<ADerived*>(this));
+        fgInstance = weakSingletonPool.Insert<ADerived>(self);
     } else {
         Throw<std::logic_error>(fmt::format("Trying to construct {} (weak singleton in environment) twice",
                                             typeid(ADerived).name()));
@@ -42,6 +46,12 @@ WeakSingleton<ADerived>::~WeakSingleton() {
 
 template<typename ADerived>
 MUSTARD_ALWAYS_INLINE auto WeakSingleton<ADerived>::UpdateInstance() -> Status {
+    if (not internal::WeakSingletonPool::Instantiated()) [[unlikely]] {
+        return Status::NotInstantiated;
+    }
+    if (internal::WeakSingletonPool::Expired()) [[unlikely]] {
+        return Status::Expired;
+    }
     if (fgInstance == nullptr) [[unlikely]] {
         if (const auto sharedNode{internal::WeakSingletonPool::Instance().Find<ADerived>()};
             sharedNode == nullptr) {

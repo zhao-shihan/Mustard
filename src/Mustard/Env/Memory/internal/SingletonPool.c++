@@ -23,6 +23,9 @@
 
 namespace Mustard::Env::Memory::internal {
 
+SingletonPool::SingletonPool() :
+    PassiveSingleton<SingletonPool>{this} {}
+
 SingletonPool::~SingletonPool() {
     for ([[maybe_unused]] auto&& [_, instanceInfo] : std::as_const(fInstanceMap)) {
         [[maybe_unused]] auto&& [instance, __, ___]{instanceInfo};

@@ -26,7 +26,8 @@ namespace Mustard::Simulation {
 template<typename ADerived, muc::ceta_string AAppName>
 class AnalysisBase : public Env::Memory::PassiveSingleton<ADerived> {
 public:
-    AnalysisBase();
+    [[deprecated]] AnalysisBase();
+    AnalysisBase(ADerived* self);
     virtual ~AnalysisBase() = default;
 
     auto FilePath(std::filesystem::path path) -> void { fFilePath = std::move(path); }

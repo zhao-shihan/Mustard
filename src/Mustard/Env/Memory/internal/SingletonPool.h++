@@ -44,6 +44,7 @@ class SingletonBase;
 /// Not API.
 class SingletonPool final : public PassiveSingleton<SingletonPool> {
 public:
+    SingletonPool();
     ~SingletonPool();
 
     template<Singletonified ASingleton>

@@ -22,6 +22,9 @@
 
 namespace Mustard::Env::Memory::internal {
 
+SingletonDeleter::SingletonDeleter() :
+    WeakSingleton<SingletonDeleter>{this} {}
+
 SingletonDeleter::~SingletonDeleter() {
     for (auto&& singletonBase : SingletonPool::Instance().GetUndeletedInReverseInsertionOrder()) {
         delete singletonBase;

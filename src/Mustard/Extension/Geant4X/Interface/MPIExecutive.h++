@@ -41,9 +41,9 @@
 
 namespace Mustard::inline Extension::Geant4X::inline Interface {
 
-class MPIExecutive final : public Env::Memory::WeakSingleton<MPIExecutive> {
+class MPIExecutive : public Env::Memory::WeakSingleton<MPIExecutive> {
 public:
-    MPIExecutive() = default; // prevent aggregate initialization
+    MPIExecutive();
 
     template<std::derived_from<Env::CLI::ModuleBase>... Ms>
         requires muc::tuple_contains_v<std::tuple<Ms...>, Env::CLI::Geant4Module>
