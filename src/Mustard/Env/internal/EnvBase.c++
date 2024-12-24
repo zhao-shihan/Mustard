@@ -23,18 +23,16 @@
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/bit"
+#include "muc/utility"
 
 #include "gsl/gsl"
 
 #include "fmt/color.h"
 
+#include <csignal>
 #include <exception>
 #include <limits>
 #include <typeinfo>
-
-#if __has_include(<cxxabi.h>)
-#    include <cxxabi.h>
-#endif
 
 #if MUSTARD_SIGNAL_HANDLER
 
@@ -46,7 +44,6 @@
 #    include "fmt/chrono.h"
 
 #    include <chrono>
-#    include <csignal>
 #    include <cstdio>
 #    include <cstdlib>
 #    include <ctime>
@@ -58,18 +55,10 @@ namespace Mustard::Env::internal {
 namespace {
 
 [[noreturn]] auto TerminateHandler() -> void {
-    constexpr auto Demangle{
-        [](gsl::czstring name) -> gsl::czstring {
-            if constexpr (requires(int status) { abi::__cxa_demangle(name, nullptr, nullptr, &status); }) {
-                int status;
-                return abi::__cxa_demangle(name, nullptr, nullptr, &status);
-            } else {
-                return name;
-            }
-        }};
     try {
         const auto exception{std::current_exception()};
         if (exception) {
+            std::signal(SIGABRT, SIG_DFL);
             std::rethrow_exception(exception);
         } else {
             const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::dark_orange)};
@@ -82,7 +71,7 @@ namespace {
         if (not what.empty() and what.ends_with('\n')) { what.remove_suffix(1); }
         const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
         Print<'E'>(ts | fmt::emphasis::blink, "***");
-        Print<'E'>(ts, " terminate called after throwing an instance of '{}'\n", Demangle(typeid(e).name()));
+        Print<'E'>(ts, " terminate called after throwing an instance of '{}'\n", muc::try_demangle(typeid(e).name()));
         Print<'E'>(ts | fmt::emphasis::blink, "***");
         Print<'E'>(ts, "   what(): {}", what);
         Print<'E'>("\n");
@@ -90,9 +79,9 @@ namespace {
         const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
         Print<'E'>(ts | fmt::emphasis::blink, "***");
         if constexpr (requires { std::current_exception().__cxa_exception_type()->name(); }) {
-            Print<'E'>(ts, " terminate called after throwing an instance of '{}'", Demangle(std::current_exception().__cxa_exception_type()->name()));
+            Print<'E'>(ts, " terminate called after throwing an instance of '{}'", muc::try_demangle(std::current_exception().__cxa_exception_type()->name()));
         } else {
-            Print<'E'>(ts, " terminate called after throwing an instance of unknown type");
+            Print<'E'>(ts, " terminate called after throwing a non-std::exception instance");
         }
         Print<'E'>("\n");
     }
