@@ -55,6 +55,7 @@ public:
 
     auto operator->() const -> const auto* { return fArgParser.get(); }
     auto operator->() -> auto* { return fArgParser.get(); }
+    auto operator[](std::string_view arg) -> decltype(auto) { return (*fArgParser)[arg]; }
 
 protected:
     auto ArgParser() const -> const auto& { return *fArgParser; }
