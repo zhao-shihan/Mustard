@@ -57,33 +57,30 @@ public:
 
 public:
     constexpr Value() = default;
-    constexpr Value(const T& object);
-    constexpr Value(T&& object) noexcept;
+    template<typename U = T>
+    constexpr Value(U&& object);
     template<typename U>
-        requires(std::constructible_from<T, U> and not std::same_as<std::remove_cvref_t<U>, T>)
+        requires requires(U&& object) { VectorCast<T>(std::forward<U>(object)); }
     constexpr Value(U&& object);
 
+    template<typename U = T>
+    constexpr auto operator=(U&& object) -> auto&;
     template<typename U>
-        requires(internal::IsStdArray<T>::value and not std::constructible_from<T, U> and not std::same_as<std::remove_cvref_t<U>, T> and
-                 requires(U&& object) { VectorCast<T>(std::forward<U>(object)); })
-    constexpr Value(U&& object);
-    template<typename U>
-        requires(internal::IsStdArray<T>::value and not std::constructible_from<T, U> and not std::same_as<std::remove_cvref_t<U>, T> and
-                 requires(T fObject, U&& object) { VectorAssign(fObject, std::forward<U>(object)); })
+        requires requires(T fObject, U&& object) { VectorAssign(fObject, std::forward<U>(object)); }
     constexpr auto operator=(U&& object) -> auto&;
 
-    constexpr operator const T&() const& noexcept { return fObject; }
-    constexpr operator T&() & noexcept { return fObject; }
-    constexpr operator T&&() && noexcept { return std::move(fObject); }
-    constexpr operator const T&&() const&& noexcept { return std::move(fObject); }
+    constexpr operator const T&() const& { return fObject; }
+    constexpr operator T&() & { return fObject; }
+    constexpr operator T&&() && { return std::move(fObject); }
+    constexpr operator const T&&() const&& { return std::move(fObject); }
 
-    constexpr auto operator*() const& noexcept -> const T& { return fObject; }
-    constexpr auto operator*() & noexcept -> T& { return fObject; }
-    constexpr auto operator*() && noexcept -> T&& { return std::move(fObject); }
-    constexpr auto operator*() const&& noexcept -> const T&& { return std::move(fObject); }
+    constexpr auto operator*() const& -> const T& { return fObject; }
+    constexpr auto operator*() & -> T& { return fObject; }
+    constexpr auto operator*() && -> T&& { return std::move(fObject); }
+    constexpr auto operator*() const&& -> const T&& { return std::move(fObject); }
 
-    constexpr auto operator->() const noexcept -> const T* { return std::addressof(fObject); }
-    constexpr auto operator->() noexcept -> T* { return std::addressof(fObject); }
+    constexpr auto operator->() const -> const T* { return std::addressof(fObject); }
+    constexpr auto operator->() -> T* { return std::addressof(fObject); }
 
     template<typename U>
     constexpr auto As() const& -> std::conditional_t<std::same_as<T, U>, const T&, U>;
