@@ -73,20 +73,20 @@ public:
         requires(0 <= K and K <= 4)
     constexpr auto CentralMoment() const -> double;
 
-    constexpr auto Mean() const -> decltype(auto) { return Moment<1>(); }
-    constexpr auto MeanSquare() const -> decltype(auto) { return Moment<2>(); }
-    constexpr auto MeanCubic() const -> decltype(auto) { return Moment<3>(); }
-    constexpr auto MeanQuartic() const -> decltype(auto) { return Moment<4>(); }
+    constexpr auto Mean() const -> auto { return Moment<1>(); }
+    constexpr auto MeanSquare() const -> auto { return Moment<2>(); }
+    constexpr auto MeanCubic() const -> auto { return Moment<3>(); }
+    constexpr auto MeanQuartic() const -> auto { return Moment<4>(); }
 
-    constexpr auto Variance() const -> decltype(auto) { return CentralMoment<2>(); }
-    auto StdDev() const -> decltype(auto) { return std::sqrt(Variance()); }
+    constexpr auto Variance() const -> auto { return CentralMoment<2>(); }
+    auto StdDev() const -> auto { return std::sqrt(Variance()); }
 
-    auto Skewness() const -> decltype(auto) { return CentralMoment<3>() / muc::pow<3>(StdDev()); }
+    auto Skewness() const -> auto { return CentralMoment<3>() / muc::pow<3>(StdDev()); }
 
-    constexpr auto Kurtosis() const -> decltype(auto) { return CentralMoment<4>() / muc::pow<2>(Variance()); }
+    constexpr auto Kurtosis() const -> auto { return CentralMoment<4>() / muc::pow<2>(Variance()); }
 
-    constexpr auto VarianceOfMean() const -> decltype(auto) { return Variance() / fSumW; }
-    auto StdDevOfMean() const -> decltype(auto) { return std::sqrt(VarianceOfMean()); }
+    constexpr auto VarianceOfMean() const -> auto { return Variance() / fSumW; }
+    auto StdDevOfMean() const -> auto { return std::sqrt(VarianceOfMean()); }
 
 private:
     double fSumWX;
@@ -117,14 +117,14 @@ public:
         requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N> and std::convertible_to<std::ranges::range_value_t<W>, double>
     auto Fill(const S& sample, const W& weight) -> void;
 
-    auto Sum(int i) const -> decltype(auto) { return fSumWX[i]; }
-    auto SumProduct(int i, int j) const -> decltype(auto) { return fSumWXX(i, j); }
-    auto SumSquare(int i) const -> decltype(auto) { return SumProduct(i, i); }
-    auto SumCubic(int i) const -> decltype(auto) { return fSumWX3[i]; }
-    auto SumQuartic(int i) const -> decltype(auto) { return fSumWX4[i]; }
+    auto Sum(int i) const -> auto { return fSumWX[i]; }
+    auto SumProduct(int i, int j) const -> auto { return fSumWXX(i, j); }
+    auto SumSquare(int i) const -> auto { return SumProduct(i, i); }
+    auto SumCubic(int i) const -> auto { return fSumWX3[i]; }
+    auto SumQuartic(int i) const -> auto { return fSumWX4[i]; }
     auto Sum() const -> const auto& { return fSumWX; }
     auto SumProduct() const -> const auto& { return fSumWXX; }
-    auto SumSquare() const -> decltype(auto) { return SumProduct().diagonal().eval(); }
+    auto SumSquare() const -> auto { return SumProduct().diagonal().eval(); }
     auto SumCubic() const -> const auto& { return fSumWX3; }
     auto SumQuartic() const -> const auto& { return fSumWX4; }
 
@@ -144,34 +144,34 @@ public:
         requires(0 <= K and K <= 4)
     auto CentralMoment() const -> Eigen::Vector<double, N>;
 
-    auto Mixed2ndMoment(int i, int j) const -> decltype(auto) { return fSumWXX(i, j) / fSumW; }
-    auto Mixed2ndMoment() const -> decltype(auto) { return (fSumWXX / fSumW).eval(); }
+    auto Mixed2ndMoment(int i, int j) const -> auto { return fSumWXX(i, j) / fSumW; }
+    auto Mixed2ndMoment() const -> auto { return (fSumWXX / fSumW).eval(); }
 
-    auto Mixed2ndCentralMoment(int i, int j) const -> decltype(auto) { return Mixed2ndMoment(i, j) - Moment<1>(i) * Moment<1>(j); }
+    auto Mixed2ndCentralMoment(int i, int j) const -> auto { return Mixed2ndMoment(i, j) - Moment<1>(i) * Moment<1>(j); }
     auto Mixed2ndCentralMoment() const -> Eigen::Matrix<double, N, N>;
 
-    auto Mean(int i) const -> decltype(auto) { return Moment<1>(i); }
-    auto MeanSquare(int i) const -> decltype(auto) { return Moment<2>(i); }
-    auto MeanCubic(int i) const -> decltype(auto) { return Moment<3>(i); }
-    auto MeanQuartic(int i) const -> decltype(auto) { return Moment<4>(i); }
-    auto MeanProduct(int i, int j) const -> decltype(auto) { return Mixed2ndMoment(i, j); }
-    auto Mean() const -> decltype(auto) { return Moment<1>(); }
-    auto MeanSquare() const -> decltype(auto) { return Moment<2>(); }
-    auto MeanCubic() const -> decltype(auto) { return Moment<3>(); }
-    auto MeanQuartic() const -> decltype(auto) { return Moment<4>(); }
-    auto MeanProduct() const -> decltype(auto) { return Mixed2ndMoment(); }
+    auto Mean(int i) const -> auto { return Moment<1>(i); }
+    auto MeanSquare(int i) const -> auto { return Moment<2>(i); }
+    auto MeanCubic(int i) const -> auto { return Moment<3>(i); }
+    auto MeanQuartic(int i) const -> auto { return Moment<4>(i); }
+    auto MeanProduct(int i, int j) const -> auto { return Mixed2ndMoment(i, j); }
+    auto Mean() const -> auto { return Moment<1>(); }
+    auto MeanSquare() const -> auto { return Moment<2>(); }
+    auto MeanCubic() const -> auto { return Moment<3>(); }
+    auto MeanQuartic() const -> auto { return Moment<4>(); }
+    auto MeanProduct() const -> auto { return Mixed2ndMoment(); }
 
-    auto Variance(int i) const -> decltype(auto) { return CentralMoment<2>(i); }
-    auto StdDev(int i) const -> decltype(auto) { return std::sqrt(Variance(i)); }
-    auto Covariance(int i, int j) const -> decltype(auto) { return Mixed2ndCentralMoment(i, j); }
-    auto Variance() const -> decltype(auto) { return CentralMoment<2>(); }
-    auto StdDev() const -> decltype(auto) { return Variance().cwiseSqrt().eval(); }
-    auto Covariance() const -> decltype(auto) { return Mixed2ndCentralMoment(); }
+    auto Variance(int i) const -> auto { return CentralMoment<2>(i); }
+    auto StdDev(int i) const -> auto { return std::sqrt(Variance(i)); }
+    auto Covariance(int i, int j) const -> auto { return Mixed2ndCentralMoment(i, j); }
+    auto Variance() const -> auto { return CentralMoment<2>(); }
+    auto StdDev() const -> auto { return Variance().cwiseSqrt().eval(); }
+    auto Covariance() const -> auto { return Mixed2ndCentralMoment(); }
 
-    auto Skewness(int i) const -> decltype(auto) { return CentralMoment<3>(i) / muc::pow<3>(StdDev(i)); }
+    auto Skewness(int i) const -> auto { return CentralMoment<3>(i) / muc::pow<3>(StdDev(i)); }
     auto Skewness() const -> Eigen::Vector<double, N>;
 
-    auto Kurtosis(int i) const -> decltype(auto) { return CentralMoment<4>(i) / muc::pow<2>(Variance(i)); }
+    auto Kurtosis(int i) const -> auto { return CentralMoment<4>(i) / muc::pow<2>(Variance(i)); }
     auto Kurtosis() const -> Eigen::Vector<double, N>;
 
 private:

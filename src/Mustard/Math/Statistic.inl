@@ -92,10 +92,10 @@ constexpr auto Statistic<1>::CentralMoment() const -> double {
 template<int N>
     requires(N > 0)
 Statistic<N>::Statistic() :
-    fSumWX{},
-    fSumWXX{},
-    fSumWX3{},
-    fSumWX4{},
+    fSumWX{Eigen::Vector<double, N>::Zero()},
+    fSumWXX{Eigen::Matrix<double, N, N>::Zero()},
+    fSumWX3{Eigen::Vector<double, N>::Zero()},
+    fSumWX4{Eigen::Vector<double, N>::Zero()},
     fSumW{} {}
 
 template<int N>
