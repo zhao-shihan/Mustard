@@ -102,13 +102,13 @@ auto Wrap<PRBG>::get(std::istream& is) -> decltype(is) {
     std::string tag;
     is >> tag;
     if (tag != std::string(engineName).append("-begin")) {
-        std::cerr << "Wrap<PRBG>::get (with PRBG = " << typeid(PRBG).name() << "): No " << engineName << " found at current position, engine state unchanged. Input stream has been consumed\n";
+        std::cerr << "Wrap<PRBG>::get (with PRBG = " << muc::try_demangle(typeid(PRBG).name()) << "): No " << engineName << " found at current position, engine state unchanged. Input stream has been consumed\n";
         return is;
     }
     PRBG volunteer;
     is >> volunteer >> tag;
     if (tag != std::string(engineName).append("-end")) {
-        std::cerr << "Wrap<PRBG>::get (with PRBG = " << typeid(PRBG).name() << "): " << engineName << " read from the input stream is incomplete, engine state unchanged. Input stream has been consumed\n";
+        std::cerr << "Wrap<PRBG>::get (with PRBG = " << muc::try_demangle(typeid(PRBG).name()) << "): " << engineName << " read from the input stream is incomplete, engine state unchanged. Input stream has been consumed\n";
         return is;
     }
     fPRBG = volunteer;

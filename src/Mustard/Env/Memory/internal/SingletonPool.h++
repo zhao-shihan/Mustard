@@ -23,6 +23,8 @@
 #include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
+#include "muc/utility"
+
 #include "gsl/gsl"
 
 #include "fmt/format.h"

@@ -20,6 +20,8 @@
 
 #include "Mustard/Utility/PrettyLog.h++"
 
+#include "muc/utility"
+
 #include "fmt/core.h"
 
 #include <concepts>

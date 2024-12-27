@@ -54,7 +54,7 @@ template<typename ARecipient>
 auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& Action) const -> void {
     const auto& recipientSet{get<std::unordered_set<ARecipient*>>(fRecipientSetTuple)};
     if (recipientSet.empty()) {
-        PrintError(fmt::format("Error: {} not registered", typeid(ARecipient).name()));
+        PrintError(fmt::format("Error: {} not registered", muc::try_demangle(typeid(ARecipient).name())));
         return;
     }
     fDelivering = true;

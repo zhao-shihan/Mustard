@@ -40,7 +40,7 @@ MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Instance() -> ADerived& {
         auto& pool{internal::SingletonPool::Instance()};
         if (pool.Contains<ADerived>()) {
             Throw<std::logic_error>(fmt::format("Trying to construct {} (environmental singleton) twice",
-                                                typeid(ADerived).name()));
+                                                muc::try_demangle(typeid(ADerived).name())));
         }
         fgInstance = pool.Insert<ADerived>(SingletonInstantiator::New<ADerived>());
         [[fallthrough]];
@@ -49,7 +49,7 @@ MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Instance() -> ADerived& {
         return *static_cast<ADerived*>(*fgInstance);
     [[unlikely]] case Status::Expired:
         Throw<std::logic_error>(fmt::format("The instance of {} has been deleted",
-                                            typeid(ADerived).name()));
+                                            muc::try_demangle(typeid(ADerived).name())));
     }
     muc::unreachable();
 }

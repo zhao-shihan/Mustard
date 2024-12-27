@@ -27,6 +27,7 @@
 #include "G4VSolid.hh"
 
 #include "muc/ceta_string"
+#include "muc/utility"
 
 #include "gsl/gsl"
 

@@ -92,7 +92,7 @@ auto DefinitionBase::Ready() const -> bool {
     }
     if constexpr (AMode == "warning") {
         if (Enabled()) {
-            Mustard::PrintWarning(fmt::format("{} is enabled but no volumes are placed", typeid(*this).name()));
+            Mustard::PrintWarning(fmt::format("{} is enabled but no volumes are placed", muc::try_demangle(typeid(*this).name())));
         }
     }
     return false;

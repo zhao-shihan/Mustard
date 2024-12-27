@@ -43,11 +43,11 @@ WeakSingletonPool::WeakSingletonPool() :
 WeakSingletonPool::~WeakSingletonPool() {
     for (auto&& [type, instance] : std::as_const(fInstanceMap)) {
         if (instance.expired()) {
-            PrintError(fmt::format("Instance pointer of {} expired", type.name()));
+            PrintError(fmt::format("Instance pointer of {} expired", muc::try_demangle(type.name())));
         }
         if (*instance.lock() != nullptr) [[unlikely]] {
             PrintError(fmt::format("Instance of {} survives, implies memory leak or following undefined behavior",
-                                   type.name()));
+                                   muc::try_demangle(type.name())));
         }
     }
     fgInstance = nullptr;

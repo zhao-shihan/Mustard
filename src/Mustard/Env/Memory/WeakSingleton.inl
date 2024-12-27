@@ -34,7 +34,7 @@ WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
         fgInstance = weakSingletonPool.Insert<ADerived>(self);
     } else {
         Throw<std::logic_error>(fmt::format("Trying to construct {} (weak singleton in environment) twice",
-                                            typeid(ADerived).name()));
+                                            muc::try_demangle(typeid(ADerived).name())));
     }
 }
 

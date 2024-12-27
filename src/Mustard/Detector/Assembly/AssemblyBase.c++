@@ -28,7 +28,7 @@ auto AssemblyBase::Get(std::type_index definition) const -> const Definition::De
         const auto descendant{top->FindDescendant(definition)};
         if (descendant) { return *descendant; }
     }
-    Throw<std::logic_error>(fmt::format("No {} in assembly", definition.name()));
+    Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
 }
 
 auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase& {
@@ -37,7 +37,7 @@ auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase
         const auto descendant{top->FindDescendant(definition)};
         if (descendant) { return *descendant; }
     }
-    Throw<std::logic_error>(fmt::format("No {} in assembly", definition.name()));
+    Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
 }
 
 auto AssemblyBase::TopComplete() -> void {
@@ -51,7 +51,9 @@ auto AssemblyBase::TopComplete() -> void {
         if (topType == typeid(top)) { continue; }
         for (auto&& [anotherTop, _] : fTop) {
             if (top.FindDaughter(anotherTop)) {
-                Throw<std::logic_error>(fmt::format("{} is mother of {}", topType.name(), anotherTop.name()));
+                Throw<std::logic_error>(fmt::format("{} is mother of {}",
+                                                    muc::try_demangle(topType.name()),
+                                                    muc::try_demangle(anotherTop.name())));
             }
         }
     }

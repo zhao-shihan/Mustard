@@ -25,6 +25,8 @@
 
 #include "CLHEP/Random/RandomEngine.h"
 
+#include "muc/utility"
+
 #include "gsl/gsl"
 
 #include "fmt/core.h"
@@ -56,7 +58,7 @@ public:
     virtual auto restoreStatus(gsl::czstring filename) -> void override;
     virtual auto showStatus() const -> void override;
 
-    virtual auto name() const -> std::string override { return typeid(Wrap).name(); }
+    virtual auto name() const -> std::string override { return muc::try_demangle(typeid(Wrap).name()); }
 
     virtual auto put(std::ostream& os) const -> decltype(os) override;
     virtual auto get(std::istream& is) -> decltype(is) override;

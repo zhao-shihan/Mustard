@@ -27,7 +27,7 @@ template<Singletonified ASingleton>
         auto&& [type, instanceInfo]{*existed};
         auto&& instance{get<0>(instanceInfo)};
         if (instance.expired()) {
-            Throw<std::logic_error>(fmt::format("Instance pointer of {} expired", type.name()));
+            Throw<std::logic_error>(fmt::format("Instance pointer of {} expired", muc::try_demangle(type.name())));
         }
         return instance.lock();
     }
@@ -41,7 +41,7 @@ template<Singletonified ASingleton>
                                                                  fInstanceMap.size(),
                                                                  static_cast<SingletonBase*>(instance)})};
     if (not inserted) {
-        Throw<std::logic_error>(fmt::format("Instance of type {} already exists", typeid(ASingleton).name()));
+        Throw<std::logic_error>(fmt::format("Instance of type {} already exists", muc::try_demangle(typeid(ASingleton).name())));
     }
     return sharedInstance;
 }

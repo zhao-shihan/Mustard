@@ -25,6 +25,8 @@
 #include "Mustard/Utility/NonConstructibleBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
+#include "muc/utility"
+
 #include "fmt/format.h"
 
 #include <memory>

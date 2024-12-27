@@ -23,6 +23,8 @@
 
 #include "Math/TRandomEngine.h"
 
+#include "muc/utility"
+
 #include <typeinfo>
 
 namespace Mustard::inline Extension::ROOTX::Math {
@@ -43,7 +45,7 @@ public:
 
     static auto MaxInt() { return PRBG::Max(); }
     static auto MinInt() { return PRBG::Min(); }
-    static auto Name() -> std::string { return typeid(PRBG).name(); }
+    static auto Name() -> std::string { return muc::try_demangle(typeid(PRBG).name()); }
 
 private:
     PRBG fPRBG;

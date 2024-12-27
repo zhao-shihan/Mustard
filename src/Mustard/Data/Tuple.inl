@@ -75,7 +75,7 @@ constexpr auto Tuple<Ts...>::AsImpl() const -> ATuple {
                 return;                                                                                \
             }                                                                                          \
             Throw<std::invalid_argument>(fmt::format("The function provided is not invocable with {}", \
-                                                     typeid(*GetImpl).name()));                        \
+                                                     muc::try_demangle(typeid(*GetImpl).name())));     \
         } else if (i < idx) {                                                                          \
             return VisitImpl<L, idx - 1>(i, std::forward<decltype(F)>(F));                             \
         } else {                                                                                       \
@@ -95,7 +95,7 @@ constexpr auto Tuple<Ts...>::AsImpl() const -> ATuple {
                 return;                                                                                    \
             } else {                                                                                       \
                 Throw<std::invalid_argument>(fmt::format("The function provided is not invocable with {}", \
-                                                         typeid(*GetImpl).name()));                        \
+                                                         muc::try_demangle(typeid(*GetImpl).name())));     \
             }                                                                                              \
         } else {                                                                                           \
             return VisitImpl<L + 1, R>(i, std::forward<decltype(F)>(F));                                   \
