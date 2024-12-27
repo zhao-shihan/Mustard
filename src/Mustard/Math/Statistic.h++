@@ -85,7 +85,8 @@ public:
 
     constexpr auto Kurtosis() const -> auto { return CentralMoment<4>() / muc::pow<2>(Variance()); }
 
-    constexpr auto VarianceOfMean() const -> auto { return Variance() / fSumW; }
+    constexpr auto EffectiveN() const -> auto { return muc::pow<2>(fSumW) / fSumW2; }
+    constexpr auto VarianceOfMean() const -> auto { return Variance() / EffectiveN(); }
     auto StdDevOfMean() const -> auto { return std::sqrt(VarianceOfMean()); }
 
 private:
@@ -94,6 +95,7 @@ private:
     double fSumWX3;
     double fSumWX4;
     double fSumW;
+    double fSumW2;
 };
 
 template<int N>
@@ -174,12 +176,21 @@ public:
     auto Kurtosis(int i) const -> auto { return CentralMoment<4>(i) / muc::pow<2>(Variance(i)); }
     auto Kurtosis() const -> Eigen::Vector<double, N>;
 
+    constexpr auto EffectiveN() const -> auto { return muc::pow<2>(fSumW) / fSumW2; }
+    constexpr auto VarianceOfMean(int i) const -> auto { return Variance(i) / EffectiveN(); }
+    constexpr auto VarianceOfMean() const -> auto { return (Variance() / EffectiveN()).eval(); }
+    constexpr auto CovarianceOfMean(int i, int j) const -> auto { return Covariance(i, j) / EffectiveN(); }
+    constexpr auto CovarianceOfMean() const -> auto { return (Covariance() / EffectiveN()).eval(); }
+    auto StdDevOfMean(int i) const -> auto { return std::sqrt(VarianceOfMean(i)); }
+    auto StdDevOfMean() const -> auto { return VarianceOfMean().cwiseSqrt().eval(); }
+
 private:
     Eigen::Vector<double, N> fSumWX;
     Eigen::Matrix<double, N, N> fSumWXX;
     Eigen::Vector<double, N> fSumWX3;
     Eigen::Vector<double, N> fSumWX4;
     double fSumW;
+    double fSumW2;
 };
 
 } // namespace Mustard::Math

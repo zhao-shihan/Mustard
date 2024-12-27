@@ -23,7 +23,8 @@ constexpr Statistic<1>::Statistic() :
     fSumWX2{},
     fSumWX3{},
     fSumWX4{},
-    fSumW{} {}
+    fSumW{},
+    fSumW2{} {}
 
 template<std::ranges::input_range S>
     requires std::convertible_to<std::ranges::range_value_t<S>, double>
@@ -45,6 +46,7 @@ constexpr auto Statistic<1>::Fill(double sample, double weight) -> void {
     fSumWX3 += weight * muc::pow<3>(sample);
     fSumWX4 += weight * muc::pow<4>(sample);
     fSumW += weight;
+    fSumW2 += muc::pow<2>(weight);
 }
 
 template<std::ranges::input_range S>
@@ -96,7 +98,8 @@ Statistic<N>::Statistic() :
     fSumWXX{Eigen::Matrix<double, N, N>::Zero()},
     fSumWX3{Eigen::Vector<double, N>::Zero()},
     fSumWX4{Eigen::Vector<double, N>::Zero()},
-    fSumW{} {}
+    fSumW{},
+    fSumW2{} {}
 
 template<int N>
     requires(N > 0)
@@ -129,6 +132,7 @@ auto Statistic<N>::Fill(const T& sample, double weight) -> void {
     wx = wx.cwiseProduct(x).eval();
     fSumWX4 += wx;
     fSumW += weight;
+    fSumW2 += muc::pow<2>(weight);
 }
 
 template<int N>
