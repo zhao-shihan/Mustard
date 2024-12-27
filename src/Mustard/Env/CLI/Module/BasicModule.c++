@@ -37,7 +37,7 @@ BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
         .help("Show this help and exit.")
         .nargs(0)
         .action([this](auto&&) {
-            fmt::println("{}", ArgParser().help().str());
+            fmt::print("{}", ArgParser().help().view());
             std::exit(EXIT_SUCCESS);
         });
     ArgParser()
