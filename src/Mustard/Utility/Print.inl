@@ -73,19 +73,19 @@ auto Print(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...
 }
 
 template<char L, typename... Ts>
-auto Print(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+auto Print(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) { return; }
     fmt::print(os, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
-auto PrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+auto PrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) { return; }
     fmt::println(os, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
-auto Print(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+auto Print(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) { return; }
     fmt::print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
 }
@@ -151,19 +151,19 @@ auto MasterPrint(std::ostream& os, const fmt::text_style& ts, fmt::format_string
 }
 
 template<char L, typename... Ts>
-auto MasterPrint(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+auto MasterPrint(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
     if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
     Print(os, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
-auto MasterPrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+auto MasterPrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
     if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
     PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
-auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void {
+auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
     if (Env::MPIEnv::Available() and Env::MPIEnv::Instance().OnCommWorldWorker()) { return; }
     Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
 }

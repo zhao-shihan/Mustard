@@ -24,6 +24,7 @@
 #include "fmt/color.h"
 #include "fmt/core.h"
 #include "fmt/ostream.h"
+#include "fmt/xchar.h"
 
 #include <cstdio>
 #include <ostream>
@@ -125,7 +126,7 @@ auto Print(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto Print(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+auto Print(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
 ///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
@@ -134,7 +135,7 @@ auto Print(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identi
 /// @param fmt Same as `fmt::println`
 /// @param ...args Same as `fmt::println`
 template<char L = 'E', typename... Ts>
-auto PrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+auto PrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
 ///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
@@ -144,7 +145,7 @@ auto PrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_iden
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto Print(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+auto Print(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -250,7 +251,7 @@ auto MasterPrint(std::ostream& os, const fmt::text_style& ts, fmt::format_string
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto MasterPrint(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+auto MasterPrint(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
 /// @brief Verbose level controlled master process print function.
 /// @tparam L Verbose level threshold. Available values are:
 ///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
@@ -259,7 +260,7 @@ auto MasterPrint(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_
 /// @param fmt Same as `fmt::println`
 /// @param ...args Same as `fmt::println`
 template<char L = 'E', typename... Ts>
-auto MasterPrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+auto MasterPrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
 /// @brief Verbose level controlled master process print function.
 /// @tparam L Verbose level threshold. Available values are:
 ///         'E' (Error), 'W' (Warning), 'I' (Informative), 'V' (Verbose).
@@ -269,7 +270,7 @@ auto MasterPrintLn(std::wostream& os, fmt::basic_format_string<wchar_t, fmt::typ
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::basic_format_string<wchar_t, fmt::type_identity_t<Ts>...> fmt, Ts&&... args) -> void;
+auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled master process print function.
 /// @tparam L Verbose level threshold. Available values are:
