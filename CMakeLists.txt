@@ -68,7 +68,7 @@ set(MUSTARD_BUILTIN_ARGPARSE_VERSION 3.1 CACHE STRING "Set built-in argparse ver
 set(MUSTARD_BUILTIN_BACKWARD_VERSION 1.6 CACHE STRING "Set built-in backward-cpp version (if required).")
 set(MUSTARD_BUILTIN_EFM_VERSION 0.0.1 CACHE STRING "Set built-in EFM version (if required).")
 set(MUSTARD_BUILTIN_ENVPARSE_VERSION 1.0.0 CACHE STRING "Set built-in envparse version (if required).")
-set(MUSTARD_BUILTIN_FMT_VERSION 11.0.2 CACHE STRING "Set built-in fmt version (if required).")
+set(MUSTARD_BUILTIN_FMT_VERSION 11.1.1 CACHE STRING "Set built-in fmt version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.1.0 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
 set(MUSTARD_BUILTIN_MUC_VERSION 0.0.1 CACHE STRING "Set built-in muc version (if required).")
 set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.8.0 CACHE STRING "Set built-in yaml-cpp version (if required).")
