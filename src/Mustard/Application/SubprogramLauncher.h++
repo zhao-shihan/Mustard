@@ -22,7 +22,6 @@ public:
     auto LaunchMain(int argc, char* argv[]) -> int;
 
 private:
-    bool fLaunched;
     struct State;
     std::unique_ptr<State> fState;
 };
