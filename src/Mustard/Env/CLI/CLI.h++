@@ -19,15 +19,14 @@
 #pragma once
 
 #include "Mustard/Env/CLI/Module/ModuleBase.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
 
 #include "argparse/argparse.hpp"
 
 #include "muc/type_traits"
 
 #include <concepts>
-#include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 namespace Mustard::Env::CLI {
@@ -37,7 +36,7 @@ template<std::derived_from<ModuleBase>... AModules>
 class CLI;
 
 template<>
-class CLI<> : public NonMoveableBase {
+class CLI<> {
 public:
     CLI();
     virtual ~CLI() = 0;
@@ -53,13 +52,13 @@ public:
     auto Parsed() const -> bool { return fArgcArgv.has_value(); }
     auto ArgcArgv() const -> ArgcArgvType;
 
-    auto operator->() const -> const auto* { return fArgParser.get(); }
-    auto operator->() -> auto* { return fArgParser.get(); }
-    auto operator[](std::string_view arg) -> decltype(auto) { return (*fArgParser)[arg]; }
+    auto operator->() const -> const auto* { return &fArgParser; }
+    auto operator->() -> auto* { return &fArgParser; }
+    auto operator[](std::string_view arg) -> decltype(auto) { return fArgParser[arg]; }
 
 protected:
-    auto ArgParser() const -> const auto& { return *fArgParser; }
-    auto ArgParser() -> auto& { return *fArgParser; }
+    auto ArgParser() const -> const auto& { return fArgParser; }
+    auto ArgParser() -> auto& { return fArgParser; }
 
 protected:
     [[noreturn]] static auto ThrowParsed() -> void;
@@ -67,7 +66,7 @@ protected:
 
 private:
     std::optional<ArgcArgvType> fArgcArgv;
-    std::unique_ptr<argparse::ArgumentParser> fArgParser;
+    argparse::ArgumentParser fArgParser;
 };
 
 template<std::derived_from<ModuleBase>... AModules>

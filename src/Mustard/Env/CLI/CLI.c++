@@ -29,9 +29,8 @@
 namespace Mustard::Env::CLI {
 
 CLI<>::CLI() :
-    NonMoveableBase{},
     fArgcArgv{},
-    fArgParser{std::make_unique<argparse::ArgumentParser>("", MUSTARD_VERSION_STRING, argparse::default_arguments::none)} {
+    fArgParser{{}, MUSTARD_VERSION_STRING, argparse::default_arguments::none} {
     if (static bool gInstantiated{}; gInstantiated) {
         Throw<std::logic_error>("Trying to construct CLI twice");
     } else {
