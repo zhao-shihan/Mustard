@@ -154,7 +154,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
     Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
     PrintStackTrace(64, 2, stderr, ts);
     Print<'E'>("\n");
-    Print<'E'>(ts, "It is likely that an exception has been thrown. View the logs just before receiving SIGABRT for more information.\n");
+    Print<'E'>(ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
     Print<'E'>("\n");
     std::fflush(stderr);
     std::abort();
