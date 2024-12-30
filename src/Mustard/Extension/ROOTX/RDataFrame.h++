@@ -25,7 +25,7 @@
 namespace Mustard::inline Extension::ROOTX {
 
 template<typename T>
-concept RDataFrame =
+concept RDataFrame [[deprecated("Use ROOT::RDF::RNode instead")]] =
     requires {
         requires std::convertible_to<T, ROOT::RDF::RNode>;
         requires not std::is_const_v<std::remove_reference_t<T>>;
