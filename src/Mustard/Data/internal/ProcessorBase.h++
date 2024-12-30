@@ -29,7 +29,7 @@ public:
     using Index = T;
 
 protected:
-    ProcessorBase(T batchSizeProposal = 5'000'000);
+    ProcessorBase(T batchSizeProposal);
     ~ProcessorBase() = default;
 
 public:

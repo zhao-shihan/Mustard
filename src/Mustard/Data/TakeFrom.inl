@@ -19,7 +19,7 @@
 namespace Mustard::Data {
 
 template<TupleModelizable... Ts>
-auto Take<Ts...>::From(ROOTX::RDataFrame auto&& rdf) -> std::vector<std::shared_ptr<Tuple<Ts...>>> {
+auto Take<Ts...>::From(ROOT::RDF::RNode rdf) -> std::vector<std::shared_ptr<Tuple<Ts...>>> {
     std::vector<std::shared_ptr<Tuple<Ts...>>> data;
     rdf.Foreach(TakeOne{data, gslx::make_index_sequence<Tuple<Ts...>::Size()>{}},
                 []<gsl::index... Is>(gslx::index_sequence<Is...>) -> std::vector<std::string> {

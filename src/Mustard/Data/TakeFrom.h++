@@ -42,7 +42,7 @@ namespace Mustard::Data {
 template<TupleModelizable... Ts>
 class Take : public NonConstructibleBase {
 public:
-    static auto From(ROOTX::RDataFrame auto&& dataframe) -> std::vector<std::shared_ptr<Tuple<Ts...>>>;
+    static auto From(ROOT::RDF::RNode rdf) -> std::vector<std::shared_ptr<Tuple<Ts...>>>;
 
 private:
     template<gsl::index... Is>

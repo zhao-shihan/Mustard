@@ -26,47 +26,43 @@
 
 #include "mpi.h"
 
+#include "muc/algorithm"
+#include "muc/hash_map"
+#include "muc/hash_set"
+
 #include "gsl/gsl"
 
 #include "fmt/core.h"
 
+#include <algorithm>
+#include <array>
 #include <concepts>
 #include <limits>
+#include <ranges>
 #include <stdexcept>
 #include <string>
-#include <string_view>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
 namespace Mustard::Data {
 
 template<std::integral T = int>
-auto RDFEventSplitPoint(ROOT::RDF::RNode rdf, std::string_view eventIDBranchName) -> std::vector<unsigned>;
+auto RDFEventSplit(ROOT::RDF::RNode rdf,
+                   std::string eventIDColumnName) -> std::vector<unsigned>;
 
-template<std::integral T>
-struct MasterSlaveRDFEventSplitPoint {
-    struct MasterEventSplitPoint {
-        T eventID;
-        unsigned entry;
-    };
-
-    struct SlaveEventRange {
-        unsigned first;
-        unsigned last;
-    };
-
-    std::vector<MasterEventSplitPoint> master;
-    std::vector<std::unordered_map<T, SlaveEventRange>> slave;
+struct RDFEntryRange {
+    unsigned first;
+    unsigned last;
 };
 
-template<std::integral T = int>
-auto RDFEventSplitPoint(ROOT::RDF::RNode masterRDF,
-                        std::vector<ROOT::RDF::RNode> slaveRDF,
-                        std::string_view masterEventIDBranchName,
-                        std::vector<std::string> slaveEventIDBranchName = {}) -> MasterSlaveRDFEventSplitPoint<T>;
+template<std::integral T = int, std::size_t N>
+auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
+                   const std::string& eventIDColumnName) -> std::vector<std::array<RDFEntryRange, N>>;
+
+template<std::integral T = int, std::size_t N>
+auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
+                   const std::array<std::string, N>& eventIDColumnName) -> std::vector<std::array<RDFEntryRange, N>>;
 
 } // namespace Mustard::Data
 
-#include "Mustard/Data/RDFEventSplitPoint.inl"
+#include "Mustard/Data/RDFEventSplit.inl"

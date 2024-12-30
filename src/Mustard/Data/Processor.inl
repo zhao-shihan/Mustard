@@ -28,7 +28,7 @@ Processor<AExecutor>::Processor(AExecutor executor, Index batchSizeProposal) :
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
-auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf,
+auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
                                    std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
     const auto nEntry{static_cast<Index>(*rdf.Count())};
     if (nEntry == 0) {
@@ -65,27 +65,30 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf,
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
-auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, std::string_view eventIDBranchName,
+auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
                                    std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
-    return Process<Ts...>(std::forward<decltype(rdf)>(rdf),
-                          RDFEventSplitPoint(std::forward<decltype(rdf)>(rdf), eventIDBranchName),
-                          std::forward<decltype(F)>(F));
+    return Process<Ts...>(rdf, RDFEventSplit(rdf, std::move(eventIDBranchName)), std::forward<decltype(F)>(F));
 }
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
-auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vector<unsigned>& eventSplitPoint,
+auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, const std::vector<unsigned>& eventSplit,
                                    std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
-    const auto& esp{eventSplitPoint};
+    const auto& es{eventSplit};
 
-    const auto nEntry{static_cast<Index>(esp.back() - esp.front())};
-    if (nEntry == 0) {
+    const auto nEvent{static_cast<Index>(es.size() - 1)};
+    if (nEvent == 0) {
         PrintWarning("Empty dataset");
         return 0;
     }
-
-    const auto nEvent{static_cast<Index>(esp.size() - 1)};
-    if (nEvent == 0) {
+    const auto nEntry{es.back()};
+    if (const auto nEntryRDF{*rdf.Count()};
+        nEntry != nEntryRDF) {
+        PrintError(fmt::format("Entries of provided event split ({}) is inconsistent with the dataset ({})",
+                               nEntry, nEntryRDF));
+        return 0;
+    }
+    if (nEntry == 0) {
         PrintWarning("Empty dataset");
         return 0;
     }
@@ -108,12 +111,12 @@ auto Processor<AExecutor>::Process(ROOTX::RDataFrame auto&& rdf, const std::vect
             }
 
             const auto [iFirst, iLast]{this->CalculateIndexRange(k, nEPBQuot, nEPBRem)}; // event index
-            const auto data{Take<Ts...>::From(rdf.Range(esp[iFirst], esp[iLast]))};
+            const auto data{Take<Ts...>::From(rdf.Range(es[iFirst], es[iLast]))};
 
             Event event;
             for (auto i{iFirst}; i < iLast; ++i) {
-                const std::ranges::subrange eventData{data.cbegin() + (esp[i] - esp[iFirst]),
-                                                      data.cbegin() + (esp[i + 1] - esp[iFirst])};
+                const std::ranges::subrange eventData{data.cbegin() + (es[i] - es[iFirst]),
+                                                      data.cbegin() + (es[i + 1] - es[iFirst])};
                 event.clear();
                 event.resize(eventData.size());
                 std::ranges::copy(eventData, event.begin());
