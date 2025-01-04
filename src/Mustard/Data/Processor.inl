@@ -66,14 +66,14 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
-                                   std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
+                                   std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index {
     return Process<Ts...>(rdf, RDFEventSplit(rdf, std::move(eventIDBranchName)), std::forward<decltype(F)>(F));
 }
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, const std::vector<unsigned>& eventSplit,
-                                   std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
+                                   std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index {
     const auto& es{eventSplit};
 
     const auto nEvent{static_cast<Index>(es.size() - 1)};
@@ -104,7 +104,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, const std::vector<unsig
     fExecutor.Execute(
         nBatch,
         [&](auto k) { // k is batch index
-            using Event = std::vector<std::shared_ptr<Tuple<Ts...>>>;
+            using Event = muc::shared_ptrvec<Tuple<Ts...>>;
             if (byPass and k >= nEvent) { // by pass when there are too many processors
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, Event{});
                 return;

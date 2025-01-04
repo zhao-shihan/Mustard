@@ -28,6 +28,7 @@
 #include "ROOT/RDataFrame.hxx"
 
 #include "muc/concepts"
+#include "muc/ptrvec"
 
 #include "fmt/core.h"
 
@@ -59,10 +60,10 @@ public:
 
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
-                 std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index;
+                 std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index;
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf, const std::vector<unsigned>& eventSplit,
-                 std::invocable<bool, std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index;
+                 std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index;
 
     auto Executor() const -> const auto& { return fExecutor; }
     auto Executor() -> auto& { return fExecutor; }

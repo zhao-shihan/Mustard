@@ -46,14 +46,14 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf,
 
 template<TupleModelizable... Ts>
 auto SeqProcessor::Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
-                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
+                           std::invocable<muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index {
     auto es{RDFEventSplit(rdf, std::move(eventIDBranchName))};
     return Process<Ts...>(std::move(rdf), std::move(es), std::forward<decltype(F)>(F));
 }
 
 template<TupleModelizable... Ts>
 auto SeqProcessor::Process(ROOT::RDF::RNode rdf, const std::vector<Index>& eventSplit,
-                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index {
+                           std::invocable<muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index {
     const auto& es{eventSplit};
 
     const auto nEvent{gsl::narrow<Index>(es.size() - 1)};
@@ -82,7 +82,7 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf, const std::vector<Index>& event
         const auto [iFirst, iLast]{CalculateIndexRange(k, nEPBQuot, nEPBRem)}; // event index
         const auto data{Take<Ts...>::From(rdf.Range(es[iFirst], es[iLast]))};
 
-        std::vector<std::shared_ptr<Tuple<Ts...>>> event;
+        muc::shared_ptrvec<Tuple<Ts...>> event;
         for (auto i{iFirst}; i < iLast; ++i) {
             const std::ranges::subrange eventData{data.cbegin() + (es[i] - es[iFirst]),
                                                   data.cbegin() + (es[i + 1] - es[iFirst])};
@@ -99,7 +99,7 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf, const std::vector<Index>& event
 template<muc::instantiated_from<TupleModel>... Ts>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                            std::string eventIDBranchName,
-                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts>>>&...> auto&& F) -> Index {
+                           std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index {
     auto es{RDFEventSplit(rdf, std::move(eventIDBranchName))};
     return Process<Ts...>(std::move(rdf), std::move(es), std::forward<decltype(F)>(F));
 }
@@ -107,7 +107,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
 template<muc::instantiated_from<TupleModel>... Ts>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                            std::vector<std::string> eventIDBranchName,
-                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts>>>&...> auto&& F) -> Index {
+                           std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index {
     auto es{RDFEventSplit(rdf, std::move(eventIDBranchName))};
     return Process<Ts...>(std::move(rdf), std::move(es), std::forward<decltype(F)>(F));
 }
@@ -115,7 +115,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
 template<muc::instantiated_from<TupleModel>... Ts>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                            const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
-                           std::invocable<std::vector<std::shared_ptr<Tuple<Ts>>>&...> auto&& F) -> Index {
+                           std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index {
     const auto& es{eventSplit};
 
     const auto nEvent{gsl::narrow<Index>(es.size())};
@@ -170,13 +170,13 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
             }
         }
         // data taken according to the entry range of this batch
-        std::tuple<std::vector<std::shared_ptr<Tuple<Ts>>>...> data;
+        std::tuple<muc::shared_ptrvec<Tuple<Ts>>...> data;
         [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
             (..., (get<Is>(data) = Take<std::tuple_element_t<Is, std::tuple<Ts...>>>::
                        From(rdf[Is].Range(takeRange[Is].first, takeRange[Is].last))));
         }(gslx::make_index_sequence<nRDF>());
         // the event data
-        std::tuple<std::vector<std::shared_ptr<Tuple<Ts>>>...> event;
+        std::tuple<muc::shared_ptrvec<Tuple<Ts>>...> event;
         for (auto i{iFirst}; i < iLast; ++i) {
             [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
                 (...,

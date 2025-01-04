@@ -27,6 +27,7 @@
 #include "ROOT/RVec.hxx"
 
 #include "muc/concepts"
+#include "muc/ptrvec"
 
 #include "gsl/gsl"
 
@@ -42,14 +43,14 @@ namespace Mustard::Data {
 template<TupleModelizable... Ts>
 class Take : public NonConstructibleBase {
 public:
-    static auto From(ROOT::RDF::RNode rdf) -> std::vector<std::shared_ptr<Tuple<Ts...>>>;
+    static auto From(ROOT::RDF::RNode rdf) -> muc::shared_ptrvec<Tuple<Ts...>>;
 
 private:
     template<gsl::index... Is>
     class TakeOne;
 
     template<gsl::index... Is>
-    TakeOne(std::vector<std::shared_ptr<Tuple<Ts...>>>, gslx::index_sequence<Is...>) -> TakeOne<Is...>;
+    TakeOne(muc::shared_ptrvec<Tuple<Ts...>>, gslx::index_sequence<Is...>) -> TakeOne<Is...>;
 };
 
 } // namespace Mustard::Data

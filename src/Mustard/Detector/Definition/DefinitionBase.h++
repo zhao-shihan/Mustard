@@ -27,6 +27,7 @@
 #include "G4VSolid.hh"
 
 #include "muc/ceta_string"
+#include "muc/ptrvec"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -139,16 +140,16 @@ private:
 private:
     const DefinitionBase* fMother{};
 
-    std::vector<std::unique_ptr<G4VSolid>> fSolidStore;
-    std::vector<std::unique_ptr<G4LogicalVolume>> fLogicalVolumeStore;
-    std::vector<std::unique_ptr<G4VPhysicalVolume>> fPhysicalVolumeStore;
+    muc::unique_ptrvec<G4VSolid> fSolidStore;
+    muc::unique_ptrvec<G4LogicalVolume> fLogicalVolumeStore;
+    muc::unique_ptrvec<G4VPhysicalVolume> fPhysicalVolumeStore;
 
     std::unordered_map<std::string, std::vector<G4LogicalVolume*>> fLogicalVolumes;
     const std::vector<G4LogicalVolume*>* fFirstLogicalVolumes{};
     std::unordered_map<std::string, std::vector<G4VPhysicalVolume*>> fPhysicalVolumes;
     const std::vector<G4VPhysicalVolume*>* fFirstPhysicalVolumes{};
 
-    std::vector<std::unique_ptr<G4FieldManager>> fFieldStore;
+    muc::unique_ptrvec<G4FieldManager> fFieldStore;
 
     std::unordered_map<std::type_index, std::unique_ptr<DefinitionBase>> fDaughters;
 };

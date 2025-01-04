@@ -27,6 +27,7 @@
 
 #include "muc/concepts"
 #include "muc/numeric"
+#include "muc/ptrvec"
 
 #include "fmt/format.h"
 
@@ -53,23 +54,23 @@ public:
 
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
-                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index;
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf, const std::vector<Index>& eventSplit,
-                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts...>>>&> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index;
 
     template<muc::instantiated_from<TupleModel>... Ts>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                  std::string eventIDBranchName,
-                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts>>>&...> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index;
     template<muc::instantiated_from<TupleModel>... Ts>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                  std::vector<std::string> eventIDBranchName,
-                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts>>>&...> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index;
     template<muc::instantiated_from<TupleModel>... Ts>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                  const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
-                 std::invocable<std::vector<std::shared_ptr<Tuple<Ts>>>&...> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index;
 };
 
 } // namespace Mustard::Data

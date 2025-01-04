@@ -19,8 +19,8 @@
 namespace Mustard::Data {
 
 template<TupleModelizable... Ts>
-auto Take<Ts...>::From(ROOT::RDF::RNode rdf) -> std::vector<std::shared_ptr<Tuple<Ts...>>> {
-    std::vector<std::shared_ptr<Tuple<Ts...>>> data;
+auto Take<Ts...>::From(ROOT::RDF::RNode rdf) -> muc::shared_ptrvec<Tuple<Ts...>> {
+    muc::shared_ptrvec<Tuple<Ts...>> data;
     rdf.Foreach(TakeOne{data, gslx::make_index_sequence<Tuple<Ts...>::Size()>{}},
                 []<gsl::index... Is>(gslx::index_sequence<Is...>) -> std::vector<std::string> {
                     return {std::tuple_element_t<Is, Tuple<Ts...>>::Name().s()...};
@@ -57,7 +57,7 @@ private:
                                         TargetType<I>>;
 
 public:
-    TakeOne(std::vector<std::shared_ptr<Tuple<Ts...>>>& data, gslx::index_sequence<Is...>) :
+    TakeOne(muc::shared_ptrvec<Tuple<Ts...>>& data, gslx::index_sequence<Is...>) :
         fData{data} {}
 
     auto operator()(const ReadType<Is>&... value) -> void {
@@ -88,7 +88,7 @@ private:
     }
 
 private:
-    std::vector<std::shared_ptr<Tuple<Ts...>>>& fData;
+    muc::shared_ptrvec<Tuple<Ts...>>& fData;
 };
 
 } // namespace Mustard::Data
