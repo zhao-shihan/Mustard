@@ -32,7 +32,6 @@ template<typename T>
 concept Description =
     requires {
         requires std::derived_from<T, DescriptionBase<>>;
-        requires std::derived_from<T, DescriptionBase<T>>;
         requires Env::Memory::Singletonified<T>;
     };
 
