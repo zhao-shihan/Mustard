@@ -46,7 +46,7 @@ constexpr void StaticForEach(auto&&... args) {
 } // namespace internal
 
 template<Description... Ds>
-auto Import(const std::filesystem::path& yamlFile) -> void {
+auto DescriptionIO::Import(const std::filesystem::path& yamlFile) -> void {
     Import<std::tuple<Ds...>>(yamlFile);
 }
 
