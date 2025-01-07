@@ -70,6 +70,11 @@ auto DescriptionIO::ParallelIxport(const std::filesystem::path& yamlFile, const 
     return ParallelIxport<std::tuple<Ds...>>(yamlFile, fileComment);
 }
 
+template<Description... Ds>
+auto DescriptionIO::ToString() -> std::string {
+    return ToString<std::tuple<Ds...>>();
+}
+
 template<muc::tuple_like T>
 auto DescriptionIO::Import(const std::filesystem::path& yamlFile) -> void {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
@@ -108,6 +113,14 @@ auto DescriptionIO::ParallelIxport(const std::filesystem::path& yamlFile, const 
     internal::StaticForEach<0, descriptions.size(),
                             internal::FillDescriptionArray, T>(descriptions);
     return ParallelIxportImpl(yamlFile, fileComment, descriptions);
+}
+
+template<muc::tuple_like T>
+auto DescriptionIO::ToString() -> std::string {
+    std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
+    internal::StaticForEach<0, descriptions.size(),
+                            internal::FillDescriptionArray, T>(descriptions);
+    return ToStringImpl(descriptions);
 }
 
 template<typename... ArgsOfImport>
@@ -163,14 +176,7 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlFile, const std:
         } catch (const std::filesystem::filesystem_error&) { throw InvalidFile{}; }
         if (not yamlOut.is_open()) { throw InvalidFile{}; }
 
-        YAML::Emitter yamlEmitter{yamlOut};
-        yamlEmitter << YAML::Block;
-        if (not fileComment.empty()) {
-            yamlEmitter << YAML::Comment(fileComment)
-                        << YAML::Newline;
-        }
-        yamlEmitter << geomYaml
-                    << YAML::Newline;
+        Output(geomYaml, fileComment, yamlOut);
     } catch (const InvalidFile&) {
         PrintError("Cannot open yaml file, export failed");
     }
@@ -196,6 +202,24 @@ auto DescriptionIO::ParallelIxportImpl(const std::filesystem::path& yamlFile, co
     ImportImpl(yamlFile, descriptions);
     auto path2{ParallelExportImpl(std::filesystem::path{yamlFile}.replace_extension(".curr.yaml"), fileComment, descriptions)};
     return {std::move(path1), std::move(path2)};
+}
+
+auto DescriptionIO::ToStringImpl(const std::ranges::input_range auto& descriptions) -> std::string {
+    std::vector<std::pair<std::string_view, DescriptionBase<>*>> sortedDescriptions;
+    sortedDescriptions.reserve(descriptions.size());
+    for (auto&& description : descriptions) {
+        sortedDescriptions.emplace_back(description->Name(), description);
+    }
+    std::ranges::sort(sortedDescriptions);
+
+    YAML::Node geomYaml;
+    for (auto&& [_, description] : std::as_const(sortedDescriptions)) {
+        description->Export(geomYaml);
+    }
+
+    std::ostringstream oss;
+    Output(geomYaml, {}, oss);
+    return oss.str();
 }
 
 } // namespace Mustard::Detector::Description

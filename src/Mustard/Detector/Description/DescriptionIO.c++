@@ -22,4 +22,15 @@ namespace Mustard::Detector::Description {
 
 std::set<gsl::not_null<DescriptionBase<>*>> DescriptionIO::fgInstanceSet{};
 
+auto DescriptionIO::Output(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void {
+    YAML::Emitter yamlEmitter{os};
+    yamlEmitter << YAML::Block;
+    if (not fileComment.empty()) {
+        yamlEmitter << YAML::Comment(fileComment)
+                    << YAML::Newline;
+    }
+    yamlEmitter << geomYaml
+                << YAML::Newline;
+}
+
 } // namespace Mustard::Detector::Description

@@ -41,6 +41,7 @@
 #include <fstream>
 #include <ranges>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -63,6 +64,9 @@ public:
     static auto ParallelExport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::filesystem::path;
     template<Description... Ds>
     static auto ParallelIxport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    template<Description... Ds>
+    static auto ToString() -> std::string;
+
     template<muc::tuple_like T>
     static auto Import(const std::filesystem::path& yamlFile) -> void;
     template<muc::tuple_like T>
@@ -73,6 +77,8 @@ public:
     static auto ParallelExport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::filesystem::path;
     template<muc::tuple_like T>
     static auto ParallelIxport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    template<muc::tuple_like T>
+    static auto ToString() -> std::string;
 
     template<typename... ArgsOfImport>
     static auto Import(const std::ranges::range auto& yamlText) -> void
@@ -88,6 +94,8 @@ private:
     static auto IxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
     static auto ParallelExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path;
     static auto ParallelIxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    static auto ToStringImpl(const std::ranges::input_range auto& descriptions) -> std::string;
+    static auto Output(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void;
 
 private:
     static std::set<gsl::not_null<DescriptionBase<>*>> fgInstanceSet;
