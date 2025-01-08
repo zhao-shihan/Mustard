@@ -47,6 +47,7 @@ option(MUSTARD_BUILTIN_BACKWARD "Use built-in backward-cpp (network or pre-downl
 option(MUSTARD_BUILTIN_EFM "Use built-in EFM (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_ENVPARSE "Use built-in envparse (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_FMT "Use built-in fmt (network or pre-downloaded source is required)." OFF)
+option(MUSTARD_BUILTIN_INDICATORS "Use built-in indicators (network or pre-downloaded source is required)." ON)
 option(MUSTARD_BUILTIN_MSGSL "Use built-in Microsoft.GSL (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_MUC "Use built-in muc (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_YAML_CPP "Use built-in yaml-cpp (network or pre-downloaded source is required)." OFF)
@@ -69,6 +70,7 @@ set(MUSTARD_BUILTIN_BACKWARD_VERSION 1.6 CACHE STRING "Set built-in backward-cpp
 set(MUSTARD_BUILTIN_EFM_VERSION 0.0.1 CACHE STRING "Set built-in EFM version (if required).")
 set(MUSTARD_BUILTIN_ENVPARSE_VERSION 1.0.0 CACHE STRING "Set built-in envparse version (if required).")
 set(MUSTARD_BUILTIN_FMT_VERSION 11.1.1 CACHE STRING "Set built-in fmt version (if required).")
+set(MUSTARD_BUILTIN_INDICATORS_VERSION 2.3 CACHE STRING "Set built-in indicators version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.1.0 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
 set(MUSTARD_BUILTIN_MUC_VERSION 0.0.1 CACHE STRING "Set built-in muc version (if required).")
 set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.8.0 CACHE STRING "Set built-in yaml-cpp version (if required).")
@@ -120,6 +122,8 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEFM.cmake)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEnvparse.cmake)
 # fmt
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForFmt.cmake)
+# indicators
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForIndicators.cmake)
 # Microsoft.GSL
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMicrosoftGSL.cmake)
 # muc

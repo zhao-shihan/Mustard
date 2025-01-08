@@ -26,6 +26,9 @@ target_link_libraries(Mustard PUBLIC EFM::EFM)
 # argparse
 target_link_libraries(Mustard PUBLIC argparse::argparse)
 
+# indicators
+target_link_libraries(Mustard PUBLIC indicators::indicators)
+
 # Microsoft.GSL
 target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
 
