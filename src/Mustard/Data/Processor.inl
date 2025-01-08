@@ -19,8 +19,8 @@
 namespace Mustard::Data {
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
-Processor<AExecutor>::Processor(AExecutor executor, Index batchSizeProposal) :
-    Base{batchSizeProposal},
+Processor<AExecutor>::Processor(AExecutor executor) :
+    Base{},
     fExecutor{std::move(executor)} {
     fExecutor.ExecutionName("Event loop");
     fExecutor.TaskName("Batch");
@@ -29,36 +29,37 @@ Processor<AExecutor>::Processor(AExecutor executor, Index batchSizeProposal) :
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
-                                   std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index {
-    const auto nEntry{static_cast<Index>(*rdf.Count())};
+                                   std::invocable<bool, std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index {
+    const auto nEntry{gsl::narrow<Index>(*rdf.Count())};
     if (nEntry == 0) {
         PrintWarning("Empty dataset");
         return 0;
     }
 
-    const auto nProc{static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize())};
-    const auto byPass{ByPassCheck(nEntry, "entries")};
-
-    const auto nBatch{std::max(nProc, nEntry / this->fBatchSizeProposal)};
-    const auto nEPBQuot{nEntry / nBatch};
-    const auto nEPBRem{nEntry % nBatch};
-
     Index nEntryProcessed{};
+    const auto ProcessBatch{[&](muc::shared_ptrvec<Tuple<Ts...>> data) {
+        for (auto&& entry : data) {
+            std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, std::move(entry));
+        }
+        nEntryProcessed += data.size();
+    }};
+    std::future<void> async;
+
+    const auto byPassWillOccur{ByPassOccurrenceCheck(nEntry, "entries")};
+    const auto batch{CalculateBatchConfiguration(Env::MPIEnv::Instance().CommWorldSize(), nEntry)};
     fExecutor.Execute(
-        nBatch,
-        [&](auto k) {                     // k is batch index
-            if (byPass and k >= nEntry) { // by pass when there are too many processors
+        batch.nBatch,
+        [&](auto k) {                                           // k is batch index
+            if (byPassWillOccur and k >= nEntry) [[unlikely]] { // by pass when there are too many processors
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, std::shared_ptr<Tuple<Ts...>>{});
                 return;
             }
-
-            const auto [iFirst, iLast]{this->CalculateIndexRange(k, nEPBQuot, nEPBRem)}; // entry index
-            const auto data{Take<Ts...>::From(rdf.Range(iFirst, iLast))};
-
-            for (auto&& entry : data) {
-                std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, entry);
-            }
-            nEntryProcessed += data.size();
+            // load data
+            const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)}; // entry index
+            auto data{Take<Ts...>::From(rdf.Range(iFirst, iLast))};
+            // async process
+            if (async.valid()) { async.wait(); }
+            async = std::async(this->fAsyncPolicy, ProcessBatch, std::move(data));
         });
     return nEntryProcessed;
 }
@@ -66,17 +67,17 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
-                                   std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index {
+                                   std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     return Process<Ts...>(rdf, RDFEventSplit(rdf, std::move(eventIDBranchName)), std::forward<decltype(F)>(F));
 }
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, const std::vector<unsigned>& eventSplit,
-                                   std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index {
+                                   std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     const auto& es{eventSplit};
 
-    const auto nEvent{static_cast<Index>(es.size() - 1)};
+    const auto nEvent{gsl::narrow<Index>(es.size() - 1)};
     if (nEvent == 0) {
         PrintWarning("Empty dataset");
         return 0;
@@ -93,49 +94,48 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, const std::vector<unsig
         return 0;
     }
 
-    const auto nProc{static_cast<Index>(Env::MPIEnv::Instance().CommWorldSize())};
-    const auto byPass{ByPassCheck(nEvent, "events")};
-
-    const auto nBatch{std::max(nProc, nEntry / this->fBatchSizeProposal)};
-    const auto nEPBQuot{nEvent / nBatch};
-    const auto nEPBRem{nEvent % nBatch};
-
     Index nEventProcessed{};
+    using Event = muc::shared_ptrvec<Tuple<Ts...>>;
+    const auto ProcessBatch{[&](Index iFirst, Index iLast, muc::shared_ptrvec<Tuple<Ts...>> data) {
+        for (auto i{iFirst}; i < iLast; ++i) {
+            std::ranges::subrange eventData{data.begin() + (es[i] - es[iFirst]),
+                                            data.begin() + (es[i + 1] - es[iFirst])};
+            Event event(eventData.size());
+            std::ranges::move(eventData, event.begin());
+            std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, std::move(event));
+        }
+        nEventProcessed += iLast - iFirst;
+    }};
+    std::future<void> async;
+
+    const auto byPassWillOccur{ByPassOccurrenceCheck(nEvent, "events")};
+    const auto batch{CalculateBatchConfiguration(Env::MPIEnv::Instance().CommWorldSize(), nEvent)};
     fExecutor.Execute(
-        nBatch,
-        [&](auto k) { // k is batch index
-            using Event = muc::shared_ptrvec<Tuple<Ts...>>;
-            if (byPass and k >= nEvent) { // by pass when there are too many processors
+        batch.nBatch,
+        [&](auto k) {                                           // k is batch index
+            if (byPassWillOccur and k >= nEvent) [[unlikely]] { // by pass when there are too many processors
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, Event{});
                 return;
             }
-
-            const auto [iFirst, iLast]{this->CalculateIndexRange(k, nEPBQuot, nEPBRem)}; // event index
-            const auto data{Take<Ts...>::From(rdf.Range(es[iFirst], es[iLast]))};
-
-            Event event;
-            for (auto i{iFirst}; i < iLast; ++i) {
-                const std::ranges::subrange eventData{data.cbegin() + (es[i] - es[iFirst]),
-                                                      data.cbegin() + (es[i + 1] - es[iFirst])};
-                event.clear();
-                event.resize(eventData.size());
-                std::ranges::copy(eventData, event.begin());
-                std::invoke(std::forward<decltype(F)>(F), /*byPass =*/false, event);
-            }
-            nEventProcessed += iLast - iFirst;
+            // load data
+            const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)}; // event index
+            auto data{Take<Ts...>::From(rdf.Range(es[iFirst], es[iLast]))};
+            // async process
+            if (async.valid()) { async.wait(); }
+            async = std::async(this->fAsyncPolicy, ProcessBatch, iFirst, iLast, std::move(data));
         });
     return nEventProcessed;
 }
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
-auto Processor<AExecutor>::ByPassCheck(Index n, std::string_view what) -> bool {
+auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what) -> bool {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
-    const auto byPass{static_cast<Index>(mpiEnv.CommWorldSize()) > n};
-    if (mpiEnv.OnCommWorldMaster() and byPass) {
+    const auto byPassWillOccur{static_cast<Index>(mpiEnv.CommWorldSize()) > n};
+    if (mpiEnv.OnCommWorldMaster() and byPassWillOccur) [[unlikely]] {
         PrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
                                  mpiEnv.CommWorldSize(), what, n));
     }
-    return byPass;
+    return byPassWillOccur;
 }
 
 } // namespace Mustard::Data

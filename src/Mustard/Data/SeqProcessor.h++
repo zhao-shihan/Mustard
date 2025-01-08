@@ -25,19 +25,29 @@
 #include "Mustard/Extension/gslx/index_sequence.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
+#include "indicators/block_progress_bar.hpp"
+
 #include "muc/concepts"
 #include "muc/numeric"
 #include "muc/ptrvec"
+#include "muc/time"
+
+#include "gsl/gsl"
 
 #include "fmt/format.h"
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <functional>
+#include <future>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <ranges>
+#include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -46,31 +56,49 @@ namespace Mustard::Data {
 /// @brief A sequential data processor.
 class SeqProcessor : public internal::ProcessorBase<unsigned> {
 public:
-    SeqProcessor(Index batchSizeProposal = 100'000);
+    SeqProcessor();
+
+    auto PrintProgress(bool val) -> void { fPrintProgress = val; }
+    auto PrintProgress() const -> auto { return fPrintProgress; }
 
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf,
-                 std::invocable<std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index;
+                 std::invocable<std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index;
 
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
-                 std::invocable<muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf, const std::vector<Index>& eventSplit,
-                 std::invocable<muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
 
     template<muc::instantiated_from<TupleModel>... Ts>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                  std::string eventIDBranchName,
-                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index;
     template<muc::instantiated_from<TupleModel>... Ts>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                  std::vector<std::string> eventIDBranchName,
-                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index;
     template<muc::instantiated_from<TupleModel>... Ts>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                  const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
-                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>&...> auto&& F) -> Index;
+                 std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index;
+
+private:
+    auto LoopBeginAction(Index nTotal) -> void;
+    auto IterationEndAction(Index nProcessed, Index nTotal) -> void;
+    auto LoopEndAction(Index nTotal) -> void;
+
+    auto ReportProgress(Index nProcessed, Index nTotal, double msElapsed) -> void;
+
+private:
+    bool fPrintProgress;
+
+    std::optional<indicators::BlockProgressBar> fProgressBar;
+    std::optional<muc::wall_time_stopwatch<>> fWallTimeStopWatch;
+    double fLastReportTime;
+    std::future<void> fAsyncReportProgress;
 };
 
 } // namespace Mustard::Data

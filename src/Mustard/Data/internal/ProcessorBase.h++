@@ -18,7 +18,20 @@
 
 #pragma once
 
+#include "Mustard/Utility/PrettyLog.h++"
+
+#include "muc/math"
+
+#include "gsl/gsl"
+
+#include "fmt/core.h"
+
+#include <algorithm>
+#include <cmath>
 #include <concepts>
+#include <future>
+#include <limits>
+#include <stdexcept>
 #include <utility>
 
 namespace Mustard::Data::internal {
@@ -29,19 +42,29 @@ public:
     using Index = T;
 
 protected:
-    ProcessorBase(T batchSizeProposal);
+    ProcessorBase();
     ~ProcessorBase() = default;
 
 public:
-    auto BatchSizeProposal() const -> auto { return fBatchSizeProposal; }
+    auto LoadFactor(T val) -> void;
+    auto LoadFactor() const -> auto { return fLoadFactor; }
 
-    auto BatchSizeProposal(T val) -> void { fBatchSizeProposal = val; }
+    auto AsyncPolicy(std::launch val) -> void { fAsyncPolicy = val; }
+    auto AsyncPolicy() const -> auto { return fAsyncPolicy; }
 
 protected:
-    static auto CalculateIndexRange(T iBatch, T nEPBQuot, T nEPBRem) -> std::pair<T, T>;
+    struct BatchConfiguration {
+        T nBatch;
+        T nEPBQuot;
+        T nEPBRem;
+    };
+
+    auto CalculateBatchConfiguration(T nProcess, T nTotal) const -> BatchConfiguration;
+    static auto CalculateIndexRange(T iBatch, BatchConfiguration batch) -> std::pair<T, T>;
 
 protected:
-    T fBatchSizeProposal;
+    double fLoadFactor;
+    std::launch fAsyncPolicy;
 };
 
 } // namespace Mustard::Data::internal

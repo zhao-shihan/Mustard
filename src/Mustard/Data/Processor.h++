@@ -30,10 +30,14 @@
 #include "muc/concepts"
 #include "muc/ptrvec"
 
+#include "gsl/gsl"
+
 #include "fmt/core.h"
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
+#include <future>
 #include <memory>
 #include <numeric>
 #include <ranges>
@@ -52,24 +56,24 @@ private:
     using Index = typename Base::Index;
 
 public:
-    Processor(AExecutor executor = {}, Index batchSizeProposal = 100'000);
+    Processor(AExecutor executor = {});
 
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf,
-                 std::invocable<bool, std::shared_ptr<Tuple<Ts...>>&> auto&& F) -> Index;
+                 std::invocable<bool, std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index;
 
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
-                 std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index;
+                 std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
     template<TupleModelizable... Ts>
     auto Process(ROOT::RDF::RNode rdf, const std::vector<unsigned>& eventSplit,
-                 std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>&> auto&& F) -> Index;
+                 std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
 
     auto Executor() const -> const auto& { return fExecutor; }
     auto Executor() -> auto& { return fExecutor; }
 
 private:
-    static auto ByPassCheck(Index n, std::string_view what) -> bool;
+    static auto ByPassOccurrenceCheck(Index n, std::string_view what) -> bool;
 
 private:
     AExecutor fExecutor;

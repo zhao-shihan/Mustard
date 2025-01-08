@@ -19,20 +19,38 @@
 namespace Mustard::Data::internal {
 
 template<std::integral T>
-ProcessorBase<T>::ProcessorBase(T batchSizeProposal) :
-    fBatchSizeProposal{batchSizeProposal} {}
+ProcessorBase<T>::ProcessorBase() :
+    fLoadFactor{0.1},
+    fAsyncPolicy{std::launch::async} {}
 
 template<std::integral T>
-auto ProcessorBase<T>::CalculateIndexRange(T iBatch, T nEPBQuot, T nEPBRem) -> std::pair<T, T> {
+auto ProcessorBase<T>::LoadFactor(T val) -> void {
+    constexpr auto lowerBound{1 / static_cast<double>(std::numeric_limits<T>::max())};
+    fLoadFactor = muc::clamp<"(]">(val, lowerBound, 1);
+}
+
+template<std::integral T>
+auto ProcessorBase<T>::CalculateBatchConfiguration(T nProcess, T nTotal) const -> BatchConfiguration {
+    Expects(nProcess > 0);
+    const auto nBatchProposal{std::round(nProcess / fLoadFactor)};
+    const auto nBatch{std::min(gsl::narrow<T>(nBatchProposal), nTotal)};
+    const auto nEPBQuot{nTotal / nBatch};
+    const auto nEPBRem{nTotal % nBatch};
+    return {nBatch, nEPBQuot, nEPBRem};
+}
+
+template<std::integral T>
+auto ProcessorBase<T>::CalculateIndexRange(T iBatch, BatchConfiguration batch) -> std::pair<T, T> {
+    Expects(0 <= iBatch or iBatch < batch.nBatch);
     T iFirst;
     T iLast;
-    if (iBatch < nEPBRem) {
-        const auto size{nEPBQuot + 1};
+    if (iBatch < batch.nEPBRem) {
+        const auto size{batch.nEPBQuot + 1};
         iFirst = iBatch * size;
         iLast = iFirst + size;
     } else {
-        iFirst = nEPBRem + iBatch * nEPBQuot;
-        iLast = iFirst + nEPBQuot;
+        iFirst = batch.nEPBRem + iBatch * batch.nEPBQuot;
+        iLast = iFirst + batch.nEPBQuot;
     }
     return {iFirst, iLast};
 }
