@@ -36,12 +36,12 @@ if(MUSTARD_BUILTIN_ARGPARSE)
     message(STATUS "Downloading (if required) and configuring argparse (version: ${MUSTARD_BUILTIN_ARGPARSE_VERSION})")
     FetchContent_MakeAvailable(argparse)
     message(STATUS "Downloading (if required) and configuring argparse (version: ${MUSTARD_BUILTIN_ARGPARSE_VERSION}) - done")
-    # check download
-    if(NOT EXISTS "${MUSTARD_BUILTIN_ARGPARSE_SRC_DIR}/CMakeLists.txt")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/argparse-build")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/argparse-subbuild")
-        message(FATAL_ERROR "It seems that the download of argparse has failed. You can try running cmake again, or manually download argparse from ${MUSTARD_BUILTIN_ARGPARSE_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
-    endif()
+    # # check download
+    # if(NOT EXISTS "${MUSTARD_BUILTIN_ARGPARSE_SRC_DIR}/CMakeLists.txt")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/argparse-build")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/argparse-subbuild")
+    #     message(FATAL_ERROR "It seems that the download of argparse has failed. You can try running cmake again, or manually download argparse from ${MUSTARD_BUILTIN_ARGPARSE_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
+    # endif()
 endif()
 
 if(NOT MUSTARD_BUILTIN_ARGPARSE)

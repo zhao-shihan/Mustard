@@ -38,12 +38,12 @@ if(MUSTARD_BUILTIN_BACKWARD)
     message(STATUS "Downloading (if required) and configuring backward-cpp (version: ${MUSTARD_BUILTIN_BACKWARD_VERSION})")
     FetchContent_MakeAvailable(Backward)
     message(STATUS "Downloading (if required) and configuring backward-cpp (version: ${MUSTARD_BUILTIN_BACKWARD_VERSION}) - done")
-    # check download
-    if(NOT EXISTS "${MUSTARD_BUILTIN_BACKWARD_SRC_DIR}/CMakeLists.txt")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/backward-build")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/backward-subbuild")
-        message(FATAL_ERROR "It seems that the download of backward-cpp has failed. You can try running cmake again, or manually download backward-cpp from ${MUSTARD_BUILTIN_BACKWARD_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
-    endif()
+    # # check download
+    # if(NOT EXISTS "${MUSTARD_BUILTIN_BACKWARD_SRC_DIR}/CMakeLists.txt")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/backward-build")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/backward-subbuild")
+    #     message(FATAL_ERROR "It seems that the download of backward-cpp has failed. You can try running cmake again, or manually download backward-cpp from ${MUSTARD_BUILTIN_BACKWARD_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
+    # endif()
 endif()
 
 if(NOT MUSTARD_BUILTIN_BACKWARD)

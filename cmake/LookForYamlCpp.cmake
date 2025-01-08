@@ -42,12 +42,12 @@ if(MUSTARD_BUILTIN_YAML_CPP)
     message(STATUS "Downloading (if required) and configuring yaml-cpp (version: ${MUSTARD_BUILTIN_YAML_CPP_VERSION})")
     FetchContent_MakeAvailable(yaml-cpp)
     message(STATUS "Downloading (if required) and configuring yaml-cpp (version: ${MUSTARD_BUILTIN_YAML_CPP_VERSION}) - done")
-    # check download
-    if(NOT EXISTS "${MUSTARD_BUILTIN_YAML_CPP_SRC_DIR}/CMakeLists.txt")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/yaml-cpp-build")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/yaml-cpp-subbuild")
-        message(FATAL_ERROR "It seems that the download of yaml-cpp has failed. You can try running cmake again, or manually download yaml-cpp from ${MUSTARD_BUILTIN_YAML_CPP_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
-    endif()
+    # # check download
+    # if(NOT EXISTS "${MUSTARD_BUILTIN_YAML_CPP_SRC_DIR}/CMakeLists.txt")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/yaml-cpp-build")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/yaml-cpp-subbuild")
+    #     message(FATAL_ERROR "It seems that the download of yaml-cpp has failed. You can try running cmake again, or manually download yaml-cpp from ${MUSTARD_BUILTIN_YAML_CPP_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
+    # endif()
 endif()
 
 if(NOT MUSTARD_BUILTIN_YAML_CPP)

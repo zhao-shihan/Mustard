@@ -48,12 +48,12 @@ if(MUSTARD_BUILTIN_<LIB_NAME>)
     message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION})")
     FetchContent_MakeAvailable(<lib_cmake_name>)
     message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION}) - done")
-    # check download
-    if(NOT EXISTS "${MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR}/CMakeLists.txt")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/<lib_name>-build")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/<lib_name>-subbuild")
-        message(FATAL_ERROR "It seems that the download of <lib_cmake_name> has failed. You can try running cmake again, or manually download <lib_cmake_name> from ${MUSTARD_BUILTIN_<LIB_NAME>_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
-    endif()
+    # # check download
+    # if(NOT EXISTS "${MUSTARD_BUILTIN_<LIB_NAME>_SRC_DIR}/CMakeLists.txt")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/<lib_name>-build")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/<lib_name>-subbuild")
+    #     message(FATAL_ERROR "It seems that the download of <lib_cmake_name> has failed. You can try running cmake again, or manually download <lib_cmake_name> from ${MUSTARD_BUILTIN_<LIB_NAME>_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
+    # endif()
 endif()
 
 if(NOT MUSTARD_BUILTIN_<LIB_NAME>)

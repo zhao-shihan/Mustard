@@ -36,12 +36,12 @@ if(MUSTARD_BUILTIN_ENVPARSE)
     message(STATUS "Downloading (if required) and configuring envparse (version: ${MUSTARD_BUILTIN_ENVPARSE_VERSION})")
     FetchContent_MakeAvailable(envparse)
     message(STATUS "Downloading (if required) and configuring envparse (version: ${MUSTARD_BUILTIN_ENVPARSE_VERSION}) - done")
-    # check download
-    if(NOT EXISTS "${MUSTARD_BUILTIN_ENVPARSE_SRC_DIR}/CMakeLists.txt")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/envparse-build")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/envparse-subbuild")
-        message(FATAL_ERROR "It seems that the download of envparse has failed. You can try running cmake again, or manually download envparse from ${MUSTARD_BUILTIN_ENVPARSE_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
-    endif()
+    # # check download
+    # if(NOT EXISTS "${MUSTARD_BUILTIN_ENVPARSE_SRC_DIR}/CMakeLists.txt")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/envparse-build")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/envparse-subbuild")
+    #     message(FATAL_ERROR "It seems that the download of envparse has failed. You can try running cmake again, or manually download envparse from ${MUSTARD_BUILTIN_ENVPARSE_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
+    # endif()
 endif()
 
 if(NOT MUSTARD_BUILTIN_ENVPARSE)

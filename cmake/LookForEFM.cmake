@@ -36,12 +36,12 @@ if(MUSTARD_BUILTIN_EFM)
     message(STATUS "Downloading (if required) and configuring EFM (version: ${MUSTARD_BUILTIN_EFM_VERSION})")
     FetchContent_MakeAvailable(EFM)
     message(STATUS "Downloading (if required) and configuring EFM (version: ${MUSTARD_BUILTIN_EFM_VERSION}) - done")
-    # check download
-    if(NOT EXISTS "${MUSTARD_BUILTIN_EFM_SRC_DIR}/CMakeLists.txt")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/efm-build")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/efm-subbuild")
-        message(FATAL_ERROR "It seems that the download of EFM has failed. You can try running cmake again, or manually download EFM from ${MUSTARD_BUILTIN_EFM_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
-    endif()
+    # # check download
+    # if(NOT EXISTS "${MUSTARD_BUILTIN_EFM_SRC_DIR}/CMakeLists.txt")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/efm-build")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/efm-subbuild")
+    #     message(FATAL_ERROR "It seems that the download of EFM has failed. You can try running cmake again, or manually download EFM from ${MUSTARD_BUILTIN_EFM_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
+    # endif()
 endif()
 
 if(NOT MUSTARD_BUILTIN_EFM)

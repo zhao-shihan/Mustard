@@ -36,12 +36,12 @@ if(MUSTARD_BUILTIN_MSGSL)
     message(STATUS "Downloading (if required) and configuring Microsoft.GSL (version: ${MUSTARD_BUILTIN_MSGSL_VERSION})")
     FetchContent_MakeAvailable(MSGSL)
     message(STATUS "Downloading (if required) and configuring Microsoft.GSL (version: ${MUSTARD_BUILTIN_MSGSL_VERSION}) - done")
-    # check download
-    if(NOT EXISTS "${MUSTARD_BUILTIN_MSGSL_SRC_DIR}/CMakeLists.txt")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/msgsl-build")
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/msgsl-subbuild")
-        message(FATAL_ERROR "It seems that the download of Microsoft.GSL has failed. You can try running cmake again, or manually download Microsoft.GSL from ${MUSTARD_BUILTIN_MSGSL_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
-    endif()
+    # # check download
+    # if(NOT EXISTS "${MUSTARD_BUILTIN_MSGSL_SRC_DIR}/CMakeLists.txt")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/msgsl-build")
+    #     file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/msgsl-subbuild")
+    #     message(FATAL_ERROR "It seems that the download of Microsoft.GSL has failed. You can try running cmake again, or manually download Microsoft.GSL from ${MUSTARD_BUILTIN_MSGSL_URL} and extract it to ${MUSTARD_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
+    # endif()
 endif()
 
 if(NOT MUSTARD_BUILTIN_MSGSL)
