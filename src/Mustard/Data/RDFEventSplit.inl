@@ -32,7 +32,7 @@ auto MakeFlatRDFEventSplitPoint(ROOT::RDF::RNode rdf,
         [&](T eventID) {
             if (eventIDList.empty() or eventID != eventIDList.back()) {
                 const auto [_, uniqueEventID]{eventIDSet.emplace(eventID)};
-                if (not uniqueEventID) {
+                if (not uniqueEventID) [[unlikely]] {
                     PrintError(fmt::format("There are more than one event {})", eventID));
                 }
                 eventIDList.emplace_back(eventID);
