@@ -85,8 +85,8 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     fScheduler->PreLoopAction();
     MPI_Barrier(MPI_COMM_WORLD);
     fExecutionBeginSystemTime = scsc::now();
-    fWallTimeStopwatch = {};
-    fCPUTimeStopwatch = {};
+    fWallTimeStopwatch.reset();
+    fCPUTimeStopwatch.reset();
     PreLoopReport();
     // main loop
     while (ExecutingTask() != Task().last) {
@@ -199,7 +199,7 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostTaskReport(T iEnded) const -> void {
     if (not fPrintProgress or fPrintProgressModulo < 0) { return; }
-    const auto [goodForEstmation, nExecutedTask]{fScheduler->NExecutedTask()};
+    const auto [goodForEstimation, nExecutedTask]{fScheduler->NExecutedTask()};
     const auto secondsElapsed{fWallTimeStopwatch.s_elapsed()};
     const auto speed{nExecutedTask / secondsElapsed};
     if (fPrintProgressModulo == 0) {
@@ -214,12 +214,12 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
           "MPI{}>   {} elaps., {}\n",
           mpiEnv.CommWorldRank(), fmt::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
           mpiEnv.CommWorldRank(), SToDHMS(secondsElapsed),
-          [&, goodForEstmation{goodForEstmation}, nExecutedTask{nExecutedTask}] {
-              if (goodForEstmation) {
+          [&, goodForEstimation{goodForEstimation}, nExecutedTask{nExecutedTask}] {
+              if (goodForEstimation) {
                   const auto eta{(NTask() - nExecutedTask) / speed};
-                  const auto progress{static_cast<double>(nExecutedTask) / NTask()};
+                  const auto progress{100. * nExecutedTask / NTask()};
                   return fmt::format("est. rem. {} ({:.3}/s), prog.: {} | {}/{} | {:.3}%",
-                                     SToDHMS(eta), speed, NLocalExecutedTask(), nExecutedTask, NTask(), 100 * progress);
+                                     SToDHMS(eta), speed, NLocalExecutedTask(), nExecutedTask, NTask(), progress);
               } else {
                   return fmt::format("local prog.: {}", NLocalExecutedTask());
               }
