@@ -49,7 +49,7 @@ auto SeqProcessor::LoopBeginAction(Index nTotal) -> void {
 
 auto SeqProcessor::IterationEndAction(Index nProcessed, Index nTotal) -> void {
     if (fPrintProgress) {
-        const auto sElapsed{fWallTimeStopWatch->ms_elapsed()};
+        const auto sElapsed{fWallTimeStopWatch->s_elapsed()};
         if (sElapsed - fLastReportTime > 0.0625) { // report every 62.5ms
             fLastReportTime = sElapsed;
             if (fAsyncReportProgress.valid()) { fAsyncReportProgress.wait(); }
