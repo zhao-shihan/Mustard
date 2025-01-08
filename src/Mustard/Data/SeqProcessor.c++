@@ -44,6 +44,11 @@ auto SeqProcessor::LoopBeginAction(Index nTotal) -> void {
             indicators::option::MaxProgress{nTotal});
         fWallTimeStopWatch.emplace();
         fLastReportTime = 0;
+        fAsyncReportProgress = std::async(
+            std::launch::async, [&, nTotal] {
+                fProgressBar->set_option(indicators::option::PostfixText{fmt::format("0/{}", nTotal)});
+                fProgressBar->set_progress(0);
+            });
     }
 }
 
@@ -52,7 +57,7 @@ auto SeqProcessor::IterationEndAction(Index nProcessed, Index nTotal) -> void {
         const auto sElapsed{fWallTimeStopWatch->s_elapsed()};
         if (sElapsed - fLastReportTime > 0.033) { // report every 33ms
             fLastReportTime = sElapsed;
-            if (fAsyncReportProgress.valid()) { fAsyncReportProgress.wait(); }
+            fAsyncReportProgress.wait();
             fAsyncReportProgress = std::async(std::launch::async,
                                               std::mem_fn(&SeqProcessor::ReportProgress),
                                               this, nProcessed, nTotal, sElapsed);
@@ -62,11 +67,9 @@ auto SeqProcessor::IterationEndAction(Index nProcessed, Index nTotal) -> void {
 
 auto SeqProcessor::LoopEndAction(Index nTotal) -> void {
     if (fPrintProgress) {
-        if (fAsyncReportProgress.valid()) {
-            fAsyncReportProgress.wait();
-            fProgressBar->set_progress(nTotal);
-            fProgressBar->mark_as_completed();
-        }
+        fAsyncReportProgress.wait();
+        ReportProgress(nTotal, nTotal, fWallTimeStopWatch->s_elapsed());
+        fProgressBar->mark_as_completed();
         fProgressBar = std::nullopt;
         indicators::show_console_cursor(true);
         fWallTimeStopWatch = std::nullopt;
