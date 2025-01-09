@@ -21,16 +21,13 @@
 #include "Mustard/Data/RDFEventSplit.h++"
 #include "Mustard/Data/TakeFrom.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
-#include "Mustard/Extension/ROOTX/RDataFrame.h++"
 #include "Mustard/Extension/gslx/index_sequence.h++"
 #include "Mustard/Utility/PrettyLog.h++"
-
-#include "indicators/block_progress_bar.hpp"
+#include "Mustard/Utility/ProgressBar.h++"
 
 #include "muc/concepts"
 #include "muc/numeric"
 #include "muc/ptrvec"
-#include "muc/time"
 
 #include "gsl/gsl"
 
@@ -87,18 +84,13 @@ public:
 
 private:
     auto LoopBeginAction(Index nTotal) -> void;
-    auto IterationEndAction(Index nProcessed, Index nTotal) -> void;
-    auto LoopEndAction(Index nTotal) -> void;
-
-    auto ReportProgress(Index nProcessed, Index nTotal, double msElapsed) -> void;
+    auto IterationEndAction() -> void;
+    auto LoopEndAction() -> void;
 
 private:
     bool fPrintProgress;
 
-    std::optional<indicators::BlockProgressBar> fProgressBar;
-    std::optional<muc::wall_time_stopwatch<>> fWallTimeStopWatch;
-    double fLastReportTime;
-    std::future<void> fAsyncReportProgress;
+    Mustard::ProgressBar fProgressBar;
 };
 
 } // namespace Mustard::Data

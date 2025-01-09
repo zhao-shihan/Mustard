@@ -31,7 +31,8 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf,
     const auto ProcessBatch{[&](muc::shared_ptrvec<Tuple<Ts...>> data) {
         for (auto&& entry : data) {
             std::invoke(std::forward<decltype(F)>(F), std::move(entry));
-            IterationEndAction(++nEntryProcessed, nEntry);
+            ++nEntryProcessed;
+            IterationEndAction();
         }
     }};
     std::future<void> async;
@@ -47,7 +48,7 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf,
         async = std::async(fAsyncPolicy, ProcessBatch, std::move(data));
     }
     async.wait();
-    LoopEndAction(nEntry);
+    LoopEndAction();
     return nEntryProcessed;
 }
 
@@ -88,7 +89,8 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf, const std::vector<Index>& event
             muc::shared_ptrvec<Tuple<Ts...>> event(eventData.size());
             std::ranges::move(eventData, event.begin());
             std::invoke(std::forward<decltype(F)>(F), std::move(event));
-            IterationEndAction(++nEventProcessed, nEvent);
+            ++nEventProcessed;
+            IterationEndAction();
         }
     }};
     std::future<void> async;
@@ -104,7 +106,7 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf, const std::vector<Index>& event
         async = std::async(fAsyncPolicy, ProcessBatch, iFirst, iLast, std::move(data));
     }
     async.wait();
-    LoopEndAction(nEvent);
+    LoopEndAction();
     return nEventProcessed;
 }
 
@@ -176,7 +178,8 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                  }(std::integral_constant<gsl::index, Is>{}));
             }(gslx::make_index_sequence<nRDF>());
             std::apply(std::forward<decltype(F)>(F), std::move(event));
-            IterationEndAction(++nEventProcessed, nEvent);
+            ++nEventProcessed;
+            IterationEndAction();
         }
     }};
     std::future<void> async;
@@ -210,7 +213,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
         async = std::async(fAsyncPolicy, ProcessBatch, iFirst, iLast, std::move(data));
     }
     async.wait();
-    LoopEndAction(nEvent);
+    LoopEndAction();
     return nEventProcessed;
 }
 
