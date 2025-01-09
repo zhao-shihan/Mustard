@@ -46,7 +46,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
     std::future<void> async;
 
     const auto byPassWillOccur{ByPassOccurrenceCheck(nEntry, "entries")};
-    const auto batch{CalculateBatchConfiguration(Env::MPIEnv::Instance().CommWorldSize(), nEntry)};
+    const auto batch{this->CalculateBatchConfiguration(Env::MPIEnv::Instance().CommWorldSize(), nEntry)};
     fExecutor.Execute(
         batch.nBatch,
         [&](auto k) {                                           // k is batch index
@@ -109,7 +109,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, const std::vector<unsig
     std::future<void> async;
 
     const auto byPassWillOccur{ByPassOccurrenceCheck(nEvent, "events")};
-    const auto batch{CalculateBatchConfiguration(Env::MPIEnv::Instance().CommWorldSize(), nEvent)};
+    const auto batch{this->CalculateBatchConfiguration(Env::MPIEnv::Instance().CommWorldSize(), nEvent)};
     fExecutor.Execute(
         batch.nBatch,
         [&](auto k) {                                           // k is batch index
