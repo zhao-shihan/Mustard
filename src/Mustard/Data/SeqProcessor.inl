@@ -195,11 +195,11 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
         for (Index i{iFirst}; i < iLast; ++i) {
             for (gsl::index iRDF{}; iRDF < nRDF; ++iRDF) {
                 auto& [first, last]{takeRange[iRDF]};
-                if (es[iFirst][iRDF].first < first) {
-                    first = es[iFirst][iRDF].first;
+                if (es[i][iRDF].first < first) {
+                    first = es[i][iRDF].first;
                 }
-                if (es[iLast][iRDF].last > last) {
-                    last = es[iLast][iRDF].last;
+                if (es[i][iRDF].last > last) {
+                    last = es[i][iRDF].last;
                 }
             }
         }
