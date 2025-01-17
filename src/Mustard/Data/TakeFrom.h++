@@ -19,23 +19,16 @@
 #pragma once
 
 #include "Mustard/Data/Tuple.h++"
-#include "Mustard/Data/internal/TypeTraits.h++"
-#include "Mustard/Extension/ROOTX/RDataFrame.h++"
+#include "Mustard/Data/internal/ReadHelper.h++"
 #include "Mustard/Extension/gslx/index_sequence.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
 
-#include "ROOT/RVec.hxx"
-
-#include "muc/concepts"
 #include "muc/ptrvec"
 
 #include "gsl/gsl"
 
-#include <algorithm>
-#include <concepts>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 namespace Mustard::Data {

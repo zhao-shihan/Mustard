@@ -32,59 +32,14 @@ auto Take<Ts...>::From(ROOT::RDF::RNode rdf) -> muc::shared_ptrvec<Tuple<Ts...>>
 template<TupleModelizable... Ts>
 template<gsl::index... Is>
 class Take<Ts...>::TakeOne {
-private:
-    template<typename T>
-    struct ValueTypeHelper;
-
-    template<typename T>
-        requires std::is_class_v<T>
-    struct ValueTypeHelper<T> {
-        using Type = typename T::value_type;
-    };
-
-    template<typename T>
-        requires(not std::is_class_v<T>)
-    struct ValueTypeHelper<T> {
-        using Type = int;
-    };
-
-    template<gsl::index I>
-    using TargetType = typename std::tuple_element_t<I, Tuple<Ts...>>::Type;
-
-    template<gsl::index I>
-    using ReadType = std::conditional_t<internal::IsStdArray<TargetType<I>>{} or
-                                            muc::instantiated_from<TargetType<I>, std::vector>,
-                                        ROOT::RVec<typename ValueTypeHelper<TargetType<I>>::Type>,
-                                        TargetType<I>>;
-
 public:
     TakeOne(muc::shared_ptrvec<Tuple<Ts...>>& data, gslx::index_sequence<Is...>) :
         fData{data} {}
 
-    auto operator()(const ReadType<Is>&... value) -> void {
-        fData.emplace_back(std::make_shared<Tuple<Ts...>>(As<TargetType<Is>>(value)...));
-    }
-
-private:
-    template<typename>
-    static auto As(auto&& value) -> decltype(auto) {
-        return std::forward<decltype(value)>(value);
-    }
-
-    template<muc::instantiated_from<std::vector> T, typename U>
-        requires std::same_as<typename T::value_type, U>
-    static auto As(const ROOT::RVec<U>& src) -> T {
-        T dest(src.size());
-        std::ranges::copy(src, dest.begin());
-        return dest;
-    }
-
-    template<typename T, typename U>
-        requires internal::IsStdArray<T>::value and std::same_as<typename T::value_type, U>
-    static auto As(const ROOT::RVec<U>& src) -> T {
-        T dest;
-        std::ranges::copy(src, dest.begin());
-        return dest;
+    auto operator()(const typename internal::ReadHelper<Ts...>::template ReadType<Is>&... value) -> void {
+        fData.emplace_back(std::make_shared<Tuple<Ts...>>(
+            internal::ReadHelper<Ts...>::template As<
+                typename internal::ReadHelper<Ts...>::template TargetType<Is>>(value)...));
     }
 
 private:
