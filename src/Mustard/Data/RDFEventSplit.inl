@@ -22,11 +22,11 @@ namespace internal {
 
 template<std::integral T>
 auto MakeFlatRDFEventSplitPoint(ROOT::RDF::RNode rdf,
-                                std::string eventIDColumnName) -> std::pair<std::vector<T>, std::vector<unsigned>> {
+                                std::string eventIDColumnName) -> std::pair<std::vector<T>, std::vector<gsl::index>> {
     std::vector<T> eventIDList;
-    std::vector<unsigned> eventSplit;
+    std::vector<gsl::index> eventSplit;
 
-    unsigned index{};
+    gsl::index index{};
     muc::flat_hash_set<T> eventIDSet;
     rdf.Foreach(
         [&](T eventID) {
@@ -50,15 +50,15 @@ auto MakeFlatRDFEventSplitPoint(ROOT::RDF::RNode rdf,
 
 template<std::integral T>
 auto RDFEventSplit(ROOT::RDF::RNode rdf,
-                   std::string eventIDColumnName) -> std::vector<unsigned> {
+                   std::string eventIDColumnName) -> std::vector<gsl::index> {
     auto eventSplit{not Env::MPIEnv::Available() or Env::MPIEnv::Instance().OnCommWorldMaster() ?
                         internal::MakeFlatRDFEventSplitPoint<T>(std::move(rdf), std::move(eventIDColumnName)).second :
-                        std::vector<unsigned>{}};
+                        std::vector<gsl::index>{}};
     if (Env::MPIEnv::Available()) {
-        auto eventSplitSize{static_cast<unsigned>(eventSplit.size())};
-        MPI_Bcast(&eventSplitSize, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
+        auto eventSplitSize{gsl::narrow<int>(eventSplit.size())};
+        MPI_Bcast(&eventSplitSize, 1, MPIX::DataType(eventSplitSize), 0, MPI_COMM_WORLD);
         eventSplit.resize(eventSplitSize);
-        MPI_Bcast(eventSplit.data(), eventSplitSize, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
+        MPI_Bcast(eventSplit.data(), eventSplitSize, MPIX::DataType(eventSplit.data()), 0, MPI_COMM_WORLD);
     }
     return eventSplit;
 }
@@ -75,7 +75,7 @@ template<std::integral T, std::size_t N>
 auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
                    const std::array<std::string, N>& eventIDColumnName) -> std::vector<std::array<RDFEntryRange, N>> {
     constexpr auto nRDF{static_cast<gsl::index>(N)};
-    std::array<std::pair<std::vector<T>, std::vector<unsigned>>, N> flatES;
+    std::array<std::pair<std::vector<T>, std::vector<gsl::index>>, N> flatES;
     // Build all RDF event split
     if (Env::MPIEnv::Available()) { // Parallel
         const auto& mpiEnv{Env::MPIEnv::Instance()};
@@ -89,12 +89,12 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
         // Broadcast to all processes
         for (gsl::index i{}; i < nRDF; ++i) {
             auto& [eventID, es]{flatES[i]};
-            auto nEvent{static_cast<unsigned>(eventID.size())};
-            MPI_Bcast(&nEvent, 1, MPI_UNSIGNED, i % nProcess, MPI_COMM_WORLD);
-            eventID.resize(nEvent);
-            es.resize(nEvent + 1);
-            MPI_Bcast(&eventID, nEvent, MPIX::DataType<T>(), i % nProcess, MPI_COMM_WORLD);
-            MPI_Bcast(&es, nEvent + 1, MPI_UNSIGNED, i % nProcess, MPI_COMM_WORLD);
+            auto esSize{gsl::narrow<int>(es.size())};
+            MPI_Bcast(&esSize, 1, MPIX::DataType(esSize), i % nProcess, MPI_COMM_WORLD);
+            eventID.resize(esSize - 1);
+            es.resize(esSize);
+            MPI_Bcast(&eventID, esSize - 1, MPIX::DataType<T>(), i % nProcess, MPI_COMM_WORLD);
+            MPI_Bcast(&es, esSize, MPIX::DataType<gsl::index>(), i % nProcess, MPI_COMM_WORLD);
         }
     } else { // Sequential
         for (gsl::index i{}; i < nRDF; ++i) {

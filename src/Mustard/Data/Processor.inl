@@ -73,7 +73,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, std::string eventIDBran
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts>
-auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, const std::vector<unsigned>& eventSplit,
+auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, const std::vector<gsl::index>& eventSplit,
                                    std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     const auto& es{eventSplit};
 

@@ -20,6 +20,8 @@
 
 #include "Mustard/Data/RDFEventSplit.h++"
 #include "Mustard/Data/TakeFrom.h++"
+#include "Mustard/Data/Tuple.h++"
+#include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
 #include "Mustard/Extension/gslx/index_sequence.h++"
 #include "Mustard/Utility/PrettyLog.h++"
@@ -51,7 +53,7 @@
 namespace Mustard::Data {
 
 /// @brief A sequential data processor.
-class SeqProcessor : public internal::ProcessorBase<unsigned> {
+class SeqProcessor : public internal::ProcessorBase<gsl::index> {
 public:
     SeqProcessor();
 
@@ -66,7 +68,7 @@ public:
     auto Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
                  std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
     template<TupleModelizable... Ts>
-    auto Process(ROOT::RDF::RNode rdf, const std::vector<Index>& eventSplit,
+    auto Process(ROOT::RDF::RNode rdf, const std::vector<gsl::index>& eventSplit,
                  std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
 
     template<muc::instantiated_from<TupleModel>... Ts>

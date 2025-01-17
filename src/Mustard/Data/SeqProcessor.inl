@@ -60,7 +60,7 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
 }
 
 template<TupleModelizable... Ts>
-auto SeqProcessor::Process(ROOT::RDF::RNode rdf, const std::vector<Index>& eventSplit,
+auto SeqProcessor::Process(ROOT::RDF::RNode rdf, const std::vector<gsl::index>& eventSplit,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     const auto& es{eventSplit};
 
@@ -149,7 +149,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
     }
 
     for (gsl::index i{}; i < nRDF; ++i) {
-        if (const auto nEntryRDF{*rdf[i].Count()};
+        if (const auto nEntryRDF{gsl::narrow<Index>(*rdf[i].Count())};
             nEntry[i] != nEntryRDF) [[unlikely]] {
             PrintError(fmt::format("Entries of provided event split {} ({}) is inconsistent with the dataset {} ({})",
                                    i, nEntry[i], i, nEntryRDF));

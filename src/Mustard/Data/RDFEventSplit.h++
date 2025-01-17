@@ -48,11 +48,11 @@ namespace Mustard::Data {
 
 template<std::integral T = int>
 auto RDFEventSplit(ROOT::RDF::RNode rdf,
-                   std::string eventIDColumnName) -> std::vector<unsigned>;
+                   std::string eventIDColumnName) -> std::vector<gsl::index>;
 
 struct RDFEntryRange {
-    unsigned first;
-    unsigned last;
+    gsl::index first;
+    gsl::index last;
 };
 
 template<std::integral T = int, std::size_t N>

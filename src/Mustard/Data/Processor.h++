@@ -20,6 +20,8 @@
 
 #include "Mustard/Data/RDFEventSplit.h++"
 #include "Mustard/Data/TakeFrom.h++"
+#include "Mustard/Data/Tuple.h++"
+#include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
@@ -49,7 +51,7 @@ namespace Mustard::Data {
 
 /// @brief A distributed data processor.
 /// @tparam AExecutor Underlying MPI executor type.
-template<muc::instantiated_from<MPIX::Executor> AExecutor = MPIX::Executor<unsigned>>
+template<muc::instantiated_from<MPIX::Executor> AExecutor = MPIX::Executor<gsl::index>>
 class Processor : public internal::ProcessorBase<typename AExecutor::Index> {
 private:
     using Base = internal::ProcessorBase<typename AExecutor::Index>;
@@ -66,7 +68,7 @@ public:
     auto Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
                  std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
     template<TupleModelizable... Ts>
-    auto Process(ROOT::RDF::RNode rdf, const std::vector<unsigned>& eventSplit,
+    auto Process(ROOT::RDF::RNode rdf, const std::vector<gsl::index>& eventSplit,
                  std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
 
     auto Executor() const -> const auto& { return fExecutor; }
