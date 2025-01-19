@@ -68,7 +68,7 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
                    const std::string& eventIDColumnName) -> std::vector<std::array<RDFEntryRange, N>> {
     std::array<std::string, N> columnName;
     columnName.fill(eventIDColumnName);
-    return RDFEventSplit(rdf, columnName);
+    return RDFEventSplit<T>(rdf, columnName);
 }
 
 template<std::integral T, std::size_t N>
