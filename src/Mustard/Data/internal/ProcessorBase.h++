@@ -18,20 +18,11 @@
 
 #pragma once
 
-#include "Mustard/Utility/PrettyLog.h++"
-
-#include "muc/math"
-
 #include "gsl/gsl"
-
-#include "fmt/core.h"
 
 #include <algorithm>
 #include <cmath>
 #include <concepts>
-#include <future>
-#include <limits>
-#include <stdexcept>
 #include <utility>
 
 namespace Mustard::Data::internal {
@@ -46,11 +37,8 @@ protected:
     ~ProcessorBase() = default;
 
 public:
-    auto LoadFactor(T val) -> void;
-    auto LoadFactor() const -> auto { return fLoadFactor; }
-
-    auto AsyncPolicy(std::launch val) -> void { fAsyncPolicy = val; }
-    auto AsyncPolicy() const -> auto { return fAsyncPolicy; }
+    auto BatchSizeProposal(T val) -> void { fBatchSizeProposal = std::max(1, val); }
+    auto BatchSizeProposal() const -> auto { return fBatchSizeProposal; }
 
 protected:
     struct BatchConfiguration {
@@ -62,9 +50,8 @@ protected:
     auto CalculateBatchConfiguration(T nProcess, T nTotal) const -> BatchConfiguration;
     static auto CalculateIndexRange(T iBatch, BatchConfiguration batch) -> std::pair<T, T>;
 
-protected:
-    double fLoadFactor;
-    std::launch fAsyncPolicy;
+private:
+    T fBatchSizeProposal;
 };
 
 } // namespace Mustard::Data::internal

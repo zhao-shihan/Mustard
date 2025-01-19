@@ -31,9 +31,11 @@
 #include <algorithm>
 #include <array>
 #include <concepts>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <vector>
 
 namespace Mustard::Data {
 
@@ -60,10 +62,12 @@ template<typename ADerived, internal::UniqueStdTuple AStdTuple>
 struct ModelBase : ModelSignature {
     using StdTuple = AStdTuple;
 
-    static constexpr auto Size() { return std::tuple_size_v<StdTuple>; }
+    static constexpr auto Size() -> auto { return std::tuple_size_v<StdTuple>; }
 
     template<muc::ceta_string AName>
-    static constexpr auto Index() { return IndexImpl<AName>(); }
+    static constexpr auto Index() -> auto { return IndexImpl<AName>(); }
+
+    static auto NameVector() -> const auto& { return fNameVector; }
 
     template<muc::ceta_string AName>
     using ValueOf = std::tuple_element_t<Index<AName>(), StdTuple>;
@@ -72,6 +76,9 @@ private:
     static auto StopConsteval() -> gsl::index { return -1; }
     template<muc::ceta_string AName, gsl::index I = 0>
     static consteval auto IndexImpl() -> gsl::index;
+
+private:
+    static const std::vector<std::string> fNameVector;
 };
 
 } // namespace internal

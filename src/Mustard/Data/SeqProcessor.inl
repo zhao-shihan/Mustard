@@ -22,132 +22,76 @@ template<TupleModelizable... Ts>
 auto SeqProcessor::Process(ROOT::RDF::RNode rdf,
                            std::invocable<std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index {
     const auto nEntry{gsl::narrow<Index>(*rdf.Count())};
-    if (nEntry == 0) [[unlikely]] {
-        PrintWarning("Empty dataset");
+    if (nEntry == 0) {
         return 0;
     }
 
-    Index nEntryProcessed{};
-    const auto ProcessBatch{[&](muc::shared_ptrvec<Tuple<Ts...>> data) {
-        for (auto&& entry : data) {
-            std::invoke(std::forward<decltype(F)>(F), std::move(entry));
-            ++nEntryProcessed;
-            IterationEndAction();
-        }
-    }};
-    std::future<void> async;
-
-    const auto batch{CalculateBatchConfiguration(1, nEntry)};
-    Ensures(batch.nBatch > 0);
-    LoopBeginAction(nEntry);
-    for (Index k{}; k < batch.nBatch; ++k) {                       // k is batch index
-        const auto [iFirst, iLast]{CalculateIndexRange(k, batch)}; // entry index
-        auto data{Take<Ts...>::From(rdf.Range(iFirst, iLast))};
-        // async process
-        if (async.valid()) { async.wait(); }
-        async = std::async(fAsyncPolicy, ProcessBatch, std::move(data));
-    }
-    async.wait();
-    LoopEndAction();
-    return nEntryProcessed;
+    AsyncEntryReader<Ts...> asyncReader{std::move(rdf)};
+    return ProcessImpl(asyncReader, nEntry, std::forward<decltype(F)>(F));
 }
 
-template<TupleModelizable... Ts>
-auto SeqProcessor::Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
+template<TupleModelizable... Ts, std::integral AEventIDType>
+auto SeqProcessor::Process(ROOT::RDF::RNode rdf, AEventIDType, std::string eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
-    auto es{RDFEventSplit(rdf, std::move(eventIDBranchName))};
-    return Process<Ts...>(std::move(rdf), std::move(es), std::forward<decltype(F)>(F));
+    auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
+    return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
 }
 
-template<TupleModelizable... Ts>
-auto SeqProcessor::Process(ROOT::RDF::RNode rdf, const std::vector<gsl::index>& eventSplit,
+template<TupleModelizable... Ts, std::integral AEventIDType>
+auto SeqProcessor::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::index> eventSplit,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
-    const auto& es{eventSplit};
+    Expects(std::ranges::is_sorted(eventSplit));
 
-    const auto nEvent{gsl::narrow<Index>(es.size() - 1)};
-    if (nEvent == 0) [[unlikely]] {
-        PrintWarning("Empty dataset");
+    if (eventSplit.empty()) {
         return 0;
     }
-    const auto nEntry{es.back()};
-    if (const auto nEntryRDF{*rdf.Count()};
+    const auto nEntry{eventSplit.back()};
+    if (const auto nEntryRDF{gsl::narrow<gsl::index>(*rdf.Count())};
         nEntry != nEntryRDF) [[unlikely]] {
         PrintError(fmt::format("Entries of provided event split ({}) is inconsistent with the dataset ({})",
                                nEntry, nEntryRDF));
         return 0;
     }
-    if (nEntry == 0) [[unlikely]] {
-        PrintWarning("Empty dataset");
-        return 0;
-    }
+    const auto nEvent{gsl::narrow<Index>(eventSplit.size() - 1)};
 
-    Index nEventProcessed{};
-    const auto ProcessBatch{[&](Index iFirst, Index iLast, muc::shared_ptrvec<Tuple<Ts...>> data) {
-        for (auto i{iFirst}; i < iLast; ++i) {
-            std::ranges::subrange eventData{data.begin() + (es[i] - es[iFirst]),
-                                            data.begin() + (es[i + 1] - es[iFirst])};
-            muc::shared_ptrvec<Tuple<Ts...>> event(eventData.size());
-            std::ranges::move(eventData, event.begin());
-            std::invoke(std::forward<decltype(F)>(F), std::move(event));
-            ++nEventProcessed;
-            IterationEndAction();
-        }
-    }};
-    std::future<void> async;
-
-    const auto batch{CalculateBatchConfiguration(1, nEvent)};
-    Ensures(batch.nBatch > 0);
-    LoopBeginAction(nEvent);
-    for (Index k{}; k < batch.nBatch; ++k) {                       // k is batch index
-        const auto [iFirst, iLast]{CalculateIndexRange(k, batch)}; // event index
-        auto data{Take<Ts...>::From(rdf.Range(es[iFirst], es[iLast]))};
-        // async process
-        if (async.valid()) { async.wait(); }
-        async = std::async(fAsyncPolicy, ProcessBatch, iFirst, iLast, std::move(data));
-    }
-    async.wait();
-    LoopEndAction();
-    return nEventProcessed;
+    AsyncEventReader<1, AEventIDType, Ts...> asyncReader{std::move(rdf), std::move(eventSplit)};
+    return ProcessImpl(asyncReader, nEvent, std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<TupleModel>... Ts>
+template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           std::string eventIDBranchName,
+                           AEventIDType, std::string eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
-    auto es{RDFEventSplit(rdf, std::move(eventIDBranchName))};
-    return Process<Ts...>(std::move(rdf), std::move(es), std::forward<decltype(F)>(F));
+    auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
+    return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<TupleModel>... Ts>
+template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           std::vector<std::string> eventIDBranchName,
+                           AEventIDType, std::vector<std::string> eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
-    auto es{RDFEventSplit(rdf, std::move(eventIDBranchName))};
-    return Process<Ts...>(std::move(rdf), std::move(es), std::forward<decltype(F)>(F));
+    auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
+    return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<TupleModel>... Ts>
+template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
+                           AEventIDType, const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
     const auto& es{eventSplit};
 
     const auto nEvent{gsl::narrow<Index>(es.size())};
-    if (nEvent == 0) [[unlikely]] {
-        PrintWarning("Empty dataset");
+    if (nEvent == 0) {
         return 0;
     }
     constexpr auto nRDF{static_cast<gsl::index>(sizeof...(Ts))};
     std::array<Index, nRDF> nEntry;
     nEntry.fill(std::numeric_limits<Index>::lowest());
-    for (gsl::index iRDF{}; iRDF < nRDF; ++iRDF) {
-        for (auto&& s : es) {
-            if (s[iRDF].last > nEntry[iRDF]) {
-                nEntry[iRDF] = s[iRDF].last;
-            }
+    for (auto&& s : es) {
+        for (gsl::index iRDF{}; iRDF < nRDF; ++iRDF) {
+            nEntry[iRDF] = std::max(nEntry[iRDF], s[iRDF].last);
         }
     }
-
     for (gsl::index i{}; i < nRDF; ++i) {
         if (const auto nEntryRDF{gsl::narrow<Index>(*rdf[i].Count())};
             nEntry[i] != nEntryRDF) [[unlikely]] {
@@ -155,10 +99,6 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                                    i, nEntry[i], i, nEntryRDF));
             return 0;
         }
-    }
-    if (muc::ranges::reduce(nEntry) == 0) [[unlikely]] {
-        PrintWarning("All datasets are empty");
-        return 0;
     }
 
     Index nEventProcessed{};
@@ -185,7 +125,6 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
     std::future<void> async;
 
     const auto batch{CalculateBatchConfiguration(1, nEvent)};
-    Ensures(batch.nBatch > 0);
     LoopBeginAction(nEvent);
     for (Index k{}; k < batch.nBatch; ++k) {                       // k is batch index
         const auto [iFirst, iLast]{CalculateIndexRange(k, batch)}; // event index
@@ -210,11 +149,42 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
         }(gslx::make_index_sequence<nRDF>())};
         // async process
         if (async.valid()) { async.wait(); }
-        async = std::async(fAsyncPolicy, ProcessBatch, iFirst, iLast, std::move(data));
+        async = std::async(std::launch::async, ProcessBatch, iFirst, iLast, std::move(data));
     }
     async.wait();
     LoopEndAction();
     return nEventProcessed;
+}
+
+template<typename AData>
+auto SeqProcessor::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
+                               std::invocable<typename AData::value_type> auto&& F) -> Index {
+    AData batchData;
+
+    Index nProcessed{};
+    const auto ProcessBatch{[&] {
+        for (auto&& data : batchData) {
+            std::invoke(std::forward<decltype(F)>(F), std::move(data));
+            ++nProcessed;
+            IterationEndAction();
+        }
+    }};
+    std::future<void> asyncProcess;
+
+    const auto batch{CalculateBatchConfiguration(1, n)};
+    LoopBeginAction(n);
+    for (Index k{}; k < batch.nBatch; ++k) { // k is batch index
+        const auto [iFirst, iLast]{CalculateIndexRange(k, batch)};
+        if (asyncReader.Reading()) { batchData = asyncReader.Acquire(); }
+        asyncReader.Read(iFirst, iLast);
+        if (asyncProcess.valid()) { asyncProcess.wait(); }
+        asyncProcess = std::async(std::launch::deferred, ProcessBatch);
+    }
+    batchData = asyncReader.Acquire();
+    asyncProcess.wait();
+    LoopEndAction();
+
+    return nProcessed;
 }
 
 } // namespace Mustard::Data

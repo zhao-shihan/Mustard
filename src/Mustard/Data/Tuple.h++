@@ -205,6 +205,7 @@ public:
     auto Visit(std::string_view name, auto&& F) const&& -> void { VisitImpl<0, Size() - 1>(DynIndex(name), std::forward<decltype(F)>(F)); }
 
     static constexpr auto Size() -> auto { return Model::Size(); }
+    static constexpr auto NameVector() -> auto { return Model::NameVector(); }
 
 private:
     template<gsl::index I>

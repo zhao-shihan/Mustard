@@ -23,9 +23,7 @@ auto Take<Ts...>::From(ROOT::RDF::RNode rdf) -> muc::shared_ptrvec<Tuple<Ts...>>
     muc::shared_ptrvec<Tuple<Ts...>> data;
     // data.reserve(*rdf.Count());   -- slow!
     rdf.Foreach(TakeOne{data, gslx::make_index_sequence<Tuple<Ts...>::Size()>{}},
-                []<gsl::index... Is>(gslx::index_sequence<Is...>) -> std::vector<std::string> {
-                    return {std::tuple_element_t<Is, Tuple<Ts...>>::Name().s()...};
-                }(gslx::make_index_sequence<Tuple<Ts...>::Size()>{}));
+                Tuple<Ts...>::NameVector());
     return data;
 }
 

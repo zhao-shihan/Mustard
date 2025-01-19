@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Mustard/Data/AsyncReader.h++"
 #include "Mustard/Data/RDFEventSplit.h++"
 #include "Mustard/Data/TakeFrom.h++"
 #include "Mustard/Data/Tuple.h++"
@@ -38,6 +39,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <concepts>
 #include <functional>
 #include <future>
 #include <memory>
@@ -64,17 +66,21 @@ public:
     auto Process(ROOT::RDF::RNode rdf,
                  std::invocable<bool, std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index;
 
-    template<TupleModelizable... Ts>
-    auto Process(ROOT::RDF::RNode rdf, std::string eventIDBranchName,
+    template<TupleModelizable... Ts, std::integral AEventIDType>
+    auto Process(ROOT::RDF::RNode rdf, AEventIDType, std::string eventIDBranchName,
                  std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
-    template<TupleModelizable... Ts>
-    auto Process(ROOT::RDF::RNode rdf, const std::vector<gsl::index>& eventSplit,
+    template<TupleModelizable... Ts, std::integral AEventIDType>
+    auto Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::index> eventSplit,
                  std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
 
     auto Executor() const -> const auto& { return fExecutor; }
     auto Executor() -> auto& { return fExecutor; }
 
 private:
+    template<typename AData>
+    auto ProcessImpl(AsyncReader<AData>& asyncReader, Index n, std::string_view what,
+                     std::invocable<bool, typename AData::value_type> auto&& F) -> Index;
+
     static auto ByPassOccurrenceCheck(Index n, std::string_view what) -> bool;
 
 private:

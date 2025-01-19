@@ -20,20 +20,13 @@ namespace Mustard::Data::internal {
 
 template<std::integral T>
 ProcessorBase<T>::ProcessorBase() :
-    fLoadFactor{0.1},
-    fAsyncPolicy{std::launch::async} {}
-
-template<std::integral T>
-auto ProcessorBase<T>::LoadFactor(T val) -> void {
-    constexpr auto lowerBound{1 / static_cast<double>(std::numeric_limits<T>::max())};
-    fLoadFactor = muc::clamp<"(]">(val, lowerBound, 1);
-}
+    fBatchSizeProposal{300000} {}
 
 template<std::integral T>
 auto ProcessorBase<T>::CalculateBatchConfiguration(T nProcess, T nTotal) const -> BatchConfiguration {
-    Expects(nProcess > 0);
-    const auto nBatchProposal{std::round(nProcess / fLoadFactor)};
-    const auto nBatch{std::min(gsl::narrow<T>(nBatchProposal), nTotal)};
+    const auto nBatchProposal{std::round(static_cast<double>(nTotal) / fBatchSizeProposal)};
+    const auto nBatchLowerBound{std::min(nProcess, nTotal)};
+    const auto nBatch{std::clamp(gsl::narrow<T>(nBatchProposal), nBatchLowerBound, nTotal)};
     const auto nEPBQuot{nTotal / nBatch};
     const auto nEPBRem{nTotal % nBatch};
     return {nBatch, nEPBQuot, nEPBRem};
