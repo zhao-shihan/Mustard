@@ -32,7 +32,8 @@ auto SubprogramLauncher::AddSubprogram(std::unique_ptr<Subprogram> subprogram) -
     if (fState == nullptr) {
         Throw<std::logic_error>("Subprogram has been launched");
     }
-    const auto& subprogramType{typeid(*subprogram)};
+    const auto& subprogramObject{*subprogram}; // mute a warning
+    const auto& subprogramType{typeid(subprogramObject)};
     if (fState->subprogram.contains(subprogramType)) {
         Throw<std::invalid_argument>(fmt::format("Subprogram '{}' added twice", muc::try_demangle(subprogramType.name())));
     }
