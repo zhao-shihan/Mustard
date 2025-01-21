@@ -72,6 +72,9 @@ public:
     auto Exhausted() -> auto { return fExhausted.load(); }
 
 protected:
+    auto CompleteRead() -> void;
+
+protected:
     std::jthread fReaderThread;
     bool fReading;
     std::binary_semaphore fReadStartSemaphore;

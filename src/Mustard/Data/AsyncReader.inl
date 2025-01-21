@@ -45,7 +45,7 @@ auto AsyncReader<AData>::Read(gsl::index first, gsl::index last) -> void {
     if (fReading) { Throw<std::logic_error>("Try to start another read while reading"); }
     if (first < 0) { Throw<std::out_of_range>("first < 0"); }
     if (last < 0) { Throw<std::out_of_range>("last < 0"); }
-    if (first >= last) { Throw<std::out_of_range>("first >= last"); }
+    if (first > last) { Throw<std::out_of_range>("first > last"); }
     fFirst = first;
     fLast = last;
     fData.reserve(last - first);
@@ -59,6 +59,15 @@ auto AsyncReader<AData>::Acquire() -> AData {
     fReadCompleteSemaphore.acquire();
     fReading = false;
     return std::move(fData);
+}
+
+template<typename AData>
+auto AsyncReader<AData>::CompleteRead() -> void {
+    do {
+        fReadCompleteSemaphore.release();
+        fReadStartSemaphore.acquire();
+        fData.clear();
+    } while (fFirst == fLast);
 }
 
 template<TupleModelizable... Ts>
@@ -79,9 +88,7 @@ AsyncEntryReader<Ts...>::AsyncEntryReader(ROOT::RDF::RNode data) :
                            ULong64_t uEntry) {
                     const auto entry{muc::to_signed(uEntry)};
                     if (entry == this->fLast) {
-                        this->fReadCompleteSemaphore.release();
-                        this->fReadStartSemaphore.acquire();
-                        this->fData.clear();
+                        this->CompleteRead();
                         if (entry > this->fFirst) [[unlikely]] {
                             Throw<std::logic_error>(fmt::format("Current entry ({}) is larger than the specified first entry ({})", entry, this->fFirst));
                         }
@@ -141,9 +148,7 @@ AsyncEventReader<1, AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF
                            ULong64_t uEntry) {
                     const auto entry{muc::to_signed(uEntry)};
                     if (entry == es[this->fLast]) {
-                        this->fReadCompleteSemaphore.release();
-                        this->fReadStartSemaphore.acquire();
-                        this->fData.clear();
+                        this->CompleteRead();
                         if (entry > es[this->fFirst]) {
                             Throw<std::logic_error>(fmt::format("Current entry ({}) is larger than the specified first entry ({})", entry, es[this->fFirst]));
                         }
