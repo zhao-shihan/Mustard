@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Mustard/Concept/FundamentalType.h++"
-#include "Mustard/Concept/Indirectable.h++"
 #include "Mustard/Concept/InputVector.h++"
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Utility/VectorDimension.h++"

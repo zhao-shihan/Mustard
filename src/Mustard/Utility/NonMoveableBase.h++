@@ -28,10 +28,10 @@ protected:
     constexpr ~NonMoveableBase() noexcept = default;
 
     constexpr NonMoveableBase(const NonMoveableBase&) noexcept = delete;
-    constexpr NonMoveableBase& operator=(const NonMoveableBase&) noexcept = delete;
-
     constexpr NonMoveableBase(NonMoveableBase&&) noexcept = delete;
-    constexpr NonMoveableBase& operator=(NonMoveableBase&&) noexcept = delete;
+
+    constexpr auto operator=(const NonMoveableBase&) -> NonMoveableBase& noexcept = delete;
+    constexpr auto operator=(NonMoveableBase&&) -> NonMoveableBase& noexcept = delete;
 };
 
 } // namespace Mustard::inline Utility
