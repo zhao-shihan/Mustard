@@ -91,19 +91,19 @@ public:
     AsyncEntryReader(ROOT::RDF::RNode data);
 };
 
-template<std::size_t N, std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
+template<std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
 class AsyncEventReader : public AsyncReader<std::vector<std::tuple<muc::shared_ptrvec<Tuple<Ts>>...>>> {
 public:
-    AsyncEventReader(std::array<ROOT::RDF::RNode, N> data, std::string eventIDColumnName);
-    AsyncEventReader(std::array<ROOT::RDF::RNode, N> data, std::array<std::string, N> eventIDColumnName);
-    AsyncEventReader(std::array<ROOT::RDF::RNode, N> data, std::vector<std::array<RDFEntryRange, N>> eventSplit);
+    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::string eventIDColumnName);
+    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::array<std::string, sizeof...(Ts)> eventIDColumnName);
+    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::vector<std::array<RDFEntryRange, sizeof...(Ts)>> eventSplit);
 
 private:
-    std::vector<std::array<RDFEntryRange, N>> fEventSplit;
+    std::vector<std::array<RDFEntryRange, sizeof...(Ts)>> fEventSplit;
 };
 
 template<std::integral AEventIDType, TupleModelizable... Ts>
-class AsyncEventReader<1, AEventIDType, TupleModel<Ts...>> : public AsyncReader<std::vector<muc::shared_ptrvec<Tuple<Ts...>>>> {
+class AsyncEventReader<AEventIDType, TupleModel<Ts...>> : public AsyncReader<std::vector<muc::shared_ptrvec<Tuple<Ts...>>>> {
 public:
     AsyncEventReader(ROOT::RDF::RNode data, std::string eventIDColumnName);
     AsyncEventReader(ROOT::RDF::RNode data, std::vector<gsl::index> eventSplit);

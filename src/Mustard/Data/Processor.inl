@@ -65,7 +65,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vect
     }
     const auto nEvent{gsl::narrow<Index>(eventSplit.size() - 1)};
 
-    AsyncEventReader<1, AEventIDType, Ts...> asyncReader{std::move(rdf), std::move(eventSplit)};
+    AsyncEventReader<AEventIDType, TupleModel<Ts...>> asyncReader{std::move(rdf), std::move(eventSplit)};
     return ProcessImpl(asyncReader, nEvent, "events", std::forward<decltype(F)>(F));
 }
 

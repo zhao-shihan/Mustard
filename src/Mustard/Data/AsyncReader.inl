@@ -108,26 +108,26 @@ AsyncEntryReader<Ts...>::AsyncEntryReader(ROOT::RDF::RNode data) :
         std::move(data)};
 }
 
-// template<std::size_t N, std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
-// AsyncEventReader<N, AEventIDType, Ts...>::AsyncEventReader(std::array<ROOT::RDF::RNode, N> data, std::string eventIDColumnName) :
-//     AsyncEventReader{std::move(data), RDFSplitPoint<T>(data, std::move(eventIDColumnName))} {}
+// template<std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
+// AsyncEventReader<AEventIDType, Ts...>::AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::string eventIDColumnName) :
+//     AsyncEventReader{std::move(data), RDFSplitPoint<AEventIDType>(data, std::move(eventIDColumnName))} {}
 
-// template<std::size_t N, std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
-// AsyncEventReader<N, AEventIDType, Ts...>::AsyncEventReader(std::array<ROOT::RDF::RNode, N> data, std::array<std::string, N> eventIDColumnName) :
-//     AsyncEventReader{std::move(data), RDFSplitPoint<T>(data, std::move(eventIDColumnName))} {}
+// template<std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
+// AsyncEventReader<AEventIDType, Ts...>::AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::array<std::string, sizeof...(Ts)> eventIDColumnName) :
+//     AsyncEventReader{std::move(data), RDFSplitPoint<AEventIDType>(data, std::move(eventIDColumnName))} {}
 
-// template<std::size_t N, std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
-// AsyncEventReader<N, AEventIDType, Ts...>::AsyncEventReader(std::array<ROOT::RDF::RNode, N> data, std::vector<std::array<RDFEntryRange, N>> eventSplit) :
+// template<std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
+// AsyncEventReader<AEventIDType, Ts...>::AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::vector<std::array<RDFEntryRange, sizeof...(Ts)>> eventSplit) :
 //     AsyncReader<std::vector<muc::shared_ptrvec<Tuple<Ts...>>>>{},
 //     fEventSplit{std::move(eventSplit)} {
 // }
 
 template<std::integral AEventIDType, TupleModelizable... Ts>
-AsyncEventReader<1, AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF::RNode data, std::string eventIDColumnName) :
+AsyncEventReader<AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF::RNode data, std::string eventIDColumnName) :
     AsyncEventReader{std::move(data), RDFSplitPoint<AEventIDType>(data, std::move(eventIDColumnName))} {}
 
 template<std::integral AEventIDType, TupleModelizable... Ts>
-AsyncEventReader<1, AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF::RNode data, std::vector<gsl::index> eventSplit) :
+AsyncEventReader<AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF::RNode data, std::vector<gsl::index> eventSplit) :
     AsyncReader<std::vector<muc::shared_ptrvec<Tuple<Ts...>>>>{},
     fEventSplit{std::move(eventSplit)} {
     const auto& es{fEventSplit};
@@ -158,7 +158,7 @@ AsyncEventReader<1, AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF
                         return;
                     }
                     if (entry == es[nextEvent]) {
-                        this->fData.emplace_back().reserve(es[nextEvent], es[nextEvent + 1]);
+                        this->fData.emplace_back().reserve(es[nextEvent + 1] - es[nextEvent]);
                         ++nextEvent;
                     }
                     this->fData.back().emplace_back(std::make_shared<Tuple<Ts...>>(
@@ -174,7 +174,7 @@ AsyncEventReader<1, AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF
 }
 
 template<std::integral AEventIDType, TupleModelizable... Ts>
-auto AsyncEventReader<1, AEventIDType, TupleModel<Ts...>>::Read(gsl::index first, gsl::index last) -> void {
+auto AsyncEventReader<AEventIDType, TupleModel<Ts...>>::Read(gsl::index first, gsl::index last) -> void {
     const auto nEvent{ssize(fEventSplit) - 1};
     if (first > nEvent - 1) { Throw<std::out_of_range>("first > #event - 1"); }
     if (last > nEvent) { Throw<std::out_of_range>("last > #event"); }
