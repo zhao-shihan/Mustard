@@ -28,7 +28,7 @@ template<typename ADerived, internal::UniqueStdTuple AStdTuple>
 template<muc::ceta_string AName, gsl::index I>
 consteval auto ModelBase<ADerived, AStdTuple>::IndexImpl() -> gsl::index {
     if constexpr (I == Size()) {
-        static_assert(false, "no such value of this name within this data model");
+        static_assert(I < Size(), "no such value of this name within this data model");
         return StopConsteval();
     } else if constexpr (std::tuple_element_t<I, AStdTuple>::Name() == AName) {
         return I;
