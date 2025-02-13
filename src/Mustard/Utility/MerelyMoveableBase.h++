@@ -28,8 +28,8 @@ protected:
     constexpr MerelyMoveableBase(const MerelyMoveableBase&) noexcept = delete;
     constexpr MerelyMoveableBase(MerelyMoveableBase&&) noexcept = default;
 
-    constexpr auto operator=(const MerelyMoveableBase&) -> MerelyMoveableBase& noexcept = delete;
-    constexpr auto operator=(MerelyMoveableBase&&) -> MerelyMoveableBase& noexcept = default;
+    constexpr auto operator=(const MerelyMoveableBase&) noexcept -> MerelyMoveableBase& = delete;
+    constexpr auto operator=(MerelyMoveableBase&&) noexcept -> MerelyMoveableBase& = default;
 };
 
 } // namespace Mustard::inline Utility
