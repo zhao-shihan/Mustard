@@ -33,7 +33,7 @@ namespace {
 
 auto PrettyLogHead(std::string_view prefix, const std::source_location& location) -> std::string {
     using scsc = std::chrono::system_clock;
-    return fmt::format("[{:%FT%T%z}] {}{}({}:{}) `{}`{}",
+    return fmt::format("[{:%FT%T%z}] {}{}:{}:{} `{}`{}",
                        fmt::localtime(scsc::to_time_t(scsc::now())),
                        prefix,
                        std::filesystem::path{location.file_name()}.filename().generic_string(),
