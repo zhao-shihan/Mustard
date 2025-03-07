@@ -1261,7 +1261,8 @@ EcoMugCosmicRayMuon::EcoMugCosmicRayMuon(Coordinate c) :
     G4VPrimaryGenerator{},
     fEcoMug{new EcoMug},
     fCoordinate{c},
-    fReseedCounter{} {
+    fReseedCounter{},
+    fMessengerRegister{this} {
     auto& ecoMug{EcoMuG()};
     ecoMug.SetUseSky();
     ecoMug.SetSkySize({50_m, 50_m});
