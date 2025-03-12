@@ -57,19 +57,19 @@ EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
 
     fSkyCenterPos = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Sky", this);
     fSkyCenterPos->SetGuidance("Set sky center position.");
-    fSkyCenterPos->SetParameterName("X", "Y", "Z", false, true);
+    fSkyCenterPos->SetParameterName("X", "Y", "Z", false);
     fSkyCenterPos->SetUnitCategory("Length");
     fSkyCenterPos->AvailableForStates(G4State_Idle);
 
     fHSphereCenterPos = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Hsphere", this);
     fHSphereCenterPos->SetGuidance("Set hsphere center position.");
-    fHSphereCenterPos->SetParameterName("X", "Y", "Z", false, true);
+    fHSphereCenterPos->SetParameterName("X", "Y", "Z", false);
     fHSphereCenterPos->SetUnitCategory("Length");
     fHSphereCenterPos->AvailableForStates(G4State_Idle);
 
     fCylinderCenterPos = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Cylinder", this);
     fCylinderCenterPos->SetGuidance("Set cylinder center position.");
-    fCylinderCenterPos->SetParameterName("X", "Y", "Z", false, true);
+    fCylinderCenterPos->SetParameterName("X", "Y", "Z", false);
     fCylinderCenterPos->SetUnitCategory("Length");
     fCylinderCenterPos->AvailableForStates(G4State_Idle);
 
