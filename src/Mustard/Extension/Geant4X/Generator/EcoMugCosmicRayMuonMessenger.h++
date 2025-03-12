@@ -44,29 +44,27 @@ public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
 
 private:
-    std::unique_ptr<G4UIdirectory> fEcoMugDir;
+    std::unique_ptr<G4UIdirectory> fEcoMugDirectory;
     
-    std::unique_ptr<G4UIcmdWithAString> fGeneratorShape;
-
-    std::unique_ptr<G4UIdirectory> fPosDir;
+    std::unique_ptr<G4UIdirectory> fPosDirectory;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkyCenterPos;
-    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fCylinderCenterPos;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fHSphereCenterPos;
+    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fCylinderCenterPos;
     
-    std::unique_ptr<G4UIdirectory> fAngleDir;
-    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMaxTheta;
-
-    std::unique_ptr<G4UIdirectory> fSizeDir;
-    std::unique_ptr<G4UIdirectory> fSizeCylinderDir;
+    std::unique_ptr<G4UIdirectory> fSizeDirectory;
+    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkySizeXY;
+    std::unique_ptr<G4UIdirectory> fSizeHSphereDirectory;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fHSphereRadius;
+    std::unique_ptr<G4UIdirectory> fSizeCylinderDirectory;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fCylinderRadius;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fCylinderHeight;
-    std::unique_ptr<G4UIdirectory> fSizeHSphereDir;
-    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fHSphereRadius;
-    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkySizeXY;
 
-    std::unique_ptr<G4UIdirectory> fEnergyDir;
+    std::unique_ptr<G4UIdirectory> fEnergyDirectory;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMaxMomentum;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMinMomentum;
+
+    std::unique_ptr<G4UIdirectory> fAngleDirectory;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMaxTheta;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Generator
