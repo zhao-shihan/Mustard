@@ -52,8 +52,6 @@ public:
     auto BackEndPosition() const -> auto { return fBackEndPosition; }
     auto BackEndNormal() const -> auto { return fBackEndNormal; }
 
-    auto GetEntityType() const -> G4GeometryType override { return "G4XHelicalTube"; }
-
 private:
     double fMajorRadius;
     double fMinorRadius;
