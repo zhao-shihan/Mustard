@@ -26,7 +26,9 @@
 #include "G4UIcmdWithAString.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline Generator {
+
 using namespace LiteralUnit;
+
 EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     SingletonMessenger{},
     fEcoMugDirectory{},
@@ -53,7 +55,7 @@ EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     // position and genetator shape
     fPositionDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Position/");
     fPositionDirectory->SetGuidance("Generator generation surface and position directory\n"
-                                    "Available shape: cylinder, hsphere, sky.");
+                                    "Available shape: sky, half sphere, cylinder.");
 
     fSkyCenterPosition = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Sky", this);
     fSkyCenterPosition->SetGuidance("Set sky center position.");
