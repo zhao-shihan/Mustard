@@ -16,3 +16,55 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
+#include "Mustard/Extension/Geant4X/Interface/SingletonMessenger.h++"
+
+#include <memory>
+
+class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithADouble;
+class G4UIcmdWithAString;
+class G4UIcmdWith3VectorAndUnit;
+class G4UIdirectory;
+
+namespace Mustard::inline Extension::Geant4X::inline Generator {
+
+class EcoMugCosmicRayMuon;
+
+class EcoMugCosmicRayMuonMessenger final : public Geant4X::SingletonMessenger<EcoMugCosmicRayMuonMessenger,
+                                                                              EcoMugCosmicRayMuon> {
+    friend Env::Memory::SingletonInstantiator;
+
+private:
+    EcoMugCosmicRayMuonMessenger();
+    ~EcoMugCosmicRayMuonMessenger();
+
+public:
+    auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
+
+private:
+    std::unique_ptr<G4UIdirectory> fEcoMugDirectory;
+    
+    std::unique_ptr<G4UIdirectory> fPositionDirectory;
+    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkyCenterPosition;
+    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fHSphereCenterPosition;
+    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fCylinderCenterPosition;
+    
+    std::unique_ptr<G4UIdirectory> fSizeDirectory;
+    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkySizeXY;
+    std::unique_ptr<G4UIdirectory> fSizeHSphereDirectory;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fHSphereRadius;
+    std::unique_ptr<G4UIdirectory> fSizeCylinderDirectory;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fCylinderRadius;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fCylinderHeight;
+
+    std::unique_ptr<G4UIdirectory> fEnergyDirectory;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMaxMomentum;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMinMomentum;
+
+    std::unique_ptr<G4UIdirectory> fAngleDirectory;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMaxTheta;
+};
+
+} // namespace Mustard::inline Extension::Geant4X::inline Generator
