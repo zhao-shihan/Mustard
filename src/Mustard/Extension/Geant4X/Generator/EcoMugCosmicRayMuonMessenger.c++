@@ -30,10 +30,10 @@ using namespace LiteralUnit;
 EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     SingletonMessenger{},
     fEcoMugDirectory{},
-    fPosDirectory{},
-    fSkyCenterPos{},
-    fHSphereCenterPos{},
-    fCylinderCenterPos{},
+    fPositionDirectory{},
+    fSkyCenterPosition{},
+    fHSphereCenterPosition{},
+    fCylinderCenterPosition{},
     fSizeDirectory{},
     fSkySizeXY{},
     fSizeHSphereDirectory{},
@@ -45,119 +45,121 @@ EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     fMaxMomentum{},
     fMinMomentum{},
     fAngleDirectory{},
-    fMaxTheta{}{
+    fMaxTheta{} {
 
     fEcoMugDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/");
     fEcoMugDirectory->SetGuidance("EcoMug cosmic ray generator extension.");
 
     // position and genetator shape
-    fPosDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Position/");
-    fPosDirectory->SetGuidance("generator posiotion(with shape information) directory\
-                                \nAvailable shape: cylinder, hsphere, sky.");
+    fPositionDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Position/");
+    fPositionDirectory->SetGuidance("Generator generation surface and position directory\n"
+                                    "Available shape: cylinder, hsphere, sky.");
 
-    fSkyCenterPos = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Sky", this);
-    fSkyCenterPos->SetGuidance("Set sky center position.");
-    fSkyCenterPos->SetParameterName("X", "Y", "Z", false);
-    fSkyCenterPos->SetUnitCategory("Length");
-    fSkyCenterPos->AvailableForStates(G4State_Idle);
+    fSkyCenterPosition = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Sky", this);
+    fSkyCenterPosition->SetGuidance("Set sky center position.");
+    fSkyCenterPosition->SetParameterName("X", "Y", "Z", false);
+    fSkyCenterPosition->SetUnitCategory("Length");
+    fSkyCenterPosition->AvailableForStates(G4State_Idle);
 
-    fHSphereCenterPos = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Hsphere", this);
-    fHSphereCenterPos->SetGuidance("Set hsphere center position.");
-    fHSphereCenterPos->SetParameterName("X", "Y", "Z", false);
-    fHSphereCenterPos->SetUnitCategory("Length");
-    fHSphereCenterPos->AvailableForStates(G4State_Idle);
+    fHSphereCenterPosition = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/HSphere", this);
+    fHSphereCenterPosition->SetGuidance("Set half phere center position.");
+    fHSphereCenterPosition->SetParameterName("X", "Y", "Z", false);
+    fHSphereCenterPosition->SetUnitCategory("Length");
+    fHSphereCenterPosition->AvailableForStates(G4State_Idle);
 
-    fCylinderCenterPos = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Cylinder", this);
-    fCylinderCenterPos->SetGuidance("Set cylinder center position.");
-    fCylinderCenterPos->SetParameterName("X", "Y", "Z", false);
-    fCylinderCenterPos->SetUnitCategory("Length");
-    fCylinderCenterPos->AvailableForStates(G4State_Idle);
+    fCylinderCenterPosition = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Cylinder", this);
+    fCylinderCenterPosition->SetGuidance("Set cylinder center position.");
+    fCylinderCenterPosition->SetParameterName("X", "Y", "Z", false);
+    fCylinderCenterPosition->SetUnitCategory("Length");
+    fCylinderCenterPosition->AvailableForStates(G4State_Idle);
 
     // size
     fSizeDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Size/");
     fSizeDirectory->SetGuidance("generator size directory");
 
     fSkySizeXY = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Size/SkyXY", this);
-    fSkySizeXY->SetGuidance("Set the XY size of sky if generation shape is sky.\
-                            \nPlease enter a 3vector x y z. Only x and y works.\
-                            \nNote that: Native(xyz)->Beam(zxy)");
+    fSkySizeXY->SetGuidance("Set the XY size of sky if generation shape is sky.\n"
+                            "Please enter a 3vector x y z. Only x and y works.\n"
+                            "Note that: Native(xyz)->Beam(zxy)");
     fSkySizeXY->SetParameterName("X", "Y", "Z", false);
     fSkySizeXY->SetUnitCategory("Length");
-    fSkySizeXY->SetRange("X >= 0 || Y >=0 || Z >= 0");
+    fSkySizeXY->SetRange("X > 0 || Y > 0");
     fSkySizeXY->AvailableForStates(G4State_Idle);
 
-    fSizeHSphereDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Size/Hsphere/");
+    fSizeHSphereDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Size/HSphere/");
     fSizeHSphereDirectory->SetGuidance("hsphere generator size directory");
 
-    fHSphereRadius = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Size/Hsphere/Radius", this);
+    fHSphereRadius = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Size/HSphere/Radius", this);
     fHSphereRadius->SetGuidance("Set the generation hsphere radius if used.");
     fHSphereRadius->SetParameterName("R", false);
     fHSphereRadius->SetUnitCategory("Length");
-    fHSphereRadius->SetRange("R >= 0");
+    fHSphereRadius->SetRange("R > 0");
     fHSphereRadius->AvailableForStates(G4State_Idle);
 
     fSizeCylinderDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Size/Cylinder/");
-    fSizeCylinderDirectory->SetGuidance("cylinder generator size directory");
+    fSizeCylinderDirectory->SetGuidance("Cylinder generator size directory");
 
     fCylinderRadius = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Size/Cylinder/Radius", this);
     fCylinderRadius->SetGuidance("Set the generation cylinder radius if used.");
     fCylinderRadius->SetParameterName("R", false);
     fCylinderRadius->SetUnitCategory("Length");
-    fCylinderRadius->SetRange("R >= 0");
+    fCylinderRadius->SetRange("R > 0");
     fCylinderRadius->AvailableForStates(G4State_Idle);
 
     fCylinderHeight = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Size/Cylinder/Height", this);
     fCylinderHeight->SetGuidance("Set the generation cylinder height if used.");
     fCylinderHeight->SetParameterName("H", false);
     fCylinderHeight->SetUnitCategory("Length");
-    fCylinderHeight->SetRange("H >= 0");
+    fCylinderHeight->SetRange("H > 0");
     fCylinderHeight->AvailableForStates(G4State_Idle);
+
     // energy
     fEnergyDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Energy/");
     fEnergyDirectory->SetGuidance("muon energy directory");
 
-    fMaxMomentum = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Energy/Max_momentum", this);
+    fMaxMomentum = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Energy/MaxMomentum", this);
     fMaxMomentum->SetGuidance("Set the max momentum of a muon.");
-    fMaxMomentum->SetParameterName("EkMax", false);
+    fMaxMomentum->SetParameterName("pMax", false);
     fMaxMomentum->SetUnitCategory("Energy");
-    fMaxMomentum->SetRange("EkMax >= 0");
+    fMaxMomentum->SetRange("pMax > 0");
     fMaxMomentum->AvailableForStates(G4State_Idle);
 
-    fMinMomentum = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Energy/Min_momentum", this);
+    fMinMomentum = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Energy/MinMomentum", this);
     fMinMomentum->SetGuidance("Set the minimun momentum of a muon.");
-    fMinMomentum->SetParameterName("EkMin", false);
+    fMinMomentum->SetParameterName("pMin", false);
     fMinMomentum->SetUnitCategory("Energy");
-    fMinMomentum->SetRange("EkMin >= 0");
+    fMinMomentum->SetRange("pMin >= 0");
     fMinMomentum->AvailableForStates(G4State_Idle);
+
     // angle
     fAngleDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Angle/");
     fAngleDirectory->SetGuidance("muon angle directory");
 
-    fMaxTheta = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Angle/Max_theta", this);
+    fMaxTheta = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Angle/MaxTheta", this);
     fMaxTheta->SetGuidance("Set the max theta angle of a muon.");
     fMaxTheta->SetParameterName("theta", false);
     fMaxTheta->SetUnitCategory("Angle");
-    fMaxTheta->SetRange("theta >= 0");
+    fMaxTheta->SetRange("theta > 0");
     fMaxTheta->AvailableForStates(G4State_Idle);
 }
 
 EcoMugCosmicRayMuonMessenger::~EcoMugCosmicRayMuonMessenger() = default;
 
 auto EcoMugCosmicRayMuonMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
-    if (command == fSkyCenterPos.get()) {
+    if (command == fSkyCenterPosition.get()) {
         Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {
             r.UseSky();
-            r.SkyCenterPosition(fSkyCenterPos->GetNew3VectorValue(value));
+            r.SkyCenterPosition(fSkyCenterPosition->GetNew3VectorValue(value));
         });
-    } else if (command == fHSphereCenterPos.get()) {
+    } else if (command == fHSphereCenterPosition.get()) {
         Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {
             r.UseHSphere();
-            r.HSphereCenterPosition(fHSphereCenterPos->GetNew3VectorValue(value));
+            r.HSphereCenterPosition(fHSphereCenterPosition->GetNew3VectorValue(value));
         });
-    } else if (command == fCylinderCenterPos.get()) {
+    } else if (command == fCylinderCenterPosition.get()) {
         Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {
             r.UseCylinder();
-            r.CylinderCenterPosition(fCylinderCenterPos->GetNew3VectorValue(value));
+            r.CylinderCenterPosition(fCylinderCenterPosition->GetNew3VectorValue(value));
         });
     } else if (command == fSkySizeXY.get()) {
         Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {
