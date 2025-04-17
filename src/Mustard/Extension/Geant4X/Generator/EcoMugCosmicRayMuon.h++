@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Mustard/Extension/Geant4X/Generator/EcoMugCosmicRayMuonMessenger.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 
 #include "G4ThreeVector.hh"
@@ -86,6 +87,8 @@ private:
     void* fEcoMug;
     enum Coordinate fCoordinate;
     unsigned int fReseedCounter : 8;
+
+    EcoMugCosmicRayMuonMessenger::Register<EcoMugCosmicRayMuon> fMessengerRegister;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Generator
