@@ -37,7 +37,7 @@ namespace Mustard::inline Extension::Geant4X::inline Physics {
 MuonNLODecayPhysics::MuonNLODecayPhysics(G4int verbose) :
     DecayPhysicsBase{"MuonNLODecayPhysics"},
     fRadiativeDecayBR{0.014},
-    fICDecayBR{3.6054e-5}, // QED leading-order
+    fICDecayBR{0}, // QED leading-order: 3.6054e-5
     fMessengerRegister{this} {
     verboseLevel = verbose;
 }
@@ -101,7 +101,7 @@ auto MuonNLODecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay)
 auto MuonNLODecayPhysics::ResetMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // reset BR here
     decay->GetDecayChannel(1)->SetBR(0.014);
-    decay->GetDecayChannel(2)->SetBR(3.6054e-5);
+    decay->GetDecayChannel(2)->SetBR(0);
 }
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics
