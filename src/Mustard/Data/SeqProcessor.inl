@@ -148,10 +148,10 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                                   From(rdf[Is].Range(takeRange[Is].first, takeRange[Is].last))...};
         }(gslx::make_index_sequence<nRDF>())};
         // async process
-        if (async.valid()) { async.wait(); }
+        if (async.valid()) { async.get(); }
         async = std::async(std::launch::async, ProcessBatch, iFirst, iLast, std::move(data));
     }
-    async.wait();
+    async.get();
     LoopEndAction();
     return nEventProcessed;
 }
@@ -177,11 +177,11 @@ auto SeqProcessor::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
         const auto [iFirst, iLast]{CalculateIndexRange(k, batch)};
         if (asyncReader.Reading()) { batchData = asyncReader.Acquire(); }
         asyncReader.Read(iFirst, iLast);
-        if (asyncProcess.valid()) { asyncProcess.wait(); }
+        if (asyncProcess.valid()) { asyncProcess.get(); }
         asyncProcess = std::async(std::launch::deferred, ProcessBatch);
     }
     batchData = asyncReader.Acquire();
-    asyncProcess.wait();
+    asyncProcess.get();
     LoopEndAction();
 
     return nProcessed;
