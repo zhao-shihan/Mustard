@@ -23,6 +23,7 @@
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/bit"
+#include "muc/time"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -120,7 +121,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
                 const auto& mpi{MPIEnv::Instance()};
                 Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
             }
-            Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+            Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
             PrintStackTrace(64, 2, stderr, ts);
             Print<'E'>("\n");
             switch (sig) {
@@ -151,7 +152,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
         const auto& mpi{MPIEnv::Instance()};
         Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
     }
-    Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+    Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
     PrintStackTrace(64, 2, stderr, ts);
     Print<'E'>("\n");
     Print<'E'>(ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
@@ -191,7 +192,7 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
                 const auto& mpi{MPIEnv::Instance()};
                 Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
             }
-            Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, fmt::localtime(now));
+            Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
             PrintStackTrace(64, 2, stderr, ts);
             Print<'E'>("\n");
             Print<'E'>(ts, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");

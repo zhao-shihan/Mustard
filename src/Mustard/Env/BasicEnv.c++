@@ -21,6 +21,8 @@
 #include "Mustard/Utility/Print.h++"
 #include "Mustard/Version.h++"
 
+#include "muc/time"
+
 #include "fmt/chrono.h"
 #include "fmt/color.h"
 
@@ -78,7 +80,7 @@ auto BasicEnv::PrintExitBanner() const -> void {
           "===============================================================================\n"
           " Exit Mustard environment at {:%FT%T%z}\n"
           "===============================================================================",
-          fmt::localtime(scsc::to_time_t(scsc::now())));
+          muc::localtime(scsc::to_time_t(scsc::now())));
     Print("\n");
 }
 
@@ -108,7 +110,7 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
           "\n"
           " Start at {:%FT%T%z}\n"
           " Exe: {}",
-          fmt::localtime(scsc::to_time_t(scsc::now())),
+          muc::localtime(scsc::to_time_t(scsc::now())),
           exe);
     for (auto i{1}; i < argc; ++i) {
         Print(fmt::emphasis::bold, " {}", argv[i]);

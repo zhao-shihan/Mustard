@@ -192,7 +192,7 @@ auto Executor<T>::PreLoopReport() const -> void {
           "| {:75} |\n"
           "+----------------------------------> Start <----------------------------------+\n",
           fmt::format("[{:%FT%T%z}] {} has started on {} process{}",
-                      fmt::localtime(scsc::to_time_t(fExecutionBeginSystemTime)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""));
+                      muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""));
 }
 
 template<std::integral T>
@@ -212,7 +212,7 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     Print("MPI{}> [{:%FT%T%z}] {} {} has ended\n"
           "MPI{}>   {} elaps., {}\n",
-          mpiEnv.CommWorldRank(), fmt::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
+          mpiEnv.CommWorldRank(), muc::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
           mpiEnv.CommWorldRank(), SToDHMS(secondsElapsed),
           [&, goodForEstimation{goodForEstimation}, nExecutedTask{nExecutedTask}] {
               if (goodForEstimation) {
@@ -241,8 +241,8 @@ auto Executor<T>::PostLoopReport() const -> void {
           "| {:75} |\n"
           "| {:75} |\n"
           "+-----------------------------------> End <-----------------------------------+\n",
-          fmt::format("[{:%FT%T%z}] {} has ended on {} process{}", fmt::localtime(scsc::to_time_t(now)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""),
-          fmt::format("  Start time: {:%FT%T%z}", fmt::localtime(scsc::to_time_t(fExecutionBeginSystemTime))),
+          fmt::format("[{:%FT%T%z}] {} has ended on {} process{}", muc::localtime(scsc::to_time_t(now)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""),
+          fmt::format("  Start time: {:%FT%T%z}", muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime))),
           fmt::format("   Wall time: {:.3f} seconds{}", maxWallTime, maxWallTime <= 60 ? "" : " (" + SToDHMS(maxWallTime) + ')'),
           fmt::format("    CPU time: {:.3f} seconds{}", totalCpuTime, totalCpuTime <= 60 ? "" : " (" + SToDHMS(totalCpuTime) + ')'));
 }
