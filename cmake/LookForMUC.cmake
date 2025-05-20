@@ -1,6 +1,6 @@
 message(STATUS "Looking for muc")
 
-set(MUSTARD_MUC_MINIMUM_REQUIRED 0.0.1)
+set(MUSTARD_MUC_MINIMUM_REQUIRED 0.25.520)
 
 if(NOT MUSTARD_BUILTIN_MUC)
     find_package(muc ${MUSTARD_MUC_MINIMUM_REQUIRED})
@@ -18,8 +18,8 @@ if(MUSTARD_BUILTIN_MUC)
         set(MUSTARD_BUILTIN_MUC_VERSION ${MUSTARD_MUC_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MUSTARD_BUILTIN_MUC_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/muc-main")
-    set(MUSTARD_BUILTIN_MUC_URL "https://github.com/zhao-shihan/muc/archive/refs/heads/main.zip")
+    set(MUSTARD_BUILTIN_MUC_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/muc-${MUSTARD_BUILTIN_MUC_VERSION}")
+    set(MUSTARD_BUILTIN_MUC_URL "https://github.com/zhao-shihan/muc/archive/refs/tags/v${MUSTARD_BUILTIN_MUC_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_MUC_SRC_DIR}/CMakeLists.txt")

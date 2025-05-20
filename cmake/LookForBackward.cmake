@@ -1,6 +1,6 @@
 message(STATUS "Looking for backward-cpp")
 
-set(MUSTARD_BACKWARD_MINIMUM_REQUIRED 1.6)
+set(MUSTARD_BACKWARD_MINIMUM_REQUIRED 1.6.1)
 
 if(NOT MUSTARD_BUILTIN_BACKWARD)
     find_package(Backward)
@@ -18,8 +18,8 @@ if(MUSTARD_BUILTIN_BACKWARD)
         set(MUSTARD_BUILTIN_BACKWARD_VERSION ${MUSTARD_BACKWARD_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MUSTARD_BUILTIN_BACKWARD_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/backward-cpp-master")
-    set(MUSTARD_BUILTIN_BACKWARD_URL "https://github.com/zhao-shihan/backward-cpp/archive/refs/heads/master.zip")
+    set(MUSTARD_BUILTIN_BACKWARD_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/backward-cpp-${MUSTARD_BUILTIN_BACKWARD_VERSION}")
+    set(MUSTARD_BUILTIN_BACKWARD_URL "https://github.com/zhao-shihan/backward-cpp/archive/refs/tags/v${MUSTARD_BUILTIN_BACKWARD_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_BACKWARD_SRC_DIR}/CMakeLists.txt")

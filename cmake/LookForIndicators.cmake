@@ -19,7 +19,7 @@ if(MUSTARD_BUILTIN_INDICATORS)
     endif()
     # set download dest and URL
     set(MUSTARD_BUILTIN_INDICATORS_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/indicators-master")
-    set(MUSTARD_BUILTIN_INDICATORS_URL "https://github.com/zhao-shihan/indicators/archive/refs/heads/master.zip")
+    set(MUSTARD_BUILTIN_INDICATORS_URL "https://github.com/p-ranav/indicators/archive/refs/heads/master.zip")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_INDICATORS_SRC_DIR}/CMakeLists.txt")

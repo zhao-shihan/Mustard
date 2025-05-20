@@ -1,6 +1,6 @@
 message(STATUS "Looking for EFM")
 
-set(MUSTARD_EFM_MINIMUM_REQUIRED 0.0.1)
+set(MUSTARD_EFM_MINIMUM_REQUIRED 0.1.0)
 
 if(NOT MUSTARD_BUILTIN_EFM)
     find_package(EFM ${MUSTARD_EFM_MINIMUM_REQUIRED})
@@ -18,8 +18,8 @@ if(MUSTARD_BUILTIN_EFM)
         set(MUSTARD_BUILTIN_EFM_VERSION ${MUSTARD_EFM_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MUSTARD_BUILTIN_EFM_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/EFM-main")
-    set(MUSTARD_BUILTIN_EFM_URL "https://github.com/zhao-shihan/EFM/archive/refs/heads/main.zip")
+    set(MUSTARD_BUILTIN_EFM_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/EFM-${MUSTARD_BUILTIN_EFM_VERSION}")
+    set(MUSTARD_BUILTIN_EFM_URL "https://github.com/zhao-shihan/EFM/archive/refs/tags/v${MUSTARD_BUILTIN_EFM_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_EFM_SRC_DIR}/CMakeLists.txt")
