@@ -100,7 +100,9 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
             asyncProcess = std::async(std::launch::deferred, ProcessBatch);
         });
     batchData = asyncReader.Acquire();
+    asyncReader.Exhaust();
     asyncProcess.get();
+    asyncReader.Acquire();
 
     return nProcessed;
 }

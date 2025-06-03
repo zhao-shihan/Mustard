@@ -26,6 +26,7 @@ AsyncReader<AData>::AsyncReader() :
     fReadCompleteSemaphore{0},
     fFirst{},
     fLast{},
+    fSentinel{},
     fData{},
     fExhausted{} {
     if (ROOT::IsImplicitMTEnabled()) {
@@ -35,13 +36,13 @@ AsyncReader<AData>::AsyncReader() :
 
 template<typename AData>
 AsyncReader<AData>::~AsyncReader() {
-    if (not fExhausted) { Throw<std::logic_error>("Data has not been exhausted"); }
-    if (fReading) { Throw<std::logic_error>("Some read data have not been acquired"); }
+    if (not fExhausted) { Throw<std::logic_error>("Data have not been exhausted"); }
+    if (fReading) { Throw<std::logic_error>("Last read data not acquired"); }
 }
 
 template<typename AData>
 auto AsyncReader<AData>::Read(gsl::index first, gsl::index last) -> void {
-    if (fExhausted) { Throw<std::logic_error>("Data has been exhausted"); }
+    if (fExhausted) { Throw<std::logic_error>("Data have been exhausted"); }
     if (fReading) { Throw<std::logic_error>("Try to start another read while reading"); }
     if (first < 0) { Throw<std::out_of_range>("first < 0"); }
     if (last < 0) { Throw<std::out_of_range>("last < 0"); }
@@ -73,8 +74,8 @@ auto AsyncReader<AData>::CompleteRead() -> void {
 template<TupleModelizable... Ts>
 AsyncEntryReader<Ts...>::AsyncEntryReader(ROOT::RDF::RNode data) :
     AsyncReader<muc::shared_ptrvec<Tuple<Ts...>>>{} {
-    const auto nEntry{*data.Count()};
-    if (nEntry == 0) {
+    this->fSentinel = *data.Count();
+    if (this->fSentinel == 0) {
         this->fExhausted = true;
         return;
     }
@@ -131,12 +132,12 @@ AsyncEventReader<AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF::R
     AsyncReader<std::vector<muc::shared_ptrvec<Tuple<Ts...>>>>{},
     fEventSplit{std::move(eventSplit)} {
     const auto& es{fEventSplit};
-    Expects(std::ranges::is_sorted(es));
-    const auto nEntry{*data.Count()};
-    if (nEntry == 0) {
+    if (es.empty()) {
         this->fExhausted = true;
         return;
     }
+    Expects(std::ranges::is_sorted(es));
+    this->fSentinel = ssize(es) - 1;
     this->fReaderThread = std::jthread{
         [this, &es](ROOT::RDF::RNode data) {
             auto columnList{Tuple<Ts...>::NameVector()};
@@ -176,7 +177,7 @@ AsyncEventReader<AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF::R
 template<std::integral AEventIDType, TupleModelizable... Ts>
 auto AsyncEventReader<AEventIDType, TupleModel<Ts...>>::Read(gsl::index first, gsl::index last) -> void {
     const auto nEvent{ssize(fEventSplit) - 1};
-    if (first > nEvent - 1) { Throw<std::out_of_range>("first > #event - 1"); }
+    if (first > nEvent) { Throw<std::out_of_range>("first > #event"); }
     if (last > nEvent) { Throw<std::out_of_range>("last > #event"); }
     AsyncReader<std::vector<muc::shared_ptrvec<Tuple<Ts...>>>>::Read(first, last);
 }

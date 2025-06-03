@@ -66,6 +66,7 @@ public:
     virtual ~AsyncReader() = 0;
 
     virtual auto Read(gsl::index first, gsl::index last) -> void;
+    virtual auto Exhaust() -> void { Read(fSentinel, fSentinel); }
     virtual auto Acquire() -> AData;
 
     auto Reading() -> auto { return fReading; }
@@ -81,6 +82,7 @@ protected:
     std::binary_semaphore fReadCompleteSemaphore;
     gsl::index fFirst;
     gsl::index fLast;
+    gsl::index fSentinel;
     AData fData;
     std::atomic_bool fExhausted;
 };
