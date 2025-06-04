@@ -62,43 +62,48 @@ public:
     using DataType = AData;
 
 public:
-    AsyncReader();
+    AsyncReader(gsl::index sentinel, std::function<void(ROOT::RDF::RNode)> ReadLoop, ROOT::RDF::RNode rdf);
     virtual ~AsyncReader() = 0;
 
     virtual auto Read(gsl::index first, gsl::index last) -> void;
-    virtual auto Exhaust() -> void { Read(fSentinel, fSentinel); }
-    virtual auto Acquire() -> AData;
+    [[nodiscard]] virtual auto Acquire() -> AData;
+    virtual auto Exhaust() -> void;
 
-    auto Reading() -> auto { return fReading; }
-    auto Exhausted() -> auto { return fExhausted.load(); }
+    auto Reading() const -> auto { return fReading; }
+    auto Exhausted() const -> auto { return fExhausted.load(); }
 
 protected:
+    auto First() const -> auto { return fFirst; };
+    auto Last() const -> auto { return fLast; };
     auto CompleteRead() -> void;
 
 protected:
-    std::jthread fReaderThread;
-    bool fReading;
-    std::binary_semaphore fReadStartSemaphore;
-    std::binary_semaphore fReadCompleteSemaphore;
+    AData fData;
+
+private:
     gsl::index fFirst;
     gsl::index fLast;
+
     gsl::index fSentinel;
-    AData fData;
+    std::jthread fReaderThread;
+    std::binary_semaphore fReadStartSemaphore;
+    std::binary_semaphore fReadCompleteSemaphore;
     std::atomic_bool fExhausted;
+    bool fReading;
 };
 
 template<TupleModelizable... Ts>
 class AsyncEntryReader : public AsyncReader<muc::shared_ptrvec<Tuple<Ts...>>> {
 public:
-    AsyncEntryReader(ROOT::RDF::RNode data);
+    AsyncEntryReader(ROOT::RDF::RNode dataFrame);
 };
 
 template<std::integral AEventIDType, muc::instantiated_from<TupleModel>... Ts>
 class AsyncEventReader : public AsyncReader<std::vector<std::tuple<muc::shared_ptrvec<Tuple<Ts>>...>>> {
 public:
-    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::string eventIDColumnName);
-    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::array<std::string, sizeof...(Ts)> eventIDColumnName);
-    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> data, std::vector<std::array<RDFEntryRange, sizeof...(Ts)>> eventSplit);
+    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> dataFrame, std::string eventIDColumnName);
+    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> dataFrame, std::array<std::string, sizeof...(Ts)> eventIDColumnName);
+    AsyncEventReader(std::array<ROOT::RDF::RNode, sizeof...(Ts)> dataFrame, std::vector<std::array<RDFEntryRange, sizeof...(Ts)>> eventSplit);
 
 private:
     std::vector<std::array<RDFEntryRange, sizeof...(Ts)>> fEventSplit;
@@ -107,8 +112,8 @@ private:
 template<std::integral AEventIDType, TupleModelizable... Ts>
 class AsyncEventReader<AEventIDType, TupleModel<Ts...>> : public AsyncReader<std::vector<muc::shared_ptrvec<Tuple<Ts...>>>> {
 public:
-    AsyncEventReader(ROOT::RDF::RNode data, std::string eventIDColumnName);
-    AsyncEventReader(ROOT::RDF::RNode data, std::vector<gsl::index> eventSplit);
+    AsyncEventReader(ROOT::RDF::RNode dataFrame, std::string eventIDColumnName);
+    AsyncEventReader(ROOT::RDF::RNode dataFrame, std::vector<gsl::index> eventSplit);
 
     virtual auto Read(gsl::index first, gsl::index last) -> void override;
 

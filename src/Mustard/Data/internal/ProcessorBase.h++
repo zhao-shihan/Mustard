@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "muc/math"
+
 #include "gsl/gsl"
 
 #include <algorithm>
