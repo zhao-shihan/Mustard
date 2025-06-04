@@ -136,24 +136,24 @@ HelicalBox::HelicalBox(std::string name,
     fBackEndPosition = Helix(phiTotal);
     fBackEndNormal = EndFaceNormal(phiTotal).unit();
 
-    auto CreateParallelPoints = [&](const Eigen::MatrixX<G4Point3D>& grid,
-                                    int index,
-                                    double endZ,
-                                    const G4ThreeVector& endNormal) -> std::vector<G4ThreeVector> {
+    auto CreateParallelPoints{[&](const Eigen::MatrixX<G4Point3D>& grid,
+                                  int index,
+                                  double endZ,
+                                  const G4ThreeVector& endNormal) -> std::vector<G4ThreeVector> {
         std::vector<G4ThreeVector> projectedPoints;
 
         for (int j{}; j < 4; j++) {
-            const G4Point3D& p = grid(index, j);
-            double t = (endZ - p.z()) / endNormal.z();
-            if (endZ < 0) {
-                double t0 = (x(1, j).z() - p.z()) / endNormal.z();
+            const G4Point3D& p{grid(index, j)};
+            double t{(endZ - p.z()) / endNormal.z()};
+            if (endZ < 0 and frontParallel) {
+                double t0{(x(1, j).z() - p.z()) / endNormal.z()};
                 if (std::abs(t) > std::abs(t0)) {
-                    Mustard::Throw<std::runtime_error>("the tolerance is too small!");
+                    Mustard::Throw<std::runtime_error>("the front end can not be parallel to the z-axis!");
                 }
-            } else {
-                double t0 = (x(n - 2, j).z() - p.z()) / endNormal.z();
+            } else if (endZ > 0 and backParallel) {
+                double t0{(x(n - 2, j).z() - p.z()) / endNormal.z()};
                 if (std::abs(t) > std::abs(t0)) {
-                    Mustard::Throw<std::runtime_error>("the tolerance is too small!");
+                    Mustard::Throw<std::runtime_error>("the back end can not be parallel to the z-axis!");
                 }
             }
 
@@ -164,7 +164,7 @@ HelicalBox::HelicalBox(std::string name,
             projectedPoints.push_back(projPoint);
         }
         return projectedPoints;
-    };
+    }};
 
     auto frontPoints{CreateParallelPoints(x, 0, fFrontEndPosition.z(), fFrontEndNormal)};
     auto backPoints{CreateParallelPoints(x, n - 1, fBackEndPosition.z(), fBackEndNormal)};
@@ -174,22 +174,17 @@ HelicalBox::HelicalBox(std::string name,
         [&](int i, int j) {
             const auto i1{i + 1};
             const auto j1{j + 1};
-            if (i > 0 and i < (n - 2)) {
-                AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), c(i, j / 2), ABSOLUTE});
-            } else if (i == 0 and frontParallel) {
+            if (i == 0 and frontParallel) { // set front facet for parallel to z-axis
                 AddFacet(new G4TriangularFacet{frontPoints[j], x(1, j), c(i, j / 2), ABSOLUTE});
                 AddFacet(new G4TriangularFacet{x(1, j), x(1, j1), c(i, j / 2), ABSOLUTE});
                 AddFacet(new G4TriangularFacet{x(1, j1), frontPoints[j1 % 4], c(i, j / 2), ABSOLUTE});
                 AddFacet(new G4TriangularFacet{frontPoints[j1 % 4], frontPoints[j], c(i, j / 2), ABSOLUTE});
-            } else if (i == (n - 2) and backParallel) {
+            } else if (i == n - 2 and backParallel) { // set back facet for parallel to z-axis
                 AddFacet(new G4TriangularFacet{x(i, j), backPoints[j], c(i, j / 2), ABSOLUTE});
                 AddFacet(new G4TriangularFacet{backPoints[j], backPoints[j1 % 4], c(i, j / 2), ABSOLUTE});
                 AddFacet(new G4TriangularFacet{backPoints[j1 % 4], x(i, j1), c(i, j / 2), ABSOLUTE});
                 AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), c(i, j / 2), ABSOLUTE});
-            } else {
+            } else { // set normal facet
                 AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), c(i, j / 2), ABSOLUTE});
                 AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), c(i, j / 2), ABSOLUTE});
                 AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), c(i, j / 2), ABSOLUTE});
@@ -209,16 +204,13 @@ HelicalBox::HelicalBox(std::string name,
                 //     \    /      \
                 //    (i ,j )--(i1,j )
                 */
-                if (i > 0 and i < (n - 2)) {
-                    AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), x(i, j), ABSOLUTE});
-                    AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), x(i1, j1), ABSOLUTE});
-                } else if (i == 0 and frontParallel) {
+                if (i == 0 and frontParallel) { // set front facet for parallel to z-axis
                     AddFacet(new G4TriangularFacet{x(i1, j1), frontPoints[j1 % 4], frontPoints[j], ABSOLUTE});
                     AddFacet(new G4TriangularFacet{frontPoints[j], x(i1 % 4, j), x(i1, j1), ABSOLUTE});
-                } else if (i == (n - 2) and backParallel) {
+                } else if (i == n - 2 and backParallel) { // set back facet for parallel to z-axis
                     AddFacet(new G4TriangularFacet{backPoints[j1 % 4], x(i, j1), x(i, j), ABSOLUTE});
                     AddFacet(new G4TriangularFacet{x(i, j), backPoints[j], backPoints[j1 % 4], ABSOLUTE});
-                } else {
+                } else { // set normal facet
                     AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), x(i, j), ABSOLUTE});
                     AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), x(i1, j1), ABSOLUTE});
                 }
@@ -231,16 +223,13 @@ HelicalBox::HelicalBox(std::string name,
                 //    /      \    /
                 //  (i1,j1)--(i2,j1)
                 */
-                if (i > 0 and i < (n - 2)) {
-                    AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), x(i1, j), ABSOLUTE});
-                    AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), x(i, j1), ABSOLUTE});
-                } else if (i == 0 and frontParallel) {
+                if (i == 0 and frontParallel) { // set front facet for parallel to z-axis
                     AddFacet(new G4TriangularFacet{frontPoints[j1 % 4], frontPoints[j], x(i1, j), ABSOLUTE});
                     AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1 % 4), frontPoints[j1 % 4], ABSOLUTE});
-                } else if (i == (n - 2) and backParallel) {
+                } else if (i == (n - 2) and backParallel) { // set back facet for parallel to z-axis
                     AddFacet(new G4TriangularFacet{x(i, j1 % 4), x(i, j), backPoints[j], ABSOLUTE});
                     AddFacet(new G4TriangularFacet{backPoints[j], backPoints[j1 % 4], x(i, j1), ABSOLUTE});
-                } else {
+                } else { // set normal facet
                     AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), x(i1, j), ABSOLUTE});
                     AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), x(i, j1), ABSOLUTE});
                 }

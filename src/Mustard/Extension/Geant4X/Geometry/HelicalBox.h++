@@ -34,8 +34,8 @@ public:
                double pitch,    /* rad */
                double phi0,     /* rad */
                double phiTotal, /* rad */
-               bool frontParallel,
-               bool backParallel,
+               bool frontParallel = false,
+               bool backParallel = false,
                double tolerance = 0.001); /* 1 */
 
     auto Radius() const -> auto { return fRadius; }
