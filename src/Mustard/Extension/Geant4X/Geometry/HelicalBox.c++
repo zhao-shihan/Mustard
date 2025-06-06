@@ -42,8 +42,8 @@ HelicalBox::HelicalBox(std::string name,
                        double pitch,
                        double phi0,
                        double phiTotal,
-                       bool frontParallel,
-                       bool backParallel,
+                       bool frontPlanar,
+                       bool backPlanar,
                        double tolerance) :
     G4TessellatedSolid{std::move(name)},
     fRadius{radius},
@@ -51,8 +51,8 @@ HelicalBox::HelicalBox(std::string name,
     fPitch{pitch},
     fPhi0{phi0},
     fPhiTotal{phiTotal},
-    fFrontParallel{frontParallel},
-    fBackParallel{backParallel},
+    fFrontPlanar{frontPlanar},
+    fBackPlanar{backPlanar},
     fTolerance{tolerance},
     fTotalLength{},
     fZLength{},
@@ -75,6 +75,27 @@ HelicalBox::HelicalBox(std::string name,
     muc::ranges::iota(u, 0);
     u *= deltaU;
 
+    // compute end position and normal
+    const auto Helix{
+        [&](const auto& u) -> G4Point3D {
+            const auto u1{u + phi0};
+            return {radius * std::cos(u1),
+                    radius * std::sin(u1),
+                    u1 * tanAR - zOffset};
+        }};
+    const auto EndFaceNormal{
+        [&](const auto& u) -> G4ThreeVector {
+            const auto u1{u + phi0};
+            return {-radius * std::sin(u1),
+                    radius * std::cos(u1),
+                    tanAR};
+        }};
+
+    fFrontEndPosition = Helix(0);
+    fFrontEndNormal = EndFaceNormal(0).unit();
+    fBackEndPosition = Helix(phiTotal);
+    fBackEndNormal = EndFaceNormal(phiTotal).unit();
+
     // parameterized surface
     const auto MainPoint{
         [&](const auto& u, int j) -> G4Point3D {
@@ -85,9 +106,28 @@ HelicalBox::HelicalBox(std::string name,
             const auto rCosV{r * std::cos(j * (pi / 2) - (3 * pi / 4))};
             const auto rSinV{r * std::sin(j * (pi / 2) - (3 * pi / 4))};
             const auto rSinVSinA{rSinV * sinA};
-            return {(radius + rCosV) * cosU + rSinVSinA * sinU,
-                    (radius + rCosV) * sinU - rSinVSinA * cosU,
-                    u1 * tanAR + rSinV * cosA - zOffset};
+
+            auto x{(radius + rCosV) * cosU + rSinVSinA * sinU};
+            auto y{(radius + rCosV) * sinU - rSinVSinA * cosU};
+            auto z{u1 * tanAR + rSinV * cosA - zOffset};
+
+            if (u == 0 and frontPlanar) {
+                const auto endZ = fFrontEndPosition.z();
+                double t{(endZ - z) / fFrontEndNormal.z()};
+                x += t * fFrontEndNormal.x();
+                y += t * fFrontEndNormal.y();
+                z += t * fFrontEndNormal.z();
+                return {x, y, z};
+            } else if (std::abs(u - phiTotal) < 1e-15 and backPlanar) {
+                const auto endZ = fBackEndPosition.z();
+                double t{(endZ - z) / fBackEndNormal.z()};
+                x += t * fBackEndNormal.x();
+                y += t * fBackEndNormal.y();
+                z += t * fBackEndNormal.z();
+                return {x, y, z};
+            } else {
+                return {x, y, z};
+            }
         }};
     Eigen::MatrixX<G4Point3D> x(n, 5); // main grid
     for (auto i{0ll}; i < n; ++i) {
@@ -116,80 +156,15 @@ HelicalBox::HelicalBox(std::string name,
         c(i, 1) = AuxillaryPoint(u[i], 1);
     }
 
-    // compute end position and normal
-    const auto Helix{
-        [&](const auto& u) -> G4Point3D {
-            const auto u1{u + phi0};
-            return {radius * std::cos(u1),
-                    radius * std::sin(u1),
-                    u1 * tanAR - zOffset};
-        }};
-    const auto EndFaceNormal{
-        [&](const auto& u) -> G4ThreeVector {
-            const auto u1{u + phi0};
-            return {-radius * std::sin(u1),
-                    radius * std::cos(u1),
-                    tanAR};
-        }};
-    fFrontEndPosition = Helix(0);
-    fFrontEndNormal = EndFaceNormal(0).unit();
-    fBackEndPosition = Helix(phiTotal);
-    fBackEndNormal = EndFaceNormal(phiTotal).unit();
-
-    auto CreateParallelPoints{[&](const Eigen::MatrixX<G4Point3D>& grid,
-                                  int index,
-                                  double endZ,
-                                  const G4ThreeVector& endNormal) -> std::vector<G4ThreeVector> {
-        std::vector<G4ThreeVector> projectedPoints;
-
-        for (int j{}; j < 4; j++) {
-            const G4Point3D& p{grid(index, j)};
-            double t{(endZ - p.z()) / endNormal.z()};
-            if (endZ < 0 and frontParallel) {
-                double t0{(x(1, j).z() - p.z()) / endNormal.z()};
-                if (std::abs(t) > std::abs(t0)) {
-                    Mustard::Throw<std::runtime_error>("the front end can not be parallel to the z-axis!");
-                }
-            } else if (endZ > 0 and backParallel) {
-                double t0{(x(n - 2, j).z() - p.z()) / endNormal.z()};
-                if (std::abs(t) > std::abs(t0)) {
-                    Mustard::Throw<std::runtime_error>("the back end can not be parallel to the z-axis!");
-                }
-            }
-
-            G4Point3D projPoint(
-                p.x() + t * endNormal.x(),
-                p.y() + t * endNormal.y(),
-                endZ);
-            projectedPoints.push_back(projPoint);
-        }
-        return projectedPoints;
-    }};
-
-    auto frontPoints{CreateParallelPoints(x, 0, fFrontEndPosition.z(), fFrontEndNormal)};
-    auto backPoints{CreateParallelPoints(x, n - 1, fBackEndPosition.z(), fBackEndNormal)};
-
     // make helical box
     const auto AddSideTwistedFacet{
         [&](int i, int j) {
             const auto i1{i + 1};
             const auto j1{j + 1};
-            if (i == 0 and frontParallel) { // set front facet for parallel to z-axis
-                AddFacet(new G4TriangularFacet{frontPoints[j], x(1, j), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(1, j), x(1, j1), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(1, j1), frontPoints[j1 % 4], c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{frontPoints[j1 % 4], frontPoints[j], c(i, j / 2), ABSOLUTE});
-            } else if (i == n - 2 and backParallel) { // set back facet for parallel to z-axis
-                AddFacet(new G4TriangularFacet{x(i, j), backPoints[j], c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{backPoints[j], backPoints[j1 % 4], c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{backPoints[j1 % 4], x(i, j1), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), c(i, j / 2), ABSOLUTE});
-            } else { // set normal facet
-                AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), c(i, j / 2), ABSOLUTE});
-                AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), c(i, j / 2), ABSOLUTE});
-            }
+            AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), c(i, j / 2), ABSOLUTE});
+            AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), c(i, j / 2), ABSOLUTE});
+            AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), c(i, j / 2), ABSOLUTE});
+            AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), c(i, j / 2), ABSOLUTE});
         }};
     const auto AddInOutTwistedFacet{
         [&](int i, int j, bool in) {
@@ -204,16 +179,8 @@ HelicalBox::HelicalBox(std::string name,
                 //     \    /      \
                 //    (i ,j )--(i1,j )
                 */
-                if (i == 0 and frontParallel) { // set front facet for parallel to z-axis
-                    AddFacet(new G4TriangularFacet{x(i1, j1), frontPoints[j1 % 4], frontPoints[j], ABSOLUTE});
-                    AddFacet(new G4TriangularFacet{frontPoints[j], x(i1 % 4, j), x(i1, j1), ABSOLUTE});
-                } else if (i == n - 2 and backParallel) { // set back facet for parallel to z-axis
-                    AddFacet(new G4TriangularFacet{backPoints[j1 % 4], x(i, j1), x(i, j), ABSOLUTE});
-                    AddFacet(new G4TriangularFacet{x(i, j), backPoints[j], backPoints[j1 % 4], ABSOLUTE});
-                } else { // set normal facet
-                    AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), x(i, j), ABSOLUTE});
-                    AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), x(i1, j1), ABSOLUTE});
-                }
+                AddFacet(new G4TriangularFacet{x(i1, j1), x(i, j1), x(i, j), ABSOLUTE});
+                AddFacet(new G4TriangularFacet{x(i, j), x(i1, j), x(i1, j1), ABSOLUTE});
             } else {
                 /* tan{\alpha} < 0, these facets are concave:
                 // tan{\alpha} > 0, these facets are convex:
@@ -223,16 +190,8 @@ HelicalBox::HelicalBox(std::string name,
                 //    /      \    /
                 //  (i1,j1)--(i2,j1)
                 */
-                if (i == 0 and frontParallel) { // set front facet for parallel to z-axis
-                    AddFacet(new G4TriangularFacet{frontPoints[j1 % 4], frontPoints[j], x(i1, j), ABSOLUTE});
-                    AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1 % 4), frontPoints[j1 % 4], ABSOLUTE});
-                } else if (i == (n - 2) and backParallel) { // set back facet for parallel to z-axis
-                    AddFacet(new G4TriangularFacet{x(i, j1 % 4), x(i, j), backPoints[j], ABSOLUTE});
-                    AddFacet(new G4TriangularFacet{backPoints[j], backPoints[j1 % 4], x(i, j1), ABSOLUTE});
-                } else { // set normal facet
-                    AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), x(i1, j), ABSOLUTE});
-                    AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), x(i, j1), ABSOLUTE});
-                }
+                AddFacet(new G4TriangularFacet{x(i, j1), x(i, j), x(i1, j), ABSOLUTE});
+                AddFacet(new G4TriangularFacet{x(i1, j), x(i1, j1), x(i, j1), ABSOLUTE});
             }
         }};
     for (auto i{0ll}; i < n - 1; ++i) {
@@ -243,27 +202,9 @@ HelicalBox::HelicalBox(std::string name,
     }
 
     // seal front end
-    if (frontParallel) {
-        AddFacet(new G4QuadrangularFacet(
-            frontPoints[0],
-            frontPoints[1],
-            frontPoints[2],
-            frontPoints[3],
-            ABSOLUTE));
-    } else {
-        AddFacet(new G4QuadrangularFacet{x(0, 0), x(0, 1), x(0, 2), x(0, 3), ABSOLUTE});
-    }
+    AddFacet(new G4QuadrangularFacet{x(0, 0), x(0, 1), x(0, 2), x(0, 3), ABSOLUTE});
     // seal back end
-    if (backParallel) {
-        AddFacet(new G4QuadrangularFacet(
-            backPoints[3],
-            backPoints[2],
-            backPoints[1],
-            backPoints[0],
-            ABSOLUTE));
-    } else {
-        AddFacet(new G4QuadrangularFacet{x(n - 1, 3), x(n - 1, 2), x(n - 1, 1), x(n - 1, 0), ABSOLUTE});
-    }
+    AddFacet(new G4QuadrangularFacet{x(n - 1, 3), x(n - 1, 2), x(n - 1, 1), x(n - 1, 0), ABSOLUTE});
 
     SetSolidClosed(true);
 }

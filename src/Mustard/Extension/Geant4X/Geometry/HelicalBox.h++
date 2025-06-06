@@ -34,8 +34,8 @@ public:
                double pitch,    /* rad */
                double phi0,     /* rad */
                double phiTotal, /* rad */
-               bool frontParallel = false,
-               bool backParallel = false,
+               bool frontPlanar = false,
+               bool backPlanar = false,
                double tolerance = 0.001); /* 1 */
 
     auto Radius() const -> auto { return fRadius; }
@@ -43,8 +43,8 @@ public:
     auto Pitch() const -> auto { return fPitch; }
     auto Phi0() const -> auto { return fPhi0; }
     auto PhiTotal() const -> auto { return fPhiTotal; }
-    auto FrontParallel() const -> auto { return fFrontParallel; }
-    auto BackParallel() const -> auto { return fBackParallel; }
+    auto FrontPlanar() const -> auto { return fFrontPlanar; }
+    auto BackPlanar() const -> auto { return fBackPlanar; }
     auto Tolerance() const -> auto { return fTolerance; }
 
     auto TotalLength() const -> auto { return fTotalLength; }
@@ -60,8 +60,8 @@ private:
     double fPitch;
     double fPhi0;
     double fPhiTotal;
-    bool fFrontParallel;
-    bool fBackParallel;
+    bool fFrontPlanar;
+    bool fBackPlanar;
     double fTolerance;
 
     double fTotalLength;
