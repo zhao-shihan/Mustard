@@ -18,6 +18,7 @@
 
 #include "Mustard/Extension/Geant4X/Geometry/HelicalBox.h++"
 #include "Mustard/Utility/MathConstant.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4QuadrangularFacet.hh"
 #include "G4TriangularFacet.hh"
@@ -28,6 +29,7 @@
 #include "muc/numeric"
 
 #include <cmath>
+#include <exception>
 #include <utility>
 
 namespace Mustard::inline Extension::Geant4X::inline Geometry {
@@ -40,6 +42,8 @@ HelicalBox::HelicalBox(std::string name,
                        double pitch,
                        double phi0,
                        double phiTotal,
+                       bool frontPlanar,
+                       bool backPlanar,
                        double tolerance) :
     G4TessellatedSolid{std::move(name)},
     fRadius{radius},
@@ -47,6 +51,8 @@ HelicalBox::HelicalBox(std::string name,
     fPitch{pitch},
     fPhi0{phi0},
     fPhiTotal{phiTotal},
+    fFrontPlanar{frontPlanar},
+    fBackPlanar{backPlanar},
     fTolerance{tolerance},
     fTotalLength{},
     fZLength{},
@@ -59,9 +65,10 @@ HelicalBox::HelicalBox(std::string name,
     const auto tanA{sinA / cosA};
     const auto tanAR{radius * tanA};
     const auto zOffset{(phi0 + phiTotal / 2) * tanAR};
+    double tFront;
+    double tBack;
     fTotalLength = radius * phiTotal / cosA;
     fZLength = tanAR * phiTotal;
-
     // prepare uv mesh
     const auto deltaU0{std::sqrt(8 * tolerance) * cosA};
     const auto n{muc::llround(phiTotal / deltaU0) + 2};
@@ -69,6 +76,27 @@ HelicalBox::HelicalBox(std::string name,
     Eigen::VectorXd u(n);
     muc::ranges::iota(u, 0);
     u *= deltaU;
+
+    // compute end position and normal
+    const auto Helix{
+        [&](const auto& u) -> G4Point3D {
+            const auto u1{u + phi0};
+            return {radius * std::cos(u1),
+                    radius * std::sin(u1),
+                    u1 * tanAR - zOffset};
+        }};
+    const auto EndFaceNormal{
+        [&](const auto& u) -> G4ThreeVector {
+            const auto u1{u + phi0};
+            return {-radius * std::sin(u1),
+                    radius * std::cos(u1),
+                    tanAR};
+        }};
+
+    fFrontEndPosition = Helix(0);
+    fFrontEndNormal = EndFaceNormal(0).unit();
+    fBackEndPosition = Helix(phiTotal);
+    fBackEndNormal = EndFaceNormal(phiTotal).unit();
 
     // parameterized surface
     const auto MainPoint{
@@ -80,9 +108,30 @@ HelicalBox::HelicalBox(std::string name,
             const auto rCosV{r * std::cos(j * (pi / 2) - (3 * pi / 4))};
             const auto rSinV{r * std::sin(j * (pi / 2) - (3 * pi / 4))};
             const auto rSinVSinA{rSinV * sinA};
-            return {(radius + rCosV) * cosU + rSinVSinA * sinU,
-                    (radius + rCosV) * sinU - rSinVSinA * cosU,
-                    u1 * tanAR + rSinV * cosA - zOffset};
+
+            auto x{(radius + rCosV) * cosU + rSinVSinA * sinU};
+            auto y{(radius + rCosV) * sinU - rSinVSinA * cosU};
+            auto z{u1 * tanAR + rSinV * cosA - zOffset};
+
+            if (u == 0 and frontPlanar) {
+                const auto endZ = fFrontEndPosition.z();
+                double t{(endZ - z) / fFrontEndNormal.z()};
+                x += t * fFrontEndNormal.x();
+                y += t * fFrontEndNormal.y();
+                z += t * fFrontEndNormal.z();
+                tFront = t;
+                return {x, y, z};
+            } else if (std::abs(u - phiTotal) < 1e-15 and backPlanar) {
+                const auto endZ = fBackEndPosition.z();
+                double t{(endZ - z) / fBackEndNormal.z()};
+                x += t * fBackEndNormal.x();
+                y += t * fBackEndNormal.y();
+                z += t * fBackEndNormal.z();
+                tBack = t;
+                return {x, y, z};
+            } else {
+                return {x, y, z};
+            }
         }};
     Eigen::MatrixX<G4Point3D> x(n, 5); // main grid
     for (auto i{0ll}; i < n; ++i) {
@@ -92,6 +141,21 @@ HelicalBox::HelicalBox(std::string name,
         x(i, 3) = MainPoint(u[i], 3);
         x(i, 4) = x(i, 0);
     }
+
+    for (int j{}; j < 4; j++) {
+        if (frontPlanar) {
+            double t0{(fFrontEndPosition.z() - x(1, j).z()) / fFrontEndNormal.z()};
+            if (std::abs(tFront) > std::abs(t0)) {
+                Mustard::Throw<std::runtime_error>("the back end can not be planar!");
+            }
+        } else if (backPlanar) {
+            double t0{(fBackEndPosition.z() - x(n - 2, j).z()) / fBackEndNormal.z()};
+            if (std::abs(tBack) > std::abs(t0)) {
+                Mustard::Throw<std::runtime_error>("the front end can not be planar!");
+            }
+        }
+    }
+
     const auto AuxillaryPoint{
         [&](const auto& u, int j) -> G4Point3D {
             const auto u1{u + phi0 + deltaU / 2};
@@ -156,26 +220,6 @@ HelicalBox::HelicalBox(std::string name,
         AddInOutTwistedFacet(i, 3, true);
     }
 
-    // compute end position and normal
-    const auto Helix{
-        [&](const auto& u) -> G4Point3D {
-            const auto u1{u + phi0};
-            return {radius * std::cos(u1),
-                    radius * std::sin(u1),
-                    u1 * tanAR - zOffset};
-        }};
-    const auto EndFaceNormal{
-        [&](const auto& u) -> G4ThreeVector {
-            const auto u1{u + phi0};
-            return {-radius * std::sin(u1),
-                    radius * std::cos(u1),
-                    tanAR};
-        }};
-    fFrontEndPosition = Helix(0);
-    fFrontEndNormal = EndFaceNormal(0).unit();
-    fBackEndPosition = Helix(phiTotal);
-    fBackEndNormal = EndFaceNormal(phiTotal).unit();
-
     // seal front end
     AddFacet(new G4QuadrangularFacet{x(0, 0), x(0, 1), x(0, 2), x(0, 3), ABSOLUTE});
     // seal back end
@@ -183,5 +227,4 @@ HelicalBox::HelicalBox(std::string name,
 
     SetSolidClosed(true);
 }
-
 } // namespace Mustard::inline Extension::Geant4X::inline Geometry
