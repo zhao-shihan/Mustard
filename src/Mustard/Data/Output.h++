@@ -36,13 +36,14 @@
 #include <chrono>
 #include <concepts>
 #include <cstddef>
-#include <filesystem>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <ranges>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 namespace Mustard::Data {
 
@@ -72,13 +73,13 @@ public:
 
     template<std::ranges::input_range R = std::initializer_list<Tuple<Ts...>>>
         requires std::assignable_from<Tuple<Ts...>&, std::ranges::range_reference_t<R>> or
-                     ProperSubTuple<Tuple<Ts...>, std::ranges::range_value_t<R>>
+                 ProperSubTuple<Tuple<Ts...>, std::ranges::range_value_t<R>>
     auto Fill(R&& data) -> std::size_t;
 
     template<std::ranges::input_range R>
         requires std::indirectly_readable<std::ranges::range_reference_t<R>> and
-                     (std::assignable_from<Tuple<Ts...>&, std::iter_reference_t<std::ranges::range_value_t<R>>> or
-                      ProperSubTuple<Tuple<Ts...>, std::iter_value_t<std::ranges::range_value_t<R>>>)
+                 (std::assignable_from<Tuple<Ts...>&, std::iter_reference_t<std::ranges::range_value_t<R>>> or
+                  ProperSubTuple<Tuple<Ts...>, std::iter_value_t<std::ranges::range_value_t<R>>>)
     auto Fill(R&& data) -> std::size_t;
 
     auto Entry() -> auto { return OutputIterator{this}; }
@@ -122,8 +123,7 @@ private:
 
 private:
     Tuple<Ts...> fEntry;
-    std::string fDirectory;
-    TTree* fTree;
+    std::optional<TTree> fTree;
 
     bool fTimedAutoSaveEnabled;
     Second fTimedAutoSavePeriod;
