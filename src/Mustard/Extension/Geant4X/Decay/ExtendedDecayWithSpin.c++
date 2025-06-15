@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Extension/Geant4X/Decay/ExtendedDecayWithSpin.h++"
-#include "Mustard/Utility/PhysicalConstant.h++"
+#include "Mustard/Utility/MathConstant.h++"
 
 #include "G4DecayTable.hh"
 #include "G4Field.hh"
@@ -32,7 +32,7 @@
 
 namespace Mustard::inline Extension::Geant4X::inline Decay {
 
-using Mustard::PhysicalConstant;
+using namespace Mustard::MathConstant;
 
 ExtendedDecayWithSpin::ExtendedDecayWithSpin(const G4String& processName) :
     ExtendDecayIt{processName} {}
@@ -83,7 +83,7 @@ auto ExtendedDecayWithSpin::PostStepDoIt(const G4Track& aTrack, const G4Step& aS
         G4double cost = 1. - 2. * G4UniformRand();
         G4double sint = std::sqrt((1. - cost) * (1. + cost));
 
-        G4double phi = twopi * G4UniformRand();
+        G4double phi = 2 * pi * G4UniformRand(); /* ++ */
         G4double sinp = std::sin(phi);
         G4double cosp = std::cos(phi);
 
@@ -166,7 +166,7 @@ auto ExtendedDecayWithSpin::AtRestDoIt(const G4Track& aTrack, const G4Step& aSte
         G4double cost = 1. - 2. * G4UniformRand();
         G4double sint = std::sqrt((1. - cost) * (1. + cost));
 
-        G4double phi = twopi * G4UniformRand();
+        G4double phi = 2 * pi * G4UniformRand(); /* ++ */
         G4double sinp = std::sin(phi);
         G4double cosp = std::cos(phi);
 
