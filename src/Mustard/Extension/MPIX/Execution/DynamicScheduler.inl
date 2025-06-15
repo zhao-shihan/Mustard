@@ -21,50 +21,16 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 template<std::integral T>
 DynamicScheduler<T>::DynamicScheduler() :
     Scheduler<T>{},
-    fComm{},
+    fComm{mpl::environment::comm_world()},
     fBatchSize{},
-    fContext{} {
-    if (fComm.Rank() == 0) {
-        fContext.template emplace<Master>(this);
-    } else {
-        fContext.template emplace<Worker>(this);
-    }
-}
-
-template<std::integral T>
-DynamicScheduler<T>::Comm::Comm() :
-    fComm{
-        [] {
-            MPI_Comm comm;
-            MPI_Comm_dup(MPI_COMM_WORLD, // comm
-                         &comm);         // newcomm
-            return comm;
-        }()},
-    fRank{
-        [this] {
-            int rank;
-            MPI_Comm_rank(fComm,  // comm
-                          &rank); // rank
-            return rank;
-        }()},
-    fSize{
-        [this] {
-            int size;
-            MPI_Comm_size(fComm,  // comm
-                          &size); // size
-            return size;
-        }()} {}
-
-template<std::integral T>
-DynamicScheduler<T>::Comm::~Comm() {
-    auto comm{fComm};
-    MPI_Comm_free(&comm);
-}
+    fContext{fComm.rank() == 0 ?
+                 decltype(fContext)(std::in_place_type<Master>, this) :
+                 decltype(fContext)(std::in_place_type<Worker>, this)} {}
 
 template<std::integral T>
 auto DynamicScheduler<T>::PreLoopAction() -> void {
     // width ~ BalanceFactor -> +/- BalanceFactor / 2
-    fBatchSize = static_cast<T>(fgBalancingFactor / 2 * static_cast<double>(this->NTask()) / fComm.Size()) + 1;
+    fBatchSize = static_cast<T>(fgBalancingFactor / 2 * static_cast<double>(this->NTask()) / fComm.size()) + 1;
     std::visit([](auto&& c) { c.PreLoopAction(); }, fContext);
 }
 
@@ -93,108 +59,73 @@ template<std::integral T>
 DynamicScheduler<T>::Master::Supervisor::Supervisor(DynamicScheduler<T>* ds) :
     fDS{ds},
     fMainTaskID{},
+    fSemaphoreRecv{},
     fRecv{},
     fTaskIDSend{},
     fSend{},
     fSupervisorThread{} {
-    if (fDS->fComm.Size() > 1) {
-        fRecv.reserve(fDS->fComm.Size() - 1);
-        fTaskIDSend.reserve(fDS->fComm.Size() - 1);
-        fSend.reserve(fDS->fComm.Size() - 1);
-        for (int src{1}; src < fDS->fComm.Size(); ++src) {
-            MPI_Recv_init(nullptr,                // buf
-                          0,                      // count
-                          MPI_BYTE,               // datatype
-                          src,                    // source
-                          0,                      // tag
-                          fDS->fComm,             // comm
-                          &fRecv.emplace_back()); // request
+    if (const auto commSize{fDS->fComm.size()};
+        commSize > 1) {
+        fTaskIDSend.reserve(commSize - 1);
+        for (int src{1}; src < commSize; ++src) {
+            fRecv.push(fDS->fComm.recv_init(fSemaphoreRecv, src));
         }
-        for (int dest{1}; dest < fDS->fComm.Size(); ++dest) {
-            MPI_Rsend_init(&fTaskIDSend.emplace_back(), // buf
-                           1,                           // count
-                           DataType<T>(),               // datatype
-                           dest,                        // dest
-                           1,                           // tag
-                           fDS->fComm,                  // comm
-                           &fSend.emplace_back());      // request
+        for (int dest{1}; dest < commSize; ++dest) {
+            fSend.push(fDS->fComm.rsend_init(fTaskIDSend.emplace_back(), dest));
         }
     }
 }
 
 template<std::integral T>
-DynamicScheduler<T>::Master::Supervisor::~Supervisor() {
-    if (fSupervisorThread.joinable()) { fSupervisorThread.join(); } // wait for last supervision to end if needed
-    for (auto&& s : fSend) { MPI_Request_free(&s); }
-    for (auto&& r : fRecv) { MPI_Request_free(&r); }
-}
-
-template<std::integral T>
 auto DynamicScheduler<T>::Master::Supervisor::Start() -> void {
-    fMainTaskID = fDS->fTask.first + fDS->fComm.Size() * fDS->fBatchSize;
-    // No need of supervisor in sequential execution
-    if (fDS->fComm.Size() == 1) { return; }
+    fMainTaskID = fDS->fTask.first + fDS->fComm.size() * fDS->fBatchSize;
+    // No need of supervisor thread in sequential execution
+    if (fDS->fComm.size() == 1) { return; }
     // Check MPI thread support
-    switch (Env::MPIEnv::Instance().MPIThreadSupport()) {
-    case MPI_THREAD_SINGLE:
-        Throw<std::runtime_error>("The MPI library provides MPI_THREAD_SINGLE, "
-                                  "but dynamic scheduler requires MPI_THREAD_MULTIPLE");
-    case MPI_THREAD_FUNNELED:
-        Throw<std::runtime_error>("The MPI library provides MPI_THREAD_FUNNELED, "
-                                  "but dynamic scheduler requires MPI_THREAD_MULTIPLE");
-    case MPI_THREAD_SERIALIZED:
-        Throw<std::runtime_error>("The MPI library provides MPI_THREAD_SERIALIZED, "
-                                  "but dynamic scheduler requires MPI_THREAD_MULTIPLE");
+    switch (mpl::environment::threading_mode()) {
+    case mpl::threading_modes::single:
+        Throw<std::runtime_error>("The MPI library provides 'single' thread support, "
+                                  "but dynamic scheduler requires 'multiple'");
+    case mpl::threading_modes::funneled:
+        Throw<std::runtime_error>("The MPI library provides 'funneled' thread support, "
+                                  "but dynamic scheduler requires 'multiple'");
+    case mpl::threading_modes::serialized:
+        Throw<std::runtime_error>("The MPI library provides 'serialized' thread support, "
+                                  "but dynamic scheduler requires 'multiple'");
+    case mpl::threading_modes::multiple:
+        break;
     }
     // wait for last supervision to end if needed
     if (fSupervisorThread.joinable()) { fSupervisorThread.join(); }
     // Start supervise
     fSupervisorThread = std::jthread{
         [this] {
-            MPI_Startall(fRecv.size(),  // count
-                         fRecv.data()); // array_of_requests
+            fRecv.startall();
             // inform workers that receive have been posted
-            MPI_Request firstSupervisorRecvReadyBcast;
-            MPI_Ibcast(nullptr,                         // buffer
-                       0,                               // count
-                       MPI_BYTE,                        // datatype
-                       0,                               // root
-                       fDS->fComm,                      // comm
-                       &firstSupervisorRecvReadyBcast); // request
+            std::byte firstRecvReadySemaphore{};
+            auto firstRecvReadyBcast{fDS->fComm.ibcast(0, firstRecvReadySemaphore)};
             int completing{};
             do {
-                int cgCount;
-                std::vector<int> cgRank(fDS->fComm.Size() - 1);
-                MPI_Waitsome(fRecv.size(),         // incount
-                             fRecv.data(),         // array_of_requests
-                             &cgCount,             // outcount
-                             cgRank.data(),        // array_of_indices
-                             MPI_STATUSES_IGNORE); // array_of_statuses
-                for (int i{}; i < cgCount; ++i) {
-                    const auto c{cgRank[i]};
-                    fTaskIDSend[c] = FetchAddTaskID();
-                    if (fTaskIDSend[c] != fDS->fTask.last) {
-                        MPI_Start(&fRecv[c]);
+                const auto [_, cgIndex]{fRecv.waitsome()};
+                for (auto&& i : cgIndex) {
+                    fTaskIDSend[i] = FetchAddTaskID();
+                    if (fTaskIDSend[i] != fDS->fTask.last) {
+                        fRecv.start(i);
                     } else {
                         ++completing;
                     }
-                    MPI_Wait(&fSend[c],          // request
-                             MPI_STATUS_IGNORE); // status
-                    MPI_Start(&fSend[c]);
+                    fSend.wait(i);
+                    fSend.start(i);
                 }
-            } while (completing != fDS->fComm.Size() - 1);
-            MPI_Wait(&firstSupervisorRecvReadyBcast, // request
-                     MPI_STATUS_IGNORE);             // status
-            MPI_Waitall(fSend.size(),                // count
-                        fSend.data(),                // array_of_requests
-                        MPI_STATUSES_IGNORE);        // array_of_statuses
+            } while (completing != fDS->fComm.size() - 1);
+            firstRecvReadyBcast.wait();
+            fSend.waitall();
         }};
 }
 
 template<std::integral T>
 auto DynamicScheduler<T>::Master::Supervisor::FetchAddTaskID() -> T {
-    return std::min(fMainTaskID.fetch_add(fDS->fBatchSize, std::memory_order::relaxed),
-                    fDS->fTask.last);
+    return std::min(fMainTaskID.fetch_add(fDS->fBatchSize), fDS->fTask.last);
 }
 
 template<std::integral T>
@@ -223,55 +154,26 @@ auto DynamicScheduler<T>::Master::PostTaskAction() -> void {
 template<std::integral T>
 DynamicScheduler<T>::Worker::Worker(DynamicScheduler<T>* ds) :
     fDS{ds},
+    fSemaphoreSend{},
+    fSend{fDS->fComm.rsend_init(fSemaphoreSend, 0)},
     fTaskIDRecv{},
-    fRequest{},
-    fBatchCounter{} {
-    auto& [send, recv]{fRequest};
-    MPI_Rsend_init(nullptr,      // buf
-                   0,            // count
-                   MPI_BYTE,     // datatype
-                   0,            // dest
-                   0,            // tag
-                   fDS->fComm,   // comm
-                   &send);       // request
-    MPI_Recv_init(&fTaskIDRecv,  // buf
-                  1,             // count
-                  DataType<T>(), // datatype
-                  0,             // source
-                  1,             // tag
-                  fDS->fComm,    // comm
-                  &recv);        // request
-}
-
-template<std::integral T>
-DynamicScheduler<T>::Worker::~Worker() {
-    auto& [send, recv]{fRequest};
-    MPI_Request_free(&recv);
-    MPI_Request_free(&send);
-}
+    fRecv{fDS->fComm.recv_init(fTaskIDRecv, 0)},
+    fBatchCounter{} {}
 
 template<std::integral T>
 auto DynamicScheduler<T>::Worker::PreLoopAction() -> void {
-    fDS->fExecutingTask = fDS->fTask.first + fDS->fComm.Rank() * fDS->fBatchSize;
+    fDS->fExecutingTask = fDS->fTask.first + fDS->fComm.rank() * fDS->fBatchSize;
     fBatchCounter = 0;
     // wait for supervisor to post receive
-    MPI_Request firstSupervisorRecvReadyBcast;
-    MPI_Ibcast(nullptr,                         // buffer
-               0,                               // count
-               MPI_BYTE,                        // datatype
-               0,                               // root
-               fDS->fComm,                      // comm
-               &firstSupervisorRecvReadyBcast); // request
-    MPI_Wait(&firstSupervisorRecvReadyBcast,    // request
-             MPI_STATUS_IGNORE);                // status
+    std::byte firstRecvReadySemaphore{};
+    fDS->fComm.ibcast(0, firstRecvReadySemaphore).wait();
 }
 
 template<std::integral T>
 auto DynamicScheduler<T>::Worker::PreTaskAction() -> void {
     if (fBatchCounter == 0) {
-        auto& [send, recv]{fRequest};
-        MPI_Start(&recv);
-        MPI_Start(&send);
+        fRecv.start();
+        fSend.start();
     }
 }
 
@@ -279,9 +181,8 @@ template<std::integral T>
 auto DynamicScheduler<T>::Worker::PostTaskAction() -> void {
     if (++fBatchCounter == fDS->fBatchSize) {
         fBatchCounter = 0;
-        MPI_Waitall(fRequest.size(),      // count
-                    fRequest.data(),      // array_of_requests
-                    MPI_STATUSES_IGNORE); // array_of_statuses
+        fSend.wait();
+        fRecv.wait();
         fDS->fExecutingTask = fTaskIDRecv;
     } else {
         ++fDS->fExecutingTask;
@@ -290,9 +191,8 @@ auto DynamicScheduler<T>::Worker::PostTaskAction() -> void {
 
 template<std::integral T>
 auto DynamicScheduler<T>::Worker::PostLoopAction() -> void {
-    MPI_Waitall(fRequest.size(),      // count
-                fRequest.data(),      // array_of_requests
-                MPI_STATUSES_IGNORE); // array_of_statuses
+    fSend.wait();
+    fRecv.wait();
 }
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution

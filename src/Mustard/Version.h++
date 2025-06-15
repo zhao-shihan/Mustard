@@ -19,7 +19,7 @@
 #pragma once
 
 #if __cplusplus < 202002L
-#    error "Mustard need at least C++20"
+#    error "Mustard requires at least C++20"
 #endif
 
 #include "Mustard/Version.inl"

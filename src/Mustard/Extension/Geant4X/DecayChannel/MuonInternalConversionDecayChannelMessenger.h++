@@ -48,7 +48,7 @@ private:
     std::unique_ptr<G4UIcmdWithADouble> fMetropolisDelta;
     std::unique_ptr<G4UIcmdWithAnInteger> fMetropolisDiscard;
     std::unique_ptr<G4UIcmdWithoutParameter> fInitialize;
-    std::unique_ptr<G4UIcommand> fEstimateBiasScale;
+    std::unique_ptr<G4UIcommand> fEstimateWeightNormalizationFactor;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline DecayChannel

@@ -22,6 +22,8 @@
 
 #include "backward.hpp"
 
+#include "mpl/mpl.hpp"
+
 #include <climits>
 #include <string>
 #include <utility>
@@ -36,7 +38,7 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const f
     resolver.load_stacktrace(stack);
 
     const auto lineHeader{Env::MPIEnv::Available() ?
-                              fmt::format("MPI{}> ", Env::MPIEnv::Instance().CommWorldRank()) :
+                              fmt::format("MPI{}> ", mpl::environment::comm_world().rank()) :
                               ""};
     auto text{lineHeader + "Stack trace (most recent call last):\n"};
     backward::SnippetFactory snippetFactory;

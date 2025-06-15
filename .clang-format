@@ -94,27 +94,33 @@ IncludeCategories:
   - Regex: '"gsl.*\.h"'
     Priority: 10
     CaseSensitive: true
-  - Regex: '"mpi.*\.h"'
+  - Regex: '"mpl/.*"'
     Priority: 11
     CaseSensitive: true
-  - Regex: '"muc/.*"'
+  - Regex: '"mpi.*\.h"'
     Priority: 12
     CaseSensitive: true
-  - Regex: '"envparse/.*"'
+  - Regex: '"EFM/.*\.h.*"'
     Priority: 13
     CaseSensitive: true
-  - Regex: '"gsl/.*"'
+  - Regex: '"muc/.*"'
     Priority: 14
     CaseSensitive: true
-  - Regex: '"fmt/.*\.h"'
+  - Regex: '"envparse/.*\.h.*"'
     Priority: 15
+    CaseSensitive: true
+  - Regex: '"gsl/.*"'
+    Priority: 16
+    CaseSensitive: true
+  - Regex: '"fmt/.*\.h"'
+    Priority: 17
     CaseSensitive: true
   # very general
   - Regex: '".*"'
     Priority: 1
     CaseSensitive: true
   - Regex: '<.*>'
-    Priority: 16
+    Priority: 18
     CaseSensitive: true
 IndentAccessModifiers: false
 IndentCaseBlocks: false

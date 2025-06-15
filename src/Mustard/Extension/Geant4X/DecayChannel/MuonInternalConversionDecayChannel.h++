@@ -45,7 +45,7 @@ public:
     auto Bias(std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> b) -> void;
 
     auto Initialize() -> void;
-    auto EstimateBiasScale(unsigned long long n) -> std::tuple<double, double, double>; // return: scale, error, Neff
+    auto EstimateWeightNormalizationFactor(unsigned long long n) -> std::tuple<double, double, double>; // return: factor, error, Neff
 
     auto DecayIt(G4double) -> G4DecayProducts* override;
 

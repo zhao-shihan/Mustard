@@ -16,15 +16,18 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannelMessenger.h++"
+#include "Mustard/Utility/MPIReseedRandomEngine.h++"
+#include "Mustard/Utility/Print.h++"
 
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithoutParameter.hh"
 #include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
+
+#include "mpl/mpl.hpp"
 
 #include "fmt/core.h"
 
@@ -39,7 +42,7 @@ MuonInternalConversionDecayChannelMessenger::MuonInternalConversionDecayChannelM
     fMetropolisDelta{},
     fMetropolisDiscard{},
     fInitialize{},
-    fEstimateBiasScale{} {
+    fEstimateWeightNormalizationFactor{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuonDecay/ICDecay/");
     fDirectory->SetGuidance("Muon(ium) internal pair production decay channel (mu->eeevv / M->eeevve).");
@@ -66,13 +69,13 @@ MuonInternalConversionDecayChannelMessenger::MuonInternalConversionDecayChannelM
     fInitialize->SetGuidance("Manaually (re)initialize random state.");
     fInitialize->AvailableForStates(G4State_Idle);
 
-    fEstimateBiasScale = std::make_unique<G4UIcommand>("/Mustard/Physics/MuonDecay/ICDecay/EstimateBiasScale", this);
-    fEstimateBiasScale->SetGuidance("Estimate the bias scale with error of the user-defined bias with 1000*n samples.");
-    fEstimateBiasScale->SetParameter(new G4UIparameter{"kinematics_name", 's', false});
-    fEstimateBiasScale->SetParameter(new G4UIparameter{"parent_name", 's', false});
-    fEstimateBiasScale->SetParameter(new G4UIparameter{"n_kilo_sample", 'l', false});
-    fEstimateBiasScale->SetRange("n_kilo_sample >= 0");
-    fEstimateBiasScale->AvailableForStates(G4State_Idle);
+    fEstimateWeightNormalizationFactor = std::make_unique<G4UIcommand>("/Mustard/Physics/MuonDecay/ICDecay/EstimateWeightNormalizationFactor", this);
+    fEstimateWeightNormalizationFactor->SetGuidance("Estimate the weight normalization factor with error of the user-defined bias by 1000*n samples.");
+    fEstimateWeightNormalizationFactor->SetParameter(new G4UIparameter{"kinematics_name", 's', false});
+    fEstimateWeightNormalizationFactor->SetParameter(new G4UIparameter{"parent_name", 's', false});
+    fEstimateWeightNormalizationFactor->SetParameter(new G4UIparameter{"n_kilo_sample", 'l', false});
+    fEstimateWeightNormalizationFactor->SetRange("n_kilo_sample >= 0");
+    fEstimateWeightNormalizationFactor->AvailableForStates(G4State_Idle);
 }
 
 MuonInternalConversionDecayChannelMessenger::~MuonInternalConversionDecayChannelMessenger() = default;
@@ -90,7 +93,7 @@ auto MuonInternalConversionDecayChannelMessenger::SetNewValue(G4UIcommand* comma
         Deliver<MuonInternalConversionDecayChannel>([&](auto&& r) {
             r.Initialize();
         });
-    } else if (command == fEstimateBiasScale.get()) {
+    } else if (command == fEstimateWeightNormalizationFactor.get()) {
         std::string kinematicsName;
         std::string parentName;
         unsigned long long nKiloSample;
@@ -98,14 +101,15 @@ auto MuonInternalConversionDecayChannelMessenger::SetNewValue(G4UIcommand* comma
         is >> kinematicsName >> parentName >> nKiloSample;
         Deliver<MuonInternalConversionDecayChannel>([&](auto&& r) {
             if (r.GetKinematicsName() == kinematicsName and r.GetParentName() == parentName) {
-                const auto [scale, error, nEff]{r.EstimateBiasScale(1000 * nKiloSample)};
-                if (Env::MPIEnv::Instance().OnCommWorldMaster()) {
-                    fmt::println("Bias scale of user-defined bias on mu->eeevv ({} decay according to {}):\n"
-                                 "    {} +/- {}\n"
-                                 "      rel. err. = {:.2}% ,  N_eff = {:.2f}\n"
-                                 "(Multiply event weights with this bias scale to normalize the histogram to number of events)",
-                                 parentName, kinematicsName, scale, error, error / scale * 100., nEff);
-                }
+                MPIReseedRandomEngine();
+                const auto nSample{1000 * nKiloSample};
+                MasterPrintLn("Estimating mu->eeevv weight normalization factor with {} samples...", nSample);
+                const auto [result, error, nEff]{r.EstimateWeightNormalizationFactor(nSample)};
+                MasterPrintLn("Weight normalization factor of user-defined bias on mu->eeevv ({} decay according to {}):\n"
+                              "    {} +/- {}\n"
+                              "      rel. err. = {:.2}% ,  N_eff = {:.2f}\n"
+                              "(Multiply event weights with this factor to normalize weights to the number of generated events)",
+                              parentName, kinematicsName, result, error, error / result * 100., nEff);
             }
         });
     }

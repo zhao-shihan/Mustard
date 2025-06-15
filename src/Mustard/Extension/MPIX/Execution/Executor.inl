@@ -44,23 +44,14 @@ Executor<T>::Executor(std::string executionName, std::string taskName, ScheduleB
     fCPUTimeStopwatch{},
     fExecutionWallTime{},
     fExecutionCPUTime{},
-    fNLocalExecutedTaskOfAllProcessKeptByMaster{},
-    fExecutionWallTimeOfAllProcessKeptByMaster{},
-    fExecutionCPUTimeOfAllProcessKeptByMaster{} {
-    if (const auto& mpiEnv{Env::MPIEnv::Instance()};
-        mpiEnv.OnCommWorldMaster()) {
-        fNLocalExecutedTaskOfAllProcessKeptByMaster.resize(mpiEnv.CommWorldSize());
-        fExecutionWallTimeOfAllProcessKeptByMaster.resize(mpiEnv.CommWorldSize());
-        fExecutionCPUTimeOfAllProcessKeptByMaster.resize(mpiEnv.CommWorldSize());
-    }
-}
+    fExecutionInfoGatheredByMaster{} {}
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 template<template<typename> typename AScheduler>
     requires std::derived_from<AScheduler<T>, Scheduler<T>>
 auto Executor<T>::SwitchScheduler() -> void {
-    if (fExecuting) { Throw<std::logic_error>("Try switching scheduler kernel during processing"); }
+    if (fExecuting) { Throw<std::logic_error>("Try switching scheduler during executing"); }
     auto task{std::move(fScheduler->fTask)};
     fScheduler = std::make_unique_for_overwrite<AScheduler<T>>();
     fScheduler->fTask = std::move(task);
@@ -72,18 +63,19 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     // reset
     if (task.last < task.first) { Throw<std::invalid_argument>("task.last < task.first"); }
     if (task.last == task.first) { return 0; }
-    if (task.last - task.first < static_cast<T>(Env::MPIEnv::Instance().CommWorldSize())) {
-        Throw<std::runtime_error>("Number of tasks < size of MPI_COMM_WORLD");
+    if (task.last - task.first < static_cast<T>(mpl::environment::comm_world().size())) {
+        Throw<std::runtime_error>("Number of tasks < number of processes");
     }
     fScheduler->fTask = task;
     fScheduler->Reset();
-    assert(ExecutingTask() == Task().first);
-    assert(NLocalExecutedTask() == 0);
-    assert(fScheduler->NExecutedTask().second == 0);
+    Expects(ExecutingTask() == Task().first);
+    Expects(NLocalExecutedTask() == 0);
+    Expects(fScheduler->NExecutedTask().second == 0);
     // initialize
     fExecuting = true;
     fScheduler->PreLoopAction();
-    MPI_Barrier(MPI_COMM_WORLD);
+    const auto& commWorld{mpl::environment::comm_world()};
+    commWorld.barrier();
     fExecutionBeginSystemTime = scsc::now();
     fWallTimeStopwatch.reset();
     fCPUTimeStopwatch.reset();
@@ -92,7 +84,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     while (ExecutingTask() != Task().last) {
         fScheduler->PreTaskAction();
         const auto taskID{ExecutingTask()};
-        assert(taskID <= Task().last);
+        Expects(taskID <= Task().last);
         std::invoke(std::forward<decltype(F)>(F), taskID);
         ++fScheduler->fNLocalExecutedTask;
         fScheduler->PostTaskAction();
@@ -101,62 +93,18 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     // finalize
     fExecutionWallTime = fWallTimeStopwatch.s_elapsed();
     fExecutionCPUTime = fCPUTimeStopwatch.s_used();
-    MPI_Request barrierRequest;
-    MPI_Ibarrier(MPI_COMM_WORLD, &barrierRequest);
-    struct GatheringDataType {
-        T nLocalExecutedTask;
-        double wallTime;
-        double cpuTime;
-    };
-    MPI_Datatype gatheringDataType;
-    MPI_Type_create_struct(3,                                                                       // count
-                           std::array<int, 3>{1,                                                    // array_of_block_lengths
-                                              1,                                                    // array_of_block_lengths
-                                              1}                                                    // array_of_block_lengths
-                               .data(),                                                             // array_of_block_lengths
-                           std::array<MPI_Aint, 3>{offsetof(GatheringDataType, nLocalExecutedTask), // array_of_displacements
-                                                   offsetof(GatheringDataType, wallTime),           // array_of_displacements
-                                                   offsetof(GatheringDataType, cpuTime)}            // array_of_displacements
-                               .data(),                                                             // array_of_displacements
-                           std::array<MPI_Datatype, 3>{DataType<T>(),                               // array_of_types
-                                                       MPI_DOUBLE,                                  // array_of_types
-                                                       MPI_DOUBLE}                                  // array_of_types
-                               .data(),                                                             // array_of_types
-                           &gatheringDataType);                                                     // newtype
-    GatheringDataType gatheringData{fScheduler->fNLocalExecutedTask, fExecutionWallTime, fExecutionCPUTime};
-    std::vector<GatheringDataType> masterGatheredData;
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    if (mpiEnv.OnCommWorldMaster()) {
-        masterGatheredData.resize(mpiEnv.CommWorldSize());
+    auto finalizingBarrier{commWorld.ibarrier()};
+    if (commWorld.rank() == 0) {
+        fExecutionInfoGatheredByMaster.resize(commWorld.size());
     }
-    MPI_Request gatherRequest;
-    MPI_Type_commit(&gatheringDataType);
-    MPI_Igather(&gatheringData,            // sendbuf
-                1,                         // sendcount
-                gatheringDataType,         // sendtype
-                masterGatheredData.data(), // recvbuf
-                1,                         // recvcount
-                gatheringDataType,         // recvtype
-                0,                         // root
-                MPI_COMM_WORLD,            // comm
-                &gatherRequest);           // request
-    MPI_Type_free(&gatheringDataType);
+    const std::tuple executionInfo{fScheduler->fNLocalExecutedTask, fExecutionWallTime, fExecutionCPUTime};
+    auto gatherExecutionInfo{commWorld.igather(0, executionInfo, fExecutionInfoGatheredByMaster.data())};
     fScheduler->PostLoopAction();
     fExecuting = false;
-    while (true) {
-        int reached;
-        MPI_Test(&barrierRequest, &reached, MPI_STATUS_IGNORE);
-        if (reached) { break; }
+    while (not finalizingBarrier.test()) {
         std::this_thread::sleep_for(fFinalPollingPeriod);
     }
-    MPI_Wait(&gatherRequest, MPI_STATUS_IGNORE);
-    if (mpiEnv.OnCommWorldMaster()) {
-        for (int rank{}; rank < mpiEnv.CommWorldSize(); ++rank) {
-            fNLocalExecutedTaskOfAllProcessKeptByMaster[rank] = masterGatheredData[rank].nLocalExecutedTask;
-            fExecutionWallTimeOfAllProcessKeptByMaster[rank] = masterGatheredData[rank].wallTime;
-            fExecutionCPUTimeOfAllProcessKeptByMaster[rank] = masterGatheredData[rank].cpuTime;
-        }
-    }
+    gatherExecutionInfo.wait();
     PostLoopReport();
     return NLocalExecutedTask();
 }
@@ -164,19 +112,18 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PrintExecutionSummary() const -> void {
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    if (not mpiEnv.OnCommWorldMaster()) { return; }
-    if (fExecuting) {
+    const auto& commWorld{mpl::environment::comm_world()};
+    if (commWorld.rank() != 0) { return; }
+    if (fExecutionInfoGatheredByMaster.empty() or fExecuting) {
         PrintWarning("Execution summary not available for now");
         return;
     }
     Print("+------------------+--------------> Summary <-------------+-------------------+\n"
           "| Rank in world    | Executed          | Wall time (s)    | CPU time (s)      |\n"
           "+------------------+-------------------+------------------+-------------------+\n");
-    for (int rank{}; rank < mpiEnv.CommWorldSize(); ++rank) {
-        const auto& executed{fNLocalExecutedTaskOfAllProcessKeptByMaster[rank]};
-        const auto& wallTime{fExecutionWallTimeOfAllProcessKeptByMaster[rank]};
-        const auto& cpuTime{fExecutionCPUTimeOfAllProcessKeptByMaster[rank]};
+    Expects(ssize(fExecutionInfoGatheredByMaster) == commWorld.size());
+    for (int rank{}; rank < commWorld.size(); ++rank) {
+        const auto& [executed, wallTime, cpuTime]{fExecutionInfoGatheredByMaster[rank]};
         PrintLn("| {:16} | {:17} | {:16.3f} | {:17.3f} |", rank, executed, wallTime, cpuTime);
     }
     PrintLn("+------------------+--------------> Summary <-------------+-------------------+");
@@ -186,13 +133,13 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PreLoopReport() const -> void {
     if (not fPrintProgress) { return; }
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    if (not mpiEnv.OnCommWorldMaster()) { return; }
+    const auto& commWorld{mpl::environment::comm_world()};
+    if (commWorld.rank() != 0) { return; }
     Print("+----------------------------------> Start <----------------------------------+\n"
           "| {:75} |\n"
           "+----------------------------------> Start <----------------------------------+\n",
           fmt::format("[{:%FT%T%z}] {} has started on {} process{}",
-                      muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""));
+                      muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime)), fExecutionName, commWorld.size(), commWorld.size() > 1 ? "es" : ""));
 }
 
 template<std::integral T>
@@ -209,11 +156,11 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
         // manual mode
         if ((iEnded + 1) % fPrintProgressModulo != 0) { return; }
     }
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
+    const auto& commWorld{mpl::environment::comm_world()};
     Print("MPI{}> [{:%FT%T%z}] {} {} has ended\n"
           "MPI{}>   {} elaps., {}\n",
-          mpiEnv.CommWorldRank(), muc::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
-          mpiEnv.CommWorldRank(), SToDHMS(secondsElapsed),
+          commWorld.rank(), muc::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
+          commWorld.rank(), SToDHMS(secondsElapsed),
           [&, goodForEstimation{goodForEstimation}, nExecutedTask{nExecutedTask}] {
               if (goodForEstimation) {
                   const auto eta{(NTask() - nExecutedTask) / speed};
@@ -230,18 +177,20 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostLoopReport() const -> void {
     if (not fPrintProgress) { return; }
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    if (not mpiEnv.OnCommWorldMaster()) { return; }
+    const auto& commWorld{mpl::environment::comm_world()};
+    if (commWorld.rank() != 0) { return; }
     const auto now{scsc::now()};
-    const auto maxWallTime{*std::ranges::max_element(fExecutionWallTimeOfAllProcessKeptByMaster)};
-    const auto totalCpuTime{muc::ranges::reduce(fExecutionCPUTimeOfAllProcessKeptByMaster)};
+    const auto maxWallTime{get<1>(*std::ranges::max_element(fExecutionInfoGatheredByMaster, std::less{},
+                                                            [](auto&& a) { return std::get<1>(a); }))};
+    const auto totalCpuTime{muc::ranges::transform_reduce(fExecutionInfoGatheredByMaster, 0., std::plus{},
+                                                          [](auto&& a) { return std::get<2>(a); })};
     Print("+-----------------------------------> End <-----------------------------------+\n"
           "| {:75} |\n"
           "| {:75} |\n"
           "| {:75} |\n"
           "| {:75} |\n"
           "+-----------------------------------> End <-----------------------------------+\n",
-          fmt::format("[{:%FT%T%z}] {} has ended on {} process{}", muc::localtime(scsc::to_time_t(now)), fExecutionName, mpiEnv.CommWorldSize(), mpiEnv.Parallel() ? "es" : ""),
+          fmt::format("[{:%FT%T%z}] {} has ended on {} process{}", muc::localtime(scsc::to_time_t(now)), fExecutionName, commWorld.size(), commWorld.size() > 1 ? "es" : ""),
           fmt::format("  Start time: {:%FT%T%z}", muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime))),
           fmt::format("   Wall time: {:.3f} seconds{}", maxWallTime, maxWallTime <= 60 ? "" : " (" + SToDHMS(maxWallTime) + ')'),
           fmt::format("    CPU time: {:.3f} seconds{}", totalCpuTime, totalCpuTime <= 60 ? "" : " (" + SToDHMS(totalCpuTime) + ')'));

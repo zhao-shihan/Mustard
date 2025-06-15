@@ -1,7 +1,0 @@
-message(STATUS "Looking for MPI (C interface)")
-
-set(MUSTARD_MPI_MINIMUM_REQUIRED 3.1)
-set(MUSTARD_MPI_REQUIRED_COMPONENTS C)
-find_package(MPI ${MUSTARD_MPI_MINIMUM_REQUIRED} REQUIRED ${MUSTARD_MPI_REQUIRED_COMPONENTS})
-
-message(STATUS "Looking for MPI (C interface) - found (version: ${MPI_C_VERSION})")

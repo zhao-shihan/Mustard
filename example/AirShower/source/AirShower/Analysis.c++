@@ -2,13 +2,14 @@
 #include "AirShower/Action/TrackingAction.h++"
 #include "AirShower/Analysis.h++"
 
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/Geant4X/Utility/ConvertGeometry.h++"
 #include "Mustard/Extension/MPIX/ParallelizePath.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "TFile.h"
 #include "TMacro.h"
+
+#include "mpl/mpl.hpp"
 
 #include "fmt/format.h"
 
@@ -42,7 +43,7 @@ auto Analysis::RunBegin(int runID) -> void {
     }
     fLastUsedFullFilePath = std::move(fullFilePath);
     // save geometry
-    if (filePathChanged and Mustard::Env::MPIEnv::Instance().OnCommWorldMaster()) {
+    if (filePathChanged and mpl::environment::comm_world().rank() == 0) {
         Mustard::Geant4X::ConvertGeometryToTMacro("AirShower_gdml", "AirShower.gdml")->Write();
     }
     // initialize outputs

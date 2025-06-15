@@ -51,15 +51,14 @@ auto MakeFlatRDFEventSplitPoint(ROOT::RDF::RNode rdf,
 template<std::integral T>
 auto RDFEventSplit(ROOT::RDF::RNode rdf,
                    std::string eventIDColumnName) -> std::vector<gsl::index> {
-    auto eventSplit{not Env::MPIEnv::Available() or Env::MPIEnv::Instance().OnCommWorldMaster() ?
+    const auto& commWorld{mpl::environment::comm_world()};
+    auto eventSplit{commWorld.rank() == 0 ?
                         internal::MakeFlatRDFEventSplitPoint<T>(std::move(rdf), std::move(eventIDColumnName)).second :
                         std::vector<gsl::index>{}};
-    if (Env::MPIEnv::Available()) {
-        auto eventSplitSize{gsl::narrow<int>(eventSplit.size())};
-        MPI_Bcast(&eventSplitSize, 1, MPIX::DataType(eventSplitSize), 0, MPI_COMM_WORLD);
-        eventSplit.resize(eventSplitSize);
-        MPI_Bcast(eventSplit.data(), eventSplitSize, MPIX::DataType(eventSplit.data()), 0, MPI_COMM_WORLD);
-    }
+    auto eventSplitSize{eventSplit.size()};
+    commWorld.bcast(0, eventSplitSize);
+    eventSplit.resize(eventSplitSize);
+    commWorld.bcast(0, eventSplit.data(), mpl::vector_layout<gsl::index>{eventSplit.size()});
     return eventSplit;
 }
 
@@ -77,31 +76,26 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
     constexpr auto nRDF{static_cast<gsl::index>(N)};
     std::array<std::pair<std::vector<T>, std::vector<gsl::index>>, N> flatES;
     // Build all RDF event split
-    if (Env::MPIEnv::Available()) { // Parallel
-        const auto& mpiEnv{Env::MPIEnv::Instance()};
-        const auto nProcess{mpiEnv.CommWorldSize()};
-        for (gsl::index i{}; i < nRDF; ++i) {
-            if (mpiEnv.CommWorldRank() == i % nProcess) {
-                flatES[i] = internal::MakeFlatRDFEventSplitPoint<T>(
-                    std::move(rdf[i]), eventIDColumnName[i]);
-            }
-        }
-        // Broadcast to all processes
-        for (gsl::index i{}; i < nRDF; ++i) {
-            auto& [eventID, es]{flatES[i]};
-            auto esSize{gsl::narrow<int>(es.size())};
-            MPI_Bcast(&esSize, 1, MPIX::DataType(esSize), i % nProcess, MPI_COMM_WORLD);
-            eventID.resize(esSize - 1);
-            es.resize(esSize);
-            MPI_Bcast(&eventID, esSize - 1, MPIX::DataType<T>(), i % nProcess, MPI_COMM_WORLD);
-            MPI_Bcast(&es, esSize, MPIX::DataType<gsl::index>(), i % nProcess, MPI_COMM_WORLD);
-        }
-    } else { // Sequential
-        for (gsl::index i{}; i < nRDF; ++i) {
+    const auto& commWorld{mpl::environment::comm_world()};
+    for (gsl::index i{}; i < nRDF; ++i) {
+        if (commWorld.rank() == i % commWorld.size()) {
             flatES[i] = internal::MakeFlatRDFEventSplitPoint<T>(
-                std::move(rdf[i]), std::move(eventIDColumnName[i]));
+                std::move(rdf[i]), eventIDColumnName[i]);
         }
     }
+    // Broadcast to all processes
+    mpl::irequest_pool bcastFlatES;
+    for (gsl::index i{}; i < nRDF; ++i) {
+        auto& [eventID, es]{flatES[i]};
+        const auto rootRank{i % commWorld.size()};
+        auto esSize{es.size()};
+        commWorld.bcast(rootRank, esSize);
+        eventID.resize(esSize - 1);
+        es.resize(esSize);
+        bcastFlatES.push(commWorld.ibcast(rootRank, eventID.data(), mpl::vector_layout<T>{eventID.size()}));
+        bcastFlatES.push(commWorld.ibcast(rootRank, es.data(), mpl::vector_layout<gsl::index>{es.size()}));
+    }
+    bcastFlatES.waitall();
 
     std::array<muc::flat_hash_map<T, RDFEntryRange>, N> eventMap;
     for (gsl::index iRDF{}; iRDF < nRDF; ++iRDF) {

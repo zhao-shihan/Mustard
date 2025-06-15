@@ -16,10 +16,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/Geant4X/Interface/MPIExecutive.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
+
+#include "mpl/mpl.hpp"
 
 #include <ostream>
 #include <source_location>
@@ -31,16 +32,15 @@ MPIExecutive::MPIExecutive() :
     WeakSingleton{this} {}
 
 auto MPIExecutive::CheckSequential() const -> void {
-    const auto& mpiEnv = Env::MPIEnv::Instance();
-    if (mpiEnv.Parallel()) {
-        if (mpiEnv.OnCommWorldMaster()) {
-            G4Exception(std::source_location::current().function_name(),
-                        "InteractiveSessionMustBeSequential",
-                        JustWarning,
-                        "Interactive session must be run with only 1 process.\nThrowing an instance of std::logic_error.");
-        }
-        Throw<std::logic_error>("Interactive session must be sequential");
+    const auto& commWorld{mpl::environment::comm_world()};
+    if (commWorld.size() == 1) { return; }
+    if (commWorld.rank() == 0) {
+        G4Exception(std::source_location::current().function_name(),
+                    "InteractiveSessionMustBeSequential",
+                    JustWarning,
+                    "Interactive session must be run with only 1 process.\nThrowing an instance of std::logic_error.");
     }
+    Throw<std::logic_error>("Interactive session must be sequential");
 }
 
 auto MPIExecutive::ExecuteCommand(const std::string& command) -> bool {

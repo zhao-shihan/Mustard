@@ -18,15 +18,17 @@
 
 #pragma once
 
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/DataType.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
-#include "mpi.h"
+#include "mpl/mpl.hpp"
 
+#include "muc/math"
 #include "muc/utility"
+
+#include "gsl/gsl"
 
 #include <array>
 #include <cmath>
@@ -36,6 +38,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <type_traits>
 #include <variant>
 #include <vector>
 
@@ -55,28 +58,6 @@ private:
     virtual auto NExecutedTask() const -> std::pair<bool, T> override;
 
 private:
-    class Comm final {
-    public:
-        Comm();
-        ~Comm();
-
-        operator MPI_Comm() const { return fComm; }
-        auto Rank() const -> int { return fRank; }
-        auto Size() const -> int { return fSize; }
-
-    private:
-        const MPI_Comm fComm;
-        const int fRank;
-        const int fSize;
-    };
-
-    struct Dummy final : std::monostate {
-        auto PreLoopAction() -> void { muc::unreachable(); }
-        auto PreTaskAction() -> void { muc::unreachable(); }
-        auto PostTaskAction() -> void { muc::unreachable(); }
-        auto PostLoopAction() -> void { muc::unreachable(); }
-    };
-
     class Master final : public NonMoveableBase {
     public:
         Master(DynamicScheduler<T>* ds);
@@ -90,18 +71,18 @@ private:
         class Supervisor final : public NonMoveableBase {
         public:
             Supervisor(DynamicScheduler<T>* ds);
-            ~Supervisor();
 
             auto FetchAddTaskID() -> T;
 
             auto Start() -> void;
 
         private:
-            DynamicScheduler<T>* const fDS;
+            DynamicScheduler<T>* fDS;
             std::atomic<T> fMainTaskID;
-            std::vector<MPI_Request> fRecv;
+            std::byte fSemaphoreRecv;
+            mpl::prequest_pool fRecv;
             std::vector<T> fTaskIDSend;
-            std::vector<MPI_Request> fSend;
+            mpl::prequest_pool fSend;
             std::jthread fSupervisorThread;
         };
 
@@ -115,7 +96,6 @@ private:
     class Worker final : public NonMoveableBase {
     public:
         Worker(DynamicScheduler<T>* ds);
-        ~Worker();
 
         auto PreLoopAction() -> void;
         auto PreTaskAction() -> void;
@@ -124,16 +104,18 @@ private:
 
     private:
         DynamicScheduler<T>* fDS;
+        std::byte fSemaphoreSend;
+        mpl::prequest fSend;
         T fTaskIDRecv;
-        std::array<MPI_Request, 2> fRequest;
+        mpl::prequest fRecv;
         T fBatchCounter;
     };
     friend class Worker;
 
 private:
-    Comm fComm;
+    mpl::communicator fComm;
     T fBatchSize;
-    std::variant<Dummy, Master, Worker> fContext;
+    std::variant<Master, Worker> fContext;
 
     static constexpr auto fgBalancingFactor{0.001};
 };

@@ -59,7 +59,7 @@ auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecip
     }
     fDelivering = true;
     for (auto&& recipient : recipientSet) {
-        std::invoke(Action, *recipient);
+        std::invoke(std::forward<decltype(Action)>(Action), *recipient);
     }
     fDelivering = false;
 }

@@ -27,10 +27,10 @@ For more information, please check out [the image repository homepage](https://g
 
 Required:
 
-1. [MPI (Message Passing Interface)](https://www.mpi-forum.org/) (≥ 3.0, [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/), [Intel MPI](https://www.intel.cn/content/www/cn/zh/developer/tools/oneapi/mpi-library.html), etc.)
-2. [Eigen (A C++ template library for linear algebra)](https://eigen.tuxfamily.org/) (≥ 3.4.0)
-3. [Geant4 (Toolkit for the simulation of the passage of particles through matter)](https://geant4.org/) (≥ 11.0.0, **with GDML**)
-4. [ROOT (An open-source data analysis framework)](https://root.cern/) (≥ 6.30.00, **with GDML**)
+1. [Eigen (A C++ template library for linear algebra)](https://eigen.tuxfamily.org/) (≥ 3.4.0)
+2. [Geant4 (Toolkit for the simulation of the passage of particles through matter)](https://geant4.org/) (≥ 11.0.0, **with GDML**)
+3. [ROOT (An open-source data analysis framework)](https://root.cern/) (≥ 6.30.00, **with GDML**)
+4. [MPI (Message Passing Interface)](https://www.mpi-forum.org/) (≥ 3.1, [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/), [Intel MPI](https://www.intel.cn/content/www/cn/zh/developer/tools/oneapi/mpi-library.html), etc.)
 
 Required, built-in if not found (network or pre-downloaded source is required):
 
@@ -38,8 +38,9 @@ Required, built-in if not found (network or pre-downloaded source is required):
 2. [zhao-shihan/backward-cpp (A beautiful stack trace pretty printer for C++)](https://github.com/zhao-shihan/backward-cpp) (≥ 1.6.1, built-in if not found)
 3. [EFM (A generic bilinear/trilinear interpolator)](https://github.com/zhao-shihan/EFM) (≥ 0.1.0, built-in if not found)
 4. [envparse (A simple, header-only environment variable parser in C++)](https://github.com/zhao-shihan/envparse) (≥ 1.0.0, built-in if not found)
-5. [indicators (Activity Indicators for Modern C++)](https://github.com/p-ranav/indicators) (≥ 2.3, built-in if not found)
-6. [fmt (A modern formatting library)](https://github.com/fmtlib/fmt) (≥ 11.2.0, built-in if not found)
-7. [muc (A standard non-standard C++ library)](https://github.com/zhao-shihan/muc) (≥ 0.25.520, built-in if not found)
-8. [Microsoft.GSL](https://github.com/Microsoft/GSL) ([ISO C++ guidelines support library](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#gsl-guidelines-support-library)) (≥ 4.2.0, built-in if not found)
-9.  [yaml-cpp (A YAML parser and emitter in C++)](https://github.com/jbeder/yaml-cpp) (≥ 0.8.0, built-in if not found)
+5. [fmt (A modern formatting library)](https://github.com/fmtlib/fmt) (≥ 11.2.0, built-in if not found)
+6. [indicators (Activity Indicators for Modern C++)](https://github.com/p-ranav/indicators) (≥ 2.3, built-in if not found)
+7. [Microsoft.GSL](https://github.com/Microsoft/GSL) ([ISO C++ guidelines support library](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#gsl-guidelines-support-library)) (≥ 4.2.0, built-in if not found)
+8. [MPL (A C++17 message passing library based on MPI)](https://github.com/rabauke/mpl) (≥ 0.5.0, built-in if not found)
+9. [muc (A standard non-standard C++ library)](https://github.com/zhao-shihan/muc) (≥ 0.25.522, built-in if not found)
+10. [yaml-cpp (A YAML parser and emitter in C++)](https://github.com/jbeder/yaml-cpp) (≥ 0.8.0, built-in if not found)

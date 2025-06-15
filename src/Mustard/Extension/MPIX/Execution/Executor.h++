@@ -19,23 +19,23 @@
 #pragma once
 
 #include "Mustard/Concept/MPIPredefined.h++"
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/Execution/DynamicScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
-#include "mpi.h"
+#include "mpl/mpl.hpp"
 
 #include "muc/math"
 #include "muc/numeric"
 #include "muc/time"
 
+#include "gsl/gsl"
+
 #include "fmt/chrono.h"
 #include "fmt/format.h"
 
 #include <algorithm>
-#include <cassert>
 #include <chrono>
 #include <cmath>
 #include <concepts>
@@ -119,9 +119,7 @@ private:
     double fExecutionWallTime;
     double fExecutionCPUTime;
 
-    std::vector<T> fNLocalExecutedTaskOfAllProcessKeptByMaster;
-    std::vector<double> fExecutionWallTimeOfAllProcessKeptByMaster;
-    std::vector<double> fExecutionCPUTimeOfAllProcessKeptByMaster;
+    std::vector<std::tuple<T, double, double>> fExecutionInfoGatheredByMaster;
 };
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution

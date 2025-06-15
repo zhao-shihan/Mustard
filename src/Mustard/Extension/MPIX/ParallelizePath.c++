@@ -18,8 +18,14 @@
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/ParallelizePath.h++"
+#include "Mustard/Utility/PrettyLog.h++"
+
+#include "mpl/mpl.hpp"
 
 #include "fmt/format.h"
+
+#include <cstddef>
+#include <exception>
 
 namespace Mustard::inline Extension::MPIX {
 
@@ -32,21 +38,24 @@ auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path
         Throw<std::invalid_argument>(fmt::format("Invalid file name '{}'", stem.c_str()));
     }
 
-    if (const auto& mpiEnv{Env::MPIEnv::Instance()};
-        mpiEnv.Parallel()) {
+    if (const auto& commWorld{mpl::environment::comm_world()};
+        commWorld.size() > 1) {
+        const auto& mpiEnv{Env::MPIEnv::Instance()};
         // parent directory
         auto parent{std::filesystem::path{path}.replace_extension()};
         if (mpiEnv.OnCluster()) {
             parent /= mpiEnv.LocalNode().name;
         }
         // create parent directory
-        if (mpiEnv.OnCommNodeMaster()) {
+        const auto& commNode{mpiEnv.CommNode()};
+        if (commNode.rank() == 0) {
             std::filesystem::create_directories(parent);
         }
         // wait for create_directories
-        MPI_Barrier(mpiEnv.CommNode());
+        std::byte createdSemaphore{};
+        commNode.bcast(0, createdSemaphore);
         // construct full path
-        return parent / stem.concat(fmt::format("_mpi{}.", mpiEnv.CommWorldRank())).replace_extension(path.extension());
+        return parent / stem.concat(fmt::format("_mpi{}.", commWorld.rank())).replace_extension(path.extension());
     } else {
         return path;
     }

@@ -46,51 +46,82 @@ IncludeBlocks: Regroup
 IncludeCategories: 
   # special
   - Regex: '"Randomize\.hh"'
-    Priority: 4
+    Priority: 5
+    CaseSensitive: true
   - Regex: '"globals\.hh"'
-    Priority: 4
+    Priority: 5
+    CaseSensitive: true
   # general
+  - Regex: '"AirShower/.*\.h.*"'
+    Priority: 0
+    CaseSensitive: true
   - Regex: '"Mustard/.*\.h.*"'
     Priority: 1
+    CaseSensitive: true
   - Regex: '"CLHEP/.*"'
-    Priority: 2
+    Priority: 3
+    CaseSensitive: true
   - Regex: '"ROOT/.*"'
-    Priority: 3
-  - Regex: '"R.*\.hxx"'
-    Priority: 3
-  - Regex: '"R.*\.h"'
-    Priority: 3
-  - Regex: '".*/T.*\.h"'
-    Priority: 3
-  - Regex: '"T.*\.h"'
-    Priority: 3
-  - Regex: '"G4.*"'
     Priority: 4
-  - Regex: '"backward\.hpp"'
+    CaseSensitive: true
+  - Regex: '"R.*\.hxx"'
+    Priority: 4
+    CaseSensitive: true
+  - Regex: '"R.*\.h"'
+    Priority: 4
+    CaseSensitive: true
+  - Regex: '".*/T.*\.h"'
+    Priority: 4
+    CaseSensitive: true
+  - Regex: '"T.*\.h"'
+    Priority: 4
+    CaseSensitive: true
+  - Regex: '"G4.*"'
     Priority: 5
-  - Regex: '"yaml-cpp/.*"'
+    CaseSensitive: true
+  - Regex: '"backward\.hpp"'
     Priority: 6
-  - Regex: '"argparse/.*"'
+    CaseSensitive: true
+  - Regex: '"yaml-cpp/.*"'
     Priority: 7
-  - Regex: '"Eigen/.*"'
+    CaseSensitive: true
+  - Regex: '"indicators/.*"'
     Priority: 8
-  - Regex: '"gsl.*\.h"'
+    CaseSensitive: true
+  - Regex: '"argparse/.*"'
     Priority: 9
-  - Regex: '"mpi.*\.h"'
+    CaseSensitive: true
+  - Regex: '"Eigen/.*"'
     Priority: 10
-  - Regex: '"muc/.*"'
+    CaseSensitive: true
+  - Regex: '"gsl.*\.h"'
     Priority: 11
-  - Regex: '"envparse/.*"'
+    CaseSensitive: true
+  - Regex: '"mpl/.*"'
     Priority: 12
-  - Regex: '"gsl/.*"'
+    CaseSensitive: true
+  - Regex: '"mpi.*\.h"'
     Priority: 13
-  - Regex: '"fmt/.*\.h"'
+    CaseSensitive: true
+  - Regex: '"muc/.*"'
     Priority: 14
+    CaseSensitive: true
+  - Regex: '"envparse/.*"'
+    Priority: 15
+    CaseSensitive: true
+  - Regex: '"gsl/.*"'
+    Priority: 16
+    CaseSensitive: true
+  - Regex: '"fmt/.*\.h"'
+    Priority: 17
+    CaseSensitive: true
   # very general
   - Regex: '".*"'
-    Priority: 0
+    Priority: 2
+    CaseSensitive: true
   - Regex: '<.*>'
-    Priority: 15
+    Priority: 18
+    CaseSensitive: true
 IndentAccessModifiers: false
 IndentCaseBlocks: false
 IndentCaseLabels: false

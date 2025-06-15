@@ -23,17 +23,20 @@ target_link_libraries(Mustard PUBLIC muc::muc)
 # EFM
 target_link_libraries(Mustard PUBLIC EFM::EFM)
 
+# backward-cpp
+target_link_libraries(Mustard PUBLIC Backward::Interface)
+
 # argparse
 target_link_libraries(Mustard PUBLIC argparse::argparse)
 
 # indicators
 target_link_libraries(Mustard PUBLIC indicators::indicators)
 
+# MPL
+target_link_libraries(Mustard PUBLIC mpl::mpl)
+
 # Microsoft.GSL
 target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
-
-# backward-cpp
-target_link_libraries(Mustard PUBLIC Backward::Interface)
 
 # fmt
 target_link_libraries(Mustard PUBLIC fmt::fmt)
@@ -43,9 +46,6 @@ target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
 
 # yaml-cpp
 target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
-
-# MPI
-target_link_libraries(Mustard PUBLIC MPI::MPI_C)
 
 # Geant4
 target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})

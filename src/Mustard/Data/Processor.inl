@@ -85,7 +85,7 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     std::future<void> asyncProcess;
 
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
-    const auto batch{this->CalculateBatchConfiguration(Env::MPIEnv::Instance().CommWorldSize(), n)};
+    const auto batch{this->CalculateBatchConfiguration(mpl::environment::comm_world().size(), n)};
     fExecutor.Execute(
         batch.nBatch,
         [&](auto k) {                                      // k is batch index
@@ -107,11 +107,11 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what) -> bool {
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    const auto byPassWillOccur{static_cast<Index>(mpiEnv.CommWorldSize()) > n};
-    if (mpiEnv.OnCommWorldMaster() and byPassWillOccur) [[unlikely]] {
+    const auto& commWorld{mpl::environment::comm_world()};
+    const auto byPassWillOccur{static_cast<Index>(commWorld.size()) > n};
+    if (commWorld.rank() == 0 and byPassWillOccur) [[unlikely]] {
         PrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
-                                 mpiEnv.CommWorldSize(), what, n));
+                                 commWorld.size(), what, n));
     }
     return byPassWillOccur;
 }

@@ -20,12 +20,9 @@
 
 #include "Mustard/Extension/Geant4X/Run/MPIRunMessenger.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
-#include "Mustard/Math/Statistic.h++"
 #include "Mustard/Utility/NonMoveableBase.h++"
 
 #include "G4RunManager.hh"
-
-#include "mpi.h"
 
 #include "gsl/gsl"
 
@@ -61,8 +58,7 @@ public:
     auto PrintProgressModulo(G4int mod) -> void { fExecutor.PrintProgressModulo(mod), printModulo = -1; }
 
     virtual auto BeamOn(G4int nEvent, gsl::czstring macroFile = nullptr, G4int nSelect = -1) -> void override;
-    virtual auto ConfirmBeamOnCondition() -> G4bool override;
-    virtual auto DoEventLoop(G4int nEvent, const char* macroFile, G4int nSelect) -> void override;
+    virtual auto DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void override;
 
     auto PrintRunSummary() const -> void { fExecutor.PrintExecutionSummary(); }
 

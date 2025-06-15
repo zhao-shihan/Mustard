@@ -22,13 +22,15 @@
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "G4DecayProducts.hh"
 #include "G4DynamicParticle.hh"
 #include "Randomize.hh"
 
-#include "mpi.h"
+#include "mpl/mpl.hpp"
 
+#include "muc/array"
 #include "muc/math"
 
 #include "gsl/gsl"
@@ -108,7 +110,7 @@ auto MuonInternalConversionDecayChannel::Initialize() -> void {
     fReady = true;
 }
 
-auto MuonInternalConversionDecayChannel::EstimateBiasScale(unsigned long long n) -> std::tuple<double, double, double> {
+auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsigned long long n) -> std::tuple<double, double, double> {
     if (n == 0) {
         return {std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), 0};
     }
@@ -122,36 +124,30 @@ auto MuonInternalConversionDecayChannel::EstimateBiasScale(unsigned long long n)
 
     // --- above is protected ---
 
-    Bias([](auto&&) { return 1; }); // to evaluate the bias scale of user-defined bias, temporarily switch to unbiased function
+    Bias([](auto&&) { return 1; }); // to evaluate the weight normalization factor of user-defined bias, temporarily switch to unbiased function
     Initialize();
 
-    long double biasScale{};
-    long double biasScaleError{};
-    {
-        const auto partialSumThreshold{muc::llround(std::sqrt(n / Env::MPIEnv::Instance().CommWorldSize()))};
-        long double biasPartialSum{};  // improve numeric stability
-        long double bias2PartialSum{}; // improve numeric stability
+    using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
+    muc::array2ld sum{};
+    const auto& commWorld{mpl::environment::comm_world()};
+    {                               // Monte Carlo integration here
+        muc::array2ld partialSum{}; // improve numeric stability
         MPIX::Executor<unsigned long long>{"Estimation", "Sample"}
-            .Execute(n, [&](auto i) {
+            .Execute(n, [&, partialSumThreshold = muc::llround(std::sqrt(n / commWorld.size()))](auto i) {
                 MainSamplingLoop();
                 const auto bias{originalBias(fEvent.state)};
-                biasPartialSum += bias;
-                bias2PartialSum += muc::pow<2>(bias);
+                partialSum += muc::array2ld{bias, muc::pow<2>(bias)};
                 if ((i + 1) % partialSumThreshold == 0) {
-                    biasScale += biasPartialSum;
-                    biasScaleError += bias2PartialSum;
-                    biasPartialSum = 0;
-                    bias2PartialSum = 0;
+                    sum += partialSum;
+                    partialSum = {};
                 }
             });
-        biasScale += biasPartialSum;
-        biasScaleError += bias2PartialSum;
+        sum += partialSum;
     }
-    MPI_Allreduce(MPI_IN_PLACE, &biasScale, 1, MPIX::DataType(biasScale), MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &biasScaleError, 1, MPIX::DataType(biasScaleError), MPI_SUM, MPI_COMM_WORLD);
-    const auto nEff{muc::pow<2>(biasScale) / biasScaleError};
-    biasScale /= n;
-    biasScaleError = std::sqrt(biasScaleError) / n;
+    commWorld.allreduce([](auto a, auto b) { return a + b; }, sum);
+    const auto result{gsl::narrow_cast<double>(sum[0] / n)};
+    const auto error{gsl::narrow_cast<double>(std::sqrt(sum[1]) / n)};
+    const auto nEff{muc::pow<2>(result / error)};
 
     // --- below is protected ---
 
@@ -162,7 +158,7 @@ auto MuonInternalConversionDecayChannel::EstimateBiasScale(unsigned long long n)
     fEvent = std::move(originalEvent);
     fBiasedM2 = std::move(originalBiasedM2);
 
-    return {biasScale, biasScaleError, nEff};
+    return {result, error, nEff};
 }
 
 auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Concept/MPIPredefined.h++"
+#include "Mustard/Utility/NonMoveableBase.h++"
 
 #include <concepts>
 #include <utility>
@@ -31,7 +32,7 @@ class Executor;
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-class Scheduler {
+class Scheduler : public NonMoveableBase {
     friend class Executor<T>;
 
 public:

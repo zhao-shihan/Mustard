@@ -20,6 +20,8 @@
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
+#include "mpl/mpl.hpp"
+
 #include "muc/time"
 
 #include "fmt/chrono.h"
@@ -43,7 +45,7 @@ auto PrettyLogHead(std::string_view prefix, const std::source_location& location
                        location.column(),
                        location.function_name(),
                        Env::MPIEnv::Available() ?
-                           fmt::format(" in MPI process {}", Env::MPIEnv::Instance().CommWorldRank()) :
+                           fmt::format(" in MPI process {}", mpl::environment::comm_world().rank()) :
                            "");
 }
 
