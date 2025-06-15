@@ -34,7 +34,7 @@ class StaticScheduler : public Scheduler<T> {
     virtual auto PostTaskAction() -> void override;
     virtual auto PostLoopAction() -> void override {}
 
-    virtual auto NExecutedTask() const -> std::pair<bool, T> override;
+    virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 };
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution

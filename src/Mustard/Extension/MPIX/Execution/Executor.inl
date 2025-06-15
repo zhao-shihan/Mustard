@@ -70,7 +70,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     fScheduler->Reset();
     Expects(ExecutingTask() == Task().first);
     Expects(NLocalExecutedTask() == 0);
-    Expects(fScheduler->NExecutedTask().second == 0);
+    Expects(fScheduler->NExecutedTaskEstimation().second == 0);
     // initialize
     fExecuting = true;
     fScheduler->PreLoopAction();
@@ -146,7 +146,7 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostTaskReport(T iEnded) const -> void {
     if (not fPrintProgress or fPrintProgressModulo < 0) { return; }
-    const auto [goodForEstimation, nExecutedTask]{fScheduler->NExecutedTask()};
+    const auto [goodEstimation, nExecutedTask]{fScheduler->NExecutedTaskEstimation()};
     const auto secondsElapsed{fWallTimeStopwatch.s_elapsed()};
     const auto speed{nExecutedTask / secondsElapsed};
     if (fPrintProgressModulo == 0) {
@@ -161,12 +161,12 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
           "MPI{}>   {} elaps., {}\n",
           commWorld.rank(), muc::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
           commWorld.rank(), SToDHMS(secondsElapsed),
-          [&, goodForEstimation{goodForEstimation}, nExecutedTask{nExecutedTask}] {
-              if (goodForEstimation) {
-                  const auto eta{(NTask() - nExecutedTask) / speed};
-                  const auto progress{100. * nExecutedTask / NTask()};
+          [&, good{goodEstimation}, nExecuted{nExecutedTask}] {
+              if (good) {
+                  const auto eta{(NTask() - nExecuted) / speed};
+                  const auto progress{100. * nExecuted / NTask()};
                   return fmt::format("est. rem. {} ({:.3}/s), prog.: {} | {}/{} | {:.3}%",
-                                     SToDHMS(eta), speed, NLocalExecutedTask(), nExecutedTask, NTask(), progress);
+                                     SToDHMS(eta), speed, NLocalExecutedTask(), nExecuted, NTask(), progress);
               } else {
                   return fmt::format("local prog.: {}", NLocalExecutedTask());
               }

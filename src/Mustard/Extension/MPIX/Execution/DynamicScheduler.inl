@@ -50,7 +50,7 @@ auto DynamicScheduler<T>::PostLoopAction() -> void {
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::NExecutedTask() const -> std::pair<bool, T> {
+auto DynamicScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
     return {this->fNLocalExecutedTask > 10 * fBatchSize,
             this->fExecutingTask - this->fTask.first};
 }

@@ -49,7 +49,7 @@ private:
     virtual auto PostTaskAction() -> void = 0;
     virtual auto PostLoopAction() -> void = 0;
 
-    virtual auto NExecutedTask() const -> std::pair<bool, T> = 0;
+    virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> = 0;
 
 protected:
     struct Task {
