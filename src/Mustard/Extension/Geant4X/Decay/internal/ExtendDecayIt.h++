@@ -27,7 +27,6 @@
 #include "G4DecayTable.hh"
 #include "G4DynamicParticle.hh"
 #include "G4ParticleChangeForDecay.hh"
-#include "G4PhysicalConstants.hh"
 #include "G4PhysicsLogVector.hh"
 #include "G4Track.hh"
 #include "G4VDecayChannel.hh"

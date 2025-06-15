@@ -17,11 +17,11 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Extension/Geant4X/Decay/ExtendedDecayWithSpin.h++"
+#include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "G4DecayTable.hh"
 #include "G4Field.hh"
 #include "G4FieldManager.hh"
-#include "G4PhysicalConstants.hh"
 #include "G4PropagatorInField.hh"
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
@@ -31,6 +31,8 @@
 #include "G4Vector3D.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline Decay {
+
+using Mustard::PhysicalConstant;
 
 ExtendedDecayWithSpin::ExtendedDecayWithSpin(const G4String& processName) :
     ExtendDecayIt{processName} {}
