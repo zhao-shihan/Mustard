@@ -41,8 +41,8 @@ concept ExtraRequirementsForMathVector =
         { -v } -> std::convertible_to<T>;
         { v + w } -> std::convertible_to<T>;
         { v - w } -> std::convertible_to<T>;
-        { c* v } -> std::convertible_to<T>;
-        { v* c } -> std::convertible_to<T>;
+        { c * v } -> std::convertible_to<T>;
+        { v * c } -> std::convertible_to<T>;
         { v / c } -> std::convertible_to<T>;
     };
 

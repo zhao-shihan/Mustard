@@ -81,11 +81,11 @@ auto VectorAssign(Concept::NumericVectorAny auto& lhs, auto&& rhs) -> auto& //
 }
 
 inline namespace VectorAssignOperator {
-    // clang-format off
+
 auto operator<<=(Concept::NumericVectorAny auto& lhs, auto&& rhs) -> auto& {
     return VectorAssign(lhs, std::forward<decltype(rhs)>(rhs));
 }
-    // clang-format on
-}
+
+} // namespace VectorAssignOperator
 
 } // namespace Mustard::inline Utility

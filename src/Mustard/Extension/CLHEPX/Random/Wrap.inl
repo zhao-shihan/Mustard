@@ -58,7 +58,7 @@ auto Wrap<PRBG>::saveStatus(gsl::czstring filename) const -> void {
         put(os);
     } else {
         PrintError(fmt::format("Cannot open '{}', nothing was done. (Wrap<PRBG>::name(): {})",
-                                          filename, name()));
+                               filename, name()));
     }
 }
 
@@ -69,7 +69,7 @@ auto Wrap<PRBG>::restoreStatus(gsl::czstring filename) -> void {
         get(is);
     } else {
         PrintError(fmt::format("Cannot open '{}', nothing was done. (Wrap<PRBG>::name(): {})",
-                                          filename, name()));
+                               filename, name()));
     }
 }
 

@@ -45,12 +45,12 @@ public:
 
 private:
     std::unique_ptr<G4UIdirectory> fEcoMugDirectory;
-    
+
     std::unique_ptr<G4UIdirectory> fPositionDirectory;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkyCenterPosition;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fHSphereCenterPosition;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fCylinderCenterPosition;
-    
+
     std::unique_ptr<G4UIdirectory> fSizeDirectory;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkySizeXY;
     std::unique_ptr<G4UIdirectory> fSizeHSphereDirectory;

@@ -25,11 +25,11 @@
 #include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
-#include "EFM/FieldMap3D.h++"
-
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "Eigen/Core"
+
+#include "EFM/FieldMap3D.h++"
 
 #include "muc/functional"
 

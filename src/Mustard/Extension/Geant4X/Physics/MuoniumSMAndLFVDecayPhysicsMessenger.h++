@@ -31,7 +31,7 @@ namespace Mustard::inline Extension::Geant4X::inline Physics {
 class MuoniumSMAndLFVDecayPhysics;
 
 class MuoniumSMAndLFVDecayPhysicsMessenger final : public Geant4X::SingletonMessenger<MuoniumSMAndLFVDecayPhysicsMessenger,
-                                                                                  MuoniumSMAndLFVDecayPhysics> {
+                                                                                      MuoniumSMAndLFVDecayPhysics> {
     friend Env::Memory::SingletonInstantiator;
 
 private:
