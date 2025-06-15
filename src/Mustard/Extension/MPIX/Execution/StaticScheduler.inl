@@ -20,8 +20,8 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
 auto StaticScheduler<T>::PreLoopAction() -> void {
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    this->fExecutingTask = this->fTask.first + (mpiEnv.CommWorldSize() - 1 - mpiEnv.CommWorldRank());
+    const auto& commWorld{mpl::environment::comm_world()};
+    this->fExecutingTask = this->fTask.first + (commWorld.size() - 1 - commWorld.rank());
     if (this->fExecutingTask > this->fTask.last) [[unlikely]] {
         this->fExecutingTask = this->fTask.last;
     }
@@ -29,7 +29,7 @@ auto StaticScheduler<T>::PreLoopAction() -> void {
 
 template<std::integral T>
 auto StaticScheduler<T>::PostTaskAction() -> void {
-    this->fExecutingTask += Env::MPIEnv::Instance().CommWorldSize();
+    this->fExecutingTask += mpl::environment::comm_world().size();
     if (this->fExecutingTask > this->fTask.last) [[unlikely]] {
         this->fExecutingTask = this->fTask.last;
     }
