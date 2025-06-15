@@ -58,6 +58,7 @@ concept MPIPredefined =
     std::same_as<T, bool> or
     std::same_as<T, std::complex<float>> or
     std::same_as<T, std::complex<double>> or
-    std::same_as<T, std::complex<long double>>;
+    std::same_as<T, std::complex<long double>> or
+    std::same_as<T, std::byte>;
 
 } // namespace Mustard::Concept

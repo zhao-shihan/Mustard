@@ -24,7 +24,8 @@
 
 #include "muc/utility"
 
-#include <type_traits>
+#include <concepts>
+#include <cstddef>
 
 namespace Mustard::inline Extension::MPIX {
 
@@ -94,6 +95,8 @@ auto DataType() -> MPI_Datatype {
         return MPI_CXX_DOUBLE_COMPLEX;
     } else if constexpr (std::same_as<U, std::complex<long double>>) {
         return MPI_CXX_LONG_DOUBLE_COMPLEX;
+    } else if constexpr (std::same_as<U, std::byte>) {
+        return MPI_BYTE;
     } else {
         static_assert(muc::dependent_false<U>, "No such data type in MPI");
     }
