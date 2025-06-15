@@ -52,7 +52,8 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     PassiveSingleton<MPIEnv>{this},
     fCluster{},
-    fCommNode{} {
+    fCommNode{},
+    fCommShared{} {
     const auto& commWorld{mpl::environment::comm_world()};
     if (mpl::environment::threading_mode() == mpl::threading_modes::single) {
         Throw<std::runtime_error>("The MPI library not even support funneled threading");
@@ -91,6 +92,7 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
     fCluster.local = localNode - fCluster.node.cbegin();
 
     fCommNode = mpl::communicator{mpl::communicator::split, commWorld, fCluster.local};
+    fCommShared = mpl::communicator{mpl::communicator::split_shared_memory, commWorld};
 
     // Disable ROOT implicit multi-threading
     if (ROOT::IsImplicitMTEnabled()) {

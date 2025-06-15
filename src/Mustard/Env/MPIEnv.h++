@@ -64,6 +64,7 @@ public:
     auto OnCluster() const -> auto { return ClusterSize() != 1; }
 
     auto CommNode() const -> const auto& { return fCommNode; }
+    auto CommShared() const -> const auto& { return fCommShared; }
 
 protected:
     auto PrintStartBannerBody(int argc, char* argv[]) const -> void;
@@ -80,6 +81,7 @@ private:
         int local;
     } fCluster;
     mpl::communicator fCommNode;
+    mpl::communicator fCommShared;
 };
 
 } // namespace Mustard::Env
