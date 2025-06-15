@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
 
-include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)
-
 # Enable MSVC_RUNTIME_LIBRARY target property
 # See https://cmake.org/cmake/help/latest/policy/CMP0091.html
 cmake_policy(SET CMP0091 NEW)
@@ -23,6 +20,9 @@ set(MUSTARD_VERSION ${MUSTARD_VERSION_MAJOR}.${MUSTARD_VERSION_MINOR}.${MUSTARD_
 
 project(Mustard VERSION ${MUSTARD_VERSION}
                 LANGUAGES C CXX)
+
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 
 # =============================================================================
 # Variables
