@@ -1,6 +1,6 @@
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/Execution/DynamicScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
+#include "Mustard/Extension/MPIX/Execution/MasterSlaveScheduler.h++"
 #include "Mustard/Utility/Print.h++"
 
 #include <string>
@@ -12,8 +12,8 @@ using namespace std::chrono_literals;
 auto main(int argc, char* argv[]) -> int {
     Mustard::Env::MPIEnv env{argc, argv, {}};
 
-    MPIX::Executor<unsigned long long> executor{MPIX::ScheduleBy<MPIX::DynamicScheduler>{}};
-    
+    MPIX::Executor<unsigned long long> executor{MPIX::ScheduleBy<MPIX::MasterSlaveScheduler>{}};
+
     const auto n{std::stoull(argv[1])};
     const auto& commWorld{mpl::environment::comm_world()};
 

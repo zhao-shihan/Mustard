@@ -45,9 +45,9 @@
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
-class DynamicScheduler : public Scheduler<T> {
+class MasterSlaveScheduler : public Scheduler<T> {
 public:
-    DynamicScheduler();
+    MasterSlaveScheduler();
 
 private:
     virtual auto PreLoopAction() -> void override;
@@ -60,7 +60,7 @@ private:
 private:
     class Master final : public NonMoveableBase {
     public:
-        Master(DynamicScheduler<T>* ds);
+        Master(MasterSlaveScheduler<T>* ds);
 
         auto PreLoopAction() -> void;
         auto PreTaskAction() -> void {}
@@ -70,14 +70,14 @@ private:
     private:
         class Supervisor final : public NonMoveableBase {
         public:
-            Supervisor(DynamicScheduler<T>* ds);
+            Supervisor(MasterSlaveScheduler<T>* ds);
 
             auto FetchAddTaskID() -> T;
 
             auto Start() -> void;
 
         private:
-            DynamicScheduler<T>* fDS;
+            MasterSlaveScheduler<T>* fDS;
             std::atomic<T> fMainTaskID;
             std::byte fSemaphoreRecv;
             mpl::prequest_pool fRecv;
@@ -87,7 +87,7 @@ private:
         };
 
     private:
-        DynamicScheduler<T>* fDS;
+        MasterSlaveScheduler<T>* fDS;
         Supervisor fSupervisor;
         T fBatchCounter;
     };
@@ -95,7 +95,7 @@ private:
 
     class Worker final : public NonMoveableBase {
     public:
-        Worker(DynamicScheduler<T>* ds);
+        Worker(MasterSlaveScheduler<T>* ds);
 
         auto PreLoopAction() -> void;
         auto PreTaskAction() -> void;
@@ -103,7 +103,7 @@ private:
         auto PostLoopAction() -> void;
 
     private:
-        DynamicScheduler<T>* fDS;
+        MasterSlaveScheduler<T>* fDS;
         std::byte fSemaphoreSend;
         mpl::prequest fSend;
         T fTaskIDRecv;
@@ -122,4 +122,4 @@ private:
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution
 
-#include "Mustard/Extension/MPIX/Execution/DynamicScheduler.inl"
+#include "Mustard/Extension/MPIX/Execution/MasterSlaveScheduler.inl"

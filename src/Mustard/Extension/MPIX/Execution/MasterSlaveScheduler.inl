@@ -19,7 +19,7 @@
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
-DynamicScheduler<T>::DynamicScheduler() :
+MasterSlaveScheduler<T>::MasterSlaveScheduler() :
     Scheduler<T>{},
     fComm{mpl::environment::comm_world()},
     fBatchSize{},
@@ -28,35 +28,35 @@ DynamicScheduler<T>::DynamicScheduler() :
                  decltype(fContext)(std::in_place_type<Worker>, this)} {}
 
 template<std::integral T>
-auto DynamicScheduler<T>::PreLoopAction() -> void {
+auto MasterSlaveScheduler<T>::PreLoopAction() -> void {
     // width ~ BalanceFactor -> +/- BalanceFactor / 2
     fBatchSize = static_cast<T>(fgBalancingFactor / 2 * static_cast<double>(this->NTask()) / fComm.size()) + 1;
     std::visit([](auto&& c) { c.PreLoopAction(); }, fContext);
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::PreTaskAction() -> void {
+auto MasterSlaveScheduler<T>::PreTaskAction() -> void {
     std::visit([](auto&& c) { c.PreTaskAction(); }, fContext);
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::PostTaskAction() -> void {
+auto MasterSlaveScheduler<T>::PostTaskAction() -> void {
     std::visit([](auto&& c) { c.PostTaskAction(); }, fContext);
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::PostLoopAction() -> void {
+auto MasterSlaveScheduler<T>::PostLoopAction() -> void {
     std::visit([](auto&& c) { c.PostLoopAction(); }, fContext);
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
+auto MasterSlaveScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
     return {this->fNLocalExecutedTask > 10 * fBatchSize,
             this->fExecutingTask - this->fTask.first};
 }
 
 template<std::integral T>
-DynamicScheduler<T>::Master::Supervisor::Supervisor(DynamicScheduler<T>* ds) :
+MasterSlaveScheduler<T>::Master::Supervisor::Supervisor(MasterSlaveScheduler<T>* ds) :
     fDS{ds},
     fMainTaskID{},
     fSemaphoreRecv{},
@@ -77,7 +77,7 @@ DynamicScheduler<T>::Master::Supervisor::Supervisor(DynamicScheduler<T>* ds) :
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::Master::Supervisor::Start() -> void {
+auto MasterSlaveScheduler<T>::Master::Supervisor::Start() -> void {
     fMainTaskID = fDS->fTask.first + fDS->fComm.size() * fDS->fBatchSize;
     // No need of supervisor thread in sequential execution
     if (fDS->fComm.size() == 1) { return; }
@@ -124,25 +124,25 @@ auto DynamicScheduler<T>::Master::Supervisor::Start() -> void {
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::Master::Supervisor::FetchAddTaskID() -> T {
+auto MasterSlaveScheduler<T>::Master::Supervisor::FetchAddTaskID() -> T {
     return std::min(fMainTaskID.fetch_add(fDS->fBatchSize), fDS->fTask.last);
 }
 
 template<std::integral T>
-DynamicScheduler<T>::Master::Master(DynamicScheduler<T>* ds) :
+MasterSlaveScheduler<T>::Master::Master(MasterSlaveScheduler<T>* ds) :
     fDS{ds},
     fSupervisor{ds},
     fBatchCounter{} {}
 
 template<std::integral T>
-auto DynamicScheduler<T>::Master::PreLoopAction() -> void {
+auto MasterSlaveScheduler<T>::Master::PreLoopAction() -> void {
     fSupervisor.Start();
     fDS->fExecutingTask = fDS->fTask.first;
     fBatchCounter = 0;
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::Master::PostTaskAction() -> void {
+auto MasterSlaveScheduler<T>::Master::PostTaskAction() -> void {
     if (++fBatchCounter == fDS->fBatchSize) {
         fBatchCounter = 0;
         fDS->fExecutingTask = fSupervisor.FetchAddTaskID();
@@ -152,7 +152,7 @@ auto DynamicScheduler<T>::Master::PostTaskAction() -> void {
 }
 
 template<std::integral T>
-DynamicScheduler<T>::Worker::Worker(DynamicScheduler<T>* ds) :
+MasterSlaveScheduler<T>::Worker::Worker(MasterSlaveScheduler<T>* ds) :
     fDS{ds},
     fSemaphoreSend{},
     fSend{fDS->fComm.rsend_init(fSemaphoreSend, 0)},
@@ -161,7 +161,7 @@ DynamicScheduler<T>::Worker::Worker(DynamicScheduler<T>* ds) :
     fBatchCounter{} {}
 
 template<std::integral T>
-auto DynamicScheduler<T>::Worker::PreLoopAction() -> void {
+auto MasterSlaveScheduler<T>::Worker::PreLoopAction() -> void {
     fDS->fExecutingTask = fDS->fTask.first + fDS->fComm.rank() * fDS->fBatchSize;
     fBatchCounter = 0;
     // wait for supervisor to post receive
@@ -170,7 +170,7 @@ auto DynamicScheduler<T>::Worker::PreLoopAction() -> void {
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::Worker::PreTaskAction() -> void {
+auto MasterSlaveScheduler<T>::Worker::PreTaskAction() -> void {
     if (fBatchCounter == 0) {
         fRecv.start();
         fSend.start();
@@ -178,7 +178,7 @@ auto DynamicScheduler<T>::Worker::PreTaskAction() -> void {
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::Worker::PostTaskAction() -> void {
+auto MasterSlaveScheduler<T>::Worker::PostTaskAction() -> void {
     if (++fBatchCounter == fDS->fBatchSize) {
         fBatchCounter = 0;
         fSend.wait();
@@ -190,7 +190,7 @@ auto DynamicScheduler<T>::Worker::PostTaskAction() -> void {
 }
 
 template<std::integral T>
-auto DynamicScheduler<T>::Worker::PostLoopAction() -> void {
+auto MasterSlaveScheduler<T>::Worker::PostLoopAction() -> void {
     fSend.wait();
     fRecv.wait();
 }
