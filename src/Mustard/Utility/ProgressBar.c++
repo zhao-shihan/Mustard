@@ -64,7 +64,7 @@ ProgressBar::~ProgressBar() {
 
 auto ProgressBar::Start(std::size_t nTotal) -> void {
     fImpl = std::make_unique<Impl>(nTotal);
-    fImpl->asyncPrint = std::async(std::launch::async, [this] {
+    fImpl->asyncPrint = std::async([this] {
         indicators::show_console_cursor(false);
         fImpl->progressBar.set_option(indicators::option::PostfixText{
             fmt::format("{}/{}", fImpl->progress, fImpl->total)});
@@ -78,8 +78,7 @@ auto ProgressBar::Tick(std::chrono::duration<double> printInterval) -> void {
     if (timeElapsed - fImpl->lastPrintTime < printInterval) { return; }
     fImpl->lastPrintTime = timeElapsed;
     fImpl->asyncPrint.get();
-    fImpl->asyncPrint = std::async(std::launch::async, std::mem_fn(&ProgressBar::Print),
-                                   this, timeElapsed);
+    fImpl->asyncPrint = std::async(std::mem_fn(&ProgressBar::Print), this, timeElapsed);
 }
 
 auto ProgressBar::Complete() -> void {

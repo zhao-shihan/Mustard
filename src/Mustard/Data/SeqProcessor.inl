@@ -149,7 +149,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
         }(gslx::make_index_sequence<nRDF>())};
         // async process
         if (async.valid()) { async.get(); }
-        async = std::async(std::launch::async, ProcessBatch, iFirst, iLast, std::move(data));
+        async = std::async(ProcessBatch, iFirst, iLast, std::move(data));
     }
     async.get();
     LoopEndAction();
