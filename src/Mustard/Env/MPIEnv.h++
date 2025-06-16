@@ -29,7 +29,6 @@
 #include <optional>
 #include <ostream>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 namespace Mustard::Env {
@@ -55,6 +54,9 @@ public:
     using PassiveSingleton<MPIEnv>::Expired;
     using PassiveSingleton<MPIEnv>::Instantiated;
 
+    auto IntraNodeComm() const -> const auto& { return fIntraNodeComm; }
+    auto InterNodeComm() const -> const auto& { return fInterNodeComm; }
+
     auto NodeList() const -> const auto& { return fCluster.node; }
     auto LocalNodeID() const -> const auto& { return fCluster.local; }
     auto Node(int id) const -> const auto& { return NodeList().at(id); }
@@ -62,9 +64,6 @@ public:
     auto ClusterSize() const -> int { return NodeList().size(); }
     auto OnSingleNode() const -> auto { return ClusterSize() == 1; }
     auto OnCluster() const -> auto { return ClusterSize() != 1; }
-
-    auto CommNode() const -> const auto& { return fCommNode; }
-    auto CommShared() const -> const auto& { return fCommShared; }
 
 protected:
     auto PrintStartBannerBody(int argc, char* argv[]) const -> void;
@@ -76,12 +75,12 @@ private:
     };
 
 private:
+    mpl::communicator fIntraNodeComm;
+    mpl::communicator fInterNodeComm;
     struct {
         std::vector<NodeInfo> node;
         int local;
     } fCluster;
-    mpl::communicator fCommNode;
-    mpl::communicator fCommShared;
 };
 
 } // namespace Mustard::Env

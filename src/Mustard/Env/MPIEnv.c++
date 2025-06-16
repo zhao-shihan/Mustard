@@ -25,7 +25,10 @@
 #include "mpi.h"
 
 #include "muc/algorithm"
+#include "muc/numeric"
 #include "muc/utility"
+
+#include "gsl/gsl"
 
 #include "fmt/format.h"
 
@@ -40,6 +43,7 @@
 #include <iterator>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <utility>
 
@@ -51,48 +55,63 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     PassiveSingleton<MPIEnv>{this},
-    fCluster{},
-    fCommNode{},
-    fCommShared{} {
+    fIntraNodeComm{},
+    fInterNodeComm{},
+    fCluster{} {
     const auto& commWorld{mpl::environment::comm_world()};
     if (mpl::environment::threading_mode() == mpl::threading_modes::single) {
         Throw<std::runtime_error>("The MPI library not even support funneled threading");
     }
 
-    std::array<char, MPI_MAX_PROCESSOR_NAME> localNodeName{};
-    std::ranges::copy(mpl::environment::processor_name(), localNodeName.begin());
-    std::vector<std::array<char, MPI_MAX_PROCESSOR_NAME>> nodeName(commWorld.size());
-    commWorld.allgather(localNodeName, nodeName.data());
+    fIntraNodeComm = mpl::communicator{mpl::communicator::split_shared_memory, commWorld};
+    enum struct IntraNodeColor { Leader = 0,
+                                 Other = MPI_UNDEFINED };
+    fInterNodeComm = mpl::communicator{mpl::communicator::split, commWorld,
+                                       fIntraNodeComm.rank() == 0 ?
+                                           IntraNodeColor::Leader :
+                                           IntraNodeColor::Other};
 
-    std::vector<std::pair<std::string_view, int>> nodeRankMap(commWorld.size());
-    for (int rank{}; rank < commWorld.size(); ++rank) {
-        nodeRankMap[rank] = {nodeName[rank].data(), rank};
+    int nNode{fInterNodeComm.is_valid() ? fInterNodeComm.size() : 0};
+    fIntraNodeComm.bcast(0, nNode);
+    fCluster.node.resize(nNode);
+
+    using NodeNameType = std::array<char, MPI_MAX_PROCESSOR_NAME>;
+    std::vector<NodeNameType> nodeName(nNode);
+    if (fInterNodeComm.is_valid()) {
+        NodeNameType localNodeName{};
+        std::ranges::copy(mpl::environment::processor_name(), localNodeName.begin());
+        fInterNodeComm.allgather(localNodeName, nodeName.data());
     }
-    muc::timsort(nodeRankMap);
+    fIntraNodeComm.bcast(0, nodeName.data(), mpl::vector_layout<NodeNameType>(nNode));
 
-    auto currentNodeName{nodeRankMap.front().first};
-    fCluster.node.push_back({std::string{currentNodeName}, {}});
-    for (auto&& [nodeName, rank] : std::as_const(nodeRankMap)) {
-        if (nodeName != currentNodeName) {
-            currentNodeName = nodeName;
-            fCluster.node.push_back({std::string{currentNodeName}, {}});
-        }
-        fCluster.node.back().worldRank.emplace_back(rank);
+    std::vector<int> nodeSize(nNode);
+    std::vector<int> localWorldRank(fInterNodeComm.is_valid() ? fIntraNodeComm.size() : 0);
+    fIntraNodeComm.gather(0, commWorld.rank(), localWorldRank.data());
+    if (fInterNodeComm.is_valid()) {
+        fInterNodeComm.allgather(gsl::narrow<int>(localWorldRank.size()), nodeSize.data());
     }
-    muc::timsort(fCluster.node,
-                 [](auto&& node1, auto&& node2) {
-                     return node1.worldRank < node2.worldRank;
-                 });
+    fIntraNodeComm.bcast(0, nodeSize.data(), mpl::vector_layout<int>(nNode));
 
-    const auto localNode{std::ranges::find_if(
-        std::as_const(fCluster.node),
-        [rank = commWorld.rank()](auto&& node) {
-            return muc::ranges::contains(node.worldRank, rank);
-        })};
-    fCluster.local = localNode - fCluster.node.cbegin();
+    mpl::displacements disp(nNode);
+    for (auto i{1}; i < nNode; ++i) {
+        disp[i] = disp[i - 1] + nodeSize[i - 1];
+    }
+    std::vector<int> flatWorldRank(commWorld.size());
+    if (fInterNodeComm.is_valid()) {
+        mpl::contiguous_layouts<int> worldRankLayout(nNode);
+        std::ranges::transform(nodeSize, worldRankLayout.begin(), [](int size) { return mpl::contiguous_layout<int>(size); });
+        fInterNodeComm.allgatherv(localWorldRank.data(), mpl::contiguous_layout<int>(localWorldRank.size()),
+                                  flatWorldRank.data(), worldRankLayout, disp);
+    }
+    fIntraNodeComm.bcast(0, flatWorldRank.data(), mpl::vector_layout<int>{flatWorldRank.size()});
 
-    fCommNode = mpl::communicator{mpl::communicator::split, commWorld, fCluster.local};
-    fCommShared = mpl::communicator{mpl::communicator::split_shared_memory, commWorld};
+    for (int i{}; i < nNode; ++i) {
+        auto& node{fCluster.node[i]};
+        const auto nameEnd{std::ranges::find(std::as_const(nodeName[i]), '\0')};
+        node.name = std::string_view{nodeName[i].cbegin(), nameEnd};
+        node.worldRank.resize(nodeSize[i]);
+        std::ranges::copy_n(flatWorldRank.cbegin() + disp[i], nodeSize[i], node.worldRank.begin());
+    }
 
     // Disable ROOT implicit multi-threading
     if (ROOT::IsImplicitMTEnabled()) {
@@ -162,27 +181,24 @@ auto MPIEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
         const auto format{fmt::format("  {{:{}}}: {{}} ({{}})\n", maxNameWidth)};
         for (int nodeID{}; nodeID < ClusterSize(); ++nodeID) {
             const auto& node{Node(nodeID)};
-            std::vector<std::string> rankStringPart;
-            auto rankStart{node.worldRank.front()};
-            auto rankEnd{node.worldRank.front()};
-            for (auto&& r : node.worldRank) {
-                if (r == rankEnd + 1) {
-                    rankEnd = r;
+            std::string rankString;
+            auto AddRankInterval{[&](int start, int end) {
+                rankString.append(start == end ?
+                                      fmt::format("{},", start) :
+                                      fmt::format("{}-{},", start, end));
+            }};
+            auto currentBegin{node.worldRank.front()};
+            auto currentEnd{currentBegin};
+            for (auto it{std::next(node.worldRank.cbegin())}; it != node.worldRank.cend(); ++it) {
+                if (*it == currentEnd + 1) {
+                    currentEnd = *it;
                 } else {
-                    if (rankStart == rankEnd) {
-                        rankStringPart.push_back(std::to_string(rankStart));
-                    } else {
-                        rankStringPart.push_back(fmt::format("{}-{}", rankStart, rankEnd));
-                    }
-                    rankStart = rankEnd = r;
+                    AddRankInterval(currentBegin, currentEnd);
+                    currentBegin = currentEnd = *it;
                 }
             }
-            if (rankStart == rankEnd) {
-                rankStringPart.push_back(std::to_string(rankStart));
-            } else {
-                rankStringPart.push_back(fmt::format("{}-{}", rankStart, rankEnd));
-            }
-            const auto rankString{fmt::format("{}", fmt::join(rankStringPart, ","))};
+            AddRankInterval(currentBegin, currentEnd);
+            rankString.erase(rankString.length() - 1); // remove last ','
             const auto nRank{node.worldRank.size()};
             VPrint(stdout, fmt::emphasis::bold, format, fmt::make_format_args(node.name, rankString, nRank));
         }

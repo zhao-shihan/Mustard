@@ -47,13 +47,13 @@ auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path
             parent /= mpiEnv.LocalNode().name;
         }
         // create parent directory
-        const auto& commNode{mpiEnv.CommNode()};
-        if (commNode.rank() == 0) {
+        const auto& intraNodeComm{mpiEnv.IntraNodeComm()};
+        if (intraNodeComm.rank() == 0) {
             std::filesystem::create_directories(parent);
         }
         // wait for create_directories
         std::byte createdSemaphore{};
-        commNode.bcast(0, createdSemaphore);
+        intraNodeComm.bcast(0, createdSemaphore);
         // construct full path
         return parent / stem.concat(fmt::format("_mpi{}.", commWorld.rank())).replace_extension(path.extension());
     } else {
