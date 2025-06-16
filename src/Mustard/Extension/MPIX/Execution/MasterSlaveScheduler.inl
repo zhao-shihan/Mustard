@@ -163,7 +163,6 @@ MasterSlaveScheduler<T>::Worker::Worker(MasterSlaveScheduler<T>* ds) :
 template<std::integral T>
 auto MasterSlaveScheduler<T>::Worker::PreLoopAction() -> void {
     fDS->fExecutingTask = fDS->fTask.first + fDS->fComm.rank() * fDS->fBatchSize;
-    fBatchCounter = 0;
     // wait for supervisor to post receive
     std::byte firstRecvReadySemaphore{};
     fDS->fComm.ibcast(0, firstRecvReadySemaphore).wait();
@@ -191,6 +190,7 @@ auto MasterSlaveScheduler<T>::Worker::PostTaskAction() -> void {
 
 template<std::integral T>
 auto MasterSlaveScheduler<T>::Worker::PostLoopAction() -> void {
+    fBatchCounter = 0;
     fSend.wait();
     fRecv.wait();
 }

@@ -38,7 +38,6 @@ TaskQueueScheduler<T>::TaskQueueScheduler() :
 template<std::integral T>
 auto TaskQueueScheduler<T>::PreLoopAction() -> void {
     const auto& commWorld{mpl::environment::comm_world()};
-    fBatchCounter = 0;
     fBatchSize = static_cast<T>(fgBalancingFactor / 2 * static_cast<double>(this->NTask()) / commWorld.size()) + 1;
     this->fExecutingTask = this->fTask.first + commWorld.rank() * fBatchSize;
     if (commWorld.rank() == 0) {
@@ -64,6 +63,7 @@ auto TaskQueueScheduler<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto TaskQueueScheduler<T>::PostLoopAction() -> void {
+    fBatchCounter = 0;
     if (mpl::environment::comm_world().rank() == 0) {
         MPI_Win_fence(MPI_MODE_NOSUCCEED, *fMainTaskIDWindow);
     } else {
