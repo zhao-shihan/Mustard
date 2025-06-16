@@ -25,8 +25,11 @@
 
 #include "mpi.h"
 
+#include "gsl/gsl"
+
 #include <algorithm>
 #include <concepts>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -36,7 +39,6 @@ template<std::integral T>
 class TaskQueueScheduler : public Scheduler<T> {
 public:
     TaskQueueScheduler();
-    ~TaskQueueScheduler();
 
 private:
     virtual auto PreLoopAction() -> void override;
@@ -47,9 +49,11 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    T fMainTaskID;
-    MPI_Info fMainTaskIDWindowInfo;
-    MPI_Win fMainTaskIDWindow;
+    struct MPIWinDeleter;
+
+private:
+    T* fMainTaskID;
+    std::unique_ptr<MPI_Win, MPIWinDeleter> fMainTaskIDWindow;
     T fBatchSize;
     T fBatchCounter;
 
