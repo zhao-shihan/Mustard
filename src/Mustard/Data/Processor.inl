@@ -85,13 +85,16 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     std::future<void> asyncProcess;
 
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
-    const auto batch{this->CalculateBatchConfiguration(mpl::environment::comm_world().size(), n)};
+    const auto& commWorld{mpl::environment::comm_world()};
+    const auto batch{this->CalculateBatchConfiguration(commWorld.size(), n)};
     fExecutor.Execute(
-        batch.nBatch,
-        [&](auto k) {                                      // k is batch index
-            if (byPassWillOccur and k >= n) [[unlikely]] { // by pass when there are too many processors
-                std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, typename AData::value_type{});
-                return;
+        std::max(static_cast<Index>(commWorld.size()), batch.nBatch),
+        [&](auto k) { // k is batch index
+            if (byPassWillOccur) [[unlikely]] {
+                if (k >= n) { // by pass when there are too many processors
+                    std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, typename AData::value_type{});
+                    return;
+                }
             }
             const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)};
             if (asyncReader.Reading()) { batchData = asyncReader.Acquire(); }
@@ -101,6 +104,7 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
         });
     batchData = asyncReader.Acquire();
     asyncProcess.get();
+    if (not asyncReader.Exhausted()) { asyncReader.Exhaust(); }
 
     return nProcessed;
 }
