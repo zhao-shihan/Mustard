@@ -15,12 +15,12 @@ auto main(int argc, char* argv[]) -> int {
     MPIX::Executor<unsigned long long> executor{MPIX::ScheduleBy<MPIX::MasterSlaveScheduler>{}};
 
     const auto n{std::stoull(argv[1])};
-    const auto& commWorld{mpl::environment::comm_world()};
+    const auto& worldComm{mpl::environment::comm_world()};
 
     executor.PrintProgress(false);
     executor.Execute(n,
                      [&](auto i) {
-                         PrintLn("{},{}", i, commWorld.rank());
+                         PrintLn("{},{}", i, worldComm.rank());
                      });
 
     executor.PrintProgress(true);
@@ -34,14 +34,14 @@ auto main(int argc, char* argv[]) -> int {
     executor.Execute(n,
                      [&](auto i) {
                          std::this_thread::sleep_for(500ms);
-                         PrintLn("{},{}", i, commWorld.rank());
+                         PrintLn("{},{}", i, worldComm.rank());
                      });
     executor.PrintExecutionSummary();
 
     executor.Execute(n,
                      [&](auto i) {
                          std::this_thread::sleep_for(500ms);
-                         PrintLn("{},{}", i, commWorld.rank());
+                         PrintLn("{},{}", i, worldComm.rank());
                      });
     executor.PrintExecutionSummary();
 

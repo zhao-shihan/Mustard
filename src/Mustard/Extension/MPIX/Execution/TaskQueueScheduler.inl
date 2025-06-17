@@ -37,11 +37,11 @@ TaskQueueScheduler<T>::TaskQueueScheduler() :
 
 template<std::integral T>
 auto TaskQueueScheduler<T>::PreLoopAction() -> void {
-    const auto& commWorld{mpl::environment::comm_world()};
-    fBatchSize = static_cast<T>(fgBalancingFactor / 2 * static_cast<double>(this->NTask()) / commWorld.size()) + 1;
-    this->fExecutingTask = this->fTask.first + commWorld.rank() * fBatchSize;
-    if (commWorld.rank() == 0) {
-        *fMainTaskID = this->fTask.first + commWorld.size() * fBatchSize;
+    const auto& worldComm{mpl::environment::comm_world()};
+    fBatchSize = static_cast<T>(fgBalancingFactor / 2 * static_cast<double>(this->NTask()) / worldComm.size()) + 1;
+    this->fExecutingTask = this->fTask.first + worldComm.rank() * fBatchSize;
+    if (worldComm.rank() == 0) {
+        *fMainTaskID = this->fTask.first + worldComm.size() * fBatchSize;
         MPI_Win_fence(MPI_MODE_NOPRECEDE, *fMainTaskIDWindow);
     } else {
         MPI_Win_fence(MPI_MODE_NOSTORE | MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, *fMainTaskIDWindow);

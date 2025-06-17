@@ -74,8 +74,8 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     // initialize
     fExecuting = true;
     fScheduler->PreLoopAction();
-    const auto& commWorld{mpl::environment::comm_world()};
-    commWorld.barrier();
+    const auto& worldComm{mpl::environment::comm_world()};
+    worldComm.barrier();
     fExecutionBeginSystemTime = scsc::now();
     fWallTimeStopwatch.reset();
     fCPUTimeStopwatch.reset();
@@ -93,12 +93,12 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     // finalize
     fExecutionWallTime = fWallTimeStopwatch.s_elapsed();
     fExecutionCPUTime = fCPUTimeStopwatch.s_used();
-    auto finalizingBarrier{commWorld.ibarrier()};
-    if (commWorld.rank() == 0) {
-        fExecutionInfoGatheredByMaster.resize(commWorld.size());
+    auto finalizingBarrier{worldComm.ibarrier()};
+    if (worldComm.rank() == 0) {
+        fExecutionInfoGatheredByMaster.resize(worldComm.size());
     }
     const std::tuple executionInfo{fScheduler->fNLocalExecutedTask, fExecutionWallTime, fExecutionCPUTime};
-    auto gatherExecutionInfo{commWorld.igather(0, executionInfo, fExecutionInfoGatheredByMaster.data())};
+    auto gatherExecutionInfo{worldComm.igather(0, executionInfo, fExecutionInfoGatheredByMaster.data())};
     fScheduler->PostLoopAction();
     fExecuting = false;
     while (not finalizingBarrier.test()) {
@@ -112,8 +112,8 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PrintExecutionSummary() const -> void {
-    const auto& commWorld{mpl::environment::comm_world()};
-    if (commWorld.rank() != 0) { return; }
+    const auto& worldComm{mpl::environment::comm_world()};
+    if (worldComm.rank() != 0) { return; }
     if (fExecutionInfoGatheredByMaster.empty() or fExecuting) {
         PrintWarning("Execution summary not available for now");
         return;
@@ -121,8 +121,8 @@ auto Executor<T>::PrintExecutionSummary() const -> void {
     Print("+------------------+--------------> Summary <-------------+-------------------+\n"
           "| Rank in world    | Executed          | Wall time (s)    | CPU time (s)      |\n"
           "+------------------+-------------------+------------------+-------------------+\n");
-    Expects(ssize(fExecutionInfoGatheredByMaster) == commWorld.size());
-    for (int rank{}; rank < commWorld.size(); ++rank) {
+    Expects(ssize(fExecutionInfoGatheredByMaster) == worldComm.size());
+    for (int rank{}; rank < worldComm.size(); ++rank) {
         const auto& [executed, wallTime, cpuTime]{fExecutionInfoGatheredByMaster[rank]};
         PrintLn("| {:16} | {:17} | {:16.3f} | {:17.3f} |", rank, executed, wallTime, cpuTime);
     }
@@ -133,13 +133,13 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PreLoopReport() const -> void {
     if (not fPrintProgress) { return; }
-    const auto& commWorld{mpl::environment::comm_world()};
-    if (commWorld.rank() != 0) { return; }
+    const auto& worldComm{mpl::environment::comm_world()};
+    if (worldComm.rank() != 0) { return; }
     Print("+----------------------------------> Start <----------------------------------+\n"
           "| {:75} |\n"
           "+----------------------------------> Start <----------------------------------+\n",
           fmt::format("[{:%FT%T%z}] {} has started on {} process{}",
-                      muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime)), fExecutionName, commWorld.size(), commWorld.size() > 1 ? "es" : ""));
+                      muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime)), fExecutionName, worldComm.size(), worldComm.size() > 1 ? "es" : ""));
 }
 
 template<std::integral T>
@@ -156,11 +156,11 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
         // manual mode
         if ((iEnded + 1) % fPrintProgressModulo != 0) { return; }
     }
-    const auto& commWorld{mpl::environment::comm_world()};
+    const auto& worldComm{mpl::environment::comm_world()};
     Print("MPI{}> [{:%FT%T%z}] {} {} has ended\n"
           "MPI{}>   {} elaps., {}\n",
-          commWorld.rank(), muc::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
-          commWorld.rank(), SToDHMS(secondsElapsed),
+          worldComm.rank(), muc::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
+          worldComm.rank(), SToDHMS(secondsElapsed),
           [&, good{goodEstimation}, nExecuted{nExecutedTask}] {
               if (good) {
                   const auto eta{(NTask() - nExecuted) / speed};
@@ -177,8 +177,8 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostLoopReport() const -> void {
     if (not fPrintProgress) { return; }
-    const auto& commWorld{mpl::environment::comm_world()};
-    if (commWorld.rank() != 0) { return; }
+    const auto& worldComm{mpl::environment::comm_world()};
+    if (worldComm.rank() != 0) { return; }
     const auto now{scsc::now()};
     const auto maxWallTime{get<1>(*std::ranges::max_element(fExecutionInfoGatheredByMaster, std::less{},
                                                             [](auto&& a) { return std::get<1>(a); }))};
@@ -190,7 +190,7 @@ auto Executor<T>::PostLoopReport() const -> void {
           "| {:75} |\n"
           "| {:75} |\n"
           "+-----------------------------------> End <-----------------------------------+\n",
-          fmt::format("[{:%FT%T%z}] {} has ended on {} process{}", muc::localtime(scsc::to_time_t(now)), fExecutionName, commWorld.size(), commWorld.size() > 1 ? "es" : ""),
+          fmt::format("[{:%FT%T%z}] {} has ended on {} process{}", muc::localtime(scsc::to_time_t(now)), fExecutionName, worldComm.size(), worldComm.size() > 1 ? "es" : ""),
           fmt::format("  Start time: {:%FT%T%z}", muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime))),
           fmt::format("   Wall time: {:.3f} seconds{}", maxWallTime, maxWallTime <= 60 ? "" : " (" + SToDHMS(maxWallTime) + ')'),
           fmt::format("    CPU time: {:.3f} seconds{}", totalCpuTime, totalCpuTime <= 60 ? "" : " (" + SToDHMS(totalCpuTime) + ')'));

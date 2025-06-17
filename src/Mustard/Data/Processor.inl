@@ -85,10 +85,10 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     std::future<void> asyncProcess;
 
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
-    const auto& commWorld{mpl::environment::comm_world()};
-    const auto batch{this->CalculateBatchConfiguration(commWorld.size(), n)};
+    const auto& worldComm{mpl::environment::comm_world()};
+    const auto batch{this->CalculateBatchConfiguration(worldComm.size(), n)};
     fExecutor.Execute(
-        std::max(static_cast<Index>(commWorld.size()), batch.nBatch),
+        std::max(static_cast<Index>(worldComm.size()), batch.nBatch),
         [&](auto k) { // k is batch index
             if (byPassWillOccur) [[unlikely]] {
                 if (k >= n) { // by pass when there are too many processors
@@ -111,11 +111,11 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what) -> bool {
-    const auto& commWorld{mpl::environment::comm_world()};
-    const auto byPassWillOccur{static_cast<Index>(commWorld.size()) > n};
-    if (commWorld.rank() == 0 and byPassWillOccur) [[unlikely]] {
+    const auto& worldComm{mpl::environment::comm_world()};
+    const auto byPassWillOccur{static_cast<Index>(worldComm.size()) > n};
+    if (worldComm.rank() == 0 and byPassWillOccur) [[unlikely]] {
         PrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
-                                 commWorld.size(), what, n));
+                                 worldComm.size(), what, n));
     }
     return byPassWillOccur;
 }

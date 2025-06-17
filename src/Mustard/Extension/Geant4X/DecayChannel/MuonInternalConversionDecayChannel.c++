@@ -129,11 +129,11 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
 
     using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
     muc::array2ld sum{};
-    const auto& commWorld{mpl::environment::comm_world()};
+    const auto& worldComm{mpl::environment::comm_world()};
     {                               // Monte Carlo integration here
         muc::array2ld partialSum{}; // improve numeric stability
         MPIX::Executor<unsigned long long>{"Estimation", "Sample"}
-            .Execute(n, [&, partialSumThreshold = muc::llround(std::sqrt(n / commWorld.size()))](auto i) {
+            .Execute(n, [&, partialSumThreshold = muc::llround(std::sqrt(n / worldComm.size()))](auto i) {
                 MainSamplingLoop();
                 const auto bias{originalBias(fEvent.state)};
                 partialSum += muc::array2ld{bias, muc::pow<2>(bias)};
@@ -144,7 +144,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
             });
         sum += partialSum;
     }
-    commWorld.allreduce([](auto a, auto b) { return a + b; }, sum);
+    worldComm.allreduce([](auto a, auto b) { return a + b; }, sum);
     const auto result{gsl::narrow_cast<double>(sum[0] / n)};
     const auto error{gsl::narrow_cast<double>(std::sqrt(sum[1]) / n)};
     const auto nEff{muc::pow<2>(result / error)};

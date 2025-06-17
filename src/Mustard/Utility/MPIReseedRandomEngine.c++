@@ -50,15 +50,15 @@ namespace {
 
 template<std::unsigned_integral T>
 auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
-    const auto& commWorld{mpl::environment::comm_world()};
-    Expects(commWorld.rank() == 0);
+    const auto& worldComm{mpl::environment::comm_world()};
+    Expects(worldComm.rank() == 0);
 
     static_assert(std::same_as<Math::Random::Xoshiro256PP::SeedType, std::uint64_t>);
     Math::Random::Xoshiro256PP xsr256{std::bit_cast<std::uint64_t>(xsr256Seed)};
     Math::Random::Uniform<T> uniform{1, std::numeric_limits<T>::max() - 1}; // not 0x00...00 and not 0xff...ff
 
     muc::flat_hash_set<T> uniqueSeeds;
-    const auto worldSize{commWorld.size()};
+    const auto worldSize{worldComm.size()};
     uniqueSeeds.reserve(worldSize);
     do {
         uniqueSeeds.emplace(uniform(xsr256));
@@ -70,8 +70,8 @@ auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
 } // namespace internal
 
 auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> void {
-    const auto& commWorld{mpl::environment::comm_world()};
-    if (commWorld.size() == 1) { return; }
+    const auto& worldComm{mpl::environment::comm_world()};
+    if (worldComm.size() == 1) { return; }
 
     if (clhepRng == nullptr) { clhepRng = CLHEP::HepRandom::getTheEngine(); }
     if (tRandom == nullptr) { tRandom = gRandom; }
@@ -81,8 +81,8 @@ auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -
 
     using Seed = std::tuple<bool, long, bool, unsigned>; // (clhepNull, clhepSeed, rootNull, rootSeed)
     Seed seedRecv;
-    if (commWorld.rank() == 0) {
-        std::vector<Seed> seedSend(commWorld.size(), {true, 0, true, 0});
+    if (worldComm.rank() == 0) {
+        std::vector<Seed> seedSend(worldComm.size(), {true, 0, true, 0});
         if (clhepRng) {
             std::array<unsigned, sizeof(std::uint64_t) / sizeof(unsigned)> xsr256Seed;
             std::ranges::generate(xsr256Seed, [clhepRng] {
@@ -108,9 +108,9 @@ auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -
                 get<3>(seedSend[i++]) = s;
             }
         }
-        commWorld.scatter(0, seedSend.data(), seedRecv);
+        worldComm.scatter(0, seedSend.data(), seedRecv);
     } else {
-        commWorld.scatter(0, seedRecv);
+        worldComm.scatter(0, seedRecv);
     }
 
     if (get<0>(seedRecv) != (clhepRng == nullptr)) { Throw<std::logic_error>("CLHEP random engine null/!null inconsistent"); }

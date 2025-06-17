@@ -58,15 +58,15 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
     fIntraNodeComm{},
     fInterNodeComm{},
     fCluster{} {
-    const auto& commWorld{mpl::environment::comm_world()};
+    const auto& worldComm{mpl::environment::comm_world()};
     if (mpl::environment::threading_mode() == mpl::threading_modes::single) {
         Throw<std::runtime_error>("The MPI library not even support funneled threading");
     }
 
-    fIntraNodeComm = mpl::communicator{mpl::communicator::split_shared_memory, commWorld};
+    fIntraNodeComm = mpl::communicator{mpl::communicator::split_shared_memory, worldComm};
     enum struct IntraNodeColor { Leader = 0,
                                  Other = MPI_UNDEFINED };
-    fInterNodeComm = mpl::communicator{mpl::communicator::split, commWorld,
+    fInterNodeComm = mpl::communicator{mpl::communicator::split, worldComm,
                                        fIntraNodeComm.rank() == 0 ?
                                            IntraNodeColor::Leader :
                                            IntraNodeColor::Other};
@@ -86,7 +86,7 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
 
     std::vector<int> nodeSize(nNode);
     std::vector<int> localWorldRank(fInterNodeComm.is_valid() ? fIntraNodeComm.size() : 0);
-    fIntraNodeComm.gather(0, commWorld.rank(), localWorldRank.data());
+    fIntraNodeComm.gather(0, worldComm.rank(), localWorldRank.data());
     if (fInterNodeComm.is_valid()) {
         fInterNodeComm.allgather(gsl::narrow<int>(localWorldRank.size()), nodeSize.data());
     }
@@ -96,7 +96,7 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
     for (auto i{1}; i < nNode; ++i) {
         disp[i] = disp[i - 1] + nodeSize[i - 1];
     }
-    std::vector<int> flatWorldRank(commWorld.size());
+    std::vector<int> flatWorldRank(worldComm.size());
     if (fInterNodeComm.is_valid()) {
         mpl::contiguous_layouts<int> worldRankLayout(nNode);
         std::ranges::transform(nodeSize, worldRankLayout.begin(), [](int size) { return mpl::contiguous_layout<int>(size); });
@@ -132,15 +132,15 @@ MPIEnv::MPIEnv(int argc, char* argv[],
 }
 
 MPIEnv::~MPIEnv() {
-    const auto& commWorld{mpl::environment::comm_world()};
+    const auto& worldComm{mpl::environment::comm_world()};
     // Wait all processes before finalizing
-    auto barrier{commWorld.ibarrier()};
+    auto barrier{worldComm.ibarrier()};
     while (not barrier.test()) {
         using std::chrono_literals::operator""ms;
         std::this_thread::sleep_for(20ms);
     }
     // Show exit banner
-    if (fShowBanner and commWorld.rank() == 0) {
+    if (fShowBanner and worldComm.rank() == 0) {
         PrintExitBanner();
     }
     fShowBanner = false;
@@ -156,18 +156,18 @@ auto MPIEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     std::pair<int, int> mpiRuntimeVersion;
     MPI_Get_version(&mpiRuntimeVersion.first, &mpiRuntimeVersion.second);
     // Messages
-    const auto& commWorld{mpl::environment::comm_world()};
+    const auto& worldComm{mpl::environment::comm_world()};
     Print(fmt::emphasis::bold,
           "\n"
           " Parallelized with MPI, running {}\n",
-          commWorld.size() == 1 ? "sequentially" : "in parallel");
+          worldComm.size() == 1 ? "sequentially" : "in parallel");
     PrintLn<'I'>(" Compiled with MPI {}.{}, running with MPI {}.{}", MPI_VERSION, MPI_SUBVERSION, mpiRuntimeVersion.first, mpiRuntimeVersion.second);
     Print<'V'>("--------------------> MPI library information (begin) <--------------------\n"
                "{}\n"
                "-------------------->  MPI library information (end)  <--------------------\n"
                "\n",
                mpiLibVersion);
-    Print(fmt::emphasis::bold, " Size of the MPI world communicator: {}\n", commWorld.size());
+    Print(fmt::emphasis::bold, " Size of the MPI world communicator: {}\n", worldComm.size());
     if (OnSingleNode()) {
         Print(fmt::emphasis::bold, " Running on '{}'\n", LocalNode().name);
     } else {

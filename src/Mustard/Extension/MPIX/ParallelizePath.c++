@@ -38,8 +38,8 @@ auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path
         Throw<std::invalid_argument>(fmt::format("Invalid file name '{}'", stem.c_str()));
     }
 
-    if (const auto& commWorld{mpl::environment::comm_world()};
-        commWorld.size() > 1) {
+    if (const auto& worldComm{mpl::environment::comm_world()};
+        worldComm.size() > 1) {
         const auto& mpiEnv{Env::MPIEnv::Instance()};
         // parent directory
         auto parent{std::filesystem::path{path}.replace_extension()};
@@ -55,7 +55,7 @@ auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path
         std::byte createdSemaphore{};
         intraNodeComm.bcast(0, createdSemaphore);
         // construct full path
-        return parent / stem.concat(fmt::format("_mpi{}.", commWorld.rank())).replace_extension(path.extension());
+        return parent / stem.concat(fmt::format("_mpi{}.", worldComm.rank())).replace_extension(path.extension());
     } else {
         return path;
     }
