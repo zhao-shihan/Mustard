@@ -23,30 +23,54 @@ MasterSlaveScheduler<T>::MasterSlaveScheduler() :
     Scheduler<T>{},
     fComm{mpl::environment::comm_world()},
     fBatchSize{},
-    fContext{fComm.rank() == 0 ?
-                 decltype(fContext)(std::in_place_type<Master>, this) :
-                 decltype(fContext)(std::in_place_type<Worker>, this)} {}
+    fMasterContext{fComm.rank() == 0 ? decltype(fMasterContext){this} : std::nullopt},
+    fMasterFuture{},
+    fSemaphoreSend{},
+    fSend{fComm.rsend_init(fSemaphoreSend, 0)},
+    fTaskIDRecv{},
+    fRecv{fComm.recv_init(fTaskIDRecv, 0)},
+    fBatchCounter{} {}
 
 template<std::integral T>
 auto MasterSlaveScheduler<T>::PreLoopAction() -> void {
-    // width ~ BalanceFactor -> +/- BalanceFactor / 2
-    fBatchSize = static_cast<T>(fgBalancingFactor / 2 * static_cast<double>(this->NTask()) / fComm.size()) + 1;
-    std::visit([](auto&& c) { c.PreLoopAction(); }, fContext);
+    fBatchSize = static_cast<T>(fgImbalancingFactor / 2 * static_cast<double>(this->NTask()) / fComm.size()) + 1;
+    if (fMasterContext) {
+        fMasterFuture = std::async(std::launch::async, std::ref(*fMasterContext));
+    }
+    this->fExecutingTask = this->fTask.first + fComm.rank() * fBatchSize;
+    // wait for master thread to post receive
+    std::byte firstRecvReadySemaphore{};
+    fComm.ibcast(0, firstRecvReadySemaphore).wait();
 }
 
 template<std::integral T>
 auto MasterSlaveScheduler<T>::PreTaskAction() -> void {
-    std::visit([](auto&& c) { c.PreTaskAction(); }, fContext);
+    if (fBatchCounter == 0) {
+        fRecv.start();
+        fSend.start();
+    }
 }
 
 template<std::integral T>
 auto MasterSlaveScheduler<T>::PostTaskAction() -> void {
-    std::visit([](auto&& c) { c.PostTaskAction(); }, fContext);
+    if (++fBatchCounter == fBatchSize) {
+        fBatchCounter = 0;
+        fSend.wait();
+        fRecv.wait();
+        this->fExecutingTask = fTaskIDRecv;
+    } else {
+        ++this->fExecutingTask;
+    }
 }
 
 template<std::integral T>
 auto MasterSlaveScheduler<T>::PostLoopAction() -> void {
-    std::visit([](auto&& c) { c.PostLoopAction(); }, fContext);
+    fBatchCounter = 0;
+    fSend.wait();
+    fRecv.wait();
+    if (fMasterContext) {
+        fMasterFuture.get();
+    }
 }
 
 template<std::integral T>
@@ -56,31 +80,12 @@ auto MasterSlaveScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool,
 }
 
 template<std::integral T>
-MasterSlaveScheduler<T>::Master::Supervisor::Supervisor(MasterSlaveScheduler<T>* ds) :
-    fDS{ds},
-    fMainTaskID{},
+MasterSlaveScheduler<T>::MasterContext::MasterContext(MasterSlaveScheduler<T>* s) :
+    fS{s},
     fSemaphoreRecv{},
     fRecv{},
     fTaskIDSend{},
-    fSend{},
-    fSupervisorThread{} {
-    if (const auto commSize{fDS->fComm.size()};
-        commSize > 1) {
-        fTaskIDSend.reserve(commSize - 1);
-        for (int src{1}; src < commSize; ++src) {
-            fRecv.push(fDS->fComm.recv_init(fSemaphoreRecv, src));
-        }
-        for (int dest{1}; dest < commSize; ++dest) {
-            fSend.push(fDS->fComm.rsend_init(fTaskIDSend.emplace_back(), dest));
-        }
-    }
-}
-
-template<std::integral T>
-auto MasterSlaveScheduler<T>::Master::Supervisor::Start() -> void {
-    fMainTaskID = fDS->fTask.first + fDS->fComm.size() * fDS->fBatchSize;
-    // No need of supervisor thread in sequential execution
-    if (fDS->fComm.size() == 1) { return; }
+    fSend{} {
     // Check MPI thread support
     switch (mpl::environment::threading_mode()) {
     case mpl::threading_modes::single:
@@ -95,104 +100,43 @@ auto MasterSlaveScheduler<T>::Master::Supervisor::Start() -> void {
     case mpl::threading_modes::multiple:
         break;
     }
-    // wait for last supervision to end if needed
-    if (fSupervisorThread.joinable()) { fSupervisorThread.join(); }
-    // Start supervise
-    fSupervisorThread = std::jthread{
-        [this] {
-            fRecv.startall();
-            // inform workers that receive have been posted
-            std::byte firstRecvReadySemaphore{};
-            auto firstRecvReadyBcast{fDS->fComm.ibcast(0, firstRecvReadySemaphore)};
-            int completing{};
-            do {
-                const auto [_, cgIndex]{fRecv.waitsome()};
-                for (auto&& i : cgIndex) {
-                    fTaskIDSend[i] = FetchAddTaskID();
-                    if (fTaskIDSend[i] != fDS->fTask.last) {
-                        fRecv.start(i);
-                    } else {
-                        ++completing;
-                    }
-                    fSend.wait(i);
-                    fSend.start(i);
-                }
-            } while (completing != fDS->fComm.size() - 1);
-            firstRecvReadyBcast.wait();
-            fSend.waitall();
-        }};
-}
-
-template<std::integral T>
-auto MasterSlaveScheduler<T>::Master::Supervisor::FetchAddTaskID() -> T {
-    return std::min(fMainTaskID.fetch_add(fDS->fBatchSize), fDS->fTask.last);
-}
-
-template<std::integral T>
-MasterSlaveScheduler<T>::Master::Master(MasterSlaveScheduler<T>* ds) :
-    fDS{ds},
-    fSupervisor{ds},
-    fBatchCounter{} {}
-
-template<std::integral T>
-auto MasterSlaveScheduler<T>::Master::PreLoopAction() -> void {
-    fSupervisor.Start();
-    fDS->fExecutingTask = fDS->fTask.first;
-    fBatchCounter = 0;
-}
-
-template<std::integral T>
-auto MasterSlaveScheduler<T>::Master::PostTaskAction() -> void {
-    if (++fBatchCounter == fDS->fBatchSize) {
-        fBatchCounter = 0;
-        fDS->fExecutingTask = fSupervisor.FetchAddTaskID();
-    } else {
-        ++fDS->fExecutingTask;
+    // Initialize communication requests
+    const auto commSize{fS->fComm.size()};
+    for (int src{}; src < commSize; ++src) {
+        fRecv.push(fS->fComm.recv_init(fSemaphoreRecv, src));
+    }
+    fTaskIDSend.reserve(commSize);
+    for (int dest{}; dest < commSize; ++dest) {
+        fSend.push(fS->fComm.rsend_init(fTaskIDSend.emplace_back(), dest));
     }
 }
 
 template<std::integral T>
-MasterSlaveScheduler<T>::Worker::Worker(MasterSlaveScheduler<T>* ds) :
-    fDS{ds},
-    fSemaphoreSend{},
-    fSend{fDS->fComm.rsend_init(fSemaphoreSend, 0)},
-    fTaskIDRecv{},
-    fRecv{fDS->fComm.recv_init(fTaskIDRecv, 0)},
-    fBatchCounter{} {}
-
-template<std::integral T>
-auto MasterSlaveScheduler<T>::Worker::PreLoopAction() -> void {
-    fDS->fExecutingTask = fDS->fTask.first + fDS->fComm.rank() * fDS->fBatchSize;
-    // wait for supervisor to post receive
+auto MasterSlaveScheduler<T>::MasterContext::operator()() -> void {
+    fRecv.startall();
+    // inform workers that receive have been posted
     std::byte firstRecvReadySemaphore{};
-    fDS->fComm.ibcast(0, firstRecvReadySemaphore).wait();
-}
-
-template<std::integral T>
-auto MasterSlaveScheduler<T>::Worker::PreTaskAction() -> void {
-    if (fBatchCounter == 0) {
-        fRecv.start();
-        fSend.start();
-    }
-}
-
-template<std::integral T>
-auto MasterSlaveScheduler<T>::Worker::PostTaskAction() -> void {
-    if (++fBatchCounter == fDS->fBatchSize) {
-        fBatchCounter = 0;
-        fSend.wait();
-        fRecv.wait();
-        fDS->fExecutingTask = fTaskIDRecv;
-    } else {
-        ++fDS->fExecutingTask;
-    }
-}
-
-template<std::integral T>
-auto MasterSlaveScheduler<T>::Worker::PostLoopAction() -> void {
-    fBatchCounter = 0;
-    fSend.wait();
-    fRecv.wait();
+    auto firstRecvReadyBcast{fS->fComm.ibcast(0, firstRecvReadySemaphore)};
+    // scheduling loop
+    T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
+    int completing{};
+    do {
+        const auto [_, cgIndex]{fRecv.waitsome()};
+        for (auto&& i : cgIndex) {
+            fTaskIDSend[i] = mainTaskID;
+            mainTaskID = std::min(mainTaskID + fS->fBatchSize, fS->fTask.last);
+            if (fTaskIDSend[i] != fS->fTask.last) [[likely]] {
+                fRecv.start(i);
+            } else {
+                ++completing;
+            }
+            fSend.wait(i);
+            fSend.start(i);
+        }
+    } while (completing != fS->fComm.size());
+    // finalize
+    firstRecvReadyBcast.wait();
+    fSend.waitall();
 }
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution

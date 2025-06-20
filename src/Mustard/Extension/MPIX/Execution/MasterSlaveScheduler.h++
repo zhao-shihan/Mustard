@@ -18,9 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Extension/MPIX/DataType.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/MerelyMoveableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpl/mpl.hpp"
@@ -30,14 +29,13 @@
 
 #include "gsl/gsl"
 
-#include <array>
 #include <cmath>
 #include <concepts>
 #include <cstddef>
-#include <iostream>
+#include <functional>
+#include <future>
 #include <stdexcept>
 #include <string>
-#include <thread>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -58,66 +56,34 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    class Master final : public NonMoveableBase {
+    class MasterContext final : public MerelyMoveableBase {
     public:
-        Master(MasterSlaveScheduler<T>* ds);
+        MasterContext(MasterSlaveScheduler<T>* s);
 
-        auto PreLoopAction() -> void;
-        auto PreTaskAction() -> void {}
-        auto PostTaskAction() -> void;
-        auto PostLoopAction() -> void {}
+        auto operator()() -> void;
 
     private:
-        class Supervisor final : public NonMoveableBase {
-        public:
-            Supervisor(MasterSlaveScheduler<T>* ds);
-
-            auto FetchAddTaskID() -> T;
-
-            auto Start() -> void;
-
-        private:
-            MasterSlaveScheduler<T>* fDS;
-            std::atomic<T> fMainTaskID;
-            std::byte fSemaphoreRecv;
-            mpl::prequest_pool fRecv;
-            std::vector<T> fTaskIDSend;
-            mpl::prequest_pool fSend;
-            std::jthread fSupervisorThread;
-        };
-
-    private:
-        MasterSlaveScheduler<T>* fDS;
-        Supervisor fSupervisor;
-        T fBatchCounter;
+        MasterSlaveScheduler<T>* fS;
+        std::byte fSemaphoreRecv;
+        mpl::prequest_pool fRecv;
+        std::vector<T> fTaskIDSend;
+        mpl::prequest_pool fSend;
     };
-    friend class Master;
-
-    class Worker final : public NonMoveableBase {
-    public:
-        Worker(MasterSlaveScheduler<T>* ds);
-
-        auto PreLoopAction() -> void;
-        auto PreTaskAction() -> void;
-        auto PostTaskAction() -> void;
-        auto PostLoopAction() -> void;
-
-    private:
-        MasterSlaveScheduler<T>* fDS;
-        std::byte fSemaphoreSend;
-        mpl::prequest fSend;
-        T fTaskIDRecv;
-        mpl::prequest fRecv;
-        T fBatchCounter;
-    };
-    friend class Worker;
+    friend class MasterContext;
 
 private:
     mpl::communicator fComm;
     T fBatchSize;
-    std::variant<Master, Worker> fContext;
+    std::optional<MasterContext> fMasterContext;
+    std::future<void> fMasterFuture;
 
-    static constexpr auto fgBalancingFactor{0.001};
+    std::byte fSemaphoreSend;
+    mpl::prequest fSend;
+    T fTaskIDRecv;
+    mpl::prequest fRecv;
+    T fBatchCounter;
+
+    static constexpr auto fgImbalancingFactor{1e-3};
 };
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution
