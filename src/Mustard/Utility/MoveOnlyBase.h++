@@ -20,16 +20,16 @@
 
 namespace Mustard::inline Utility {
 
-class MerelyMoveableBase {
+class MoveOnlyBase {
 protected:
-    constexpr MerelyMoveableBase() noexcept = default;
-    constexpr ~MerelyMoveableBase() noexcept = default;
+    constexpr MoveOnlyBase() noexcept = default;
+    constexpr ~MoveOnlyBase() noexcept = default;
 
-    constexpr MerelyMoveableBase(const MerelyMoveableBase&) noexcept = delete;
-    constexpr MerelyMoveableBase(MerelyMoveableBase&&) noexcept = default;
+    constexpr MoveOnlyBase(const MoveOnlyBase&) noexcept = delete;
+    constexpr MoveOnlyBase(MoveOnlyBase&&) noexcept = default;
 
-    constexpr auto operator=(const MerelyMoveableBase&) noexcept -> MerelyMoveableBase& = delete;
-    constexpr auto operator=(MerelyMoveableBase&&) noexcept -> MerelyMoveableBase& = default;
+    constexpr auto operator=(const MoveOnlyBase&) noexcept -> MoveOnlyBase& = delete;
+    constexpr auto operator=(MoveOnlyBase&&) noexcept -> MoveOnlyBase& = default;
 };
 
 } // namespace Mustard::inline Utility
