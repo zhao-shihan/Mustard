@@ -19,7 +19,7 @@
 #pragma once
 
 #include <chrono>
-#include <cstdint>
+#include <cstddef>
 #include <memory>
 
 namespace Mustard::inline Utility {
@@ -37,7 +37,7 @@ public:
     auto Stop() -> void;
 
 private:
-    auto Print(std::chrono::duration<double> timeElapsed) -> void;
+    auto Print(std::size_t progress, std::chrono::duration<double> timeElapsed) -> void;
 
 private:
     struct Impl;
