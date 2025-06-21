@@ -29,15 +29,14 @@
 
 #include "gsl/gsl"
 
-#include <cmath>
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <functional>
 #include <future>
+#include <memory>
 #include <stdexcept>
-#include <string>
-#include <type_traits>
-#include <variant>
+#include <utility>
 #include <vector>
 
 namespace Mustard::inline Extension::MPIX::inline Execution {
@@ -56,9 +55,9 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    class MasterContext final : public MoveOnlyBase {
+    class Master final : public MoveOnlyBase {
     public:
-        MasterContext(MasterWorkerScheduler<T>* s);
+        Master(MasterWorkerScheduler<T>* s);
 
         auto operator()() -> void;
 
@@ -69,12 +68,12 @@ private:
         std::vector<T> fTaskIDSend;
         mpl::prequest_pool fSend;
     };
-    friend class MasterContext;
+    friend class Master;
 
 private:
     mpl::communicator fComm;
     T fBatchSize;
-    std::optional<MasterContext> fMasterContext;
+    std::unique_ptr<Master> fMaster;
     std::future<void> fMasterFuture;
 
     std::byte fSemaphoreSend;

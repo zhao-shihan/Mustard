@@ -23,7 +23,7 @@ MasterWorkerScheduler<T>::MasterWorkerScheduler() :
     Scheduler<T>{},
     fComm{mpl::environment::comm_world()},
     fBatchSize{},
-    fMasterContext{fComm.rank() == 0 ? decltype(fMasterContext){this} : std::nullopt},
+    fMaster{fComm.rank() == 0 ? std::make_unique<Master>(this) : nullptr},
     fMasterFuture{},
     fSemaphoreSend{},
     fSend{fComm.rsend_init(fSemaphoreSend, 0)},
@@ -34,8 +34,8 @@ MasterWorkerScheduler<T>::MasterWorkerScheduler() :
 template<std::integral T>
 auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
     fBatchSize = static_cast<T>(fgImbalancingFactor / 2 * static_cast<double>(this->NTask()) / fComm.size()) + 1;
-    if (fMasterContext) {
-        fMasterFuture = std::async(std::launch::async, std::ref(*fMasterContext));
+    if (fMaster) {
+        fMasterFuture = std::async(std::launch::async, std::ref(*fMaster));
     }
     this->fExecutingTask = this->fTask.first + fComm.rank() * fBatchSize;
     // wait for master thread to post receive
@@ -68,7 +68,7 @@ auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
     fBatchCounter = 0;
     fSend.wait();
     fRecv.wait();
-    if (fMasterContext) {
+    if (fMaster) {
         fMasterFuture.get();
     }
 }
@@ -80,7 +80,7 @@ auto MasterWorkerScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool
 }
 
 template<std::integral T>
-MasterWorkerScheduler<T>::MasterContext::MasterContext(MasterWorkerScheduler<T>* s) :
+MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
     fS{s},
     fSemaphoreRecv{},
     fRecv{},
@@ -112,7 +112,7 @@ MasterWorkerScheduler<T>::MasterContext::MasterContext(MasterWorkerScheduler<T>*
 }
 
 template<std::integral T>
-auto MasterWorkerScheduler<T>::MasterContext::operator()() -> void {
+auto MasterWorkerScheduler<T>::Master::operator()() -> void {
     fRecv.startall();
     // inform workers that receive have been posted
     std::byte firstRecvReadySemaphore{};
