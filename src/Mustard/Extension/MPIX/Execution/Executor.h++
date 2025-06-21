@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Concept/MPIPredefined.h++"
-#include "Mustard/Extension/MPIX/Execution/MasterSlaveScheduler.h++"
+#include "Mustard/Extension/MPIX/Execution/MasterWorkerScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
@@ -61,10 +61,10 @@ public:
     using Index = T;
 
 public:
-    template<template<typename> typename S = MasterSlaveScheduler>
+    template<template<typename> typename S = MasterWorkerScheduler>
         requires std::derived_from<S<T>, Scheduler<T>>
     Executor(ScheduleBy<S> = {});
-    template<template<typename> typename S = MasterSlaveScheduler>
+    template<template<typename> typename S = MasterWorkerScheduler>
         requires std::derived_from<S<T>, Scheduler<T>>
     Executor(std::string executionName, std::string taskName, ScheduleBy<S> = {});
 

@@ -19,7 +19,7 @@
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
-MasterSlaveScheduler<T>::MasterSlaveScheduler() :
+MasterWorkerScheduler<T>::MasterWorkerScheduler() :
     Scheduler<T>{},
     fComm{mpl::environment::comm_world()},
     fBatchSize{},
@@ -32,7 +32,7 @@ MasterSlaveScheduler<T>::MasterSlaveScheduler() :
     fBatchCounter{} {}
 
 template<std::integral T>
-auto MasterSlaveScheduler<T>::PreLoopAction() -> void {
+auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
     fBatchSize = static_cast<T>(fgImbalancingFactor / 2 * static_cast<double>(this->NTask()) / fComm.size()) + 1;
     if (fMasterContext) {
         fMasterFuture = std::async(std::launch::async, std::ref(*fMasterContext));
@@ -44,7 +44,7 @@ auto MasterSlaveScheduler<T>::PreLoopAction() -> void {
 }
 
 template<std::integral T>
-auto MasterSlaveScheduler<T>::PreTaskAction() -> void {
+auto MasterWorkerScheduler<T>::PreTaskAction() -> void {
     if (fBatchCounter == 0) {
         fRecv.start();
         fSend.start();
@@ -52,7 +52,7 @@ auto MasterSlaveScheduler<T>::PreTaskAction() -> void {
 }
 
 template<std::integral T>
-auto MasterSlaveScheduler<T>::PostTaskAction() -> void {
+auto MasterWorkerScheduler<T>::PostTaskAction() -> void {
     if (++fBatchCounter == fBatchSize) {
         fBatchCounter = 0;
         fSend.wait();
@@ -64,7 +64,7 @@ auto MasterSlaveScheduler<T>::PostTaskAction() -> void {
 }
 
 template<std::integral T>
-auto MasterSlaveScheduler<T>::PostLoopAction() -> void {
+auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
     fBatchCounter = 0;
     fSend.wait();
     fRecv.wait();
@@ -74,13 +74,13 @@ auto MasterSlaveScheduler<T>::PostLoopAction() -> void {
 }
 
 template<std::integral T>
-auto MasterSlaveScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
+auto MasterWorkerScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
     return {this->fNLocalExecutedTask > 10 * fBatchSize,
             this->fExecutingTask - this->fTask.first};
 }
 
 template<std::integral T>
-MasterSlaveScheduler<T>::MasterContext::MasterContext(MasterSlaveScheduler<T>* s) :
+MasterWorkerScheduler<T>::MasterContext::MasterContext(MasterWorkerScheduler<T>* s) :
     fS{s},
     fSemaphoreRecv{},
     fRecv{},
@@ -112,7 +112,7 @@ MasterSlaveScheduler<T>::MasterContext::MasterContext(MasterSlaveScheduler<T>* s
 }
 
 template<std::integral T>
-auto MasterSlaveScheduler<T>::MasterContext::operator()() -> void {
+auto MasterWorkerScheduler<T>::MasterContext::operator()() -> void {
     fRecv.startall();
     // inform workers that receive have been posted
     std::byte firstRecvReadySemaphore{};

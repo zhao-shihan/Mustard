@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
-#include "Mustard/Utility/MerelyMoveableBase.h++"
+#include "Mustard/Utility/MoveOnlyBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpl/mpl.hpp"
@@ -43,9 +43,9 @@
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
-class MasterSlaveScheduler : public Scheduler<T> {
+class MasterWorkerScheduler : public Scheduler<T> {
 public:
-    MasterSlaveScheduler();
+    MasterWorkerScheduler();
 
 private:
     virtual auto PreLoopAction() -> void override;
@@ -56,14 +56,14 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    class MasterContext final : public MerelyMoveableBase {
+    class MasterContext final : public MoveOnlyBase {
     public:
-        MasterContext(MasterSlaveScheduler<T>* s);
+        MasterContext(MasterWorkerScheduler<T>* s);
 
         auto operator()() -> void;
 
     private:
-        MasterSlaveScheduler<T>* fS;
+        MasterWorkerScheduler<T>* fS;
         std::byte fSemaphoreRecv;
         mpl::prequest_pool fRecv;
         std::vector<T> fTaskIDSend;
@@ -88,4 +88,4 @@ private:
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution
 
-#include "Mustard/Extension/MPIX/Execution/MasterSlaveScheduler.inl"
+#include "Mustard/Extension/MPIX/Execution/MasterWorkerScheduler.inl"
