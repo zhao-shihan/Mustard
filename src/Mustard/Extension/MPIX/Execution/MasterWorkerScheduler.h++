@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
-#include "Mustard/Utility/MoveOnlyBase.h++"
+#include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpl/mpl.hpp"
@@ -55,7 +55,7 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    class Master final : public MoveOnlyBase {
+    class Master final : public NonMoveableBase {
     public:
         Master(MasterWorkerScheduler<T>* s);
 
