@@ -29,8 +29,8 @@
 #include "gsl/gsl"
 
 #include <algorithm>
+#include <cmath>
 #include <concepts>
-#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -41,6 +41,7 @@ template<std::integral T>
 class SharedMemoryScheduler : public Scheduler<T> {
 public:
     SharedMemoryScheduler();
+    ~SharedMemoryScheduler();
 
 private:
     virtual auto PreLoopAction() -> void override;
@@ -51,15 +52,12 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    struct MPIWinDeleter;
-
-private:
-    T* fMainTaskID;
-    std::unique_ptr<MPI_Win, MPIWinDeleter> fMainTaskIDWindow;
+    volatile T* fMainTaskID;
+    MPI_Win fMainTaskIDWindow;
     T fBatchSize;
-    T fBatchCounter;
+    T fTaskCounter;
 
-    static constexpr auto fgImbalancingFactor{1e-4};
+    static constexpr long double fgImbalancingFactor{1e-4};
 };
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution

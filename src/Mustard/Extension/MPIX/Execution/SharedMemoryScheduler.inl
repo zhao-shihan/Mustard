@@ -22,43 +22,60 @@ template<std::integral T>
 SharedMemoryScheduler<T>::SharedMemoryScheduler() :
     Scheduler<T>{},
     fMainTaskID{},
-    fMainTaskIDWindow{new MPI_Win{MPI_WIN_NULL}, MPIWinDeleter{}},
+    fMainTaskIDWindow{MPI_WIN_NULL},
     fBatchSize{},
-    fBatchCounter{} {
-    const auto intraNodeComm{Env::MPIEnv::Instance().IntraNodeComm()};
-    if (intraNodeComm.size() != mpl::environment::comm_world().size()) {
+    fTaskCounter{} {
+    const auto& mpiEnv{Env::MPIEnv::Instance()};
+    if (mpiEnv.OnCluster()) {
         Throw<std::runtime_error>("World communicator involves multiple shared memory domains");
     }
+
     MPI_Info info;
     MPI_Info_create(&info);
     auto _{gsl::finally([&info] { MPI_Info_free(&info); })};
     MPI_Info_set(info, "accumulate_ops", "same_op");
     MPI_Info_set(info, "mpi_accumulate_granularity", std::to_string(sizeof(T)).c_str());
     MPI_Info_set(info, "same_disp_unit", "true");
-    MPI_Win_allocate_shared(intraNodeComm.rank() == 0 ? sizeof(T) : 0, sizeof(T),
-                            info, MPI_COMM_WORLD, &fMainTaskID, fMainTaskIDWindow.get());
+    const auto& intraNodeComm{mpiEnv.IntraNodeComm()};
+    T* mainTaskID;
+    MPI_Win_allocate_shared(intraNodeComm.rank() == 0 ? sizeof(T) : 0, sizeof(T), info,
+                            intraNodeComm.native_handle(), &mainTaskID, &fMainTaskIDWindow);
+    fMainTaskID = mainTaskID;
+
+    int memoryModel;
+    int getAttrFlag;
+    MPI_Win_get_attr(fMainTaskIDWindow, MPI_WIN_MODEL, &memoryModel, &getAttrFlag);
+    Ensures(getAttrFlag);
+    Ensures(memoryModel == MPI_WIN_UNIFIED);
+}
+
+template<std::integral T>
+SharedMemoryScheduler<T>::~SharedMemoryScheduler() {
+    if (fMainTaskIDWindow != MPI_WIN_NULL) {
+        MPI_Win_free(&fMainTaskIDWindow);
+    }
 }
 
 template<std::integral T>
 auto SharedMemoryScheduler<T>::PreLoopAction() -> void {
     const auto& intraNodeComm{Env::MPIEnv::Instance().IntraNodeComm()};
-    fBatchSize = static_cast<T>(fgImbalancingFactor / 2 * static_cast<double>(this->NTask()) / intraNodeComm.size()) + 1;
+    fBatchSize = std::max(1ll, std::llround(fgImbalancingFactor * this->NTask() / intraNodeComm.size()));
     this->fExecutingTask = this->fTask.first + intraNodeComm.rank() * fBatchSize;
+
     if (fMainTaskID) {
+        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 0, MPI_MODE_NOCHECK, fMainTaskIDWindow);
         *fMainTaskID = this->fTask.first + intraNodeComm.size() * fBatchSize;
-        MPI_Win_fence(MPI_MODE_NOPRECEDE, *fMainTaskIDWindow);
-    } else {
-        MPI_Win_fence(MPI_MODE_NOSTORE | MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, *fMainTaskIDWindow);
+        MPI_Win_unlock(0, fMainTaskIDWindow);
     }
 }
 
 template<std::integral T>
 auto SharedMemoryScheduler<T>::PostTaskAction() -> void {
-    if (++fBatchCounter == fBatchSize) {
-        fBatchCounter = 0;
-        MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, *fMainTaskIDWindow);
-        MPI_Fetch_and_op(&fBatchSize, &this->fExecutingTask, MPIX::DataType<T>(), 0, 0, MPI_SUM, *fMainTaskIDWindow);
-        MPI_Win_unlock(0, *fMainTaskIDWindow);
+    if (++fTaskCounter == fBatchSize) {
+        fTaskCounter = 0;
+        MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, fMainTaskIDWindow);
+        MPI_Fetch_and_op(&fBatchSize, &this->fExecutingTask, MPIX::DataType<T>(), 0, 0, MPI_SUM, fMainTaskIDWindow);
+        MPI_Win_unlock(0, fMainTaskIDWindow);
         this->fExecutingTask = std::min(this->fExecutingTask, this->fTask.last);
     } else {
         ++this->fExecutingTask;
@@ -67,12 +84,7 @@ auto SharedMemoryScheduler<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto SharedMemoryScheduler<T>::PostLoopAction() -> void {
-    fBatchCounter = 0;
-    if (fMainTaskID) {
-        MPI_Win_fence(MPI_MODE_NOSUCCEED, *fMainTaskIDWindow);
-    } else {
-        MPI_Win_fence(MPI_MODE_NOSTORE | MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, *fMainTaskIDWindow);
-    }
+    fTaskCounter = 0;
 }
 
 template<std::integral T>
@@ -80,16 +92,5 @@ auto SharedMemoryScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool
     return {this->fNLocalExecutedTask > 10 * fBatchSize,
             this->fExecutingTask - this->fTask.first};
 }
-
-template<std::integral T>
-struct SharedMemoryScheduler<T>::MPIWinDeleter {
-    auto operator()(MPI_Win* win) const -> void {
-        Expects(win != nullptr);
-        if (*win != MPI_WIN_NULL) {
-            MPI_Win_free(win);
-        }
-        delete win;
-    }
-};
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution
