@@ -22,8 +22,6 @@
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
-#include "mpl/mpl.hpp"
-
 #include "mpi.h"
 
 #include "gsl/gsl"
@@ -47,7 +45,7 @@ private:
     virtual auto PreLoopAction() -> void override;
     virtual auto PreTaskAction() -> void override {}
     virtual auto PostTaskAction() -> void override;
-    virtual auto PostLoopAction() -> void override;
+    virtual auto PostLoopAction() -> void override {}
 
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
