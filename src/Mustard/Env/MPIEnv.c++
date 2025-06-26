@@ -109,7 +109,8 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
         auto& node{fCluster.node[i]};
         const auto nameEnd{std::ranges::find(std::as_const(nodeName[i]), '\0')};
         node.name = std::string_view{nodeName[i].cbegin(), nameEnd};
-        node.worldRank.resize(nodeSize[i]);
+        node.size = nodeSize[i];
+        node.worldRank.resize(node.size);
         std::ranges::copy_n(flatWorldRank.cbegin() + disp[i], nodeSize[i], node.worldRank.begin());
     }
 
@@ -137,7 +138,7 @@ MPIEnv::~MPIEnv() {
     auto barrier{worldComm.ibarrier()};
     while (not barrier.test()) {
         using std::chrono_literals::operator""ms;
-        std::this_thread::sleep_for(20ms);
+        std::this_thread::sleep_for(10ms);
     }
     // Show exit banner
     if (fShowBanner and worldComm.rank() == 0) {
@@ -199,7 +200,7 @@ auto MPIEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
             }
             AddRankInterval(currentBegin, currentEnd);
             rankString.erase(rankString.length() - 1); // remove last ','
-            const auto nRank{node.worldRank.size()};
+            const auto nRank{node.size};
             VPrint(stdout, fmt::emphasis::bold, format, fmt::make_format_args(node.name, rankString, nRank));
         }
     }

@@ -71,6 +71,7 @@ protected:
 private:
     struct NodeInfo {
         std::string name;
+        int size;
         std::vector<int> worldRank;
     };
 
