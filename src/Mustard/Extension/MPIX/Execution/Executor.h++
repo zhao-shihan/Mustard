@@ -21,6 +21,7 @@
 #include "Mustard/Concept/MPIPredefined.h++"
 #include "Mustard/Extension/MPIX/Execution/MasterWorkerScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
+#include "Mustard/Extension/MPIX/LazySpinWait.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
@@ -76,7 +77,7 @@ public:
     auto PrintProgressModulo(long long mod) -> void { fPrintProgressModulo = mod; }
     auto ExecutionName(std::string name) -> void { fExecutionName = std::move(name); }
     auto TaskName(std::string name) -> void { fTaskName = std::move(name); }
-    auto FinalPollingPeriod(std::chrono::milliseconds t) -> void { fFinalPollingPeriod = std::move(t); }
+    auto FinalPollInterval(std::chrono::milliseconds t) -> void { fFinalPollInterval = std::move(t); }
 
     auto Task() const -> auto { return fScheduler->fTask; }
     auto NTask() const -> T { return fScheduler->NTask(); }
@@ -111,7 +112,7 @@ private:
     std::string fExecutionName;
     std::string fTaskName;
 
-    std::chrono::milliseconds fFinalPollingPeriod;
+    std::chrono::milliseconds fFinalPollInterval;
 
     scsc::time_point fExecutionBeginSystemTime;
     muc::wall_time_stopwatch<> fWallTimeStopwatch;
