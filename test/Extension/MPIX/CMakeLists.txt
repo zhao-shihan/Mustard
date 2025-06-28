@@ -7,5 +7,5 @@ target_link_libraries(TestMasterWorkerScheduler Mustard::Mustard)
 add_executable(TestStaticScheduler TestStaticScheduler.c++)
 target_link_libraries(TestStaticScheduler Mustard::Mustard)
 
-# add_executable(TestHierarchicalScheduler TestHierarchicalScheduler.c++)
-# target_link_libraries(TestHierarchicalScheduler Mustard::Mustard)
+add_executable(TestClusterAwareMasterWorkerScheduler TestClusterAwareMasterWorkerScheduler.c++)
+target_link_libraries(TestClusterAwareMasterWorkerScheduler Mustard::Mustard)
