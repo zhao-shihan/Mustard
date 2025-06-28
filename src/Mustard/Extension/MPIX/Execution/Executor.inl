@@ -38,7 +38,6 @@ Executor<T>::Executor(std::string executionName, std::string taskName, ScheduleB
     fPrintProgressModulo{},
     fExecutionName{std::move(executionName)},
     fTaskName{std::move(taskName)},
-    fFinalPollInterval{10ms},
     fExecutionBeginSystemTime{},
     fWallTimeStopwatch{},
     fCPUTimeStopwatch{},
@@ -100,8 +99,8 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     auto gatherExecutionInfo{worldComm.igather(0, executionInfo, fExecutionInfoGatheredByMaster.data())};
     fScheduler->PostLoopAction();
     fExecuting = false;
-    LazySpinWait(gatherExecutionInfo, fFinalPollInterval);
-    LazySpinWait(worldComm.ibarrier(), fFinalPollInterval);
+    LazySpinWait(gatherExecutionInfo, 1e-3);
+    LazySpinWait(worldComm.ibarrier(), 1e-3);
     PostLoopReport();
     return NLocalExecutedTask();
 }

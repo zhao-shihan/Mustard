@@ -77,7 +77,6 @@ public:
     auto PrintProgressModulo(long long mod) -> void { fPrintProgressModulo = mod; }
     auto ExecutionName(std::string name) -> void { fExecutionName = std::move(name); }
     auto TaskName(std::string name) -> void { fTaskName = std::move(name); }
-    auto FinalPollInterval(std::chrono::milliseconds t) -> void { fFinalPollInterval = std::move(t); }
 
     auto Task() const -> auto { return fScheduler->fTask; }
     auto NTask() const -> T { return fScheduler->NTask(); }
@@ -111,8 +110,6 @@ private:
 
     std::string fExecutionName;
     std::string fTaskName;
-
-    std::chrono::milliseconds fFinalPollInterval;
 
     scsc::time_point fExecutionBeginSystemTime;
     muc::wall_time_stopwatch<> fWallTimeStopwatch;

@@ -136,8 +136,7 @@ MPIEnv::MPIEnv(int argc, char* argv[],
 MPIEnv::~MPIEnv() {
     const auto& worldComm{mpl::environment::comm_world()};
     // Wait all processes before finalizing
-    using std::chrono_literals::operator""ms;
-    MPIX::LazySpinWait(worldComm.ibarrier(), 10ms);
+    MPIX::LazySpinWait(worldComm.ibarrier(), 1e-3);
     // Show exit banner
     if (fShowBanner and worldComm.rank() == 0) {
         PrintExitBanner();

@@ -22,23 +22,37 @@
 
 #include "mpi.h"
 
-#include <chrono>
-#include <concepts>
-#include <thread>
-#include <utility>
+#include <span>
+#include <vector>
 
 namespace Mustard::inline Extension::MPIX {
 
-template<typename R, typename P>
-auto LazySpinWait(MPI_Request& request, std::chrono::duration<R, P> pollInterval) -> MPI_Status;
+auto LazySpinWait(MPI_Request& request, double dutyRatio) -> MPI_Status;
+auto LazySpinWait(mpl::irequest& request, double dutyRatio) -> mpl::status_t;
+auto LazySpinWait(mpl::irequest&& request, double dutyRatio) -> mpl::status_t;
+auto LazySpinWait(mpl::prequest& request, double dutyRatio) -> mpl::status_t;
+auto LazySpinWait(mpl::prequest&& request, double dutyRatio) -> mpl::status_t;
 
-template<typename T, typename R, typename P>
-    requires std::derived_from<T, mpl::irequest> or std::derived_from<T, mpl::prequest>
-auto LazySpinWait(T& request, std::chrono::duration<R, P> pollInterval) -> mpl::status_t;
-template<typename T, typename R, typename P>
-    requires std::derived_from<T, mpl::irequest> or std::derived_from<T, mpl::prequest>
-auto LazySpinWait(T&& request, std::chrono::duration<R, P> pollInterval) -> mpl::status_t;
+struct LazySpinWaitAnyResult {
+    mpl::test_result result;
+    int index;
+};
+
+auto LazySpinWaitAny(std::span<MPI_Request> requests, double dutyRatio) -> LazySpinWaitAnyResult;
+auto LazySpinWaitAny(mpl::irequest_pool& requests, double dutyRatio) -> LazySpinWaitAnyResult;
+auto LazySpinWaitAny(mpl::prequest_pool& requests, double dutyRatio) -> LazySpinWaitAnyResult;
+
+auto LazySpinWaitAll(std::span<MPI_Request> requests, double dutyRatio) -> void;
+auto LazySpinWaitAll(mpl::irequest_pool& requests, double dutyRatio) -> void;
+auto LazySpinWaitAll(mpl::prequest_pool& requests, double dutyRatio) -> void;
+
+struct LazySpinWaitSomeResult {
+    mpl::test_result result;
+    std::vector<int> indices;
+};
+
+auto LazySpinWaitSome(std::span<MPI_Request> requests, double dutyRatio) -> LazySpinWaitSomeResult;
+auto LazySpinWaitSome(mpl::irequest_pool& requests, double dutyRatio) -> LazySpinWaitSomeResult;
+auto LazySpinWaitSome(mpl::prequest_pool& requests, double dutyRatio) -> LazySpinWaitSomeResult;
 
 } // namespace Mustard::inline Extension::MPIX
-
-#include "Mustard/Extension/MPIX/LazySpinWait.inl"
