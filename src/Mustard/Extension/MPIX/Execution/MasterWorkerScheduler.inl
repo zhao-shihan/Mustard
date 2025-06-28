@@ -19,68 +19,8 @@
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
-MasterWorkerScheduler<T>::MasterWorkerScheduler() :
-    Scheduler<T>{},
-    fComm{mpl::environment::comm_world()},
-    fBatchSize{},
-    fMaster{fComm.rank() == 0 ? std::make_unique<Master>(this) : nullptr},
-    fMasterFuture{},
-    fSemaphoreSend{},
-    fSend{fComm.rsend_init(fSemaphoreSend, 0)},
-    fTaskIDRecv{},
-    fRecv{fComm.recv_init(fTaskIDRecv, 0)},
-    fBatchCounter{} {}
-
-template<std::integral T>
-auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
-    fBatchSize = static_cast<T>(fgImbalancingFactor / 2 * static_cast<double>(this->NTask()) / fComm.size()) + 1;
-    if (fMaster) {
-        fMasterFuture = std::async(std::launch::async, std::ref(*fMaster));
-    }
-    this->fExecutingTask = this->fTask.first + fComm.rank() * fBatchSize;
-    // wait for master thread to post receive
-    std::byte firstRecvReadySemaphore{};
-    fComm.ibcast(0, firstRecvReadySemaphore).wait();
-}
-
-template<std::integral T>
-auto MasterWorkerScheduler<T>::PreTaskAction() -> void {
-    if (fBatchCounter == 0) {
-        fRecv.start();
-        fSend.start();
-    }
-}
-
-template<std::integral T>
-auto MasterWorkerScheduler<T>::PostTaskAction() -> void {
-    if (++fBatchCounter == fBatchSize) {
-        fBatchCounter = 0;
-        fSend.wait();
-        fRecv.wait();
-        this->fExecutingTask = fTaskIDRecv;
-    } else {
-        ++this->fExecutingTask;
-    }
-}
-
-template<std::integral T>
-auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
-    fBatchCounter = 0;
-    fSend.wait();
-    fRecv.wait();
-    if (fMaster) {
-        fMasterFuture.get();
-    }
-}
-
-template<std::integral T>
-auto MasterWorkerScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
-    return {this->fNLocalExecutedTask > 10 * fBatchSize,
-            this->fExecutingTask - this->fTask.first};
-}
-
-template<std::integral T>
 MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
+    NonMoveableBase{},
     fS{s},
     fSemaphoreRecv{},
     fRecv{},
@@ -113,30 +53,94 @@ MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
 
 template<std::integral T>
 auto MasterWorkerScheduler<T>::Master::operator()() -> void {
-    fRecv.startall();
-    // inform workers that receive have been posted
-    std::byte firstRecvReadySemaphore{};
-    auto firstRecvReadyBcast{fS->fComm.ibcast(0, firstRecvReadySemaphore)};
-    // scheduling loop
     T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
-    int completing{};
-    do {
-        const auto [_, cgIndex]{fRecv.waitsome()};
-        for (auto&& i : cgIndex) {
-            fTaskIDSend[i] = mainTaskID;
-            mainTaskID = std::min(mainTaskID + fS->fBatchSize, fS->fTask.last);
-            if (fTaskIDSend[i] != fS->fTask.last) [[likely]] {
-                fRecv.start(i);
-            } else {
-                ++completing;
+    while (true) {
+        const auto [result, recvRank]{fRecv.waitsome()};
+        if (result == mpl::test_result::no_active_requests) { break; }
+        for (auto&& rank : recvRank) {
+            fTaskIDSend[rank] = std::min(mainTaskID, fS->fTask.last);
+            if (fTaskIDSend[rank] != fS->fTask.last) [[likely]] {
+                mainTaskID += fS->fBatchSize;
+                fRecv.start(rank);
             }
-            fSend.wait(i);
-            fSend.start(i);
+            fSend.wait(rank);
+            fSend.start(rank);
         }
-    } while (completing != fS->fComm.size());
-    // finalize
-    firstRecvReadyBcast.wait();
-    fSend.waitall();
+    }
+    LazySpinWaitAll(fSend, 0.01);
+}
+
+template<std::integral T>
+MasterWorkerScheduler<T>::MasterWorkerScheduler() :
+    Scheduler<T>{},
+    fComm{},
+    fBatchSize{},
+    fMaster{},
+    fAsyncMaster{},
+    fSemaphoreSend{},
+    fSend{},
+    fTaskIDRecv{},
+    fRecv{},
+    fTaskCounter{} {
+    mpl::info commInfo;
+    commInfo.set("mpi_assert_no_any_tag", "true");
+    commInfo.set("mpi_assert_no_any_source", "true");
+    commInfo.set("mpi_assert_exact_length", "true");
+    commInfo.set("mpi_assert_allow_overtaking", "true");
+    fComm = mpl::communicator{mpl::environment::comm_world(), commInfo};
+    if (fComm.rank() == 0) {
+        fMaster = std::make_unique<Master>(this);
+    }
+    fSend = fComm.rsend_init(fSemaphoreSend, 0);
+    fRecv = fComm.recv_init(fTaskIDRecv, 0);
+}
+
+template<std::integral T>
+auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
+    fBatchSize = std::max(1ll, std::llround(fgImbalancingFactor * this->NTask() / fComm.size()));
+    this->fExecutingTask = this->fTask.first + fComm.rank() * fBatchSize;
+    fTaskCounter = 0;
+
+    if (fMaster) {
+        fMaster->StartAll();
+        fAsyncMaster = std::async(std::launch::async, std::ref(*fMaster));
+    }
+}
+
+template<std::integral T>
+auto MasterWorkerScheduler<T>::PreTaskAction() -> void {
+    if (fTaskCounter == 0) {
+        fRecv.start();
+        fSend.start();
+    }
+}
+
+template<std::integral T>
+auto MasterWorkerScheduler<T>::PostTaskAction() -> void {
+    if (++fTaskCounter == fBatchSize) {
+        fSend.wait();
+        fRecv.wait();
+        this->fExecutingTask = fTaskIDRecv;
+        fTaskCounter = 0;
+    } else {
+        ++this->fExecutingTask;
+    }
+}
+
+template<std::integral T>
+auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
+    LazySpinWait(fSend, 0.01);
+    LazySpinWait(fRecv, 0.01);
+
+    if (fMaster) {
+        fAsyncMaster.get();
+    }
+}
+
+template<std::integral T>
+auto MasterWorkerScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
+    return {this->fNLocalExecutedTask > 10 * fBatchSize,
+            this->fExecutingTask - this->fTask.first};
 }
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution

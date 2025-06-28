@@ -19,17 +19,14 @@
 #pragma once
 
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
+#include "Mustard/Extension/MPIX/LazySpinWait.h++"
 #include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpl/mpl.hpp"
 
-#include "muc/math"
-#include "muc/utility"
-
-#include "gsl/gsl"
-
 #include <algorithm>
+#include <cmath>
 #include <concepts>
 #include <cstddef>
 #include <functional>
@@ -43,6 +40,23 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
 class MasterWorkerScheduler : public Scheduler<T> {
+private:
+    class Master : public NonMoveableBase {
+    public:
+        Master(MasterWorkerScheduler<T>* s);
+
+        auto StartAll() -> void { fRecv.startall(); }
+        auto operator()() -> void;
+
+    private:
+        MasterWorkerScheduler<T>* fS;
+        std::byte fSemaphoreRecv;
+        mpl::prequest_pool fRecv;
+        std::vector<T> fTaskIDSend;
+        mpl::prequest_pool fSend;
+    };
+    friend class Master;
+
 public:
     MasterWorkerScheduler();
 
@@ -55,34 +69,18 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    class Master final : public NonMoveableBase {
-    public:
-        Master(MasterWorkerScheduler<T>* s);
-
-        auto operator()() -> void;
-
-    private:
-        MasterWorkerScheduler<T>* fS;
-        std::byte fSemaphoreRecv;
-        mpl::prequest_pool fRecv;
-        std::vector<T> fTaskIDSend;
-        mpl::prequest_pool fSend;
-    };
-    friend class Master;
-
-private:
     mpl::communicator fComm;
     T fBatchSize;
     std::unique_ptr<Master> fMaster;
-    std::future<void> fMasterFuture;
+    std::future<void> fAsyncMaster;
 
     std::byte fSemaphoreSend;
     mpl::prequest fSend;
     T fTaskIDRecv;
     mpl::prequest fRecv;
-    T fBatchCounter;
+    T fTaskCounter;
 
-    static constexpr auto fgImbalancingFactor{1e-3};
+    static constexpr long double fgImbalancingFactor{1e-3};
 };
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution
