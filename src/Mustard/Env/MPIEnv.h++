@@ -57,11 +57,11 @@ public:
     auto IntraNodeComm() const -> const auto& { return fIntraNodeComm; }
     auto InterNodeComm() const -> const auto& { return fInterNodeComm; }
 
-    auto NodeList() const -> const auto& { return fCluster.node; }
-    auto LocalNodeID() const -> const auto& { return fCluster.local; }
-    auto Node(int id) const -> const auto& { return NodeList().at(id); }
-    auto LocalNode() const -> const auto& { return Node(LocalNodeID()); }
-    auto ClusterSize() const -> int { return NodeList().size(); }
+    auto LocalNodeID() const -> const auto& { return fLocalNodeID; }
+    auto LocalNode() const -> const auto& { return fNodeList[fLocalNodeID]; }
+    auto NodeList() const -> const auto& { return fNodeList; }
+    auto Node(int id) const -> const auto& { return fNodeList.at(id); }
+    auto ClusterSize() const -> int { return fNodeList.size(); }
     auto OnSingleNode() const -> auto { return ClusterSize() == 1; }
     auto OnCluster() const -> auto { return ClusterSize() != 1; }
 
@@ -69,7 +69,7 @@ protected:
     auto PrintStartBannerBody(int argc, char* argv[]) const -> void;
 
 private:
-    struct NodeInfo {
+    struct Node {
         std::string name;
         int size;
         std::vector<int> worldRank;
@@ -78,10 +78,9 @@ private:
 private:
     mpl::communicator fIntraNodeComm;
     mpl::communicator fInterNodeComm;
-    struct {
-        std::vector<NodeInfo> node;
-        int local;
-    } fCluster;
+
+    int fLocalNodeID;
+    std::vector<struct Node> fNodeList;
 };
 
 } // namespace Mustard::Env

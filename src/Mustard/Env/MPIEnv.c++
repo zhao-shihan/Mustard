@@ -57,7 +57,8 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
     PassiveSingleton<MPIEnv>{this},
     fIntraNodeComm{},
     fInterNodeComm{},
-    fCluster{} {
+    fLocalNodeID{},
+    fNodeList{} {
     const auto& worldComm{mpl::environment::comm_world()};
     if (mpl::environment::threading_mode() == mpl::threading_modes::single) {
         Throw<std::runtime_error>("The MPI library not even support funneled threading");
@@ -71,9 +72,12 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                                            IntraNodeColor::Leader :
                                            IntraNodeColor::Other};
 
-    int nNode{fInterNodeComm.is_valid() ? fInterNodeComm.size() : 0};
+    fLocalNodeID = fInterNodeComm.is_valid() ? fInterNodeComm.rank() : 0;
+    fIntraNodeComm.bcast(0, fLocalNodeID);
+
+    auto nNode{fInterNodeComm.is_valid() ? fInterNodeComm.size() : 0};
     fIntraNodeComm.bcast(0, nNode);
-    fCluster.node.resize(nNode);
+    fNodeList.resize(nNode);
 
     using NodeNameType = std::array<char, MPI_MAX_PROCESSOR_NAME>;
     std::vector<NodeNameType> nodeName(nNode);
@@ -106,7 +110,7 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
     fIntraNodeComm.bcast(0, flatWorldRank.data(), mpl::vector_layout<int>{flatWorldRank.size()});
 
     for (int i{}; i < nNode; ++i) {
-        auto& node{fCluster.node[i]};
+        auto& node{fNodeList[i]};
         const auto nameEnd{std::ranges::find(std::as_const(nodeName[i]), '\0')};
         node.name = std::string_view{nodeName[i].cbegin(), nameEnd};
         node.size = nodeSize[i];
@@ -176,8 +180,7 @@ auto MPIEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
                                     })
                                     ->name.size()};
         const auto format{fmt::format("  {{:{}}}: {{}} ({{}})\n", maxNameWidth)};
-        for (int nodeID{}; nodeID < ClusterSize(); ++nodeID) {
-            const auto& node{Node(nodeID)};
+        for (auto&& node : fNodeList) {
             std::string rankString;
             auto AddRankInterval{[&](int start, int end) {
                 rankString.append(start == end ?
