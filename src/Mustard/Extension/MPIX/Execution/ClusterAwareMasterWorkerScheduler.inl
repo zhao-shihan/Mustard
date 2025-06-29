@@ -63,7 +63,7 @@ template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
     auto interNodeTaskID{muc::ranges::reduce(this->fS->fInterNodeBatchSize, this->fS->fTask.first)};
     while (true) {
-        const auto [result, recvRank]{LazySpinWaitSome(fRecvFromNM, DutyRatio::Active)};
+        const auto [result, recvRank]{fRecvFromNM.waitsome(mpl::duty_ratio::preset::active)};
         if (result == mpl::test_result::no_active_requests) {
             break;
         }
@@ -77,7 +77,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
             fSendToNM.start(rank);
         }
     }
-    LazySpinWaitAll(fSendToNM, DutyRatio::Moderate);
+    fSendToNM.waitall(mpl::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>
@@ -128,7 +128,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
     fRecvFromCM.start();
     fSendToCM.start();
     while (true) {
-        const auto [result, recvRank]{LazySpinWaitSome(fRecvFromW, DutyRatio::Active)};
+        const auto [result, recvRank]{fRecvFromW.waitsome(mpl::duty_ratio::preset::active)};
         if (result == mpl::test_result::no_active_requests) {
             break;
         }
@@ -154,9 +154,9 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
             fSendToW.start(rank);
         }
     }
-    LazySpinWait(fSendToCM, DutyRatio::Moderate);
-    LazySpinWait(fRecvFromCM, DutyRatio::Moderate);
-    LazySpinWaitAll(fSendToW, DutyRatio::Moderate);
+    fSendToCM.wait(mpl::duty_ratio::preset::moderate);
+    fRecvFromCM.wait(mpl::duty_ratio::preset::moderate);
+    fSendToW.waitall(mpl::duty_ratio::preset::moderate);
 
     if (fClusterMasterThread.joinable()) {
         fClusterMasterThread.join();
@@ -241,8 +241,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::PostLoopAction() -> void {
-    LazySpinWait(fSendToNM, DutyRatio::Moderate);
-    LazySpinWait(fRecvFromNM, DutyRatio::Moderate);
+    fSendToNM.wait(mpl::duty_ratio::preset::moderate);
+    fRecvFromNM.wait(mpl::duty_ratio::preset::moderate);
 
     if (fNodeMasterThread.joinable()) {
         fNodeMasterThread.join();

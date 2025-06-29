@@ -55,7 +55,7 @@ template<std::integral T>
 auto MasterWorkerScheduler<T>::Master::operator()() -> void {
     T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
     while (true) {
-        const auto [result, recvRank]{LazySpinWaitSome(fRecv, DutyRatio::Active)};
+        const auto [result, recvRank]{fRecv.waitsome(mpl::duty_ratio::preset::active)};
         if (result == mpl::test_result::no_active_requests) { break; }
         for (auto&& rank : recvRank) {
             fTaskIDSend[rank] = std::min(mainTaskID, fS->fTask.last);
@@ -67,7 +67,7 @@ auto MasterWorkerScheduler<T>::Master::operator()() -> void {
             fSend.start(rank);
         }
     }
-    LazySpinWaitAll(fSend, DutyRatio::Moderate);
+    fSend.waitall(mpl::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>
@@ -129,8 +129,8 @@ auto MasterWorkerScheduler<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
-    LazySpinWait(fSend, DutyRatio::Moderate);
-    LazySpinWait(fRecv, DutyRatio::Moderate);
+    fSend.wait(mpl::duty_ratio::preset::moderate);
+    fRecv.wait(mpl::duty_ratio::preset::moderate);
 
     if (fMasterThread.joinable()) {
         fMasterThread.join();

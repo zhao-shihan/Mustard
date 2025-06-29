@@ -72,7 +72,7 @@ set(MUSTARD_BUILTIN_EFM_VERSION 0.1.0 CACHE STRING "Set built-in EFM version (if
 set(MUSTARD_BUILTIN_ENVPARSE_VERSION 1.0.0 CACHE STRING "Set built-in envparse version (if required).")
 set(MUSTARD_BUILTIN_FMT_VERSION 11.2.0 CACHE STRING "Set built-in fmt version (if required).")
 set(MUSTARD_BUILTIN_INDICATORS_VERSION 2.3 CACHE STRING "Set built-in indicators version (if required).")
-set(MUSTARD_BUILTIN_MPL_VERSION 0.7.0 CACHE STRING "Set built-in MPL version (if required).")
+set(MUSTARD_BUILTIN_MPL_VERSION 0.8.0 CACHE STRING "Set built-in MPL version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.2.0 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
 set(MUSTARD_BUILTIN_MUC_VERSION 0.25.628 CACHE STRING "Set built-in muc version (if required).")
 set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.8.0 CACHE STRING "Set built-in yaml-cpp version (if required).")

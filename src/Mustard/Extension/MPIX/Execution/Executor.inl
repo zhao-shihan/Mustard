@@ -79,7 +79,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     // initialize
     fExecuting = true;
     fScheduler->PreLoopAction();
-    LazySpinWait(worldComm.ibarrier(), DutyRatio::Moderate);
+    worldComm.ibarrier().wait(mpl::duty_ratio::preset::moderate);
     fExecutionBeginSystemTime = scsc::now();
     fWallTimeStopwatch.reset();
     fCPUTimeStopwatch.reset();
@@ -104,8 +104,8 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     auto gatherExecutionInfo{worldComm.igather(0, executionInfo, fExecutionInfoGatheredByMaster.data())};
     fScheduler->PostLoopAction();
     fExecuting = false;
-    LazySpinWait(gatherExecutionInfo, DutyRatio::Relaxed);
-    LazySpinWait(worldComm.ibarrier(), DutyRatio::Relaxed);
+    gatherExecutionInfo.wait(mpl::duty_ratio::preset::relaxed);
+    worldComm.ibarrier().wait(mpl::duty_ratio::preset::relaxed);
     PostLoopReport();
     return NLocalExecutedTask();
 }

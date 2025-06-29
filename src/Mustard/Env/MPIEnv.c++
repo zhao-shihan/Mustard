@@ -17,8 +17,6 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/DutyRatio.h++"
-#include "Mustard/Extension/MPIX/LazySpinWait.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
@@ -137,7 +135,7 @@ MPIEnv::MPIEnv(int argc, char* argv[],
 MPIEnv::~MPIEnv() {
     const auto& worldComm{mpl::environment::comm_world()};
     // Wait all processes before finalizing
-    MPIX::LazySpinWait(worldComm.ibarrier(), MPIX::DutyRatio::Relaxed);
+    worldComm.ibarrier().wait(mpl::duty_ratio::preset::relaxed);
     // Show exit banner
     if (fShowBanner and worldComm.rank() == 0) {
         PrintExitBanner();
