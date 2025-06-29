@@ -21,6 +21,7 @@
 #include "Mustard/Utility/Print.h++"
 
 #include "TROOT.h"
+#include "TThread.h"
 
 #include "mpi.h"
 
@@ -118,7 +119,9 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
         std::ranges::copy_n(flatWorldRank.cbegin() + disp[i], nodeSize[i], node.worldRank.begin());
     }
 
-    // Disable ROOT implicit multi-threading
+    // We have async ROOT IO, enable ROOT global mutex
+    TThread::Initialize();
+    // Disable ROOT implicit multi-threading since we are using MPI
     if (ROOT::IsImplicitMTEnabled()) {
         ROOT::DisableImplicitMT();
     }
