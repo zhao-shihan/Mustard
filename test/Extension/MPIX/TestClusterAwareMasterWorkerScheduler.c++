@@ -22,6 +22,7 @@ auto main(int argc, char* argv[]) -> int {
                      [&](auto i) {
                          PrintLn("{},{}", i, worldComm.rank());
                      });
+    executor.PrintExecutionSummary();
 
     executor.PrintProgress(true);
     executor.Execute(100000000ull * n, [](auto) {});
