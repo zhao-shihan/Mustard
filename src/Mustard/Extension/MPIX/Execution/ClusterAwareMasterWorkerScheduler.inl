@@ -84,7 +84,7 @@ template<std::integral T>
 ClusterAwareMasterWorkerScheduler<T>::NodeMaster::NodeMaster(ClusterAwareMasterWorkerScheduler<T>* s) :
     MasterBase{s},
     fClusterMaster{s->fInterNodeComm.rank() == 0 ? std::make_unique<ClusterMaster>(s) : nullptr},
-    fAsyncClusterMaster{},
+    fClusterMasterThread{},
     fSemaphoreSendToCM{},
     fSendToCM{s->fInterNodeComm.rsend_init(fSemaphoreSendToCM, 0)},
     fTaskIDRecvFromCM{},
@@ -109,7 +109,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::StartAll() -> void {
 
     if (fClusterMaster) {
         fClusterMaster->StartAll();
-        fAsyncClusterMaster = std::async(std::launch::async, std::ref(*fClusterMaster));
+        fClusterMasterThread = std::jthread{std::ref(*fClusterMaster)};
     }
 }
 
@@ -158,8 +158,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
     LazySpinWait(fRecvFromCM, DutyRatio::Moderate);
     LazySpinWaitAll(fSendToW, DutyRatio::Moderate);
 
-    if (fClusterMaster) {
-        fAsyncClusterMaster.get();
+    if (fClusterMasterThread.joinable()) {
+        fClusterMasterThread.join();
     }
 }
 
@@ -172,6 +172,7 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
     fInterNodeBatchSizeMultiplicity{},
     fInterNodeBatchSize{},
     fNodeMaster{},
+    fNodeMasterThread{},
     fSemaphoreSendToNM{},
     fSendToNM{},
     fTaskIDRecvFromNM{},
@@ -214,7 +215,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::PreLoopAction() -> void {
 
     if (fNodeMaster) {
         fNodeMaster->StartAll();
-        fAsyncNodeMaster = std::async(std::launch::async, std::ref(*fNodeMaster));
+        fNodeMasterThread = std::jthread{std::ref(*fNodeMaster)};
     }
 }
 
@@ -243,8 +244,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::PostLoopAction() -> void {
     LazySpinWait(fSendToNM, DutyRatio::Moderate);
     LazySpinWait(fRecvFromNM, DutyRatio::Moderate);
 
-    if (fNodeMaster) {
-        fAsyncNodeMaster.get();
+    if (fNodeMasterThread.joinable()) {
+        fNodeMasterThread.join();
     }
 }
 

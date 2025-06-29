@@ -37,10 +37,10 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <future>
 #include <memory>
 #include <numeric>
 #include <stdexcept>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -82,7 +82,7 @@ private:
 
     private:
         std::unique_ptr<ClusterMaster> fClusterMaster;
-        std::future<void> fAsyncClusterMaster;
+        std::jthread fClusterMasterThread;
 
         std::byte fSemaphoreSendToCM;
         mpl::prequest fSendToCM;
@@ -116,7 +116,7 @@ private:
     std::vector<T> fInterNodeBatchSize;
 
     std::unique_ptr<NodeMaster> fNodeMaster;
-    std::future<void> fAsyncNodeMaster;
+    std::jthread fNodeMasterThread;
 
     std::byte fSemaphoreSendToNM;
     mpl::prequest fSendToNM;

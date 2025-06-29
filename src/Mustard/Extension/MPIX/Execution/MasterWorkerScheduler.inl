@@ -76,7 +76,7 @@ MasterWorkerScheduler<T>::MasterWorkerScheduler() :
     fComm{},
     fBatchSize{},
     fMaster{},
-    fAsyncMaster{},
+    fMasterThread{},
     fSemaphoreSend{},
     fSend{},
     fTaskIDRecv{},
@@ -103,7 +103,7 @@ auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
 
     if (fMaster) {
         fMaster->StartAll();
-        fAsyncMaster = std::async(std::launch::async, std::ref(*fMaster));
+        fMasterThread = std::jthread{std::ref(*fMaster)};
     }
 }
 
@@ -132,8 +132,8 @@ auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
     LazySpinWait(fSend, DutyRatio::Moderate);
     LazySpinWait(fRecv, DutyRatio::Moderate);
 
-    if (fMaster) {
-        fAsyncMaster.get();
+    if (fMasterThread.joinable()) {
+        fMasterThread.join();
     }
 }
 

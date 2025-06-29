@@ -31,9 +31,9 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <future>
 #include <memory>
 #include <stdexcept>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -73,7 +73,7 @@ private:
     mpl::communicator fComm;
     T fBatchSize;
     std::unique_ptr<Master> fMaster;
-    std::future<void> fAsyncMaster;
+    std::jthread fMasterThread;
 
     std::byte fSemaphoreSend;
     mpl::prequest fSend;
