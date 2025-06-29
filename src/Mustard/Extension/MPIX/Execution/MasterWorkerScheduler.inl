@@ -30,13 +30,13 @@ MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
     switch (mpl::environment::threading_mode()) {
     case mpl::threading_modes::single:
         Throw<std::runtime_error>("The MPI library provides 'single' thread support, "
-                                  "but dynamic scheduler requires 'multiple'");
+                                  "but master-worker scheduler requires 'multiple'");
     case mpl::threading_modes::funneled:
         Throw<std::runtime_error>("The MPI library provides 'funneled' thread support, "
-                                  "but dynamic scheduler requires 'multiple'");
+                                  "but master-worker scheduler requires 'multiple'");
     case mpl::threading_modes::serialized:
         Throw<std::runtime_error>("The MPI library provides 'serialized' thread support, "
-                                  "but dynamic scheduler requires 'multiple'");
+                                  "but master-worker scheduler requires 'multiple'");
     case mpl::threading_modes::multiple:
         break;
     }

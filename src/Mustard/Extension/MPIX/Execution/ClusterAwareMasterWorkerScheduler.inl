@@ -24,13 +24,13 @@ ClusterAwareMasterWorkerScheduler<T>::MasterBase::MasterBase(ClusterAwareMasterW
     switch (mpl::environment::threading_mode()) {
     case mpl::threading_modes::single:
         Throw<std::runtime_error>("The MPI library provides 'single' thread support, "
-                                  "but dynamic scheduler requires 'multiple'");
+                                  "but cluster-aware-master-worker scheduler requires 'multiple'");
     case mpl::threading_modes::funneled:
         Throw<std::runtime_error>("The MPI library provides 'funneled' thread support, "
-                                  "but dynamic scheduler requires 'multiple'");
+                                  "but cluster-aware-master-worker scheduler requires 'multiple'");
     case mpl::threading_modes::serialized:
         Throw<std::runtime_error>("The MPI library provides 'serialized' thread support, "
-                                  "but dynamic scheduler requires 'multiple'");
+                                  "but cluster-aware-master-worker scheduler requires 'multiple'");
     case mpl::threading_modes::multiple:
         break;
     }
@@ -169,7 +169,7 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
     fIntraNodeComm{},
     fInterNodeComm{},
     fIntraNodeBatchSize{},
-    fInterNodeBatchSizeMultiplicity{},
+    fInterNodeBatchSizeMultiple{},
     fInterNodeBatchSize{},
     fNodeMaster{},
     fNodeMasterThread{},
@@ -197,14 +197,14 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::PreLoopAction() -> void {
     const auto avgTaskPerProc{static_cast<long double>(this->NTask()) / mpl::environment::comm_world().size()};
-    fInterNodeBatchSizeMultiplicity = std::min(muc::lltrunc(avgTaskPerProc), fgMaxInterNodeBatchSizeMultiplicity);
-    Ensures(fInterNodeBatchSizeMultiplicity >= 1);
-    fIntraNodeBatchSize = std::max(1ll, std::llround(fgImbalancingFactor * avgTaskPerProc / fInterNodeBatchSizeMultiplicity));
+    fInterNodeBatchSizeMultiple = std::min(muc::lltrunc(avgTaskPerProc), fgMaxInterNodeBatchSizeMultiple);
+    Ensures(fInterNodeBatchSizeMultiple >= 1);
+    fIntraNodeBatchSize = std::max(1ll, std::llround(fgImbalancingFactor * avgTaskPerProc / fInterNodeBatchSizeMultiple));
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     std::ranges::transform(
         mpiEnv.NodeList(), fInterNodeBatchSize.begin(),
         [this](auto&& node) {
-            return fInterNodeBatchSizeMultiplicity * node.size * fIntraNodeBatchSize;
+            return fInterNodeBatchSizeMultiple * node.size * fIntraNodeBatchSize;
         });
 
     const auto intraNodeFirstTaskID{std::reduce(
@@ -251,7 +251,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::PostLoopAction() -> void {
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
-    return {this->fNLocalExecutedTask > 10 * fInterNodeBatchSizeMultiplicity * fIntraNodeBatchSize,
+    return {this->fNLocalExecutedTask > 10 * fInterNodeBatchSizeMultiple * fIntraNodeBatchSize,
             this->fExecutingTask - this->fTask.first};
 }
 

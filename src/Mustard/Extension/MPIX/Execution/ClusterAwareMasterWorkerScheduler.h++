@@ -110,7 +110,7 @@ private:
     mpl::communicator fInterNodeComm;
 
     T fIntraNodeBatchSize;
-    T fInterNodeBatchSizeMultiplicity;
+    T fInterNodeBatchSizeMultiple;
     std::vector<T> fInterNodeBatchSize;
 
     std::unique_ptr<NodeMaster> fNodeMaster;
@@ -124,7 +124,7 @@ private:
     T fIntraNodeTaskCounter;
 
     static constexpr long double fgImbalancingFactor{1e-3};
-    static constexpr long long fgMaxInterNodeBatchSizeMultiplicity{10};
+    static constexpr long long fgMaxInterNodeBatchSizeMultiple{10};
 };
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution
