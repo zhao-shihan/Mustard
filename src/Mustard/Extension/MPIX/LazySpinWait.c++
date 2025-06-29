@@ -16,36 +16,19 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Extension/MPIX/DutyRatio.h++"
 #include "Mustard/Extension/MPIX/LazySpinWait.h++"
 #include "Mustard/Utility/InlineMacro.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/chrono"
 
-#include "fmt/core.h"
-
-#include <chrono>
-#include <stdexcept>
 #include <thread>
 #include <utility>
 
 namespace Mustard::inline Extension::MPIX {
 
-namespace internal {
-namespace {
-
-MUSTARD_ALWAYS_INLINE auto CheckCalculateSleepRatio(double dutyRatio) -> double {
-    if (dutyRatio <= 0 or dutyRatio > 1) {
-        Mustard::Throw<std::invalid_argument>(fmt::format("Duty ratio {} out of (0,1]", dutyRatio));
-    }
-    return 1 / dutyRatio - 1;
-}
-
-} // namespace
-} // namespace internal
-
-auto LazySpinWait(MPI_Request& request, double dutyRatio) -> MPI_Status {
-    const auto sleepRatio{internal::CheckCalculateSleepRatio(dutyRatio)};
+auto LazySpinWait(MPI_Request& request, DutyRatio dutyRatio) -> MPI_Status {
+    const auto sleepMultiple{dutyRatio.SleepRatio() / dutyRatio};
     int completed{};
     MPI_Status status{};
     while (true) {
@@ -55,7 +38,7 @@ auto LazySpinWait(MPI_Request& request, double dutyRatio) -> MPI_Status {
             return status;
         }
         const auto t1{muc::chrono::steady_high_resolution_clock::now()};
-        std::this_thread::sleep_for(sleepRatio * (t1 - t0));
+        std::this_thread::sleep_for(sleepMultiple * (t1 - t0));
     }
 }
 
@@ -63,8 +46,8 @@ namespace internal {
 namespace {
 
 template<typename R>
-MUSTARD_ALWAYS_INLINE auto LazySpinWait(R& request, double dutyRatio) -> mpl::status_t {
-    const auto sleepRatio{internal::CheckCalculateSleepRatio(dutyRatio)};
+MUSTARD_ALWAYS_INLINE auto LazySpinWait(R& request, DutyRatio dutyRatio) -> mpl::status_t {
+    const auto sleepMultiple{dutyRatio.SleepRatio() / dutyRatio};
     while (true) {
         const auto t0{muc::chrono::steady_high_resolution_clock::now()};
         const auto status{request.test()};
@@ -72,31 +55,31 @@ MUSTARD_ALWAYS_INLINE auto LazySpinWait(R& request, double dutyRatio) -> mpl::st
             return *status;
         }
         const auto t1{muc::chrono::steady_high_resolution_clock::now()};
-        std::this_thread::sleep_for(sleepRatio * (t1 - t0));
+        std::this_thread::sleep_for(sleepMultiple * (t1 - t0));
     }
 }
 
 } // namespace
 } // namespace internal
 
-auto LazySpinWait(mpl::irequest& request, double dutyRatio) -> mpl::status_t {
+auto LazySpinWait(mpl::irequest& request, DutyRatio dutyRatio) -> mpl::status_t {
     return internal::LazySpinWait(request, dutyRatio);
 }
 
-auto LazySpinWait(mpl::irequest&& request, double dutyRatio) -> mpl::status_t {
+auto LazySpinWait(mpl::irequest&& request, DutyRatio dutyRatio) -> mpl::status_t {
     return internal::LazySpinWait(request, dutyRatio);
 }
 
-auto LazySpinWait(mpl::prequest& request, double dutyRatio) -> mpl::status_t {
+auto LazySpinWait(mpl::prequest& request, DutyRatio dutyRatio) -> mpl::status_t {
     return internal::LazySpinWait(request, dutyRatio);
 }
 
-auto LazySpinWait(mpl::prequest&& request, double dutyRatio) -> mpl::status_t {
+auto LazySpinWait(mpl::prequest&& request, DutyRatio dutyRatio) -> mpl::status_t {
     return internal::LazySpinWait(request, dutyRatio);
 }
 
-auto LazySpinWaitAny(std::span<MPI_Request> requests, double dutyRatio) -> LazySpinWaitAnyResult {
-    const auto sleepRatio{internal::CheckCalculateSleepRatio(dutyRatio)};
+auto LazySpinWaitAny(std::span<MPI_Request> requests, DutyRatio dutyRatio) -> LazySpinWaitAnyResult {
+    const auto sleepMultiple{dutyRatio.SleepRatio() / dutyRatio};
     int index{};
     int completed{};
     while (true) {
@@ -112,7 +95,7 @@ auto LazySpinWaitAny(std::span<MPI_Request> requests, double dutyRatio) -> LazyS
             }
         }
         const auto t1{muc::chrono::steady_high_resolution_clock::now()};
-        std::this_thread::sleep_for(sleepRatio * (t1 - t0));
+        std::this_thread::sleep_for(sleepMultiple * (t1 - t0));
     }
 }
 
@@ -120,8 +103,8 @@ namespace internal {
 namespace {
 
 template<typename P>
-MUSTARD_ALWAYS_INLINE auto LazySpinWaitAny(P& requests, double dutyRatio) -> LazySpinWaitAnyResult {
-    const auto sleepRatio{internal::CheckCalculateSleepRatio(dutyRatio)};
+MUSTARD_ALWAYS_INLINE auto LazySpinWaitAny(P& requests, DutyRatio dutyRatio) -> LazySpinWaitAnyResult {
+    const auto sleepMultiple{dutyRatio.SleepRatio() / dutyRatio};
     while (true) {
         const auto t0{muc::chrono::steady_high_resolution_clock::now()};
         const auto [result, index]{requests.testany()};
@@ -130,23 +113,23 @@ MUSTARD_ALWAYS_INLINE auto LazySpinWaitAny(P& requests, double dutyRatio) -> Laz
                     .index{static_cast<int>(index)}};
         }
         const auto t1{muc::chrono::steady_high_resolution_clock::now()};
-        std::this_thread::sleep_for(sleepRatio * (t1 - t0));
+        std::this_thread::sleep_for(sleepMultiple * (t1 - t0));
     }
 }
 
 } // namespace
 } // namespace internal
 
-auto LazySpinWaitAny(mpl::irequest_pool& requests, double dutyRatio) -> LazySpinWaitAnyResult {
+auto LazySpinWaitAny(mpl::irequest_pool& requests, DutyRatio dutyRatio) -> LazySpinWaitAnyResult {
     return internal::LazySpinWaitAny(requests, dutyRatio);
 }
 
-auto LazySpinWaitAny(mpl::prequest_pool& requests, double dutyRatio) -> LazySpinWaitAnyResult {
+auto LazySpinWaitAny(mpl::prequest_pool& requests, DutyRatio dutyRatio) -> LazySpinWaitAnyResult {
     return internal::LazySpinWaitAny(requests, dutyRatio);
 }
 
-auto LazySpinWaitAll(std::span<MPI_Request> requests, double dutyRatio) -> void {
-    const auto sleepRatio{internal::CheckCalculateSleepRatio(dutyRatio)};
+auto LazySpinWaitAll(std::span<MPI_Request> requests, DutyRatio dutyRatio) -> void {
+    const auto sleepMultiple{dutyRatio.SleepRatio() / dutyRatio};
     int completed{};
     while (true) {
         const auto t0{muc::chrono::steady_high_resolution_clock::now()};
@@ -155,7 +138,7 @@ auto LazySpinWaitAll(std::span<MPI_Request> requests, double dutyRatio) -> void 
             return;
         }
         const auto t1{muc::chrono::steady_high_resolution_clock::now()};
-        std::this_thread::sleep_for(sleepRatio * (t1 - t0));
+        std::this_thread::sleep_for(sleepMultiple * (t1 - t0));
     }
 }
 
@@ -163,31 +146,31 @@ namespace internal {
 namespace {
 
 template<typename P>
-MUSTARD_ALWAYS_INLINE auto LazySpinWaitAll(P& requests, double dutyRatio) -> void {
-    const auto sleepRatio{internal::CheckCalculateSleepRatio(dutyRatio)};
+MUSTARD_ALWAYS_INLINE auto LazySpinWaitAll(P& requests, DutyRatio dutyRatio) -> void {
+    const auto sleepMultiple{dutyRatio.SleepRatio() / dutyRatio};
     while (true) {
         const auto t0{muc::chrono::steady_high_resolution_clock::now()};
         if (requests.testall()) {
             return;
         }
         const auto t1{muc::chrono::steady_high_resolution_clock::now()};
-        std::this_thread::sleep_for(sleepRatio * (t1 - t0));
+        std::this_thread::sleep_for(sleepMultiple * (t1 - t0));
     }
 }
 
 } // namespace
 } // namespace internal
 
-auto LazySpinWaitAll(mpl::irequest_pool& requests, double dutyRatio) -> void {
+auto LazySpinWaitAll(mpl::irequest_pool& requests, DutyRatio dutyRatio) -> void {
     internal::LazySpinWaitAll(requests, dutyRatio);
 }
 
-auto LazySpinWaitAll(mpl::prequest_pool& requests, double dutyRatio) -> void {
+auto LazySpinWaitAll(mpl::prequest_pool& requests, DutyRatio dutyRatio) -> void {
     internal::LazySpinWaitAll(requests, dutyRatio);
 }
 
-auto LazySpinWaitSome(std::span<MPI_Request> requests, double dutyRatio) -> LazySpinWaitSomeResult {
-    const auto sleepRatio{internal::CheckCalculateSleepRatio(dutyRatio)};
+auto LazySpinWaitSome(std::span<MPI_Request> requests, DutyRatio dutyRatio) -> LazySpinWaitSomeResult {
+    const auto sleepMultiple{dutyRatio.SleepRatio() / dutyRatio};
     int count{};
     std::vector<int> indices(requests.size());
     while (true) {
@@ -203,7 +186,7 @@ auto LazySpinWaitSome(std::span<MPI_Request> requests, double dutyRatio) -> Lazy
                     .indices{std::move(indices)}};
         }
         const auto t1{muc::chrono::steady_high_resolution_clock::now()};
-        std::this_thread::sleep_for(sleepRatio * (t1 - t0));
+        std::this_thread::sleep_for(sleepMultiple * (t1 - t0));
     }
 }
 
@@ -211,8 +194,8 @@ namespace internal {
 namespace {
 
 template<typename P>
-MUSTARD_ALWAYS_INLINE auto LazySpinWaitSome(P& requests, double dutyRatio) -> LazySpinWaitSomeResult {
-    const auto sleepRatio{internal::CheckCalculateSleepRatio(dutyRatio)};
+MUSTARD_ALWAYS_INLINE auto LazySpinWaitSome(P& requests, DutyRatio dutyRatio) -> LazySpinWaitSomeResult {
+    const auto sleepMultiple{dutyRatio.SleepRatio() / dutyRatio};
     while (true) {
         const auto t0{muc::chrono::steady_high_resolution_clock::now()};
         auto [result, indices]{requests.testsome()};
@@ -222,18 +205,18 @@ MUSTARD_ALWAYS_INLINE auto LazySpinWaitSome(P& requests, double dutyRatio) -> La
                     .indices{std::move(ret)}};
         }
         const auto t1{muc::chrono::steady_high_resolution_clock::now()};
-        std::this_thread::sleep_for(sleepRatio * (t1 - t0));
+        std::this_thread::sleep_for(sleepMultiple * (t1 - t0));
     }
 }
 
 } // namespace
 } // namespace internal
 
-auto LazySpinWaitSome(mpl::irequest_pool& requests, double dutyRatio) -> LazySpinWaitSomeResult {
+auto LazySpinWaitSome(mpl::irequest_pool& requests, DutyRatio dutyRatio) -> LazySpinWaitSomeResult {
     return internal::LazySpinWaitSome(requests, dutyRatio);
 }
 
-auto LazySpinWaitSome(mpl::prequest_pool& requests, double dutyRatio) -> LazySpinWaitSomeResult {
+auto LazySpinWaitSome(mpl::prequest_pool& requests, DutyRatio dutyRatio) -> LazySpinWaitSomeResult {
     return internal::LazySpinWaitSome(requests, dutyRatio);
 }
 

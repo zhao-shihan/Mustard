@@ -52,8 +52,7 @@ auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path
             std::filesystem::create_directories(parent);
         }
         // wait for create_directories
-        std::byte createdSemaphore{};
-        intraNodeComm.bcast(0, createdSemaphore);
+        intraNodeComm.barrier();
         // construct full path
         return parent / stem.concat(fmt::format("_mpi{}.", worldComm.rank())).replace_extension(path.extension());
     } else {

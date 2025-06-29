@@ -67,7 +67,7 @@ auto MasterWorkerScheduler<T>::Master::operator()() -> void {
             fSend.start(rank);
         }
     }
-    LazySpinWaitAll(fSend, 0.01);
+    LazySpinWaitAll(fSend, DutyRatio::Moderate);
 }
 
 template<std::integral T>
@@ -129,8 +129,8 @@ auto MasterWorkerScheduler<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
-    LazySpinWait(fSend, 0.01);
-    LazySpinWait(fRecv, 0.01);
+    LazySpinWait(fSend, DutyRatio::Moderate);
+    LazySpinWait(fRecv, DutyRatio::Moderate);
 
     if (fMaster) {
         fAsyncMaster.get();

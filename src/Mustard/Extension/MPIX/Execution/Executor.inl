@@ -60,10 +60,16 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
-    if (task.last < task.first) { Throw<std::invalid_argument>("task.last < task.first"); }
-    if (task.last == task.first) { return 0; }
-    if (task.last - task.first < static_cast<T>(mpl::environment::comm_world().size())) {
-        Throw<std::runtime_error>("Number of tasks < number of processes");
+    if (task.last < task.first) {
+        Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));
+    }
+    if (task.last == task.first) {
+        return 0;
+    }
+    const auto& worldComm{mpl::environment::comm_world()};
+    const auto nTask{task.last - task.first};
+    if (nTask < static_cast<T>(worldComm.size())) {
+        Throw<std::runtime_error>(fmt::format("Number of tasks ({}) < number of processes ({})", nTask, worldComm.size()));
     }
     fScheduler->fTask = task;
     fScheduler->Reset();
@@ -73,8 +79,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     // initialize
     fExecuting = true;
     fScheduler->PreLoopAction();
-    const auto& worldComm{mpl::environment::comm_world()};
-    worldComm.barrier();
+    LazySpinWait(worldComm.ibarrier(), DutyRatio::Moderate);
     fExecutionBeginSystemTime = scsc::now();
     fWallTimeStopwatch.reset();
     fCPUTimeStopwatch.reset();
@@ -99,8 +104,8 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     auto gatherExecutionInfo{worldComm.igather(0, executionInfo, fExecutionInfoGatheredByMaster.data())};
     fScheduler->PostLoopAction();
     fExecuting = false;
-    LazySpinWait(gatherExecutionInfo, 1e-3);
-    LazySpinWait(worldComm.ibarrier(), 1e-3);
+    LazySpinWait(gatherExecutionInfo, DutyRatio::Relaxed);
+    LazySpinWait(worldComm.ibarrier(), DutyRatio::Relaxed);
     PostLoopReport();
     return NLocalExecutedTask();
 }

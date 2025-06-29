@@ -56,15 +56,14 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::ClusterMaster(ClusterAwareM
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::StartAll() -> void {
     fRecvFromNM.startall();
-    std::byte clusterMasterRecvPostedSemaphore{};
-    this->fS->fInterNodeComm.bcast(0, clusterMasterRecvPostedSemaphore);
+    this->fS->fInterNodeComm.barrier();
 }
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
     auto interNodeTaskID{muc::ranges::reduce(this->fS->fInterNodeBatchSize, this->fS->fTask.first)};
     while (true) {
-        const auto [result, recvRank]{LazySpinWaitSome(fRecvFromNM, 0.1)};
+        const auto [result, recvRank]{LazySpinWaitSome(fRecvFromNM, DutyRatio::Active)};
         if (result == mpl::test_result::no_active_requests) {
             break;
         }
@@ -78,7 +77,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
             fSendToNM.start(rank);
         }
     }
-    LazySpinWaitAll(fSendToNM, 0.01);
+    LazySpinWaitAll(fSendToNM, DutyRatio::Moderate);
 }
 
 template<std::integral T>
@@ -124,13 +123,12 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
     auto intraNodeTaskEnd{intraNodeFirstTaskID + this->fS->fInterNodeBatchSize[mpiEnv.LocalNodeID()]};
 
     if (not fClusterMaster) {
-        std::byte clusterMasterRecvPostedSemaphore{};
-        this->fS->fInterNodeComm.bcast(0, clusterMasterRecvPostedSemaphore);
+        this->fS->fInterNodeComm.barrier();
     }
     fRecvFromCM.start();
     fSendToCM.start();
     while (true) {
-        const auto [result, recvRank]{LazySpinWaitSome(fRecvFromW, 0.1)};
+        const auto [result, recvRank]{LazySpinWaitSome(fRecvFromW, DutyRatio::Active)};
         if (result == mpl::test_result::no_active_requests) {
             break;
         }
@@ -156,9 +154,9 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
             fSendToW.start(rank);
         }
     }
-    LazySpinWait(fSendToCM, 0.01);
-    LazySpinWait(fRecvFromCM, 0.01);
-    LazySpinWaitAll(fSendToW, 0.01);
+    LazySpinWait(fSendToCM, DutyRatio::Moderate);
+    LazySpinWait(fRecvFromCM, DutyRatio::Moderate);
+    LazySpinWaitAll(fSendToW, DutyRatio::Moderate);
 
     if (fClusterMaster) {
         fAsyncClusterMaster.get();
@@ -242,8 +240,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::PostLoopAction() -> void {
-    LazySpinWait(fSendToNM, 0.01);
-    LazySpinWait(fRecvFromNM, 0.01);
+    LazySpinWait(fSendToNM, DutyRatio::Moderate);
+    LazySpinWait(fRecvFromNM, DutyRatio::Moderate);
 
     if (fNodeMaster) {
         fAsyncNodeMaster.get();

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Extension/MPIX/DutyRatio.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Extension/MPIX/LazySpinWait.h++"
 #include "Mustard/Utility/NonMoveableBase.h++"
