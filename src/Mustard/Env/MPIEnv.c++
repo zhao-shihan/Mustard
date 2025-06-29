@@ -23,8 +23,6 @@
 #include "TROOT.h"
 #include "TThread.h"
 
-#include "mpi.h"
-
 #include "muc/algorithm"
 #include "muc/numeric"
 #include "muc/utility"
@@ -153,12 +151,9 @@ MPIEnv::~MPIEnv() {
 auto MPIEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     BasicEnv::PrintStartBannerBody(argc, argv);
     // MPI library version
-    char mpiLibVersion[MPI_MAX_LIBRARY_VERSION_STRING];
-    int mpiLibVersionStringLength;
-    MPI_Get_library_version(mpiLibVersion, &mpiLibVersionStringLength);
+    const auto mpiLibVersion{mpl::environment::get_library_version()};
     // MPI version at runtime
-    std::pair<int, int> mpiRuntimeVersion;
-    MPI_Get_version(&mpiRuntimeVersion.first, &mpiRuntimeVersion.second);
+    const auto mpiRuntimeVersion{mpl::environment::get_version()};
     // Messages
     const auto& worldComm{mpl::environment::comm_world()};
     Print(fmt::emphasis::bold,
