@@ -55,7 +55,7 @@ template<std::integral T>
 auto MasterWorkerScheduler<T>::Master::operator()() -> void {
     T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
     while (true) {
-        const auto [result, recvRank]{fRecv.waitsome()};
+        const auto [result, recvRank]{LazySpinWaitSome(fRecv, DutyRatio::Active)};
         if (result == mpl::test_result::no_active_requests) { break; }
         for (auto&& rank : recvRank) {
             fTaskIDSend[rank] = std::min(mainTaskID, fS->fTask.last);
