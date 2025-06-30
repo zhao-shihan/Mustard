@@ -119,9 +119,9 @@ template<muc::instantiated_from<MPIX::Executor> AExecutor>
 auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what) -> bool {
     const auto& worldComm{mpl::environment::comm_world()};
     const auto byPassWillOccur{static_cast<Index>(worldComm.size()) > n};
-    if (worldComm.rank() == 0 and byPassWillOccur) [[unlikely]] {
-        PrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
-                                 worldComm.size(), what, n));
+    if (byPassWillOccur) [[unlikely]] {
+        MasterPrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
+                                       worldComm.size(), what, n));
     }
     return byPassWillOccur;
 }
