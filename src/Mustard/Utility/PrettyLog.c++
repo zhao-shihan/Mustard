@@ -74,6 +74,27 @@ auto PrintError(std::string_view message, const std::source_location& location) 
     Print<'E'>("\n");
 }
 
+auto MasterPrintInfo(std::string_view message, const std::source_location& location) -> void {
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        PrintInfo(message, location);
+    }
+}
+
+auto MasterPrintWarning(std::string_view message, const std::source_location& location) -> void {
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        PrintWarning(message, location);
+    }
+}
+
+auto MasterPrintError(std::string_view message, const std::source_location& location) -> void {
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        PrintError(message, location);
+    }
+}
+
 auto PrettyInfo(std::string_view message, const std::source_location& location) -> std::string {
     return fmt::format("{}: {}", internal::PrettyLogHead("Information from ", location), message);
 }

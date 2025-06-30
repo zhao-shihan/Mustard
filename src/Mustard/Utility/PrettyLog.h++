@@ -20,6 +20,8 @@
 
 #include "Mustard/Utility/InlineMacro.h++"
 
+#include "mpl/mpl.hpp"
+
 #include <concepts>
 #include <source_location>
 #include <string>
@@ -31,14 +33,32 @@ namespace Mustard::inline Utility {
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto PrintInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+
 /// @brief Print pretty warning.
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto PrintWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+
 /// @brief Print pretty error.
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto PrintError(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+
+/// @brief Print pretty information from master proccess.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+
+/// @brief Print pretty warning from master proccess.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+
+/// @brief Print pretty error from master proccess.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintError(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+
 /// @brief Throw pretty exception.
 /// @tparam AException The exception type.
 /// @param message The exception message.
