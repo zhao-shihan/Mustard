@@ -28,6 +28,7 @@
 #include <cmath>
 #include <functional>
 #include <future>
+#include <mutex>
 
 namespace Mustard::inline Utility {
 
@@ -52,12 +53,36 @@ struct ProgressBar::Impl {
     muc::wall_time_stopwatch<> wallTimeStopWatch;
     std::chrono::duration<double> lastPrintTime;
     std::future<void> asyncPrint;
+
+    static std::mutex gPrintMutex;
 };
+
+std::mutex ProgressBar::Impl::gPrintMutex{};
 
 ProgressBar::ProgressBar() = default;
 
+ProgressBar::ProgressBar(ProgressBar&& other) noexcept {
+    if (other.fImpl) {
+        other.fImpl->asyncPrint.wait();
+        fImpl = std::move(other.fImpl);
+    }
+}
+
 ProgressBar::~ProgressBar() {
-    if (fImpl) { Stop(); }
+    if (fImpl) {
+        Stop();
+    }
+}
+
+auto ProgressBar::operator=(ProgressBar&& other) noexcept -> ProgressBar& {
+    if (this != &other and other.fImpl) {
+        if (fImpl) {
+            Stop();
+        }
+        other.fImpl->asyncPrint.wait();
+        fImpl = std::move(other.fImpl);
+    }
+    return *this;
 }
 
 auto ProgressBar::Start(std::size_t nTotal) -> void {
@@ -95,6 +120,7 @@ auto ProgressBar::Stop() -> void {
 auto ProgressBar::Print(std::size_t progress, std::chrono::duration<double> timeElapsed) -> void {
     fImpl->progressBar.set_option(indicators::option::PostfixText{
         fmt::format("{}/{} ({:.3}/s)", progress, fImpl->total, progress / timeElapsed.count())});
+    std::lock_guard lock{Impl::gPrintMutex};
     fImpl->progressBar.set_progress(progress);
 }
 

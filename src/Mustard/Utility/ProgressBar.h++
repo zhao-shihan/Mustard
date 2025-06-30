@@ -29,7 +29,10 @@ namespace Mustard::inline Utility {
 class ProgressBar {
 public:
     ProgressBar();
+    ProgressBar(ProgressBar&& other) noexcept;
     ~ProgressBar();
+
+    auto operator=(ProgressBar&& other) noexcept -> ProgressBar&;
 
     auto Start(std::size_t nTotal) -> void;
     auto Tick(std::chrono::duration<double> printInterval = std::chrono::milliseconds{33}) -> void;
