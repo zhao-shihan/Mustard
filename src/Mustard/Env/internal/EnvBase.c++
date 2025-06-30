@@ -111,31 +111,31 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
                                       fmt::format("MPI{}> ", mpl::environment::comm_world().rank()) :
                                       ""};
             const auto ts{fmt::emphasis::bold};
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGINT:
-                Print<'E'>(ts, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
                 break;
             case SIGTERM:
-                Print<'E'>(ts, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
                 break;
             }
             if (mpl::environment::available()) {
-                Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n",
+                Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
                            lineHeader, mpl::environment::comm_world().rank(), mpl::environment::processor_name());
             }
-            Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+            Print<'E'>(stderr, ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
             PrintStackTrace(64, 2, stderr, ts);
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGINT:
-                Print<'E'>(ts, "Ctrl-C has been pressed or an external interrupt received."); // no '\n' looks good for now
+                Print<'E'>(stderr, ts, "Ctrl-C has been pressed or an external interrupt received."); // no '\n' looks good for now
                 break;
             case SIGTERM:
-                Print<'E'>(ts, "The process is terminated.\n");
+                Print<'E'>(stderr, ts, "The process is terminated.\n");
                 break;
             }
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
             std::fflush(stderr);
             std::raise(sig);
         }
@@ -149,17 +149,17 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
                               fmt::format("MPI{}> ", mpl::environment::comm_world().rank()) :
                               ""};
     const auto ts{fmt::emphasis::bold | fg(fmt::color::orange)};
-    Print<'E'>("\n");
-    Print<'E'>(ts, "{}***** ABORT (SIGABRT) received\n", lineHeader);
+    Print<'E'>(stderr, "\n");
+    Print<'E'>(stderr, ts, "{}***** ABORT (SIGABRT) received\n", lineHeader);
     if (mpl::environment::available()) {
-        Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n",
+        Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
                    lineHeader, mpl::environment::comm_world().rank(), mpl::environment::processor_name());
     }
-    Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+    Print<'E'>(stderr, ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
     PrintStackTrace(64, 2, stderr, ts);
-    Print<'E'>("\n");
-    Print<'E'>(ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
-    Print<'E'>("\n");
+    Print<'E'>(stderr, "\n");
+    Print<'E'>(stderr, ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
+    Print<'E'>(stderr, "\n");
     std::fflush(stderr);
     std::abort();
 }
@@ -179,27 +179,27 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
                                       fmt::format("MPI{}> ", mpl::environment::comm_world().rank()) :
                                       ""};
             const auto ts{fmt::emphasis::bold | fg(fmt::color::red)};
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGFPE:
-                Print<'E'>(ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
                 break;
             case SIGILL:
-                Print<'E'>(ts, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
                 break;
             case SIGSEGV:
-                Print<'E'>(ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
                 break;
             }
             if (mpl::environment::available()) {
-                Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n",
+                Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
                            lineHeader, mpl::environment::comm_world().rank(), mpl::environment::processor_name());
             }
-            Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+            Print<'E'>(stderr, ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
             PrintStackTrace(64, 2, stderr, ts);
-            Print<'E'>("\n");
-            Print<'E'>(ts, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
+            Print<'E'>(stderr, ts, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");
+            Print<'E'>(stderr, "\n");
             std::fflush(stderr);
             std::raise(sig);
         }
