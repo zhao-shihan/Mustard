@@ -21,6 +21,8 @@
 #include "Mustard/Utility/Print.h++"
 #include "Mustard/Version.h++"
 
+#include "TThread.h"
+
 #include "muc/time"
 
 #include "fmt/chrono.h"
@@ -53,6 +55,9 @@ BasicEnv::BasicEnv(NoBanner, int argc, char* argv[],
             fShowBanner = basicCLI->ShowBanner();
         }
     }
+
+    // We have async ROOT IO, enable ROOT global mutex
+    TThread::Initialize();
 }
 
 BasicEnv::BasicEnv(int argc, char* argv[],
