@@ -98,7 +98,9 @@ auto ProgressBar::Start(std::size_t nTotal) -> void {
 auto ProgressBar::Tick(std::chrono::duration<double> printInterval) -> void {
     ++fImpl->progress;
     const std::chrono::duration<double> timeElapsed{fImpl->wallTimeStopWatch.s_elapsed()};
-    if (timeElapsed - fImpl->lastPrintTime < printInterval) { return; }
+    if (timeElapsed - fImpl->lastPrintTime < printInterval) {
+        return;
+    }
     fImpl->lastPrintTime = timeElapsed;
     fImpl->asyncPrint.get();
     fImpl->asyncPrint = std::async(std::mem_fn(&ProgressBar::Print), this, fImpl->progress, timeElapsed);

@@ -39,7 +39,9 @@ SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::Register(gsl
 template<typename ADerived, typename... ARecipients>
 template<typename ARecipient>
 SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::~Register() {
-    if (SingletonMessenger::Expired()) { return; }
+    if (SingletonMessenger::Expired()) {
+        return;
+    }
     auto& messenger{SingletonMessenger::Instance()};
     if (messenger.fDelivering) {
         PrintError("De-register from SingletonMessenger during delivering (fatal error)");

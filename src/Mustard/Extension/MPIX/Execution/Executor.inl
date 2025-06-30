@@ -50,7 +50,9 @@ template<std::integral T>
 template<template<typename> typename AScheduler>
     requires std::derived_from<AScheduler<T>, Scheduler<T>>
 auto Executor<T>::SwitchScheduler() -> void {
-    if (fExecuting) { Throw<std::logic_error>("Try switching scheduler during executing"); }
+    if (fExecuting) {
+        Throw<std::logic_error>("Try switching scheduler during executing");
+    }
     auto task{std::move(fScheduler->fTask)};
     fScheduler = std::make_unique_for_overwrite<AScheduler<T>>();
     fScheduler->fTask = std::move(task);
@@ -114,7 +116,9 @@ template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PrintExecutionSummary() const -> void {
     const auto& worldComm{mpl::environment::comm_world()};
-    if (worldComm.rank() != 0) { return; }
+    if (worldComm.rank() != 0) {
+        return;
+    }
     if (fExecutionInfoGatheredByMaster.empty() or fExecuting) {
         PrintWarning("Execution summary not available for now");
         return;
@@ -133,9 +137,13 @@ auto Executor<T>::PrintExecutionSummary() const -> void {
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PreLoopReport() const -> void {
-    if (not fPrintProgress) { return; }
+    if (not fPrintProgress) {
+        return;
+    }
     const auto& worldComm{mpl::environment::comm_world()};
-    if (worldComm.rank() != 0) { return; }
+    if (worldComm.rank() != 0) {
+        return;
+    }
     Print("+----------------------------------> Start <----------------------------------+\n"
           "| {:75} |\n"
           "+----------------------------------> Start <----------------------------------+\n",
@@ -146,16 +154,22 @@ auto Executor<T>::PreLoopReport() const -> void {
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostTaskReport(T iEnded) const -> void {
-    if (not fPrintProgress or fPrintProgressModulo < 0) { return; }
+    if (not fPrintProgress or fPrintProgressModulo < 0) {
+        return;
+    }
     const auto [goodEstimation, nExecutedTask]{fScheduler->NExecutedTaskEstimation()};
     const auto secondsElapsed{fWallTimeStopwatch.s_elapsed()};
     const auto speed{nExecutedTask / secondsElapsed};
     if (fPrintProgressModulo == 0) {
         // adaptive mode, print every ~3s
-        if ((iEnded + 1) % std::max(1ll, std::llround(speed * 3)) != 0) { return; }
+        if ((iEnded + 1) % std::max(1ll, std::llround(speed * 3)) != 0) {
+            return;
+        }
     } else {
         // manual mode
-        if ((iEnded + 1) % fPrintProgressModulo != 0) { return; }
+        if ((iEnded + 1) % fPrintProgressModulo != 0) {
+            return;
+        }
     }
     const auto& worldComm{mpl::environment::comm_world()};
     Print("MPI{}> [{:%FT%T%z}] {} {} has ended\n"
@@ -177,9 +191,13 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostLoopReport() const -> void {
-    if (not fPrintProgress) { return; }
+    if (not fPrintProgress) {
+        return;
+    }
     const auto& worldComm{mpl::environment::comm_world()};
-    if (worldComm.rank() != 0) { return; }
+    if (worldComm.rank() != 0) {
+        return;
+    }
     const auto now{scsc::now()};
     const auto maxWallTime{get<1>(*std::ranges::max_element(fExecutionInfoGatheredByMaster, std::less{},
                                                             [](auto&& a) { return std::get<1>(a); }))};
@@ -205,9 +223,15 @@ auto Executor<T>::SToDHMS(double s) -> std::string {
     const auto div3600{muc::div(div86400.rem, 3600ll)};
     const auto div60{muc::div(div3600.rem, 60ll)};
     const auto& [day, hour, minute, second]{std::tie(div86400.quot, div3600.quot, div60.quot, div60.rem)};
-    if (day > 0) { return fmt::format("{}d {}h {}m", day, hour, minute); }
-    if (hour > 0) { return fmt::format("{}h {}m", hour, minute); }
-    if (minute > 0) { return fmt::format("{}m {}s", minute, second); }
+    if (day > 0) {
+        return fmt::format("{}d {}h {}m", day, hour, minute);
+    }
+    if (hour > 0) {
+        return fmt::format("{}h {}m", hour, minute);
+    }
+    if (minute > 0) {
+        return fmt::format("{}m {}s", minute, second);
+    }
     return fmt::format("{}s", second);
 }
 

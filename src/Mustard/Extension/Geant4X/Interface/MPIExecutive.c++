@@ -33,7 +33,9 @@ MPIExecutive::MPIExecutive() :
 
 auto MPIExecutive::CheckSequential() const -> void {
     const auto& worldComm{mpl::environment::comm_world()};
-    if (worldComm.size() == 1) { return; }
+    if (worldComm.size() == 1) {
+        return;
+    }
     if (worldComm.rank() == 0) {
         G4Exception(std::source_location::current().function_name(),
                     "InteractiveSessionMustBeSequential",

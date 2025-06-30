@@ -43,7 +43,9 @@ struct FieldSymmetryX {
     template<std::floating_point C, typename T>
         requires Concept::NumericVector<T, C, 3> or Concept::NumericVector<T, C, 6>
     [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(C x, C, C, T f) const noexcept -> T {
-        if (x >= 0) { return f; }
+        if (x >= 0) {
+            return f;
+        }
         f[0] = -f[0];
         if constexpr (Concept::NumericVector<T, C, 6>) {
             f[3] = -f[3];
@@ -67,7 +69,9 @@ struct FieldSymmetryY {
     template<std::floating_point C, typename T>
         requires Concept::NumericVector<T, C, 3> or Concept::NumericVector<T, C, 6>
     [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(C, C y, C, T f) const noexcept -> T {
-        if (y >= 0) { return f; }
+        if (y >= 0) {
+            return f;
+        }
         f[1] = -f[1];
         if constexpr (Concept::NumericVector<T, C, 6>) {
             f[4] = -f[4];
@@ -91,7 +95,9 @@ struct FieldSymmetryZ {
     template<std::floating_point C, typename T>
         requires Concept::NumericVector<T, C, 3> or Concept::NumericVector<T, C, 6>
     [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(C, C, C z, T f) const noexcept -> T {
-        if (z >= 0) { return f; }
+        if (z >= 0) {
+            return f;
+        }
         f[2] = -f[2];
         if constexpr (Concept::NumericVector<T, C, 6>) {
             f[5] = -f[5];

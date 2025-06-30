@@ -71,10 +71,16 @@ auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
 
 auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> void {
     const auto& worldComm{mpl::environment::comm_world()};
-    if (worldComm.size() == 1) { return; }
+    if (worldComm.size() == 1) {
+        return;
+    }
 
-    if (clhepRng == nullptr) { clhepRng = CLHEP::HepRandom::getTheEngine(); }
-    if (tRandom == nullptr) { tRandom = gRandom; }
+    if (clhepRng == nullptr) {
+        clhepRng = CLHEP::HepRandom::getTheEngine();
+    }
+    if (tRandom == nullptr) {
+        tRandom = gRandom;
+    }
 
     static_assert(std::same_as<long, decltype(clhepRng->getSeed())>);
     static_assert(std::same_as<unsigned, decltype(tRandom->GetSeed())>);
@@ -113,8 +119,12 @@ auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -
         worldComm.scatter(0, seedRecv);
     }
 
-    if (get<0>(seedRecv) != (clhepRng == nullptr)) { Throw<std::logic_error>("CLHEP random engine null/!null inconsistent"); }
-    if (get<2>(seedRecv) != (tRandom == nullptr)) { Throw<std::logic_error>("ROOT random engine null/!null inconsistent"); }
+    if (get<0>(seedRecv) != (clhepRng == nullptr)) {
+        Throw<std::logic_error>("CLHEP random engine null/!null inconsistent");
+    }
+    if (get<2>(seedRecv) != (tRandom == nullptr)) {
+        Throw<std::logic_error>("ROOT random engine null/!null inconsistent");
+    }
     if (clhepRng) {
         Ensures(get<1>(seedRecv) != 0 and get<1>(seedRecv) != -1); // not 0x00...00 and not 0xff...ff
         clhepRng->setSeed(get<1>(seedRecv), 3);

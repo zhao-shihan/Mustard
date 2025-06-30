@@ -148,7 +148,9 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
                      for (gsl::index i{}; i < nRDF; ++i) {
                          if (lhs[i].first == rhs[i].first or
                              lhs[i].last == 0 or
-                             rhs[i].last == 0) { continue; }
+                             rhs[i].last == 0) {
+                             continue;
+                         }
                          return lhs[i].first < rhs[i].first;
                      }
                      return false;

@@ -90,7 +90,9 @@ auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const CLHEPX::R
 }
 
 auto MuonInternalConversionDecayChannel::Initialize() -> void {
-    if (fReady) { return; }
+    if (fReady) {
+        return;
+    }
     // initialize
     while (true) {
         std::ranges::generate(fRawState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });

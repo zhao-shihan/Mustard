@@ -49,17 +49,31 @@ AsyncReader<AData>::AsyncReader(gsl::index sentinel, std::function<void(ROOT::RD
 
 template<typename AData>
 AsyncReader<AData>::~AsyncReader() {
-    if (fReading) { Throw<std::logic_error>("Last read data not acquired"); }
-    if (not fExhausted) { PrettyWarning("Data have not been exhausted"); }
+    if (fReading) {
+        Throw<std::logic_error>("Last read data not acquired");
+    }
+    if (not fExhausted) {
+        PrettyWarning("Data have not been exhausted");
+    }
 }
 
 template<typename AData>
 auto AsyncReader<AData>::Read(gsl::index first, gsl::index last) -> void {
-    if (fReading) { Throw<std::logic_error>("Try to start another read while reading"); }
-    if (fExhausted) { Throw<std::logic_error>("Data have been exhausted"); }
-    if (first < 0) { Throw<std::out_of_range>("first < 0"); }
-    if (last < 0) { Throw<std::out_of_range>("last < 0"); }
-    if (first > last) { Throw<std::out_of_range>("first > last"); }
+    if (fReading) {
+        Throw<std::logic_error>("Try to start another read while reading");
+    }
+    if (fExhausted) {
+        Throw<std::logic_error>("Data have been exhausted");
+    }
+    if (first < 0) {
+        Throw<std::out_of_range>("first < 0");
+    }
+    if (last < 0) {
+        Throw<std::out_of_range>("last < 0");
+    }
+    if (first > last) {
+        Throw<std::out_of_range>("first > last");
+    }
     fFirst = first;
     fLast = last;
     fData.reserve(last - first);
@@ -69,7 +83,9 @@ auto AsyncReader<AData>::Read(gsl::index first, gsl::index last) -> void {
 
 template<typename AData>
 [[nodiscard]] auto AsyncReader<AData>::Acquire() -> AData {
-    if (not fReading) { Throw<std::logic_error>("Try to acquire result while not reading"); }
+    if (not fReading) {
+        Throw<std::logic_error>("Try to acquire result while not reading");
+    }
     fReadCompleteSemaphore.acquire();
     fReading = false;
     return std::move(fData);
@@ -181,8 +197,12 @@ AsyncEventReader<AEventIDType, TupleModel<Ts...>>::AsyncEventReader(ROOT::RDF::R
 template<std::integral AEventIDType, TupleModelizable... Ts>
 auto AsyncEventReader<AEventIDType, TupleModel<Ts...>>::Read(gsl::index first, gsl::index last) -> void {
     const auto nEvent{ssize(fEventSplit) - 1};
-    if (first > nEvent) { Throw<std::out_of_range>("first > #event"); }
-    if (last > nEvent) { Throw<std::out_of_range>("last > #event"); }
+    if (first > nEvent) {
+        Throw<std::out_of_range>("first > #event");
+    }
+    if (last > nEvent) {
+        Throw<std::out_of_range>("last > #event");
+    }
     AsyncReader<std::vector<muc::shared_ptrvec<Tuple<Ts...>>>>::Read(first, last);
 }
 

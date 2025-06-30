@@ -70,7 +70,9 @@ namespace {
         }
     } catch (const std::exception& e) {
         std::string_view what{e.what()};
-        if (not what.empty() and what.ends_with('\n')) { what.remove_suffix(1); }
+        if (not what.empty() and what.ends_with('\n')) {
+            what.remove_suffix(1);
+        }
         const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
         Print<'E'>(ts | fmt::emphasis::blink, "***");
         Print<'E'>(ts, " terminate called after throwing an instance of '{}'\n", muc::try_demangle(typeid(e).name()));

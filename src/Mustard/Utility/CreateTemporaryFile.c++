@@ -51,9 +51,13 @@ auto CreateTemporaryFile(std::string_view signature, std::filesystem::path exten
                            mpl::environment::available() ? mpl::environment::comm_world().rank() : 0);
         path.replace_extension(extension);
         file = std::fopen(path.generic_string().c_str(), "wx");
-        if (file) { break; }
+        if (file) {
+            break;
+        }
     }
-    if (file == nullptr) { Throw<std::runtime_error>("Failed to create a temporary file"); }
+    if (file == nullptr) {
+        Throw<std::runtime_error>("Failed to create a temporary file");
+    }
     std::fclose(file);
 
     static class RemoveTemporaryFileAtExitHelper {

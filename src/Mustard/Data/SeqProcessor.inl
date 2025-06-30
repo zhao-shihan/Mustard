@@ -109,7 +109,9 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                 (...,
                  [&]<gsl::index I>(std::integral_constant<gsl::index, I>) {
                      const auto entryRange{es[i][I]};
-                     if (entryRange.last == 0) { return; }
+                     if (entryRange.last == 0) {
+                         return;
+                     }
                      std::ranges::subrange eventData{
                          get<I>(data).begin() + (entryRange.first - es[iFirst][I].first),
                          get<I>(data).begin() + (entryRange.last - es[iFirst][I].first)};
@@ -148,7 +150,9 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                                   From(rdf[Is].Range(takeRange[Is].first, takeRange[Is].last))...};
         }(gslx::make_index_sequence<nRDF>())};
         // async process
-        if (async.valid()) { async.get(); }
+        if (async.valid()) {
+            async.get();
+        }
         async = std::async(ProcessBatch, iFirst, iLast, std::move(data));
     }
     async.get();
@@ -175,9 +179,13 @@ auto SeqProcessor::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     LoopBeginAction(n);
     for (Index k{}; k < batch.nBatch; ++k) { // k is batch index
         const auto [iFirst, iLast]{CalculateIndexRange(k, batch)};
-        if (asyncReader.Reading()) { batchData = asyncReader.Acquire(); }
+        if (asyncReader.Reading()) {
+            batchData = asyncReader.Acquire();
+        }
         asyncReader.Read(iFirst, iLast);
-        if (asyncProcess.valid()) { asyncProcess.get(); }
+        if (asyncProcess.valid()) {
+            asyncProcess.get();
+        }
         asyncProcess = std::async(std::launch::deferred, ProcessBatch);
     }
     batchData = asyncReader.Acquire();

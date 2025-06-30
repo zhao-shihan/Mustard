@@ -166,15 +166,21 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlFile, const std:
 
     struct InvalidFile {};
     try {
-        if (yamlFile.empty()) { throw InvalidFile{}; }
+        if (yamlFile.empty()) {
+            throw InvalidFile{};
+        }
 
         std::ofstream yamlOut;
         try {
             const auto parent{yamlFile.parent_path()};
-            if (not parent.empty()) { std::filesystem::create_directories(parent); }
+            if (not parent.empty()) {
+                std::filesystem::create_directories(parent);
+            }
             yamlOut.open(yamlFile, std::ios::out);
         } catch (const std::filesystem::filesystem_error&) { throw InvalidFile{}; }
-        if (not yamlOut.is_open()) { throw InvalidFile{}; }
+        if (not yamlOut.is_open()) {
+            throw InvalidFile{};
+        }
 
         Output(geomYaml, fileComment, yamlOut);
     } catch (const InvalidFile&) {

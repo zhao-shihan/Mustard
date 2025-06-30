@@ -64,17 +64,23 @@ auto MPIRunManager::BeamOn(G4int nEvent, gsl::czstring macroFile, G4int nSelect)
 auto MPIRunManager::DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void {
     InitializeEventLoop(nEvent, macroFile, nSelect);
     // Set name for message
-    if (currentRun) { fExecutor.ExecutionName(fmt::format("G4Run {}", currentRun->GetRunID())); }
+    if (currentRun) {
+        fExecutor.ExecutionName(fmt::format("G4Run {}", currentRun->GetRunID()));
+    }
     // Event loop
     fExecutor.Execute(numberOfEventToBeProcessed,
                       [this](auto eventID) {
                           ProcessOneEvent(eventID);
                           TerminateOneEvent();
-                          if (runAborted) { Throw<std::runtime_error>("G4Run aborted"); }
+                          if (runAborted) {
+                              Throw<std::runtime_error>("G4Run aborted");
+                          }
                       });
     // If multi-threading, TerminateEventLoop() is invoked after all threads are finished.
     // MPIRunManager::runManagerType is sequentialRM.
-    if (runManagerType == sequentialRM) { TerminateEventLoop(); }
+    if (runManagerType == sequentialRM) {
+        TerminateEventLoop();
+    }
 }
 
 } // namespace Mustard::inline Extension::Geant4X::inline Run

@@ -52,9 +52,13 @@ auto PionKaonDecayMakeSpinPhysics::ConstructProcess() -> void {
         [decayMakeSpin = new PionKaonDecayMakeSpin,
          processTable = G4ProcessTable::GetProcessTable()](auto&& particle) {
             const auto manager{particle->GetProcessManager()};
-            if (manager == nullptr) { return; }
+            if (manager == nullptr) {
+                return;
+            }
             const auto decay{processTable->FindProcess("Decay", particle)};
-            if (decay) { manager->RemoveProcess(decay); }
+            if (decay) {
+                manager->RemoveProcess(decay);
+            }
             manager->AddProcess(decayMakeSpin);
             // set ordering for PostStepDoIt and AtRestDoIt
             manager->SetProcessOrdering(decayMakeSpin, idxPostStep);

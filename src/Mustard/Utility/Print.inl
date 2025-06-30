@@ -20,79 +20,105 @@ namespace Mustard::inline Utility {
 
 template<char L, typename... Ts>
 auto Print(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::print(std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto PrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::println(std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto Print(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::print(ts, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto Print(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::print(f, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto PrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::println(f, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto Print(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::print(f, ts, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto Print(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::print(os, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto PrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::println(os, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto Print(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto Print(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::print(os, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto PrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::println(os, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L, typename... Ts>
 auto Print(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
 }
 
 template<char L>
 auto VPrint(auto&&... args) -> void {
-    if (not Env::VerboseLevelReach<L>()) { return; }
+    if (not Env::VerboseLevelReach<L>()) {
+        return;
+    }
     fmt::vprint(std::forward<decltype(args)>(args)...);
 }
 

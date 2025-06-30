@@ -139,7 +139,8 @@ public:
     void Get(TLogLevel level, const std::string& msg, TMsgType type = EcoMug) {
         std::cout << "[EcoMug v" << ECOMUG_VERSION << "] [";
         std::cout << ToString(level);
-        if (type != UNKNOWN) std::cout << " in " << ToString(type);
+        if (type != UNKNOWN)
+            std::cout << " in " << ToString(type);
         std::cout << "]: ";
         std::cout << std::string(level > DEBUG ? level - DEBUG : 0, '\t');
         std::cout << msg << "\n";
@@ -375,8 +376,10 @@ public:
                     distance = fabs(mBestSolution[j] - mPopulation[i][j]);
                     mPopulation[i][j] = distance * exp(b * l) * cos(l * 2 * M_PI) + mBestSolution[j];
                 }
-                if (mPopulation[i][j] < mRanges[j][0]) mPopulation[i][j] = mRanges[j][0];
-                if (mPopulation[i][j] > mRanges[j][1]) mPopulation[i][j] = mRanges[j][1];
+                if (mPopulation[i][j] < mRanges[j][0])
+                    mPopulation[i][j] = mRanges[j][0];
+                if (mPopulation[i][j] > mRanges[j][1])
+                    mPopulation[i][j] = mRanges[j][1];
             }
         }
     }
@@ -591,7 +594,8 @@ public:
     };
     /// Set the seed for the internal PRNG (if 0 a random seed is used)
     void SetSeed(std::uint64_t seed) {
-        if (seed > 0) mRandom.SetSeed(seed);
+        if (seed > 0)
+            mRandom.SetSeed(seed);
     };
     /// Set minimum generation Momentum
     void SetMinimumMomentum(double momentum) {
@@ -705,7 +709,8 @@ public:
     };
     /// Get the estimated corresponding to the provided statistics
     double GetEstimatedTime(double nmuons) {
-        if (mCustomJ) return 0.;
+        if (mCustomJ)
+            return 0.;
         return (nmuons / (GetGenSurfaceArea() / EMUnits::m2)) / (GetAverageGenRate() / EMUnits::hertz * EMUnits::m2);
     };
     ///////////////////////////////////////////////////////////////
@@ -879,7 +884,8 @@ private:
             mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
             mGenerationMomentum = mRandom.GenerateRandomDouble(mMinimumMomentum, mMaximumMomentum);
             value = mJ(mGenerationMomentum, mGenerationTheta) * pow(sin(mGenerationTheta), 2) * cos(mGenerationPhi);
-            if (value < 0) value = 0;
+            if (value < 0)
+                value = 0;
             I += value;
             I2 += pow(value, 2);
         }
@@ -898,7 +904,8 @@ private:
             mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
             mGenerationMomentum = mRandom.GenerateRandomDouble(mMinimumMomentum, mMaximumMomentum);
             value = mJ(mGenerationMomentum, mGenerationTheta) * (sin(mTheta0) * sin(mGenerationTheta) * sin(mGenerationTheta) * cos(mGenerationPhi) + cos(mTheta0) * cos(mGenerationTheta) * sin(mGenerationTheta)) * sin(mTheta0);
-            if (value < 0) value = 0;
+            if (value < 0)
+                value = 0;
             I += value;
             I2 += pow(value, 2);
         }
@@ -915,7 +922,8 @@ private:
             mGenerationTheta = mRandom.GenerateRandomDouble(mMinimumTheta, mMaximumTheta);
             mGenerationMomentum = mRandom.GenerateRandomDouble(mMinimumMomentum, mMaximumMomentum);
             mN = 2.856 - 0.655 * log(mGenerationMomentum);
-            if (mN < 0.1) mN = 0.1;
+            if (mN < 0.1)
+                mN = 0.1;
             value = 1600 * pow(mGenerationMomentum + 2.68, -3.175) * pow(mGenerationMomentum, 0.279) * pow(cos(mGenerationTheta), mN + 1) * sin(mGenerationTheta);
             I += value;
             I2 += pow(value, 2);
@@ -934,9 +942,11 @@ private:
             mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
             mGenerationMomentum = mRandom.GenerateRandomDouble(mMinimumMomentum, mMaximumMomentum);
             mN = 2.856 - 0.655 * log(mGenerationMomentum);
-            if (mN < 0.1) mN = 0.1;
+            if (mN < 0.1)
+                mN = 0.1;
             value = 1600 * pow(mGenerationMomentum + 2.68, -3.175) * pow(mGenerationMomentum, 0.279) * pow(cos(mGenerationTheta), mN) * pow(sin(mGenerationTheta), 2) * cos(mGenerationPhi);
-            if (value < 0) value = 0;
+            if (value < 0)
+                value = 0;
             I += value;
             I2 += pow(value, 2);
         }
@@ -955,9 +965,11 @@ private:
             mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
             mGenerationMomentum = mRandom.GenerateRandomDouble(mMinimumMomentum, mMaximumMomentum);
             mN = 2.856 - 0.655 * log(mGenerationMomentum);
-            if (mN < 0.1) mN = 0.1;
+            if (mN < 0.1)
+                mN = 0.1;
             value = 1600 * pow(mGenerationMomentum + 2.68, -3.175) * pow(mGenerationMomentum, 0.279) * pow(cos(mGenerationTheta), mN) * (sin(mTheta0) * sin(mGenerationTheta) * sin(mGenerationTheta) * cos(mGenerationPhi) + cos(mTheta0) * cos(mGenerationTheta) * sin(mGenerationTheta)) * sin(mTheta0);
-            if (value < 0) value = 0;
+            if (value < 0)
+                value = 0;
             I += value;
             I2 += pow(value, 2);
         }
@@ -975,7 +987,8 @@ public:
     void Generate() {
         mAccepted = false;
 
-        if (mMaxJ[mGenMethod] < 0) ComputeMaximum();
+        if (mMaxJ[mGenMethod] < 0)
+            ComputeMaximum();
 
         // Sky or cylinder generation
         if (mGenMethod == Sky || mGenMethod == Cylinder) {
@@ -985,16 +998,19 @@ public:
                 mGenerationTheta = mRandom.GenerateRandomDouble(mMinimumTheta, mMaximumTheta);
                 mGenerationMomentum = GenerateMomentumF1();
                 mN = 2.856 - 0.655 * log(mGenerationMomentum);
-                if (mN < 0.1) mN = 0.1;
+                if (mN < 0.1)
+                    mN = 0.1;
 
                 if (mGenMethod == Sky) {
                     mJPrime = 1600 * pow(mGenerationMomentum, 0.279) * pow(cos(mGenerationTheta), mN + 1) * sin(mGenerationTheta);
-                    if (mMaxJ[mGenMethod] * mRandAccRej < mJPrime) mAccepted = true;
+                    if (mMaxJ[mGenMethod] * mRandAccRej < mJPrime)
+                        mAccepted = true;
                 }
 
                 if (mGenMethod == Cylinder) {
                     mJPrime = 1600 * pow(mGenerationMomentum, 0.279) * pow(cos(mGenerationTheta), mN) * pow(sin(mGenerationTheta), 2);
-                    if (mMaxJ[mGenMethod] * mRandAccRej < mJPrime) mAccepted = true;
+                    if (mMaxJ[mGenMethod] * mRandAccRej < mJPrime)
+                        mAccepted = true;
                 }
             }
             mGenerationTheta = M_PI - mGenerationTheta;
@@ -1010,13 +1026,16 @@ public:
                 while (!mAccepted) {
                     mRandAccRej = mRandom.GenerateRandomDouble();
                     mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
-                    if (mRandAccRej < fabs(cos(mGenerationPhi))) mAccepted = true;
+                    if (mRandAccRej < fabs(cos(mGenerationPhi)))
+                        mAccepted = true;
                 }
                 mGenerationPhi = mGenerationPhi + mPhi0;
-                if (mGenerationPhi >= 2. * M_PI) mGenerationPhi -= 2. * M_PI;
+                if (mGenerationPhi >= 2. * M_PI)
+                    mGenerationPhi -= 2. * M_PI;
 
                 // Check if the muon is inward
-                if (sin(mGenerationTheta) * cos(mGenerationPhi) * mGenerationPosition[0] + sin(mGenerationTheta) * sin(mGenerationPhi) * mGenerationPosition[1] > 0) Generate();
+                if (sin(mGenerationTheta) * cos(mGenerationPhi) * mGenerationPosition[0] + sin(mGenerationTheta) * sin(mGenerationPhi) * mGenerationPosition[1] > 0)
+                    Generate();
             }
         }
 
@@ -1031,10 +1050,12 @@ public:
                 mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
                 mGenerationMomentum = GenerateMomentumF1();
                 mN = 2.856 - 0.655 * log(mGenerationMomentum);
-                if (mN < 0.1) mN = 0.1;
+                if (mN < 0.1)
+                    mN = 0.1;
 
                 mJPrime = 1600 * pow(mGenerationMomentum, 0.279) * pow(cos(mGenerationTheta), mN) * (sin(mGenerationTheta) * sin(mTheta0) * cos(mGenerationPhi) + cos(mGenerationTheta) * cos(mTheta0)) * sin(mGenerationTheta);
-                if (mJPrime > 0 && mMaxJ[mGenMethod] * mRandAccRej < mJPrime) mAccepted = true;
+                if (mJPrime > 0 && mMaxJ[mGenMethod] * mRandAccRej < mJPrime)
+                    mAccepted = true;
             }
 
             mGenerationPosition[0] = mHSphereRadius * sin(mTheta0) * cos(mPhi0) + mHSphereCenterPosition[0];
@@ -1043,10 +1064,12 @@ public:
 
             mGenerationTheta = M_PI - mGenerationTheta;
             mGenerationPhi = mGenerationPhi + mPhi0;
-            if (mGenerationPhi >= 2 * M_PI) mGenerationPhi -= 2 * M_PI;
+            if (mGenerationPhi >= 2 * M_PI)
+                mGenerationPhi -= 2 * M_PI;
 
             mGenerationPhi += M_PI;
-            if (mGenerationPhi >= 2 * M_PI) mGenerationPhi -= 2 * M_PI;
+            if (mGenerationPhi >= 2 * M_PI)
+                mGenerationPhi -= 2 * M_PI;
         }
 
         // Generate the charge
@@ -1062,7 +1085,8 @@ public:
 
         std::cout << mMaxCustomJ[mGenMethod] << std::endl;
 
-        if (mMaxCustomJ[mGenMethod] < 0) ComputeMaximumCustomJ();
+        if (mMaxCustomJ[mGenMethod] < 0)
+            ComputeMaximumCustomJ();
 
         // Sky or cylinder generation
         if (mGenMethod == Sky || mGenMethod == Cylinder) {
@@ -1074,12 +1098,14 @@ public:
 
                 if (mGenMethod == Sky) {
                     mJPrime = mJ(mGenerationMomentum, mGenerationTheta) * cos(mGenerationTheta) * sin(mGenerationTheta);
-                    if (mMaxCustomJ[mGenMethod] * mRandAccRej < mJPrime) mAccepted = true;
+                    if (mMaxCustomJ[mGenMethod] * mRandAccRej < mJPrime)
+                        mAccepted = true;
                 }
 
                 if (mGenMethod == Cylinder) {
                     mJPrime = mJ(mGenerationMomentum, mGenerationTheta) * pow(sin(mGenerationTheta), 2) * cos(mGenerationPhi);
-                    if (mMaxCustomJ[mGenMethod] * mRandAccRej < mJPrime) mAccepted = true;
+                    if (mMaxCustomJ[mGenMethod] * mRandAccRej < mJPrime)
+                        mAccepted = true;
                 }
             }
             mGenerationTheta = M_PI - mGenerationTheta;
@@ -1095,13 +1121,16 @@ public:
                 while (!mAccepted) {
                     mRandAccRej = mRandom.GenerateRandomDouble();
                     mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
-                    if (mRandAccRej < fabs(cos(mGenerationPhi))) mAccepted = true;
+                    if (mRandAccRej < fabs(cos(mGenerationPhi)))
+                        mAccepted = true;
                 }
                 mGenerationPhi = mGenerationPhi + mPhi0;
-                if (mGenerationPhi >= 2. * M_PI) mGenerationPhi -= 2. * M_PI;
+                if (mGenerationPhi >= 2. * M_PI)
+                    mGenerationPhi -= 2. * M_PI;
 
                 // Check if the muon is inward
-                if (sin(mGenerationTheta) * cos(mGenerationPhi) * mGenerationPosition[0] + sin(mGenerationTheta) * sin(mGenerationPhi) * mGenerationPosition[1] > 0) Generate();
+                if (sin(mGenerationTheta) * cos(mGenerationPhi) * mGenerationPosition[0] + sin(mGenerationTheta) * sin(mGenerationPhi) * mGenerationPosition[1] > 0)
+                    Generate();
             }
         }
 
@@ -1117,7 +1146,8 @@ public:
                 mGenerationMomentum = mRandom.GenerateRandomDouble(mMinimumMomentum, mMaximumMomentum);
 
                 mJPrime = mJ(mGenerationMomentum, mGenerationTheta) * (sin(mTheta0) * sin(mGenerationTheta) * cos(mGenerationPhi) + cos(mTheta0) * cos(mGenerationTheta)) * sin(mGenerationTheta);
-                if (mMaxCustomJ[mGenMethod] * mRandAccRej < mJPrime) mAccepted = true;
+                if (mMaxCustomJ[mGenMethod] * mRandAccRej < mJPrime)
+                    mAccepted = true;
             }
 
             mGenerationPosition[0] = mHSphereRadius * sin(mTheta0) * cos(mPhi0) + mHSphereCenterPosition[0];
@@ -1126,10 +1156,12 @@ public:
 
             mGenerationTheta = M_PI - mGenerationTheta;
             mGenerationPhi = mGenerationPhi + mPhi0;
-            if (mGenerationPhi >= 2 * M_PI) mGenerationPhi -= 2 * M_PI;
+            if (mGenerationPhi >= 2 * M_PI)
+                mGenerationPhi -= 2 * M_PI;
 
             mGenerationPhi += M_PI;
-            if (mGenerationPhi >= 2 * M_PI) mGenerationPhi -= 2 * M_PI;
+            if (mGenerationPhi >= 2 * M_PI)
+                mGenerationPhi -= 2 * M_PI;
         }
 
         // Generate the charge
@@ -1152,7 +1184,8 @@ public:
         mWeights(backgrounds.size() + 1, 1.),
         mPID(backgrounds.size() + 1),
         mRd(std::random_device{}()) {
-        for (std::size_t i = 0; i < mLimits.size(); ++i) mLimits[i] = i;
+        for (std::size_t i = 0; i < mLimits.size(); ++i)
+            mLimits[i] = i;
         mDd = std::piecewise_constant_distribution<>(mLimits.begin(), mLimits.end(), mWeights.begin());
     };
 
@@ -1163,7 +1196,8 @@ public:
             EMLogger(EMLog::ERROR, "Expected " + std::to_string(mBckInstances.size()) + " weights, but " + std::to_string(weights.size()) + " were provided. Setting them to 1.", EMLog::EMMultiGen);
             std::fill(mWeights.begin(), mWeights.end(), 1);
         } else {
-            for (std::size_t i = 0; i < weights.size(); ++i) mWeights[i + 1] = weights[i];
+            for (std::size_t i = 0; i < weights.size(); ++i)
+                mWeights[i + 1] = weights[i];
         }
         mDd = std::piecewise_constant_distribution<>(mLimits.begin(), mLimits.end(), mWeights.begin());
     };
@@ -1175,7 +1209,8 @@ public:
             std::fill(mPID.begin(), mPID.end(), 0);
             return;
         }
-        for (std::size_t i = 0; i < values.size(); ++i) mPID[i + 1] = values[i];
+        for (std::size_t i = 0; i < values.size(); ++i)
+            mPID[i + 1] = values[i];
     };
 
     /// Get the generation position

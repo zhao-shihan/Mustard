@@ -79,7 +79,9 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
         }};
 
     // if none of the reduced masses is > fgTiny, return
-    if (fAllMassAreTiny) { return {weight, State()}; }
+    if (fAllMassAreTiny) {
+        return {weight, State()};
+    }
 
     // rescale all the momenta
     const auto [xi, xiConverged]{muc::find_root::zbrent(

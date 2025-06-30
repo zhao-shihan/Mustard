@@ -186,12 +186,14 @@ auto ExtendedDecayWithSpin::AtRestDoIt(const G4Track& aTrack, const G4Step& aSte
                 G4TransportationManager::GetTransportationManager();
             G4PropagatorInField* fFieldPropagator =
                 transportMgr->GetPropagatorInField();
-            if (fFieldPropagator) fieldMgr =
-                                      fFieldPropagator->GetCurrentFieldManager();
+            if (fFieldPropagator)
+                fieldMgr =
+                    fFieldPropagator->GetCurrentFieldManager();
         }
 
         const G4Field* field = nullptr;
-        if (fieldMgr != nullptr) field = fieldMgr->GetDetectorField();
+        if (fieldMgr != nullptr)
+            field = fieldMgr->GetDetectorField();
 
         if (field != nullptr) {
             G4double point[4];
@@ -205,8 +207,9 @@ auto ExtendedDecayWithSpin::AtRestDoIt(const G4Track& aTrack, const G4Step& aSte
             G4ThreeVector B(fieldValue[0], fieldValue[1], fieldValue[2]);
 
             // Call the spin precession only for non-zero mag. field
-            if (B.mag2() > 0.) parent_polarization =
-                                   internal::SpinPrecession(*this, aStep, B, fRemainderLifeTime); /* ++ */
+            if (B.mag2() > 0.)
+                parent_polarization =
+                    internal::SpinPrecession(*this, aStep, B, fRemainderLifeTime); /* ++ */
         }
     }
 

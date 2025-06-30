@@ -145,7 +145,8 @@ auto ExtendDecayIt<Decay>::DecayIt(const G4Track& aTrack, const G4Step&) -> G4VP
                    << ", --> ";
                 G4int ndaughters = dc->GetNumberOfDaughters();
                 for (G4int id = 0; id < ndaughters; ++id) {
-                    if (id > 0) ed << " + "; // seperator, except for first
+                    if (id > 0)
+                        ed << " + "; // seperator, except for first
                     ed << dc->GetDaughterName(id);
                 }
                 ed << G4endl;
@@ -173,7 +174,8 @@ auto ExtendDecayIt<Decay>::DecayIt(const G4Track& aTrack, const G4Step&) -> G4VP
 #endif
 #ifdef G4VERBOSE
             if (this->GetVerboseLevel() > 2) {
-                if (!products->IsChecked()) products->DumpInfo();
+                if (!products->IsChecked())
+                    products->DumpInfo();
             }
 #endif
         }
@@ -204,10 +206,12 @@ auto ExtendDecayIt<Decay>::DecayIt(const G4Track& aTrack, const G4Step&) -> G4VP
         finalGlobalTime += this->fRemainderLifeTime;
         finalLocalTime += this->fRemainderLifeTime;
         energyDeposit += aParticle->GetKineticEnergy();
-        if (isPreAssigned) products->Boost(ParentEnergy, ParentDirection);
+        if (isPreAssigned)
+            products->Boost(ParentEnergy, ParentDirection);
     } else {
         // PostStep case
-        if (!isExtDecayer) products->Boost(ParentEnergy, ParentDirection);
+        if (!isExtDecayer)
+            products->Boost(ParentEnergy, ParentDirection);
     }
     // set polarization for daughter particles
     this->DaughterPolarization(aTrack, products);

@@ -53,7 +53,9 @@ DescriptionWithCacheBase<>::Cached<T>::Cached(DescriptionWithCacheBase<>* descri
 
 template<typename T>
 DescriptionWithCacheBase<>::Cached<T>::operator const T&() const {
-    if (fUpToDate) [[likely]] { return fValue; }
+    if (fUpToDate) [[likely]] {
+        return fValue;
+    }
     fValue = fCalculateValue();
     fUpToDate = true;
     return fValue;

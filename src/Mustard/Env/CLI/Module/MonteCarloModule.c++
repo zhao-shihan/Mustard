@@ -37,7 +37,9 @@ MonteCarloModule::MonteCarloModule(argparse::ArgumentParser& argParser) :
 
 auto MonteCarloModule::SeedRandomIfFlagged() const -> bool {
     auto seed{ArgParser().present<long>("--seed")};
-    if (not seed.has_value()) { return false; }
+    if (not seed.has_value()) {
+        return false;
+    }
     const auto theSeed{*seed != 0 ? *seed :
                                     std::bit_cast<int>(std::random_device{}())};
     if (const auto clhepRandom{CLHEP::HepRandom::getTheEngine()};

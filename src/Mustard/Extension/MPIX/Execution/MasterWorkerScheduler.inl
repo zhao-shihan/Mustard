@@ -55,7 +55,9 @@ auto MasterWorkerScheduler<T>::Master::operator()() -> void {
     T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
     while (true) {
         const auto [result, recvRank]{fRecv.waitsome(mpl::duty_ratio::preset::active)};
-        if (result == mpl::test_result::no_active_requests) { break; }
+        if (result == mpl::test_result::no_active_requests) {
+            break;
+        }
         for (auto&& rank : recvRank) {
             fTaskIDSend[rank] = std::min(mainTaskID, fS->fTask.last);
             if (fTaskIDSend[rank] != fS->fTask.last) [[likely]] {

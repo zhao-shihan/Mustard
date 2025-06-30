@@ -99,7 +99,9 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     std::error_code cwdError;
     const auto exe{std::filesystem::path(argv[0]).filename().generic_string()};
     auto cwd{std::filesystem::current_path(cwdError).generic_string()};
-    if (cwdError) { cwd = "<Error getting current working directory>"; }
+    if (cwdError) {
+        cwd = "<Error getting current working directory>";
+    }
     using scsc = std::chrono::system_clock;
     Print(fmt::emphasis::bold,
           " ______  ___             _____              _________\n"

@@ -49,7 +49,9 @@ auto ConvertGeometryToGDMLText(const G4LogicalVolume* g4Geom) -> std::string {
     std::ostringstream tempText;
     {
         std::ifstream tempGDML{tempGDMLPath};
-        if (tempGDML.fail()) { Throw<std::runtime_error>("Error opening temp gdml file"); }
+        if (tempGDML.fail()) {
+            Throw<std::runtime_error>("Error opening temp gdml file");
+        }
         tempText << tempGDML.rdbuf();
     }
     std::error_code muteRemoveError;
@@ -61,7 +63,9 @@ auto ConvertGeometryToTMacro(const std::string& name, const std::filesystem::pat
     const auto tempMacroPath{CreateTemporaryFile(name, ".C")};
     {
         const auto tempMacroFile{std::fopen(tempMacroPath.generic_string().c_str(), "w")};
-        if (tempMacroFile == nullptr) { Throw<std::runtime_error>("Error opening temp macro file"); }
+        if (tempMacroFile == nullptr) {
+            Throw<std::runtime_error>("Error opening temp macro file");
+        }
         fmt::println(tempMacroFile, R"macro(
 #include <fstream>
 #include <iostream>
@@ -82,7 +86,9 @@ auto {0}() -> void {{
     auto macro{std::make_unique<TMacro>(name.c_str(), "Generate GDML file")};
     {
         const auto lines{macro->ReadFile(tempMacroPath.generic_string().c_str())};
-        if (lines == 0) { Throw<std::runtime_error>("Error opening temp macro file"); }
+        if (lines == 0) {
+            Throw<std::runtime_error>("Error opening temp macro file");
+        }
     }
     std::error_code muteRemoveError;
     std::filesystem::remove(tempMacroPath, muteRemoveError);

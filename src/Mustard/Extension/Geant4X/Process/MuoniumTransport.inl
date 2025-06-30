@@ -140,9 +140,13 @@ auto MuoniumTransport<ATarget>::ProposeRandomFlight(const G4Track& track) -> voi
         // check space-time limit
         timeUp = (flightTime >= timeLimit);
         insideVolume = fTarget->VolumeContain(position);
-        if (timeUp or not insideVolume) { break; }
+        if (timeUp or not insideVolume) {
+            break;
+        }
         // check whether the end point inside material
-        if (not fTarget->Contain(position, true)) { continue; }
+        if (not fTarget->Contain(position, true)) {
+            continue;
+        }
         // if inside material update its velocity
         // set a gauss vector of sigma=1
         direction = fStandardGaussian3D(fXoshiro256Plus);

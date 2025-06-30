@@ -50,7 +50,9 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const f
         if (auto&& src{trace.source};
             not src.filename.empty()) {
             text += fmt::format(" at {}:{}", src.filename, src.line);
-            if (src.col > 0) { text += fmt::format(":{}", src.col); }
+            if (src.col > 0) {
+                text += fmt::format(":{}", src.col);
+            }
             if (auto snippet{snippetFactory.get_snippet(src.filename, src.line, 1)};
                 not snippet.empty()) {
                 auto&& [line, content] = snippet.front();

@@ -24,18 +24,26 @@ namespace Mustard::Detector::Assembly {
 
 auto AssemblyBase::Get(std::type_index definition) const -> const Definition::DefinitionBase& {
     for (auto&& [topType, top] : fTop) {
-        if (topType == definition) { return *top; }
+        if (topType == definition) {
+            return *top;
+        }
         const auto descendant{top->FindDescendant(definition)};
-        if (descendant) { return *descendant; }
+        if (descendant) {
+            return *descendant;
+        }
     }
     Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
 }
 
 auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase& {
     for (auto&& [topType, top] : fTop) {
-        if (topType == definition) { return *top; }
+        if (topType == definition) {
+            return *top;
+        }
         const auto descendant{top->FindDescendant(definition)};
-        if (descendant) { return *descendant; }
+        if (descendant) {
+            return *descendant;
+        }
     }
     Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
 }
@@ -48,7 +56,9 @@ auto AssemblyBase::TopComplete() -> void {
     // check not mother-daughter
     for (auto&& [topType, pTop] : fTop) {
         const auto& top{*pTop};
-        if (topType == typeid(top)) { continue; }
+        if (topType == typeid(top)) {
+            continue;
+        }
         for (auto&& [anotherTop, _] : fTop) {
             if (top.FindDaughter(anotherTop)) {
                 Throw<std::logic_error>(fmt::format("{} is mother of {}",

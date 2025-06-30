@@ -80,7 +80,9 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4Dec
 
     PrintLn<'V'>("AsMuoniumDecayChannel::DecayIt\n"
                  "\tCreate decay products in rest frame.");
-    if (Env::VerboseLevelReach<'V'>()) { products->DumpInfo(); }
+    if (Env::VerboseLevelReach<'V'>()) {
+        products->DumpInfo();
+    }
 
     return products;
 }

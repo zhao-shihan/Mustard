@@ -97,14 +97,20 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
                 }
             }
             const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)};
-            if (asyncReader.Reading()) { batchData = asyncReader.Acquire(); }
+            if (asyncReader.Reading()) {
+                batchData = asyncReader.Acquire();
+            }
             asyncReader.Read(iFirst, iLast);
-            if (asyncProcess.valid()) { asyncProcess.get(); }
+            if (asyncProcess.valid()) {
+                asyncProcess.get();
+            }
             asyncProcess = std::async(std::launch::deferred, ProcessBatch);
         });
     batchData = asyncReader.Acquire();
     asyncProcess.get();
-    if (not asyncReader.Exhausted()) { asyncReader.Exhaust(); }
+    if (not asyncReader.Exhausted()) {
+        asyncReader.Exhaust();
+    }
 
     return nProcessed;
 }

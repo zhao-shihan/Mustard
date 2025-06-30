@@ -73,9 +73,13 @@ auto MuonNLODecayPhysics::ConstructProcess() -> void {
         [decayWithSpin = new ExtendedDecayWithSpin,
          processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* muon) {
             const auto manager{muon->GetProcessManager()};
-            if (manager == nullptr) { return; }
+            if (manager == nullptr) {
+                return;
+            }
             const auto decay{processTable->FindProcess("Decay", muon)};
-            if (decay) { manager->RemoveProcess(decay); }
+            if (decay) {
+                manager->RemoveProcess(decay);
+            }
             manager->AddProcess(decayWithSpin);
             // set ordering for PostStepDoIt and AtRestDoIt
             manager->SetProcessOrdering(decayWithSpin, idxPostStep);
