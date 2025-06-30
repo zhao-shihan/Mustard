@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Concept/NonMoveable.h++"
+#include "Mustard/Concept/NonCopyable.h++"
 
 #include <concepts>
 #include <type_traits>
@@ -40,7 +40,7 @@ concept IndirectlyWeakSingletonified =
     requires {
         requires std::is_base_of_v<internal::WeakSingletonBase, T>;
         requires not std::is_base_of_v<internal::SingletonBase, T>;
-        requires Concept::NonMoveable<T>;
+        requires Concept::NonCopyable<T>;
     };
 
 template<typename T>

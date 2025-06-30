@@ -21,7 +21,7 @@
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/Memory/Singleton.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "yaml-cpp/yaml.h"
@@ -42,7 +42,7 @@ template<typename... Ts>
 class DescriptionBase;
 
 template<>
-class DescriptionBase<> : public NonMoveableBase {
+class DescriptionBase<> : public NonCopyableBase {
 protected:
     DescriptionBase(std::string name);
     ~DescriptionBase() = default;

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/Memory/WeakSingletonified.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/utility"
@@ -39,7 +39,7 @@ namespace Mustard::Env::Memory::internal {
 
 /// @brief Implementation detail of Mustard::Env::Memory::WeakSingleton.
 /// Not API.
-class WeakSingletonPool final : public NonMoveableBase {
+class WeakSingletonPool final : public NonCopyableBase {
 public:
     WeakSingletonPool();
     ~WeakSingletonPool();

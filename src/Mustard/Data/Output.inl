@@ -21,7 +21,7 @@ namespace Mustard::Data {
 template<TupleModelizable... Ts>
 Output<Ts...>::Output(const std::string& name, const std::string& title,
                       bool enableTimedAutoSave, Second timedAutoSavePeriod) :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fEntry{},
     fTree{},
     fTimedAutoSaveEnabled{enableTimedAutoSave},

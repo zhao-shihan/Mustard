@@ -20,7 +20,7 @@
 
 #include "Mustard/Detector/Description/DescriptionBase.h++"
 #include "Mustard/Env/Memory/Singleton.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include <concepts>
 #include <functional>
@@ -44,7 +44,7 @@ protected:
     template<typename T>
     friend class Simple;
     template<typename T>
-    class Simple : public NonMoveableBase {
+    class Simple : public NonCopyableBase {
     public:
         Simple(const DescriptionWithCacheBase<>* description, const T& value);
         Simple(const DescriptionWithCacheBase<>* description, T&& value);
@@ -67,7 +67,7 @@ protected:
 
 private:
     friend class CacheBase;
-    class CacheBase : public NonMoveableBase {
+    class CacheBase : public NonCopyableBase {
     public:
         CacheBase(DescriptionWithCacheBase<>* description);
 

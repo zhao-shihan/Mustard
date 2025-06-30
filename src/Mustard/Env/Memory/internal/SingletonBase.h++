@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 namespace Mustard::Env::Memory::internal {
 
@@ -26,7 +26,7 @@ namespace Mustard::Env::Memory::internal {
 /// Not API.
 /// @details The direct base of Singleton<T>. This allow us to manage instances
 /// using polymorphism mechanism.
-class SingletonBase : public NonMoveableBase {
+class SingletonBase : public NonCopyableBase {
     friend class SingletonDeleter;
 
 protected:

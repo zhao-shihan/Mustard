@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include <memory>
 
@@ -34,7 +34,7 @@ class SingletonPool;
 
 namespace internal {
 
-class EnvBase : public NonMoveableBase {
+class EnvBase : public NonCopyableBase {
 protected:
     EnvBase();
     ~EnvBase();

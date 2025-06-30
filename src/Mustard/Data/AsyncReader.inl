@@ -20,7 +20,7 @@ namespace Mustard::Data {
 
 template<typename AData>
 AsyncReader<AData>::AsyncReader(gsl::index sentinel, std::function<void(ROOT::RDF::RNode)> ReadLoop, ROOT::RDF::RNode rdf) :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fData{},
     fFirst{},
     fLast{},

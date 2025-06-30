@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Concept/NonMoveable.h++"
+#include "Mustard/Concept/NonCopyable.h++"
 
 #include <concepts>
 #include <type_traits>
@@ -40,7 +40,7 @@ concept PassiveSingletonified =
         { T::Instance() } -> std::same_as<T&>;
         requires std::derived_from<T, PassiveSingleton<T>>;
         requires not std::is_base_of_v<internal::SingletonBase, T>;
-        requires Concept::NonMoveable<T>;
+        requires Concept::NonCopyable<T>;
     };
 
 } // namespace Mustard::Env::Memory

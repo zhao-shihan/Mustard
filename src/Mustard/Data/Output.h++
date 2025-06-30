@@ -21,7 +21,7 @@
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/BranchHelper.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include "TDirectory.h"
 #include "TLeaf.h"
@@ -48,7 +48,7 @@
 namespace Mustard::Data {
 
 template<TupleModelizable... Ts>
-class Output : public NonMoveableBase {
+class Output : public NonCopyableBase {
 public:
     using Model = TupleModel<Ts...>;
 

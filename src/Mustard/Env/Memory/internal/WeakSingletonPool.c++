@@ -30,7 +30,7 @@ bool WeakSingletonPool::fgInstantiated{};
 bool WeakSingletonPool::fgExpired{};
 
 WeakSingletonPool::WeakSingletonPool() :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fInstanceMap{} {
     if (not fgInstantiated) {
         fgInstance = this;

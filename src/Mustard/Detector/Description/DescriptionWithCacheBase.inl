@@ -20,19 +20,19 @@ namespace Mustard::Detector::Description {
 
 template<typename T>
 DescriptionWithCacheBase<>::Simple<T>::Simple(const DescriptionWithCacheBase<>* description, const T& value) :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fValue{value},
     fDescription{description} {}
 
 template<typename T>
 DescriptionWithCacheBase<>::Simple<T>::Simple(const DescriptionWithCacheBase<>* description, T&& value) :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fValue{std::move(value)},
     fDescription{description} {}
 
 template<typename T>
 DescriptionWithCacheBase<>::Simple<T>::Simple(const DescriptionWithCacheBase<>* description, auto&&... args) :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fValue{std::forward<decltype(args)>(args)...},
     fDescription{description} {}
 

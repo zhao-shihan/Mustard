@@ -21,7 +21,7 @@
 namespace Mustard::Detector::Description {
 
 DescriptionWithCacheBase<>::CacheBase::CacheBase(DescriptionWithCacheBase<>* description) :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fUpToDate{false} {
     description->fCache.emplace_back(this);
 }

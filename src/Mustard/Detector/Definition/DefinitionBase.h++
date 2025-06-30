@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4FieldManager.hh"
@@ -53,7 +53,7 @@ class G4VSensitiveDetector;
 
 namespace Mustard::Detector::Definition {
 
-class DefinitionBase : public NonMoveableBase {
+class DefinitionBase : public NonCopyableBase {
 public:
     virtual ~DefinitionBase() = default;
 

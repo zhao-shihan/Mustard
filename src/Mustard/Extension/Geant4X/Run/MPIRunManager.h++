@@ -20,7 +20,7 @@
 
 #include "Mustard/Extension/Geant4X/Run/MPIRunMessenger.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include "G4RunManager.hh"
 

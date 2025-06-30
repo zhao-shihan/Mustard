@@ -18,20 +18,21 @@
 
 #pragma once
 
-namespace Mustard::inline Utility {
+#include <type_traits>
 
-/// @brief Trivial derived class will Exactly comply with the constraints of
-/// Mustard::Concept::NonMoveable.
-class NonMoveableBase {
-protected:
-    constexpr NonMoveableBase() noexcept = default;
-    constexpr ~NonMoveableBase() noexcept = default;
+namespace Mustard::Concept {
 
-    constexpr NonMoveableBase(const NonMoveableBase&) noexcept = delete;
-    constexpr NonMoveableBase(NonMoveableBase&&) noexcept = delete;
+/// @brief Not moveable, implies non-copyable
+template<typename T>
+concept NonCopyable =
+    requires {
+        requires not std::is_constructible_v<T, const T>;
+        requires not std::is_convertible_v<const T, T>;
+        requires not std::is_constructible_v<T, T>;
+        requires not std::is_convertible_v<T, T>;
+        requires not std::is_assignable_v<T&, const T>;
+        requires not std::is_assignable_v<T&, T>;
+        requires not std::is_swappable_v<T>;
+    };
 
-    constexpr auto operator=(const NonMoveableBase&) noexcept -> NonMoveableBase& = delete;
-    constexpr auto operator=(NonMoveableBase&&) noexcept -> NonMoveableBase& = delete;
-};
-
-} // namespace Mustard::inline Utility
+} // namespace Mustard::Concept

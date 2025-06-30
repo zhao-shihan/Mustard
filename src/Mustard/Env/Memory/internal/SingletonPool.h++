@@ -20,7 +20,7 @@
 
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
 #include "Mustard/Env/Memory/Singletonified.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/utility"

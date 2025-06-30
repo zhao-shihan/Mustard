@@ -23,7 +23,7 @@
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/ReadHelper.h++"
 #include "Mustard/Extension/gslx/index_sequence.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "ROOT/RDataFrame.hxx"
@@ -58,7 +58,7 @@
 namespace Mustard::Data {
 
 template<typename AData>
-class AsyncReader : public NonMoveableBase {
+class AsyncReader : public NonCopyableBase {
 public:
     using DataType = AData;
 

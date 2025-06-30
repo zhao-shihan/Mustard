@@ -22,7 +22,7 @@
 namespace Mustard::Detector::Description {
 
 DescriptionBase<>::DescriptionBase(std::string name) :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fName{std::move(name)} {
     DescriptionIO::AddInstance(this);
 }

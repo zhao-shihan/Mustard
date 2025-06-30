@@ -211,7 +211,7 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
 } // namespace
 
 EnvBase::EnvBase() :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fWeakSingletonPool{},
     fSingletonPool{},
     fSingletonDeleter{} {
