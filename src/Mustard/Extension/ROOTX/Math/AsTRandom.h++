@@ -41,15 +41,15 @@ public:
 
     virtual ~AsTRandom() override = default;
 
-    auto Gaus(Double_t mu = 0, Double_t sigma = 1) -> Double_t override final { return fGaussian(fPRBG, {mu, sigma}); }
+    virtual auto Gaus(Double_t mu = 0, Double_t sigma = 1) -> Double_t override { return fGaussian(fPRBG, {mu, sigma}); }
 
-    auto SetSeed(ULong_t seed) -> void override final { fPRBG.Seed(seed); }
-    auto Rndm() -> Double_t override final { return Mustard::Math::Random::Uniform<Double_t>{}(fPRBG); }
-    auto RndmArray(Int_t n, Float_t* array) -> void override final;
-    auto RndmArray(Int_t n, Double_t* array) -> void override final;
+    virtual auto SetSeed(ULong_t seed) -> void override { fPRBG.Seed(seed); }
+    virtual auto Rndm() -> Double_t override { return Mustard::Math::Random::Uniform<Double_t>{}(fPRBG); }
+    virtual auto RndmArray(Int_t n, Float_t* array) -> void override;
+    virtual auto RndmArray(Int_t n, Double_t* array) -> void override;
 
 private:
-    auto GetSeed() const -> UInt_t override final;
+    virtual auto GetSeed() const -> UInt_t override;
 
 private:
     PRBG fPRBG;

@@ -45,18 +45,18 @@
 namespace Mustard::inline Extension::Geant4X::inline Process {
 
 template<TargetForMuoniumPhysics ATarget>
-class MuoniumTransport final : public NonMoveableBase,
-                               public G4VContinuousProcess {
+class MuoniumTransport : public NonMoveableBase,
+                         public G4VContinuousProcess {
 public:
     MuoniumTransport();
 
     auto ManipulateAllSteps(G4bool val) -> void { fManipulateAllSteps = val; }
 
-    auto IsApplicable(const G4ParticleDefinition&) -> G4bool override;
-    auto AlongStepDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
+    virtual auto IsApplicable(const G4ParticleDefinition&) -> G4bool override;
+    virtual auto AlongStepDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
 
 private:
-    auto GetContinuousStepLimit(const G4Track& track, G4double, G4double, G4double&) -> G4double override;
+    virtual auto GetContinuousStepLimit(const G4Track& track, G4double, G4double, G4double&) -> G4double override;
     auto ProposeRandomFlight(const G4Track& track) -> void;
 
 private:

@@ -42,18 +42,18 @@
 namespace Mustard::inline Extension::Geant4X::inline Process {
 
 template<TargetForMuoniumPhysics ATarget>
-class MuoniumFormation final : public NonMoveableBase,
-                               public G4VRestProcess {
+class MuoniumFormation : public NonMoveableBase,
+                         public G4VRestProcess {
 public:
     MuoniumFormation();
 
     auto ConversionProbability(G4double p) -> void { fConversionProbability = muc::clamp<"[]">(p, 0., 1.); }
 
-    auto IsApplicable(const G4ParticleDefinition&) -> G4bool override;
-    auto AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
+    virtual auto IsApplicable(const G4ParticleDefinition&) -> G4bool override;
+    virtual auto AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
 
 private:
-    auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> G4double override;
+    virtual auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> G4double override;
 
 private:
     G4double fConversionProbability;

@@ -33,13 +33,13 @@
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
 template<TargetForMuoniumPhysics ATarget>
-class MuoniumPhysics final : public NonMoveableBase,
-                             public G4VPhysicsConstructor {
+class MuoniumPhysics : public NonMoveableBase,
+                       public G4VPhysicsConstructor {
 public:
     MuoniumPhysics(G4int verbose);
 
-    auto ConstructParticle() -> void override;
-    auto ConstructProcess() -> void override;
+    virtual auto ConstructParticle() -> void override;
+    virtual auto ConstructProcess() -> void override;
 };
 
 } // namespace Mustard::inline Extension::Geant4X::inline Physics

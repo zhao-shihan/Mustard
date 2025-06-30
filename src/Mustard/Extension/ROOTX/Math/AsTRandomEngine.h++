@@ -37,7 +37,7 @@ public:
 
     virtual ~AsTRandomEngine() override = default;
 
-    auto Rndm() -> double override final { Mustard::Math::Random::Uniform<double>{}(fPRBG); }
+    auto Rndm() -> double override { Mustard::Math::Random::Uniform<double>{}(fPRBG); }
 
     auto operator()() { return Rndm(); }
     auto IntRndm() { return fPRBG(); }

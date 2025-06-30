@@ -99,7 +99,7 @@ private:
     auto TimedAutoSaveIfNecessary() -> std::size_t;
 
 private:
-    class OutputIterator final {
+    class OutputIterator {
     public:
         using difference_type = std::ptrdiff_t;
         using value_type = void;
