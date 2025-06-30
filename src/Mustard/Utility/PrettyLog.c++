@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
@@ -44,7 +43,7 @@ auto PrettyLogHead(std::string_view prefix, const std::source_location& location
                        location.line(),
                        location.column(),
                        location.function_name(),
-                       Env::MPIEnv::Available() ?
+                       mpl::environment::available() ?
                            fmt::format(" in MPI process {}", mpl::environment::comm_world().rank()) :
                            "");
 }

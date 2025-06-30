@@ -38,26 +38,26 @@ auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path
         Throw<std::invalid_argument>(fmt::format("Invalid file name '{}'", stem.c_str()));
     }
 
-    if (const auto& worldComm{mpl::environment::comm_world()};
-        worldComm.size() > 1) {
-        const auto& mpiEnv{Env::MPIEnv::Instance()};
-        // parent directory
-        auto parent{std::filesystem::path{path}.replace_extension()};
-        if (mpiEnv.OnCluster()) {
-            parent /= mpiEnv.LocalNode().name;
-        }
-        // create parent directory
-        const auto& intraNodeComm{mpiEnv.IntraNodeComm()};
-        if (intraNodeComm.rank() == 0) {
-            std::filesystem::create_directories(parent);
-        }
-        // wait for create_directories
-        intraNodeComm.barrier();
-        // construct full path
-        return parent / stem.concat(fmt::format("_mpi{}.", worldComm.rank())).replace_extension(path.extension());
-    } else {
+    const auto& worldComm{mpl::environment::comm_world()};
+    if (worldComm.size() == 1) {
         return path;
     }
+
+    const auto& mpiEnv{Env::MPIEnv::Instance()};
+    // parent directory
+    auto parent{std::filesystem::path{path}.replace_extension()};
+    if (mpiEnv.OnCluster()) {
+        parent /= mpiEnv.LocalNode().name;
+    }
+    // create parent directory
+    const auto& intraNodeComm{mpiEnv.IntraNodeComm()};
+    if (intraNodeComm.rank() == 0) {
+        std::filesystem::create_directories(parent);
+    }
+    // wait for create_directories
+    intraNodeComm.barrier();
+    // construct full path
+    return parent / stem.concat(fmt::format("_mpi{}.", worldComm.rank())).replace_extension(path.extension());
 }
 
 } // namespace Mustard::inline Extension::MPIX

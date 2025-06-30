@@ -98,80 +98,106 @@ auto VPrint(auto&&... args) -> void {
 
 template<char L, typename... Ts>
 auto MasterPrint(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    Print(std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        Print(std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    PrintLn(std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        PrintLn(std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    Print(ts, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        Print(ts, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    Print(f, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        Print(f, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    PrintLn(f, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        PrintLn(f, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    Print(f, ts, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        Print(f, ts, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    Print(os, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        Print(os, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    Print(os, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        Print(os, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+    }
 }
 
 template<char L>
 auto MasterVPrint(auto&&... args) -> void {
-    if (mpl::environment::comm_world().rank() != 0) { return; }
-    VPrint(std::forward<decltype(args)>(args)...);
+    if (not mpl::environment::available() or
+        mpl::environment::comm_world().rank() == 0) {
+        VPrint(std::forward<decltype(args)>(args)...);
+    }
 }
 
 } // namespace Mustard::inline Utility

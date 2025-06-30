@@ -19,10 +19,11 @@
 namespace Mustard::Data {
 
 namespace internal {
+namespace {
 
 template<std::integral T>
-auto MakeFlatRDFEventSplitPoint(ROOT::RDF::RNode rdf,
-                                std::string eventIDColumnName) -> std::pair<std::vector<T>, std::vector<gsl::index>> {
+auto MakeFlatRDFEventSplit(ROOT::RDF::RNode rdf,
+                           std::string eventIDColumnName) -> std::pair<std::vector<T>, std::vector<gsl::index>> {
     std::vector<T> eventIDList;
     std::vector<gsl::index> eventSplit;
 
@@ -46,20 +47,26 @@ auto MakeFlatRDFEventSplitPoint(ROOT::RDF::RNode rdf,
     return {std::move(eventIDList), std::move(eventSplit)};
 }
 
+} // namespace
 } // namespace internal
 
 template<std::integral T>
 auto RDFEventSplit(ROOT::RDF::RNode rdf,
                    std::string eventIDColumnName) -> std::vector<gsl::index> {
-    const auto& worldComm{mpl::environment::comm_world()};
-    auto eventSplit{worldComm.rank() == 0 ?
-                        internal::MakeFlatRDFEventSplitPoint<T>(std::move(rdf), std::move(eventIDColumnName)).second :
-                        std::vector<gsl::index>{}};
-    auto eventSplitSize{eventSplit.size()};
-    worldComm.bcast(0, eventSplitSize);
-    eventSplit.resize(eventSplitSize);
-    worldComm.bcast(0, eventSplit.data(), mpl::vector_layout<gsl::index>{eventSplit.size()});
-    return eventSplit;
+    const auto MakeFlatRDFEventSplit{[&] {
+        return internal::MakeFlatRDFEventSplit<T>(std::move(rdf), std::move(eventIDColumnName)).second;
+    }};
+    if (mpl::environment::available()) {
+        const auto& worldComm{mpl::environment::comm_world()};
+        auto eventSplit{worldComm.rank() == 0 ? MakeFlatRDFEventSplit() : std::vector<gsl::index>{}};
+        auto eventSplitSize{eventSplit.size()};
+        worldComm.bcast(0, eventSplitSize);
+        eventSplit.resize(eventSplitSize);
+        worldComm.bcast(0, eventSplit.data(), mpl::vector_layout<gsl::index>{eventSplit.size()});
+        return eventSplit;
+    } else {
+        return MakeFlatRDFEventSplit();
+    }
 }
 
 template<std::integral T, std::size_t N>
@@ -76,26 +83,34 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
     constexpr auto nRDF{static_cast<gsl::index>(N)};
     std::array<std::pair<std::vector<T>, std::vector<gsl::index>>, N> flatES;
     // Build all RDF event split
-    const auto& worldComm{mpl::environment::comm_world()};
-    for (gsl::index i{}; i < nRDF; ++i) {
-        if (worldComm.rank() == i % worldComm.size()) {
-            flatES[i] = internal::MakeFlatRDFEventSplitPoint<T>(
-                std::move(rdf[i]), eventIDColumnName[i]);
+    const auto MakeFlatRDFEventSplit{[&](gsl::index i) {
+        return internal::MakeFlatRDFEventSplit<T>(std::move(rdf[i]), eventIDColumnName[i]);
+    }};
+    if (mpl::environment::available()) {
+        const auto& worldComm{mpl::environment::comm_world()};
+        for (gsl::index i{}; i < nRDF; ++i) {
+            if (worldComm.rank() == i % worldComm.size()) {
+                flatES[i] = MakeFlatRDFEventSplit(i);
+            }
+        }
+        // Broadcast to all processes
+        mpl::irequest_pool bcastFlatES;
+        for (gsl::index i{}; i < nRDF; ++i) {
+            auto& [eventID, es]{flatES[i]};
+            const auto rootRank{i % worldComm.size()};
+            auto esSize{es.size()};
+            worldComm.bcast(rootRank, esSize);
+            eventID.resize(esSize - 1);
+            es.resize(esSize);
+            bcastFlatES.push(worldComm.ibcast(rootRank, eventID.data(), mpl::vector_layout<T>{eventID.size()}));
+            bcastFlatES.push(worldComm.ibcast(rootRank, es.data(), mpl::vector_layout<gsl::index>{es.size()}));
+        }
+        bcastFlatES.waitall();
+    } else {
+        for (gsl::index i{}; i < nRDF; ++i) {
+            flatES[i] = MakeFlatRDFEventSplit(i);
         }
     }
-    // Broadcast to all processes
-    mpl::irequest_pool bcastFlatES;
-    for (gsl::index i{}; i < nRDF; ++i) {
-        auto& [eventID, es]{flatES[i]};
-        const auto rootRank{i % worldComm.size()};
-        auto esSize{es.size()};
-        worldComm.bcast(rootRank, esSize);
-        eventID.resize(esSize - 1);
-        es.resize(esSize);
-        bcastFlatES.push(worldComm.ibcast(rootRank, eventID.data(), mpl::vector_layout<T>{eventID.size()}));
-        bcastFlatES.push(worldComm.ibcast(rootRank, es.data(), mpl::vector_layout<gsl::index>{es.size()}));
-    }
-    bcastFlatES.waitall();
 
     std::array<muc::flat_hash_map<T, RDFEntryRange>, N> eventMap;
     for (gsl::index iRDF{}; iRDF < nRDF; ++iRDF) {

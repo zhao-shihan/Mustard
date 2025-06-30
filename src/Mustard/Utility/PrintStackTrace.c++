@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Utility/Print.h++"
 #include "Mustard/Utility/PrintStackTrace.h++"
 
@@ -37,7 +36,7 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const f
     backward::TraceResolver resolver;
     resolver.load_stacktrace(stack);
 
-    const auto lineHeader{Env::MPIEnv::Available() ?
+    const auto lineHeader{mpl::environment::available() ?
                               fmt::format("MPI{}> ", mpl::environment::comm_world().rank()) :
                               ""};
     auto text{lineHeader + "Stack trace (most recent call last):\n"};
