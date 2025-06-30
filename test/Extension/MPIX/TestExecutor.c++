@@ -1,9 +1,8 @@
 #include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Extension/MPIX/Execution/ClusterAwareMasterWorkerScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Executor.h++"
-#include "Mustard/Extension/MPIX/Execution/SharedMemoryScheduler.h++"
 #include "Mustard/Utility/Print.h++"
 
-#include <memory>
 #include <string>
 #include <thread>
 
@@ -13,7 +12,7 @@ using namespace std::chrono_literals;
 auto main(int argc, char* argv[]) -> int {
     Mustard::Env::MPIEnv env{argc, argv, {}};
 
-    MPIX::Executor<unsigned long long> executor{std::make_unique<MPIX::SharedMemoryScheduler<unsigned long long>>()};
+    MPIX::Executor<unsigned long long> executor;
 
     const auto n{std::stoull(argv[1])};
     const auto& worldComm{mpl::environment::comm_world()};

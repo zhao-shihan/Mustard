@@ -19,8 +19,13 @@
 #pragma once
 
 #include "Mustard/Concept/MPIPredefined.h++"
+#include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Extension/MPIX/Execution/ClusterAwareMasterWorkerScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/MasterWorkerScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
+#include "Mustard/Extension/MPIX/Execution/SequentialScheduler.h++"
+#include "Mustard/Extension/MPIX/Execution/SharedMemoryScheduler.h++"
+#include "Mustard/Extension/MPIX/Execution/StaticScheduler.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
@@ -30,10 +35,13 @@
 #include "muc/numeric"
 #include "muc/time"
 
+#include "envparse/parse.h++"
+
 #include "gsl/gsl"
 
 #include "fmt/chrono.h"
 #include "fmt/format.h"
+#include "fmt/std.h"
 
 #include <algorithm>
 #include <chrono>
@@ -41,18 +49,17 @@
 #include <concepts>
 #include <cstdio>
 #include <functional>
+#include <map>
 #include <memory>
 #include <numeric>
 #include <optional>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <utility>
 
 namespace Mustard::inline Extension::MPIX::inline Execution {
-
-template<template<typename> typename>
-struct ScheduleBy {};
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
@@ -61,16 +68,13 @@ public:
     using Index = T;
 
 public:
-    template<template<typename> typename S = MasterWorkerScheduler>
-        requires std::derived_from<S<T>, Scheduler<T>>
-    Executor(ScheduleBy<S> = {});
-    template<template<typename> typename S = MasterWorkerScheduler>
-        requires std::derived_from<S<T>, Scheduler<T>>
-    Executor(std::string executionName, std::string taskName, ScheduleBy<S> = {});
+    Executor();
+    Executor(std::string executionName, std::string taskName);
+    Executor(std::unique_ptr<Scheduler<T>> scheduler);
+    Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
-    template<template<typename> typename AScheduler>
-        requires std::derived_from<AScheduler<T>, Scheduler<T>>
-    auto SwitchScheduler() -> void;
+    auto SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void;
+    auto ResetScheduler() -> void { SwitchScheduler(DefaultScheduler()); }
 
     auto PrintProgress(bool a) -> void { fPrintProgress = a; }
     auto PrintProgressModulo(long long mod) -> void { fPrintProgressModulo = mod; }
@@ -94,6 +98,7 @@ private:
     auto PostTaskReport(T iEnded) const -> void;
     auto PostLoopReport() const -> void;
 
+    static auto DefaultScheduler() -> std::unique_ptr<Scheduler<T>>;
     static auto SToDHMS(double s) -> std::string;
 
 private:

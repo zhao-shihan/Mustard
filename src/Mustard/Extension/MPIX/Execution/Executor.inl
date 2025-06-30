@@ -18,21 +18,25 @@
 
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
-using std::chrono_literals::operator""ms;
+template<std::integral T>
+    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+Executor<T>::Executor() :
+    Executor{DefaultScheduler()} {}
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-template<template<typename> typename S>
-    requires std::derived_from<S<T>, Scheduler<T>>
-Executor<T>::Executor(ScheduleBy<S>) :
-    Executor{"Execution", "Task", ScheduleBy<S>{}} {}
+Executor<T>::Executor(std::string executionName, std::string taskName) :
+    Executor{std::move(executionName), std::move(taskName), DefaultScheduler()} {}
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-template<template<typename> typename S>
-    requires std::derived_from<S<T>, Scheduler<T>>
-Executor<T>::Executor(std::string executionName, std::string taskName, ScheduleBy<S>) :
-    fScheduler{std::make_unique_for_overwrite<S<T>>()},
+Executor<T>::Executor(std::unique_ptr<Scheduler<T>> scheduler) :
+    Executor{"Execution", "Task", std::move(scheduler)} {}
+
+template<std::integral T>
+    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+Executor<T>::Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
+    fScheduler{std::move(scheduler)},
     fExecuting{},
     fPrintProgress{true},
     fPrintProgressModulo{},
@@ -47,14 +51,12 @@ Executor<T>::Executor(std::string executionName, std::string taskName, ScheduleB
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-template<template<typename> typename AScheduler>
-    requires std::derived_from<AScheduler<T>, Scheduler<T>>
-auto Executor<T>::SwitchScheduler() -> void {
+auto Executor<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void {
     if (fExecuting) {
         Throw<std::logic_error>("Try switching scheduler during executing");
     }
     auto task{std::move(fScheduler->fTask)};
-    fScheduler = std::make_unique_for_overwrite<AScheduler<T>>();
+    fScheduler = std::move(scheduler);
     fScheduler->fTask = std::move(task);
 }
 
@@ -213,6 +215,50 @@ auto Executor<T>::PostLoopReport() const -> void {
           fmt::format("  Start time: {:%FT%T%z}", muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime))),
           fmt::format("   Wall time: {:.3f} seconds{}", maxWallTime, maxWallTime <= 60 ? "" : " (" + SToDHMS(maxWallTime) + ')'),
           fmt::format("    CPU time: {:.3f} seconds{}", totalCpuTime, totalCpuTime <= 60 ? "" : " (" + SToDHMS(totalCpuTime) + ')'));
+}
+
+template<std::integral T>
+    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+auto Executor<T>::DefaultScheduler() -> std::unique_ptr<Scheduler<T>> {
+    static const std::map<std::string_view, std::function<auto()->std::unique_ptr<Scheduler<T>>>> scheduler{
+        {"clmw", [] { return std::make_unique<ClusterAwareMasterWorkerScheduler<T>>(); }},
+        {"mw",   [] { return std::make_unique<MasterWorkerScheduler<T>>(); }            },
+        {"seq",  [] { return std::make_unique<SequentialScheduler<T>>(); }              },
+        {"shm",  [] { return std::make_unique<SharedMemoryScheduler<T>>(); }            },
+        {"stat", [] { return std::make_unique<StaticScheduler<T>>(); }                  }
+    };
+
+    if (const auto envScheduler{envparse::parse<envparse::not_set_option::left_blank>("${MUSTARD_EXECUTION_SCHEDULER}")};
+        not envScheduler.empty()) {
+        try {
+            return scheduler.at(envScheduler)();
+        } catch (const std::out_of_range&) {
+            std::vector<std::string_view> available(scheduler.size());
+            std::ranges::transform(scheduler, available.begin(), [](auto&& s) { return s.first; });
+            Throw<std::out_of_range>(fmt::format("Scheduler '{}' not found, available are {}", envScheduler, available));
+        }
+    }
+
+    if (not mpl::environment::available()) {
+        return scheduler.at("seq")();
+    }
+    const auto& worldComm{mpl::environment::comm_world()};
+    if (worldComm.size() == 1) {
+        return scheduler.at("seq")();
+    }
+    const auto& mpiEnv{Env::MPIEnv::Instance()};
+    if (mpiEnv.ClusterSize() == 1) {
+        return scheduler.at("shm")();
+    }
+    if (mpl::environment::threading_mode() != mpl::threading_modes::multiple) {
+        MasterPrintWarning("MPI library does not support multithreading, "
+                           "fallback to static scheduler. No load balancing support");
+        return scheduler.at("stat")();
+    }
+    if (worldComm.size() <= 128) {
+        return scheduler.at("mw")();
+    }
+    return scheduler.at("clmw")();
 }
 
 template<std::integral T>

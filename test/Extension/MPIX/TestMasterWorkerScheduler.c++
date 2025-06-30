@@ -3,6 +3,7 @@
 #include "Mustard/Extension/MPIX/Execution/MasterWorkerScheduler.h++"
 #include "Mustard/Utility/Print.h++"
 
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -12,7 +13,7 @@ using namespace std::chrono_literals;
 auto main(int argc, char* argv[]) -> int {
     Mustard::Env::MPIEnv env{argc, argv, {}};
 
-    MPIX::Executor<unsigned long long> executor{MPIX::ScheduleBy<MPIX::MasterWorkerScheduler>{}};
+    MPIX::Executor<unsigned long long> executor{std::make_unique<MPIX::MasterWorkerScheduler<unsigned long long>>()};
 
     const auto n{std::stoull(argv[1])};
     const auto& worldComm{mpl::environment::comm_world()};
