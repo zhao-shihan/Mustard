@@ -59,7 +59,7 @@ auto PrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto Print(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+auto Print(fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -88,7 +88,7 @@ auto PrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto Print(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+auto Print(std::FILE* f, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -117,7 +117,7 @@ auto PrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> v
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto Print(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+auto Print(std::ostream& os, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -146,7 +146,7 @@ auto PrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) ->
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto Print(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
+auto Print(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -184,7 +184,7 @@ auto MasterPrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto MasterPrint(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+auto MasterPrint(fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled master process print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -213,7 +213,7 @@ auto MasterPrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) ->
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto MasterPrint(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+auto MasterPrint(std::FILE* f, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled master process print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -242,7 +242,7 @@ auto MasterPrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto MasterPrint(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
+auto MasterPrint(std::ostream& os, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled master process print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -271,7 +271,7 @@ auto MasterPrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... ar
 /// @param fmt Same as `fmt::print`
 /// @param ...args Same as `fmt::print`
 template<char L = 'E', typename... Ts>
-auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
+auto MasterPrint(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void;
 
 /// @brief Verbose level controlled master process print function.
 /// @tparam L Verbose level threshold. Available values are:

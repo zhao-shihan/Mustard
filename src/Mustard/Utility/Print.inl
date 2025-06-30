@@ -35,7 +35,7 @@ auto PrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
 }
 
 template<char L, typename... Ts>
-auto Print(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+auto Print(fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) {
         return;
     }
@@ -59,7 +59,7 @@ auto PrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void 
 }
 
 template<char L, typename... Ts>
-auto Print(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+auto Print(std::FILE* f, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) {
         return;
     }
@@ -83,7 +83,7 @@ auto PrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> v
 }
 
 template<char L, typename... Ts>
-auto Print(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+auto Print(std::ostream& os, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) {
         return;
     }
@@ -107,7 +107,7 @@ auto PrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) ->
 }
 
 template<char L, typename... Ts>
-auto Print(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
+auto Print(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) {
         return;
     }
@@ -139,7 +139,7 @@ auto MasterPrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
 }
 
 template<char L, typename... Ts>
-auto MasterPrint(const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+auto MasterPrint(fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not mpl::environment::available() or
         mpl::environment::comm_world().rank() == 0) {
         Print(ts, std::move(fmt), std::forward<Ts>(args)...);
@@ -163,7 +163,7 @@ auto MasterPrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) ->
 }
 
 template<char L, typename... Ts>
-auto MasterPrint(std::FILE* f, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+auto MasterPrint(std::FILE* f, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not mpl::environment::available() or
         mpl::environment::comm_world().rank() == 0) {
         Print(f, ts, std::move(fmt), std::forward<Ts>(args)...);
@@ -187,7 +187,7 @@ auto MasterPrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args
 }
 
 template<char L, typename... Ts>
-auto MasterPrint(std::ostream& os, const fmt::text_style& ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
+auto MasterPrint(std::ostream& os, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not mpl::environment::available() or
         mpl::environment::comm_world().rank() == 0) {
         Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
@@ -211,7 +211,7 @@ auto MasterPrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... ar
 }
 
 template<char L, typename... Ts>
-auto MasterPrint(std::wostream& os, const fmt::text_style& ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
+auto MasterPrint(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
     if (not mpl::environment::available() or
         mpl::environment::comm_world().rank() == 0) {
         Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
