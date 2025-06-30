@@ -26,7 +26,6 @@
 #include "Mustard/Math/Random/Distribution/Gaussian3DDiagnoal.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "G4Material.hh"
@@ -45,8 +44,7 @@
 namespace Mustard::inline Extension::Geant4X::inline Process {
 
 template<TargetForMuoniumPhysics ATarget>
-class MuoniumTransport : public NonMoveableBase,
-                         public G4VContinuousProcess {
+class MuoniumTransport : public G4VContinuousProcess {
 public:
     MuoniumTransport();
 

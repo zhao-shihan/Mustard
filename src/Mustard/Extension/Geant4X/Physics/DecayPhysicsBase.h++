@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
-
 #include "G4VPhysicsConstructor.hh"
 
 #include "gsl/gsl"
@@ -30,8 +28,7 @@ class G4String;
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-class DecayPhysicsBase : public NonMoveableBase,
-                         public G4VPhysicsConstructor {
+class DecayPhysicsBase : public G4VPhysicsConstructor {
 public:
     using G4VPhysicsConstructor::G4VPhysicsConstructor;
 

@@ -34,7 +34,6 @@
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
 PionKaonDecayMakeSpinPhysics::PionKaonDecayMakeSpinPhysics(G4int verbose) :
-    NonMoveableBase{},
     G4VPhysicsConstructor{"PionKaonDecayMakeSpinPhysics"} {
     verboseLevel = verbose;
 }

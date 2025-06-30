@@ -23,7 +23,6 @@
 #include "Mustard/Extension/Geant4X/Physics/TargetForMuoniumPhysics.h++"
 #include "Mustard/Extension/Geant4X/Process/MuoniumFormation.h++"
 #include "Mustard/Extension/Geant4X/Process/MuoniumTransport.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
 
 #include "G4EmBuilder.hh"
 #include "G4MuonPlus.hh"
@@ -33,8 +32,7 @@
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
 template<TargetForMuoniumPhysics ATarget>
-class MuoniumPhysics : public NonMoveableBase,
-                       public G4VPhysicsConstructor {
+class MuoniumPhysics : public G4VPhysicsConstructor {
 public:
     MuoniumPhysics(G4int verbose);
 

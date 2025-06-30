@@ -20,7 +20,6 @@ namespace Mustard::inline Extension::Geant4X::inline Process {
 
 template<TargetForMuoniumPhysics ATarget>
 MuoniumFormation<ATarget>::MuoniumFormation() :
-    NonMoveableBase{},
     G4VRestProcess{"MuoniumFormation", fUserDefined},
     fConversionProbability{0},
     fParticleChange{},

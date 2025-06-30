@@ -18,13 +18,11 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
-
 #include "argparse/argparse.hpp"
 
 namespace Mustard::Env::CLI::inline Module {
 
-class ModuleBase : public NonMoveableBase {
+class ModuleBase {
 protected:
     ModuleBase(argparse::ArgumentParser& argParser);
     virtual ~ModuleBase() = default;

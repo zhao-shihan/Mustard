@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpl/mpl.hpp"
@@ -40,7 +39,8 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 template<std::integral T>
 class MasterWorkerScheduler : public Scheduler<T> {
 private:
-    class Master : public NonMoveableBase {
+    friend class Master;
+    class Master {
     public:
         Master(MasterWorkerScheduler<T>* s);
 
@@ -54,7 +54,6 @@ private:
         std::vector<T> fTaskIDSend;
         mpl::prequest_pool fSend;
     };
-    friend class Master;
 
 public:
     MasterWorkerScheduler();

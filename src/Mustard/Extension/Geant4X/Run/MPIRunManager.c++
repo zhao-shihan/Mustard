@@ -47,7 +47,6 @@ FlipG4cout::FlipG4cout() {
 } // namespace internal
 
 MPIRunManager::MPIRunManager() :
-    NonMoveableBase{},
     internal::PreG4RunManagerInitFlipG4cout{},
     G4RunManager{},
     internal::PostG4RunManagerInitFlipG4cout{},

@@ -44,8 +44,7 @@ class PostG4RunManagerInitFlipG4cout : private FlipG4cout {};
 
 } // namespace internal
 
-class MPIRunManager : public NonMoveableBase,
-                      private internal::PreG4RunManagerInitFlipG4cout,
+class MPIRunManager : private internal::PreG4RunManagerInitFlipG4cout,
                       public G4RunManager,
                       private internal::PostG4RunManagerInitFlipG4cout {
 public:

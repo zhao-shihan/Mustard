@@ -18,14 +18,11 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
-
 #include "G4VPhysicsConstructor.hh"
 
 namespace Mustard::inline Extension::Geant4X::inline Physics {
 
-class PionKaonDecayMakeSpinPhysics : public NonMoveableBase,
-                                     public G4VPhysicsConstructor {
+class PionKaonDecayMakeSpinPhysics : public G4VPhysicsConstructor {
 public:
     PionKaonDecayMakeSpinPhysics(G4int verbose);
 

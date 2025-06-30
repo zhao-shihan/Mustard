@@ -20,7 +20,6 @@
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpl/mpl.hpp"
@@ -47,7 +46,7 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 template<std::integral T>
 class ClusterAwareMasterWorkerScheduler : public Scheduler<T> {
 private:
-    class MasterBase : public NonMoveableBase {
+    class MasterBase {
     protected:
         MasterBase(ClusterAwareMasterWorkerScheduler<T>* s);
         ~MasterBase() = default;
@@ -56,6 +55,7 @@ private:
         ClusterAwareMasterWorkerScheduler<T>* fS;
     };
 
+    friend class ClusterMaster;
     class ClusterMaster : public MasterBase {
     public:
         ClusterMaster(ClusterAwareMasterWorkerScheduler<T>* s);
@@ -69,8 +69,8 @@ private:
         std::vector<T> fTaskIDSendToNM;
         mpl::prequest_pool fSendToNM;
     };
-    friend class ClusterMaster;
 
+    friend class NodeMaster;
     class NodeMaster : public MasterBase {
     public:
         NodeMaster(ClusterAwareMasterWorkerScheduler<T>* s);
@@ -92,7 +92,6 @@ private:
         std::vector<T> fTaskIDSendToW;
         mpl::prequest_pool fSendToW;
     };
-    friend class NodeMaster;
 
 public:
     ClusterAwareMasterWorkerScheduler();

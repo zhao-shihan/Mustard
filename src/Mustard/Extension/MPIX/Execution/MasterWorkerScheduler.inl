@@ -20,7 +20,6 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
 MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
-    NonMoveableBase{},
     fS{s},
     fSemaphoreRecv{},
     fRecv{},

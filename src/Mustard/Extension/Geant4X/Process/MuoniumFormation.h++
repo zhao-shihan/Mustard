@@ -23,7 +23,6 @@
 #include "Mustard/Extension/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
 #include "Mustard/Extension/Geant4X/Physics/TargetForMuoniumPhysics.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
@@ -42,8 +41,7 @@
 namespace Mustard::inline Extension::Geant4X::inline Process {
 
 template<TargetForMuoniumPhysics ATarget>
-class MuoniumFormation : public NonMoveableBase,
-                         public G4VRestProcess {
+class MuoniumFormation : public G4VRestProcess {
 public:
     MuoniumFormation();
 

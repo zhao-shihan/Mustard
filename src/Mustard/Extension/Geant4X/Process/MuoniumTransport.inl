@@ -22,7 +22,6 @@ using namespace LiteralUnit::Length;
 
 template<TargetForMuoniumPhysics ATarget>
 MuoniumTransport<ATarget>::MuoniumTransport() :
-    NonMoveableBase{},
     G4VContinuousProcess{"MuoniumTransport", fUserDefined},
     fTarget{&ATarget::Instance()},
     fManipulateAllSteps{false},

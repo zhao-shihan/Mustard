@@ -20,7 +20,6 @@ namespace Mustard::inline Extension::Geant4X::inline Physics {
 
 template<TargetForMuoniumPhysics ATarget>
 MuoniumPhysics<ATarget>::MuoniumPhysics(G4int verbose) :
-    NonMoveableBase{},
     G4VPhysicsConstructor{"MuoniumPhysics"} {
     verboseLevel = verbose;
 }
