@@ -25,21 +25,6 @@ MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
     fRecv{},
     fTaskIDSend{},
     fSend{} {
-    // Check MPI thread support
-    switch (mplr::query_thread()) {
-    case mplr::threading_mode::single:
-        Throw<std::runtime_error>("The MPI library provides 'single' thread support, "
-                                  "but master-worker scheduler requires 'multiple'");
-    case mplr::threading_mode::funneled:
-        Throw<std::runtime_error>("The MPI library provides 'funneled' thread support, "
-                                  "but master-worker scheduler requires 'multiple'");
-    case mplr::threading_mode::serialized:
-        Throw<std::runtime_error>("The MPI library provides 'serialized' thread support, "
-                                  "but master-worker scheduler requires 'multiple'");
-    case mplr::threading_mode::multiple:
-        break;
-    }
-    // Initialize communication requests
     const auto commSize{fS->fComm.size()};
     for (int src{}; src < commSize; ++src) {
         fRecv.push(fS->fComm.recv_init(fSemaphoreRecv, src));

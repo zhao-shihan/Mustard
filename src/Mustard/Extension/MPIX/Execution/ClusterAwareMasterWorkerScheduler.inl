@@ -19,26 +19,8 @@
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
-ClusterAwareMasterWorkerScheduler<T>::MasterBase::MasterBase(ClusterAwareMasterWorkerScheduler<T>* s) :
-    fS{s} {
-    switch (mplr::query_thread()) {
-    case mplr::threading_mode::single:
-        Throw<std::runtime_error>("The MPI library provides 'single' thread support, "
-                                  "but cluster-aware-master-worker scheduler requires 'multiple'");
-    case mplr::threading_mode::funneled:
-        Throw<std::runtime_error>("The MPI library provides 'funneled' thread support, "
-                                  "but cluster-aware-master-worker scheduler requires 'multiple'");
-    case mplr::threading_mode::serialized:
-        Throw<std::runtime_error>("The MPI library provides 'serialized' thread support, "
-                                  "but cluster-aware-master-worker scheduler requires 'multiple'");
-    case mplr::threading_mode::multiple:
-        break;
-    }
-}
-
-template<std::integral T>
 ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::ClusterMaster(ClusterAwareMasterWorkerScheduler<T>* s) :
-    MasterBase{s},
+    fS{s},
     fSemaphoreRecvFromNM{},
     fRecvFromNM{},
     fTaskIDSendToNM{},
@@ -56,21 +38,21 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::ClusterMaster(ClusterAwareM
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::StartAll() -> void {
     fRecvFromNM.startall();
-    this->fS->fInterNodeComm.barrier();
+    fS->fInterNodeComm.barrier();
 }
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
-    auto interNodeTaskID{muc::ranges::reduce(this->fS->fInterNodeBatchSize, this->fS->fTask.first)};
+    auto interNodeTaskID{muc::ranges::reduce(fS->fInterNodeBatchSize, fS->fTask.first)};
     while (true) {
         const auto [result, recvRank]{fRecvFromNM.waitsome(mplr::duty_ratio::preset::active)};
         if (result == mplr::test_result::no_active_requests) {
             break;
         }
         for (auto&& rank : recvRank) {
-            fTaskIDSendToNM[rank] = std::min(interNodeTaskID, this->fS->fTask.last);
-            if (fTaskIDSendToNM[rank] != this->fS->fTask.last) [[likely]] {
-                interNodeTaskID += this->fS->fInterNodeBatchSize[rank];
+            fTaskIDSendToNM[rank] = std::min(interNodeTaskID, fS->fTask.last);
+            if (fTaskIDSendToNM[rank] != fS->fTask.last) [[likely]] {
+                interNodeTaskID += fS->fInterNodeBatchSize[rank];
                 fRecvFromNM.start(rank);
             }
             fSendToNM.wait(rank);
@@ -82,7 +64,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
 
 template<std::integral T>
 ClusterAwareMasterWorkerScheduler<T>::NodeMaster::NodeMaster(ClusterAwareMasterWorkerScheduler<T>* s) :
-    MasterBase{s},
+    fS{s},
     fClusterMaster{s->fInterNodeComm.rank() == 0 ? std::make_unique<ClusterMaster>(s) : nullptr},
     fClusterMasterThread{},
     fSemaphoreSendToCM{},
@@ -117,13 +99,13 @@ template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     const auto intraNodeFirstTaskID{std::reduce(
-        this->fS->fInterNodeBatchSize.cbegin(), this->fS->fInterNodeBatchSize.cbegin() + mpiEnv.LocalNodeID(),
-        this->fS->fTask.first)};
-    auto intraNodeTaskID{intraNodeFirstTaskID + mpiEnv.LocalNode().size * this->fS->fIntraNodeBatchSize};
-    auto intraNodeTaskEnd{intraNodeFirstTaskID + this->fS->fInterNodeBatchSize[mpiEnv.LocalNodeID()]};
+        fS->fInterNodeBatchSize.cbegin(), fS->fInterNodeBatchSize.cbegin() + mpiEnv.LocalNodeID(),
+        fS->fTask.first)};
+    auto intraNodeTaskID{intraNodeFirstTaskID + mpiEnv.LocalNode().size * fS->fIntraNodeBatchSize};
+    auto intraNodeTaskEnd{intraNodeFirstTaskID + fS->fInterNodeBatchSize[mpiEnv.LocalNodeID()]};
 
     if (not fClusterMaster) {
-        this->fS->fInterNodeComm.barrier();
+        fS->fInterNodeComm.barrier();
     }
     fRecvFromCM.start();
     fSendToCM.start();
@@ -133,21 +115,21 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
             break;
         }
         for (auto&& rank : recvRank) {
-            if (intraNodeTaskID == intraNodeTaskEnd and intraNodeTaskID != this->fS->fTask.last) {
+            if (intraNodeTaskID == intraNodeTaskEnd and intraNodeTaskID != fS->fTask.last) {
                 fSendToCM.wait();
                 fRecvFromCM.wait();
                 intraNodeTaskID = fTaskIDRecvFromCM;
-                if (intraNodeTaskID != this->fS->fTask.last) {
-                    intraNodeTaskEnd = intraNodeTaskID + this->fS->fInterNodeBatchSize[Env::MPIEnv::Instance().LocalNodeID()];
+                if (intraNodeTaskID != fS->fTask.last) {
+                    intraNodeTaskEnd = intraNodeTaskID + fS->fInterNodeBatchSize[Env::MPIEnv::Instance().LocalNodeID()];
                     fRecvFromCM.start();
                     fSendToCM.start();
                 } else {
                     intraNodeTaskEnd = intraNodeTaskID;
                 }
             }
-            fTaskIDSendToW[rank] = std::min(intraNodeTaskID, this->fS->fTask.last);
-            if (fTaskIDSendToW[rank] != this->fS->fTask.last) [[likely]] {
-                intraNodeTaskID += this->fS->fIntraNodeBatchSize;
+            fTaskIDSendToW[rank] = std::min(intraNodeTaskID, fS->fTask.last);
+            if (fTaskIDSendToW[rank] != fS->fTask.last) [[likely]] {
+                intraNodeTaskID += fS->fIntraNodeBatchSize;
                 fRecvFromW.start(rank);
             }
             fSendToW.wait(rank);

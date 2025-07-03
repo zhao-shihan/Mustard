@@ -46,17 +46,8 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 template<std::integral T>
 class ClusterAwareMasterWorkerScheduler : public Scheduler<T> {
 private:
-    class MasterBase {
-    protected:
-        MasterBase(ClusterAwareMasterWorkerScheduler<T>* s);
-        ~MasterBase() = default;
-
-    protected:
-        ClusterAwareMasterWorkerScheduler<T>* fS;
-    };
-
     friend class ClusterMaster;
-    class ClusterMaster : public MasterBase {
+    class ClusterMaster {
     public:
         ClusterMaster(ClusterAwareMasterWorkerScheduler<T>* s);
 
@@ -64,6 +55,8 @@ private:
         auto operator()() -> void;
 
     private:
+        ClusterAwareMasterWorkerScheduler<T>* fS;
+
         std::byte fSemaphoreRecvFromNM;
         mplr::prequest_pool fRecvFromNM;
         std::vector<T> fTaskIDSendToNM;
@@ -71,7 +64,7 @@ private:
     };
 
     friend class NodeMaster;
-    class NodeMaster : public MasterBase {
+    class NodeMaster {
     public:
         NodeMaster(ClusterAwareMasterWorkerScheduler<T>* s);
 
@@ -79,6 +72,8 @@ private:
         auto operator()() -> void;
 
     private:
+        ClusterAwareMasterWorkerScheduler<T>* fS;
+
         std::unique_ptr<ClusterMaster> fClusterMaster;
         std::jthread fClusterMasterThread;
 

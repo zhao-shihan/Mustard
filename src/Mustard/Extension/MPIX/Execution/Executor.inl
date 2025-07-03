@@ -250,11 +250,6 @@ auto Executor<T>::DefaultScheduler() -> std::unique_ptr<Scheduler<T>> {
     if (mpiEnv.ClusterSize() == 1) {
         return scheduler.at("shm")();
     }
-    if (mplr::query_thread() != mplr::threading_mode::multiple) {
-        MasterPrintWarning("MPI library does not support multithreading, "
-                           "fallback to static scheduler. No load balancing support");
-        return scheduler.at("stat")();
-    }
     if (worldComm.size() <= 128) {
         return scheduler.at("mw")();
     }
