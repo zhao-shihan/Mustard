@@ -35,7 +35,7 @@
 
 namespace Mustard::Env {
 
-BasicEnv::BasicEnv(NoBanner, int argc, char* argv[],
+BasicEnv::BasicEnv(NoBanner, int& argc, char**& argv,
                    std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
                    enum VerboseLevel verboseLevel,
                    bool showBannerHint) :

@@ -19,7 +19,7 @@
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
-#include "mpl/mpl.hpp"
+#include "mplr/mplr.hpp"
 
 #include "muc/time"
 
@@ -43,8 +43,8 @@ auto PrettyLogHead(std::string_view prefix, const std::source_location& location
                        location.line(),
                        location.column(),
                        location.function_name(),
-                       mpl::environment::available() ?
-                           fmt::format(" in MPI process {}", mpl::environment::comm_world().rank()) :
+                       mplr::available() ?
+                           fmt::format(" in MPI process {}", mplr::comm_world().rank()) :
                            "");
 }
 
@@ -75,22 +75,22 @@ auto PrintError(std::string_view message, const std::source_location& location) 
 }
 
 auto MasterPrintInfo(std::string_view message, const std::source_location& location) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         PrintInfo(message, location);
     }
 }
 
 auto MasterPrintWarning(std::string_view message, const std::source_location& location) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         PrintWarning(message, location);
     }
 }
 
 auto MasterPrintError(std::string_view message, const std::source_location& location) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         PrintError(message, location);
     }
 }

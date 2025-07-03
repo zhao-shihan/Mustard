@@ -15,7 +15,7 @@ find_dependency(envparse @MUSTARD_ENVPARSE_MINIMUM_REQUIRED@)
 find_dependency(fmt @MUSTARD_FMT_MINIMUM_REQUIRED@)
 find_dependency(indicators @MUSTARD_INDICATORS_MINIMUM_REQUIRED@.0)
 find_dependency(Microsoft.GSL @MUSTARD_MSGSL_MINIMUM_REQUIRED@)
-find_dependency(mpl @MUSTARD_MPL_MINIMUM_REQUIRED@)
+find_dependency(mplr @MUSTARD_MPLR_MINIMUM_REQUIRED@)
 find_dependency(muc @MUSTARD_MUC_MINIMUM_REQUIRED@)
 find_dependency(yaml-cpp @MUSTARD_YAML_CPP_MINIMUM_REQUIRED@)
 

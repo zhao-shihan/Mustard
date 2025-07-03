@@ -21,7 +21,7 @@
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
-#include "mpl/mpl.hpp"
+#include "mplr/mplr.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -50,9 +50,9 @@ private:
     private:
         MasterWorkerScheduler<T>* fS;
         std::byte fSemaphoreRecv;
-        mpl::prequest_pool fRecv;
+        mplr::prequest_pool fRecv;
         std::vector<T> fTaskIDSend;
-        mpl::prequest_pool fSend;
+        mplr::prequest_pool fSend;
     };
 
 public:
@@ -67,15 +67,15 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    mpl::communicator fComm;
+    mplr::communicator fComm;
     T fBatchSize;
     std::unique_ptr<Master> fMaster;
     std::jthread fMasterThread;
 
     std::byte fSemaphoreSend;
-    mpl::prequest fSend;
+    mplr::prequest fSend;
     T fTaskIDRecv;
-    mpl::prequest fRecv;
+    mplr::prequest fRecv;
     T fTaskCounter;
 
     static constexpr long double fgImbalancingFactor{1e-3};

@@ -22,7 +22,7 @@
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
-#include "mpl/mpl.hpp"
+#include "mplr/mplr.hpp"
 
 #include "muc/math"
 #include "muc/numeric"
@@ -65,9 +65,9 @@ private:
 
     private:
         std::byte fSemaphoreRecvFromNM;
-        mpl::prequest_pool fRecvFromNM;
+        mplr::prequest_pool fRecvFromNM;
         std::vector<T> fTaskIDSendToNM;
-        mpl::prequest_pool fSendToNM;
+        mplr::prequest_pool fSendToNM;
     };
 
     friend class NodeMaster;
@@ -83,14 +83,14 @@ private:
         std::jthread fClusterMasterThread;
 
         std::byte fSemaphoreSendToCM;
-        mpl::prequest fSendToCM;
+        mplr::prequest fSendToCM;
         T fTaskIDRecvFromCM;
-        mpl::prequest fRecvFromCM;
+        mplr::prequest fRecvFromCM;
 
         std::byte fSemaphoreRecvFromW;
-        mpl::prequest_pool fRecvFromW;
+        mplr::prequest_pool fRecvFromW;
         std::vector<T> fTaskIDSendToW;
-        mpl::prequest_pool fSendToW;
+        mplr::prequest_pool fSendToW;
     };
 
 public:
@@ -105,8 +105,8 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    mpl::communicator fIntraNodeComm;
-    mpl::communicator fInterNodeComm;
+    mplr::communicator fIntraNodeComm;
+    mplr::communicator fInterNodeComm;
 
     T fIntraNodeBatchSize;
     T fInterNodeBatchSizeMultiple;
@@ -116,9 +116,9 @@ private:
     std::jthread fNodeMasterThread;
 
     std::byte fSemaphoreSendToNM;
-    mpl::prequest fSendToNM;
+    mplr::prequest fSendToNM;
     T fTaskIDRecvFromNM;
-    mpl::prequest fRecvFromNM;
+    mplr::prequest fRecvFromNM;
 
     T fIntraNodeTaskCounter;
 

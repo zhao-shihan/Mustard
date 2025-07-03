@@ -32,8 +32,8 @@ target_link_libraries(Mustard PUBLIC argparse::argparse)
 # indicators
 target_link_libraries(Mustard PUBLIC indicators::indicators)
 
-# MPL
-target_link_libraries(Mustard PUBLIC mpl::mpl)
+# MPLR
+target_link_libraries(Mustard PUBLIC mplr::mplr)
 
 # Microsoft.GSL
 target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)

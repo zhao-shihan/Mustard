@@ -20,7 +20,7 @@
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
-#include "mpl/mpl.hpp"
+#include "mplr/mplr.hpp"
 
 #include <ostream>
 #include <source_location>
@@ -32,7 +32,7 @@ MPIExecutive::MPIExecutive() :
     WeakSingleton{this} {}
 
 auto MPIExecutive::CheckSequential() const -> void {
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return;
     }

@@ -23,7 +23,7 @@
 
 #include "G4Run.hh"
 
-#include "mpl/mpl.hpp"
+#include "mplr/mplr.hpp"
 
 #include "muc/utility"
 
@@ -37,7 +37,7 @@ namespace Mustard::inline Extension::Geant4X::inline Run {
 namespace internal {
 
 FlipG4cout::FlipG4cout() {
-    if (mpl::environment::comm_world().rank() != 0 or
+    if (mplr::comm_world().rank() != 0 or
         not Env::VerboseLevelReach<'E'>()) {
         static std::streambuf* gG4coutBufExchanger{};
         gG4coutBufExchanger = G4cout.rdbuf(gG4coutBufExchanger);

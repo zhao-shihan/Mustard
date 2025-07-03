@@ -56,13 +56,13 @@ auto RDFEventSplit(ROOT::RDF::RNode rdf,
     const auto MakeFlatRDFEventSplit{[&] {
         return internal::MakeFlatRDFEventSplit<T>(std::move(rdf), std::move(eventIDColumnName)).second;
     }};
-    if (mpl::environment::available()) {
-        const auto& worldComm{mpl::environment::comm_world()};
+    if (mplr::available()) {
+        const auto& worldComm{mplr::comm_world()};
         auto eventSplit{worldComm.rank() == 0 ? MakeFlatRDFEventSplit() : std::vector<gsl::index>{}};
         auto eventSplitSize{eventSplit.size()};
         worldComm.bcast(0, eventSplitSize);
         eventSplit.resize(eventSplitSize);
-        worldComm.bcast(0, eventSplit.data(), mpl::vector_layout<gsl::index>{eventSplit.size()});
+        worldComm.bcast(0, eventSplit.data(), mplr::vector_layout<gsl::index>{eventSplit.size()});
         return eventSplit;
     } else {
         return MakeFlatRDFEventSplit();
@@ -86,15 +86,15 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
     const auto MakeFlatRDFEventSplit{[&](gsl::index i) {
         return internal::MakeFlatRDFEventSplit<T>(std::move(rdf[i]), eventIDColumnName[i]);
     }};
-    if (mpl::environment::available()) {
-        const auto& worldComm{mpl::environment::comm_world()};
+    if (mplr::available()) {
+        const auto& worldComm{mplr::comm_world()};
         for (gsl::index i{}; i < nRDF; ++i) {
             if (worldComm.rank() == i % worldComm.size()) {
                 flatES[i] = MakeFlatRDFEventSplit(i);
             }
         }
         // Broadcast to all processes
-        mpl::irequest_pool bcastFlatES;
+        mplr::irequest_pool bcastFlatES;
         for (gsl::index i{}; i < nRDF; ++i) {
             auto& [eventID, es]{flatES[i]};
             const auto rootRank{i % worldComm.size()};
@@ -102,8 +102,8 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
             worldComm.bcast(rootRank, esSize);
             eventID.resize(esSize - 1);
             es.resize(esSize);
-            bcastFlatES.push(worldComm.ibcast(rootRank, eventID.data(), mpl::vector_layout<T>{eventID.size()}));
-            bcastFlatES.push(worldComm.ibcast(rootRank, es.data(), mpl::vector_layout<gsl::index>{es.size()}));
+            bcastFlatES.push(worldComm.ibcast(rootRank, eventID.data(), mplr::vector_layout<T>{eventID.size()}));
+            bcastFlatES.push(worldComm.ibcast(rootRank, es.data(), mplr::vector_layout<gsl::index>{es.size()}));
         }
         bcastFlatES.waitall();
     } else {

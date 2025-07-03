@@ -16,7 +16,7 @@ auto main(int argc, char* argv[]) -> int {
     MPIX::Executor<unsigned long long> executor{std::make_unique<MPIX::StaticScheduler<unsigned long long>>()};
 
     const auto n{std::stoll(argv[1])};
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
 
     executor.PrintProgress(false);
     executor.Execute(n,

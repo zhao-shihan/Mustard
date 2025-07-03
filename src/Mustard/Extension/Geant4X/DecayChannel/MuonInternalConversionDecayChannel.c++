@@ -28,7 +28,7 @@
 #include "G4DynamicParticle.hh"
 #include "Randomize.hh"
 
-#include "mpl/mpl.hpp"
+#include "mplr/mplr.hpp"
 
 #include "muc/array"
 #include "muc/math"
@@ -131,7 +131,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
 
     using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
     muc::array2ld sum{};
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
     {                               // Monte Carlo integration here
         muc::array2ld partialSum{}; // improve numeric stability
         MPIX::Executor<unsigned long long>{"Estimation", "Sample"}

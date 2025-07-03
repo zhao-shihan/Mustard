@@ -25,7 +25,7 @@
 
 #include "TRandom.h"
 
-#include "mpl/mpl.hpp"
+#include "mplr/mplr.hpp"
 
 #include "muc/array"
 
@@ -52,7 +52,7 @@ namespace Mustard::inline Utility {
         gRandom->SetSeed(std::mt19937_64{std::bit_cast<std::uint64_t>(               \
             muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}()); \
         /* Reseed in parallel computing */                                           \
-        if (mpl::environment::available()) {                                         \
+        if (mplr::available()) {                                         \
             MPIReseedRandomEngine();                                                 \
         }                                                                            \
     }                                                                                \

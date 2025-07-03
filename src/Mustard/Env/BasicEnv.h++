@@ -37,7 +37,7 @@ protected:
     struct NoBanner {};
 
 protected:
-    BasicEnv(NoBanner, int argc, char* argv[],
+    BasicEnv(NoBanner, int& argc, char**& argv,
              std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
              enum VerboseLevel verboseLevel,
              bool showBannerHint);

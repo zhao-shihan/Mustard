@@ -27,7 +27,7 @@ auto AnalysisBase<ADerived, AAppName>::RunBeginAction(int runID) -> void {
     }
     fLastUsedFullFilePath = std::move(fullFilePath);
     // save geometry
-    if (filePathChanged and mpl::environment::comm_world().rank() == 0) {
+    if (filePathChanged and mplr::comm_world().rank() == 0) {
         Mustard::Geant4X::ConvertGeometryToTMacro(fmt::format("{}_gdml", AAppName.sv()),
                                                   fmt::format("{}.gdml", AAppName.sv()))
             ->Write();

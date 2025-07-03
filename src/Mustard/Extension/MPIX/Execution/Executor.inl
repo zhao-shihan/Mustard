@@ -70,7 +70,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     if (task.last == task.first) {
         return 0;
     }
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
     const auto nTask{task.last - task.first};
     if (nTask < static_cast<T>(worldComm.size())) {
         Throw<std::runtime_error>(fmt::format("Number of tasks ({}) < number of processes ({})", nTask, worldComm.size()));
@@ -83,7 +83,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     // initialize
     fExecuting = true;
     fScheduler->PreLoopAction();
-    worldComm.ibarrier().wait(mpl::duty_ratio::preset::moderate);
+    worldComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
     fExecutionBeginSystemTime = scsc::now();
     fWallTimeStopwatch.reset();
     fCPUTimeStopwatch.reset();
@@ -108,8 +108,8 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     auto gatherExecutionInfo{worldComm.igather(0, executionInfo, fExecutionInfoGatheredByMaster.data())};
     fScheduler->PostLoopAction();
     fExecuting = false;
-    gatherExecutionInfo.wait(mpl::duty_ratio::preset::relaxed);
-    worldComm.ibarrier().wait(mpl::duty_ratio::preset::relaxed);
+    gatherExecutionInfo.wait(mplr::duty_ratio::preset::relaxed);
+    worldComm.ibarrier().wait(mplr::duty_ratio::preset::relaxed);
     PostLoopReport();
     return NLocalExecutedTask();
 }
@@ -117,7 +117,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PrintExecutionSummary() const -> void {
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
     if (worldComm.rank() != 0) {
         return;
     }
@@ -142,7 +142,7 @@ auto Executor<T>::PreLoopReport() const -> void {
     if (not fPrintProgress) {
         return;
     }
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
     if (worldComm.rank() != 0) {
         return;
     }
@@ -173,7 +173,7 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
             return;
         }
     }
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
     Print("MPI{}> [{:%FT%T%z}] {} {} has ended\n"
           "MPI{}>   {} elaps., {}\n",
           worldComm.rank(), muc::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
@@ -196,7 +196,7 @@ auto Executor<T>::PostLoopReport() const -> void {
     if (not fPrintProgress) {
         return;
     }
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
     if (worldComm.rank() != 0) {
         return;
     }
@@ -239,10 +239,10 @@ auto Executor<T>::DefaultScheduler() -> std::unique_ptr<Scheduler<T>> {
         }
     }
 
-    if (not mpl::environment::available()) {
+    if (not mplr::available()) {
         return scheduler.at("seq")();
     }
-    const auto& worldComm{mpl::environment::comm_world()};
+    const auto& worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return scheduler.at("seq")();
     }
@@ -250,7 +250,7 @@ auto Executor<T>::DefaultScheduler() -> std::unique_ptr<Scheduler<T>> {
     if (mpiEnv.ClusterSize() == 1) {
         return scheduler.at("shm")();
     }
-    if (mpl::environment::threading_mode() != mpl::threading_modes::multiple) {
+    if (mplr::query_thread() != mplr::threading_mode::multiple) {
         MasterPrintWarning("MPI library does not support multithreading, "
                            "fallback to static scheduler. No load balancing support");
         return scheduler.at("stat")();

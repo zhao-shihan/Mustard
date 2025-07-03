@@ -124,104 +124,104 @@ auto VPrint(auto&&... args) -> void {
 
 template<char L, typename... Ts>
 auto MasterPrint(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         Print(std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         PrintLn(std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         Print(ts, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         Print(f, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         PrintLn(f, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::FILE* f, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         Print(f, ts, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         Print(os, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::ostream& os, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         Print(os, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         PrintLn(os, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         Print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L>
 auto MasterVPrint(auto&&... args) -> void {
-    if (not mpl::environment::available() or
-        mpl::environment::comm_world().rank() == 0) {
+    if (not mplr::available() or
+        mplr::comm_world().rank() == 0) {
         VPrint(std::forward<decltype(args)>(args)...);
     }
 }

@@ -22,7 +22,7 @@
 #include "Mustard/Env/CLI/CLI.h++"
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
 
-#include "mpl/mpl.hpp"
+#include "mplr/mplr.hpp"
 
 #include <concepts>
 #include <functional>
@@ -36,7 +36,7 @@ namespace Mustard::Env {
 class MPIEnv : public virtual BasicEnv,
                public Memory::PassiveSingleton<MPIEnv> {
 protected:
-    MPIEnv(NoBanner, int argc, char* argv[],
+    MPIEnv(NoBanner, int& argc, char**& argv,
            std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
            enum VerboseLevel verboseLevel,
            bool showBannerHint);
@@ -76,8 +76,8 @@ private:
     };
 
 private:
-    mpl::communicator fIntraNodeComm;
-    mpl::communicator fInterNodeComm;
+    mplr::communicator fIntraNodeComm;
+    mplr::communicator fInterNodeComm;
 
     int fLocalNodeID;
     std::vector<struct Node> fNodeList;

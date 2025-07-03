@@ -26,17 +26,17 @@ MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
     fTaskIDSend{},
     fSend{} {
     // Check MPI thread support
-    switch (mpl::environment::threading_mode()) {
-    case mpl::threading_modes::single:
+    switch (mplr::query_thread()) {
+    case mplr::threading_mode::single:
         Throw<std::runtime_error>("The MPI library provides 'single' thread support, "
                                   "but master-worker scheduler requires 'multiple'");
-    case mpl::threading_modes::funneled:
+    case mplr::threading_mode::funneled:
         Throw<std::runtime_error>("The MPI library provides 'funneled' thread support, "
                                   "but master-worker scheduler requires 'multiple'");
-    case mpl::threading_modes::serialized:
+    case mplr::threading_mode::serialized:
         Throw<std::runtime_error>("The MPI library provides 'serialized' thread support, "
                                   "but master-worker scheduler requires 'multiple'");
-    case mpl::threading_modes::multiple:
+    case mplr::threading_mode::multiple:
         break;
     }
     // Initialize communication requests
@@ -54,8 +54,8 @@ template<std::integral T>
 auto MasterWorkerScheduler<T>::Master::operator()() -> void {
     T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
     while (true) {
-        const auto [result, recvRank]{fRecv.waitsome(mpl::duty_ratio::preset::active)};
-        if (result == mpl::test_result::no_active_requests) {
+        const auto [result, recvRank]{fRecv.waitsome(mplr::duty_ratio::preset::active)};
+        if (result == mplr::test_result::no_active_requests) {
             break;
         }
         for (auto&& rank : recvRank) {
@@ -68,7 +68,7 @@ auto MasterWorkerScheduler<T>::Master::operator()() -> void {
             fSend.start(rank);
         }
     }
-    fSend.waitall(mpl::duty_ratio::preset::moderate);
+    fSend.waitall(mplr::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>
@@ -83,12 +83,12 @@ MasterWorkerScheduler<T>::MasterWorkerScheduler() :
     fTaskIDRecv{},
     fRecv{},
     fTaskCounter{} {
-    mpl::info commInfo;
+    mplr::info commInfo;
     commInfo.set("mpi_assert_no_any_tag", "true");
     commInfo.set("mpi_assert_no_any_source", "true");
     commInfo.set("mpi_assert_exact_length", "true");
     commInfo.set("mpi_assert_allow_overtaking", "true");
-    fComm = mpl::communicator{mpl::environment::comm_world(), commInfo};
+    fComm = mplr::communicator{mplr::comm_world(), commInfo};
     if (fComm.rank() == 0) {
         fMaster = std::make_unique<Master>(this);
     }
@@ -130,8 +130,8 @@ auto MasterWorkerScheduler<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
-    fSend.wait(mpl::duty_ratio::preset::moderate);
-    fRecv.wait(mpl::duty_ratio::preset::moderate);
+    fSend.wait(mplr::duty_ratio::preset::moderate);
+    fRecv.wait(mplr::duty_ratio::preset::moderate);
 
     if (fMasterThread.joinable()) {
         fMasterThread.join();

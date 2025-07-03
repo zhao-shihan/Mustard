@@ -94,7 +94,7 @@ IncludeCategories:
   - Regex: '"gsl.*\.h"'
     Priority: 10
     CaseSensitive: true
-  - Regex: '"mpl/.*"'
+  - Regex: '"mplr/mplr.hpp"'
     Priority: 11
     CaseSensitive: true
   - Regex: '"mpi.*\.h"'

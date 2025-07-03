@@ -21,17 +21,17 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 template<std::integral T>
 ClusterAwareMasterWorkerScheduler<T>::MasterBase::MasterBase(ClusterAwareMasterWorkerScheduler<T>* s) :
     fS{s} {
-    switch (mpl::environment::threading_mode()) {
-    case mpl::threading_modes::single:
+    switch (mplr::query_thread()) {
+    case mplr::threading_mode::single:
         Throw<std::runtime_error>("The MPI library provides 'single' thread support, "
                                   "but cluster-aware-master-worker scheduler requires 'multiple'");
-    case mpl::threading_modes::funneled:
+    case mplr::threading_mode::funneled:
         Throw<std::runtime_error>("The MPI library provides 'funneled' thread support, "
                                   "but cluster-aware-master-worker scheduler requires 'multiple'");
-    case mpl::threading_modes::serialized:
+    case mplr::threading_mode::serialized:
         Throw<std::runtime_error>("The MPI library provides 'serialized' thread support, "
                                   "but cluster-aware-master-worker scheduler requires 'multiple'");
-    case mpl::threading_modes::multiple:
+    case mplr::threading_mode::multiple:
         break;
     }
 }
@@ -63,8 +63,8 @@ template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
     auto interNodeTaskID{muc::ranges::reduce(this->fS->fInterNodeBatchSize, this->fS->fTask.first)};
     while (true) {
-        const auto [result, recvRank]{fRecvFromNM.waitsome(mpl::duty_ratio::preset::active)};
-        if (result == mpl::test_result::no_active_requests) {
+        const auto [result, recvRank]{fRecvFromNM.waitsome(mplr::duty_ratio::preset::active)};
+        if (result == mplr::test_result::no_active_requests) {
             break;
         }
         for (auto&& rank : recvRank) {
@@ -77,7 +77,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
             fSendToNM.start(rank);
         }
     }
-    fSendToNM.waitall(mpl::duty_ratio::preset::moderate);
+    fSendToNM.waitall(mplr::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>
@@ -128,8 +128,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
     fRecvFromCM.start();
     fSendToCM.start();
     while (true) {
-        const auto [result, recvRank]{fRecvFromW.waitsome(mpl::duty_ratio::preset::active)};
-        if (result == mpl::test_result::no_active_requests) {
+        const auto [result, recvRank]{fRecvFromW.waitsome(mplr::duty_ratio::preset::active)};
+        if (result == mplr::test_result::no_active_requests) {
             break;
         }
         for (auto&& rank : recvRank) {
@@ -154,9 +154,9 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
             fSendToW.start(rank);
         }
     }
-    fSendToCM.wait(mpl::duty_ratio::preset::moderate);
-    fRecvFromCM.wait(mpl::duty_ratio::preset::moderate);
-    fSendToW.waitall(mpl::duty_ratio::preset::moderate);
+    fSendToCM.wait(mplr::duty_ratio::preset::moderate);
+    fRecvFromCM.wait(mplr::duty_ratio::preset::moderate);
+    fSendToW.waitall(mplr::duty_ratio::preset::moderate);
 
     if (fClusterMasterThread.joinable()) {
         fClusterMasterThread.join();
@@ -178,15 +178,15 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
     fTaskIDRecvFromNM{},
     fRecvFromNM{},
     fIntraNodeTaskCounter{} {
-    mpl::info commInfo;
+    mplr::info commInfo;
     commInfo.set("mpi_assert_no_any_tag", "true");
     commInfo.set("mpi_assert_no_any_source", "true");
     commInfo.set("mpi_assert_exact_length", "true");
     commInfo.set("mpi_assert_allow_overtaking", "true");
     const auto& mpiEnv{Env::MPIEnv::Instance()};
-    fIntraNodeComm = mpl::communicator{mpiEnv.IntraNodeComm(), commInfo};
+    fIntraNodeComm = mplr::communicator{mpiEnv.IntraNodeComm(), commInfo};
     if (mpiEnv.InterNodeComm().is_valid()) {
-        fInterNodeComm = mpl::communicator{mpiEnv.InterNodeComm(), commInfo};
+        fInterNodeComm = mplr::communicator{mpiEnv.InterNodeComm(), commInfo};
         fNodeMaster = std::make_unique<NodeMaster>(this);
     }
     fInterNodeBatchSize.resize(mpiEnv.ClusterSize());
@@ -196,7 +196,7 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::PreLoopAction() -> void {
-    const auto avgTaskPerProc{static_cast<long double>(this->NTask()) / mpl::environment::comm_world().size()};
+    const auto avgTaskPerProc{static_cast<long double>(this->NTask()) / mplr::comm_world().size()};
     fInterNodeBatchSizeMultiple = std::min(muc::lltrunc(avgTaskPerProc), fgMaxInterNodeBatchSizeMultiple);
     Ensures(fInterNodeBatchSizeMultiple >= 1);
     fIntraNodeBatchSize = std::max(1ll, std::llround(fgImbalancingFactor * avgTaskPerProc / fInterNodeBatchSizeMultiple));
@@ -241,8 +241,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::PostLoopAction() -> void {
-    fSendToNM.wait(mpl::duty_ratio::preset::moderate);
-    fRecvFromNM.wait(mpl::duty_ratio::preset::moderate);
+    fSendToNM.wait(mplr::duty_ratio::preset::moderate);
+    fRecvFromNM.wait(mplr::duty_ratio::preset::moderate);
 
     if (fNodeMasterThread.joinable()) {
         fNodeMasterThread.join();
