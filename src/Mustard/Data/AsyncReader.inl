@@ -26,8 +26,8 @@ AsyncReader<AData>::AsyncReader(gsl::index sentinel, std::function<void(ROOT::RD
     fLast{},
     fSentinel{sentinel},
     fReaderThread{},
-    fReadStartSemaphore{0},
-    fReadCompleteSemaphore{0},
+    fStartReadSemaphore{0},
+    fCompleteReadSemaphore{0},
     fExhausted{},
     fReading{} {
     if (ROOT::IsImplicitMTEnabled()) {
@@ -39,10 +39,10 @@ AsyncReader<AData>::AsyncReader(gsl::index sentinel, std::function<void(ROOT::RD
                 fExhausted = true;
                 return;
             }
-            fReadStartSemaphore.acquire();
+            fStartReadSemaphore.acquire();
             std::invoke(std::move(ReadLoop), std::move(rdf));
             fExhausted = true;
-            fReadCompleteSemaphore.release();
+            fCompleteReadSemaphore.release();
         },
         std::move(ReadLoop), std::move(rdf)};
 }
@@ -78,7 +78,7 @@ auto AsyncReader<AData>::Read(gsl::index first, gsl::index last) -> void {
     fLast = last;
     fData.reserve(last - first);
     fReading = true;
-    fReadStartSemaphore.release();
+    fStartReadSemaphore.release();
 }
 
 template<typename AData>
@@ -86,7 +86,7 @@ template<typename AData>
     if (not fReading) {
         Throw<std::logic_error>("Try to acquire result while not reading");
     }
-    fReadCompleteSemaphore.acquire();
+    fCompleteReadSemaphore.acquire();
     fReading = false;
     return std::move(fData);
 }
@@ -99,8 +99,8 @@ auto AsyncReader<AData>::Exhaust() -> void {
 
 template<typename AData>
 auto AsyncReader<AData>::CompleteRead() -> void {
-    fReadCompleteSemaphore.release();
-    fReadStartSemaphore.acquire();
+    fCompleteReadSemaphore.release();
+    fStartReadSemaphore.acquire();
     fData.clear();
 }
 

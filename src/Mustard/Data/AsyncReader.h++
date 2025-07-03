@@ -87,8 +87,8 @@ private:
 
     gsl::index fSentinel;
     std::jthread fReaderThread;
-    std::binary_semaphore fReadStartSemaphore;
-    std::binary_semaphore fReadCompleteSemaphore;
+    std::binary_semaphore fStartReadSemaphore;
+    std::binary_semaphore fCompleteReadSemaphore;
     std::atomic_bool fExhausted;
     bool fReading;
 };
