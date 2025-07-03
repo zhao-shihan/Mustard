@@ -58,7 +58,7 @@ auto SharedMemoryScheduler<T>::PreLoopAction() -> void {
     fTaskCounter = 0;
 
     if (fMainTaskID) {
-        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 0, MPI_MODE_NOCHECK, fMainTaskIDWindow);
+        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 0, 0, fMainTaskIDWindow);
         *fMainTaskID = this->fTask.first + intraNodeComm.size() * fBatchSize;
         MPI_Win_unlock(0, fMainTaskIDWindow);
     }
