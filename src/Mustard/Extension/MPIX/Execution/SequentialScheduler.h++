@@ -20,6 +20,8 @@
 
 #include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
 
+#include "mplr/mplr.hpp"
+
 #include <concepts>
 #include <utility>
 
@@ -27,6 +29,10 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
 class SequentialScheduler : public Scheduler<T> {
+public:
+    SequentialScheduler();
+
+private:
     virtual auto PreLoopAction() -> void override { this->fExecutingTask = this->fTask.first; }
     virtual auto PreTaskAction() -> void override {}
     virtual auto PostTaskAction() -> void override { this->fExecutingTask += 1; }

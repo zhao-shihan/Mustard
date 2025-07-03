@@ -19,6 +19,14 @@
 namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
+SequentialScheduler<T>::SequentialScheduler() :
+    Scheduler<T>{} {
+    if (mplr::available() and mplr::comm_world().size() > 1) {
+        Throw<std::runtime_error>("Running with more than one process");
+    }
+}
+
+template<std::integral T>
 auto SequentialScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
     return {this->fNLocalExecutedTask > 10,
             this->fExecutingTask - this->fTask.first};
