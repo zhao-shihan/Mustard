@@ -28,6 +28,7 @@ namespace Mustard::Env::Memory::internal {
 WeakSingletonPool* WeakSingletonPool::fgInstance{};
 bool WeakSingletonPool::fgInstantiated{};
 bool WeakSingletonPool::fgExpired{};
+std::mutex WeakSingletonPool::fgMutex{};
 
 WeakSingletonPool::WeakSingletonPool() :
     NonCopyableBase{},

@@ -29,6 +29,7 @@
 #include "fmt/format.h"
 
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <typeindex>
@@ -51,11 +52,13 @@ public:
     static auto Instance() -> WeakSingletonPool&;
 
     template<WeakSingletonified AWeakSingleton>
-    [[nodiscard]] auto Find() -> std::shared_ptr<void*>;
+    auto Find() -> std::shared_ptr<void*>;
     template<WeakSingletonified AWeakSingleton>
-    [[nodiscard]] auto Contains() const -> auto { return fInstanceMap.contains(typeid(AWeakSingleton)); }
+    auto Contains() const -> auto { return fInstanceMap.contains(typeid(AWeakSingleton)); }
     template<WeakSingletonified AWeakSingleton>
     [[nodiscard]] auto Insert(gsl::not_null<AWeakSingleton*> instance) -> std::shared_ptr<void*>;
+
+    static auto Mutex() -> auto& { return fgMutex; }
 
 private:
     std::unordered_map<std::type_index, const std::weak_ptr<void*>> fInstanceMap;
@@ -63,6 +66,7 @@ private:
     static WeakSingletonPool* fgInstance;
     static bool fgInstantiated;
     static bool fgExpired;
+    static std::mutex fgMutex;
 };
 
 } // namespace Mustard::Env::Memory::internal

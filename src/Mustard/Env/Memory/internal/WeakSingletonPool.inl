@@ -20,7 +20,7 @@ namespace Mustard::Env::Memory::internal {
 
 template<WeakSingletonified AWeakSingleton>
 [[nodiscard]] auto WeakSingletonPool::Find() -> std::shared_ptr<void*> {
-    if (const auto existed = fInstanceMap.find(typeid(AWeakSingleton));
+    if (const auto existed{fInstanceMap.find(typeid(AWeakSingleton))};
         existed == fInstanceMap.cend()) {
         return {};
     } else {

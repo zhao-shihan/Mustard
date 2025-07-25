@@ -30,6 +30,7 @@
 #include "fmt/format.h"
 
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <tuple>
 #include <typeindex>
@@ -50,15 +51,19 @@ public:
     ~SingletonPool();
 
     template<Singletonified ASingleton>
-    [[nodiscard]] auto Find() -> std::shared_ptr<void*>;
+    auto Find() -> std::shared_ptr<void*>;
     template<Singletonified ASingleton>
-    [[nodiscard]] auto Contains() const -> auto { return fInstanceMap.contains(typeid(ASingleton)); }
+    auto Contains() const -> auto { return fInstanceMap.contains(typeid(ASingleton)); }
     template<Singletonified ASingleton>
     [[nodiscard]] auto Insert(gsl::not_null<ASingleton*> instance) -> std::shared_ptr<void*>;
-    [[nodiscard]] auto GetUndeletedInReverseInsertionOrder() const -> std::vector<gsl::owner<const SingletonBase*>>;
+    auto GetUndeletedInReverseInsertionOrder() const -> std::vector<gsl::owner<const SingletonBase*>>;
+
+    static auto Mutex() -> auto& { return fgMutex; }
 
 private:
     std::unordered_map<std::type_index, const std::tuple<std::weak_ptr<void*>, gsl::index, gsl::owner<const SingletonBase*>>> fInstanceMap;
+
+    static std::mutex fgMutex;
 };
 
 } // namespace Mustard::Env::Memory::internal

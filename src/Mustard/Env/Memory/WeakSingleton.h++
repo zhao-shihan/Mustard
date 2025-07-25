@@ -24,12 +24,14 @@
 #include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
+#include "muc/mutex"
 #include "muc/utility"
 
-#include "fmt/format.h"
+#include "fmt/core.h"
 
 #include <cassert>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
@@ -49,9 +51,9 @@ protected:
     ~WeakSingleton();
 
 public:
-    MUSTARD_ALWAYS_INLINE static auto NotInstantiated() -> bool { return UpdateInstance() == Status::NotInstantiated; }
-    MUSTARD_ALWAYS_INLINE static auto Available() -> bool { return UpdateInstance() == Status::Available; }
-    MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return UpdateInstance() == Status::Expired; }
+    MUSTARD_ALWAYS_INLINE static auto NotInstantiated() -> bool { return Status() == Status::NotInstantiated; }
+    MUSTARD_ALWAYS_INLINE static auto Available() -> bool { return Status() == Status::Available; }
+    MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return Status() == Status::Expired; }
     MUSTARD_ALWAYS_INLINE static auto Instantiated() -> bool { return not NotInstantiated(); }
 
 private:
@@ -61,10 +63,12 @@ private:
         Expired
     };
 
-    MUSTARD_ALWAYS_INLINE static auto UpdateInstance() -> Status;
+    MUSTARD_ALWAYS_INLINE static auto Status() -> enum Status;
+    MUSTARD_NOINLINE static auto LoadInstance() -> enum Status;
 
 private:
     static std::shared_ptr<void*> fgInstance;
+    static muc::spin_mutex fgSpinMutex;
 };
 
 } // namespace Mustard::Env::Memory

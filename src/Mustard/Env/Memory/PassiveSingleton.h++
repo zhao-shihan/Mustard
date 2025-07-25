@@ -38,6 +38,9 @@ namespace Mustard::Env::Memory {
 template<typename ADerived>
 class PassiveSingleton : public internal::PassiveSingletonBase,
                          public WeakSingleton<ADerived> {
+private:
+    using Base = WeakSingleton<ADerived>;
+
 protected:
     [[deprecated]] PassiveSingleton() = default;
     PassiveSingleton(ADerived* self);
@@ -45,9 +48,6 @@ protected:
 
 public:
     MUSTARD_ALWAYS_INLINE static auto Instance() -> ADerived&;
-
-private:
-    using Base = WeakSingleton<ADerived>;
 };
 
 } // namespace Mustard::Env::Memory

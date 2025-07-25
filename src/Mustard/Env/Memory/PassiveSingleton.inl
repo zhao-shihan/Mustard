@@ -27,7 +27,7 @@ PassiveSingleton<ADerived>::PassiveSingleton(ADerived* self) :
 
 template<typename ADerived>
 MUSTARD_ALWAYS_INLINE auto PassiveSingleton<ADerived>::Instance() -> ADerived& {
-    switch (Base::UpdateInstance()) {
+    switch (Base::Status()) {
     [[unlikely]] case Base::Status::NotInstantiated:
         Throw<std::logic_error>(fmt::format("{} (passive singleton in environment) has not been instantiated",
                                             muc::try_demangle(typeid(ADerived).name())));
