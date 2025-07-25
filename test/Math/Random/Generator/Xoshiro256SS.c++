@@ -5,7 +5,7 @@
 #include "Eigen/Core"
 
 #include "muc/numeric"
-#include "muc/time"
+#include "muc/chrono"
 
 #include <algorithm>
 #include <array>
@@ -24,15 +24,15 @@ int main() {
 
     auto r = mt1993732();
     for (int i = 0; i < 1000; ++i) { r = mt1993732(); }
-    muc::wall_time_stopwatch<> stopWatch;
+    muc::chrono::stopwatch stopwatch;
     for (int i = 0; i < 10'000'000; ++i) { r = mt1993732(); }
-    auto time = stopWatch.ms_elapsed();
+    muc::chrono::milliseconds<double> time{stopwatch.read()};
     std::cout << "      MT19937-32 : " << time << " ms (last integer: " << r << ')' << std::endl;
 
     for (int i = 0; i < 1000; ++i) { r = xoshiro256SS(); }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) { r = xoshiro256SS(); }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    xoshiro256** : " << time << " ms (last integer: " << r << ')' << std::endl;
 
     std::cout << "Shuffle a std::array<double, 16> 1 million times:" << std::endl;
@@ -40,15 +40,15 @@ int main() {
     muc::ranges::iota(arr16, 0);
 
     for (int i = 0; i < 1000; ++i) { std::ranges::shuffle(arr16, mt1993732); }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 1'000'000; ++i) { std::ranges::shuffle(arr16, mt1993732); }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "      MT19937-32 : " << time << " ms (first element: " << arr16.front() << ')' << std::endl;
 
     for (int i = 0; i < 1000; ++i) { std::ranges::shuffle(arr16, xoshiro256SS); }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 1'000'000; ++i) { std::ranges::shuffle(arr16, xoshiro256SS); }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    xoshiro256** : " << time << " ms (first element: " << arr16.front() << ')' << std::endl;
 
     std::cout << "Shuffle a std::array<double, 4096> 10k times:" << std::endl;
@@ -56,15 +56,15 @@ int main() {
     muc::ranges::iota(arr4096, 0);
 
     for (int i = 0; i < 100; ++i) { std::ranges::shuffle(arr4096, mt1993732); }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000; ++i) { std::ranges::shuffle(arr4096, mt1993732); }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "      MT19937-32 : " << time << " ms (first element: " << arr4096.front() << ')' << std::endl;
 
     for (int i = 0; i < 100; ++i) { std::ranges::shuffle(arr4096, xoshiro256SS); }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000; ++i) { std::ranges::shuffle(arr4096, xoshiro256SS); }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    xoshiro256** : " << time << " ms (first element: " << arr4096.front() << ')' << std::endl;
 
     std::cout << "2D random walk, 10 million steps:" << std::endl;
@@ -76,13 +76,13 @@ int main() {
                    Math::Random::Uniform<double>()(mt1993732)};
         v2d += delta2d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {Math::Random::Uniform<double>()(mt1993732),
                    Math::Random::Uniform<double>()(mt1993732)};
         v2d += delta2d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "      MT19937-32 : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
 
     v2d = {0, 0};
@@ -91,13 +91,13 @@ int main() {
                    Math::Random::Uniform<double>()(xoshiro256SS)};
         v2d += delta2d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {Math::Random::Uniform<double>()(xoshiro256SS),
                    Math::Random::Uniform<double>()(xoshiro256SS)};
         v2d += delta2d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    xoshiro256** : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
 
     std::cout << "3D random walk, 10 million steps:" << std::endl;
@@ -110,14 +110,14 @@ int main() {
                    Math::Random::Uniform<double>()(mt1993732)};
         v3d += delta3d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {Math::Random::Uniform<double>()(mt1993732),
                    Math::Random::Uniform<double>()(mt1993732),
                    Math::Random::Uniform<double>()(mt1993732)};
         v3d += delta3d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "      MT19937-32 : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
 
     v3d = {0, 0, 0};
@@ -127,14 +127,14 @@ int main() {
                    Math::Random::Uniform<double>()(xoshiro256SS)};
         v3d += delta3d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {Math::Random::Uniform<double>()(xoshiro256SS),
                    Math::Random::Uniform<double>()(xoshiro256SS),
                    Math::Random::Uniform<double>()(xoshiro256SS)};
         v3d += delta3d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    xoshiro256** : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
 
     std::cout << "4D random walk, 10 million steps:" << std::endl;
@@ -148,7 +148,7 @@ int main() {
                    Math::Random::Uniform<double>()(mt1993732)};
         v4d += delta4d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {Math::Random::Uniform<double>()(mt1993732),
                    Math::Random::Uniform<double>()(mt1993732),
@@ -156,7 +156,7 @@ int main() {
                    Math::Random::Uniform<double>()(mt1993732)};
         v4d += delta4d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "      MT19937-32 : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
 
     v4d = {0, 0, 0, 0};
@@ -167,7 +167,7 @@ int main() {
                    Math::Random::Uniform<double>()(xoshiro256SS)};
         v4d += delta4d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {Math::Random::Uniform<double>()(xoshiro256SS),
                    Math::Random::Uniform<double>()(xoshiro256SS),
@@ -175,7 +175,7 @@ int main() {
                    Math::Random::Uniform<double>()(xoshiro256SS)};
         v4d += delta4d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    xoshiro256** : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
 
     return 0;

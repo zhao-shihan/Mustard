@@ -25,11 +25,9 @@
 namespace Mustard::Env {
 
 namespace Memory::internal {
-
 class WeakSingletonPool;
 class SingletonDeleter;
 class SingletonPool;
-
 } // namespace Memory::internal
 
 namespace internal {

@@ -26,14 +26,15 @@
 #include "Mustard/Extension/MPIX/Execution/SequentialScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/SharedMemoryScheduler.h++"
 #include "Mustard/Extension/MPIX/Execution/StaticScheduler.h++"
+#include "Mustard/Utility/FormatToLocalTime.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
 #include "mplr/mplr.hpp"
 
+#include "muc/chrono"
 #include "muc/math"
 #include "muc/numeric"
-#include "muc/time"
 
 #include "envparse/parse.h++"
 
@@ -99,10 +100,19 @@ private:
     auto PostLoopReport() const -> void;
 
     static auto DefaultScheduler() -> std::unique_ptr<Scheduler<T>>;
-    static auto SToDHMS(double s) -> std::string;
 
 private:
-    using scsc = std::chrono::system_clock;
+    using StopwatchDuration = muc::chrono::stopwatch::duration;
+
+private:
+    static auto ToDayHrMinSecMs(StopwatchDuration s) -> std::string;
+
+private:
+    struct ExecutionInfo {
+        T nLocalExecutedTask;
+        StopwatchDuration time;
+        StopwatchDuration processorTime;
+    };
 
 private:
     std::unique_ptr<Scheduler<T>> fScheduler;
@@ -115,13 +125,11 @@ private:
     std::string fExecutionName;
     std::string fTaskName;
 
-    scsc::time_point fExecutionBeginSystemTime;
-    muc::wall_time_stopwatch<> fWallTimeStopwatch;
-    muc::cpu_time_stopwatch<> fCPUTimeStopwatch;
-    double fExecutionWallTime;
-    double fExecutionCPUTime;
+    std::chrono::system_clock::time_point fExecutionBeginTime;
+    muc::chrono::stopwatch fStopwatch;
+    muc::chrono::processor_stopwatch fProcessorStopwatch;
 
-    std::vector<std::tuple<T, double, double>> fExecutionInfoGatheredByMaster;
+    std::vector<ExecutionInfo> fExecutionInfoGatheredByMaster;
 };
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution

@@ -26,7 +26,7 @@ Output<Ts...>::Output(const std::string& name, const std::string& title,
     fTree{},
     fTimedAutoSaveEnabled{enableTimedAutoSave},
     fTimedAutoSavePeriod{timedAutoSavePeriod},
-    fTimedAutoSaveStopwatch{},
+    fAutoSaveStopwatch{},
     fBranchHelper{fEntry} {
     if (const auto iSlash{name.find_last_of('/')};
         iSlash == std::string::npos) {
@@ -122,10 +122,10 @@ auto Output<Ts...>::TimedAutoSaveIfNecessary() -> std::size_t {
     if (not fTimedAutoSaveEnabled) {
         return 0;
     }
-    if (Second{fTimedAutoSaveStopwatch.s_elapsed()} < fTimedAutoSavePeriod) {
+    if (fAutoSaveStopwatch.read() < fTimedAutoSavePeriod) {
         return 0;
     }
-    fTimedAutoSaveStopwatch.reset();
+    fAutoSaveStopwatch.reset();
     return fTree->AutoSave("SaveSelf");
 }
 

@@ -16,12 +16,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Utility/FormatToLocalTime.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
 
 #include "mplr/mplr.hpp"
-
-#include "muc/time"
 
 #include "fmt/chrono.h"
 #include "fmt/color.h"
@@ -35,9 +34,8 @@ namespace internal {
 namespace {
 
 auto PrettyLogHead(std::string_view prefix, const std::source_location& location) -> std::string {
-    using scsc = std::chrono::system_clock;
-    return fmt::format("[{:%FT%T%z}] {}{}:{}:{} `{}`{}",
-                       muc::localtime(scsc::to_time_t(scsc::now())),
+    return fmt::format("[{}] {}{}:{}:{} `{}`{}",
+                       FormatToLocalTime(std::chrono::system_clock::now()),
                        prefix,
                        std::filesystem::path{location.file_name()}.filename().generic_string(),
                        location.line(),

@@ -27,7 +27,7 @@
 #include "TLeaf.h"
 #include "TTree.h"
 
-#include "muc/time"
+#include "muc/chrono"
 #include "muc/utility"
 
 #include "fmt/format.h"
@@ -53,7 +53,7 @@ public:
     using Model = TupleModel<Ts...>;
 
 private:
-    using Second = std::chrono::duration<double>;
+    using Second = muc::chrono::seconds<double>;
 
 public:
     explicit Output(const std::string& name, const std::string& title = {},
@@ -128,7 +128,7 @@ private:
     bool fTimedAutoSaveEnabled;
     Second fTimedAutoSavePeriod;
 
-    muc::wall_time_stopwatch<double> fTimedAutoSaveStopwatch;
+    muc::chrono::stopwatch fAutoSaveStopwatch;
     internal::BranchHelper<Tuple<Ts...>> fBranchHelper;
 };
 

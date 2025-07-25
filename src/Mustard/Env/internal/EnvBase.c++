@@ -20,10 +20,10 @@
 #include "Mustard/Env/Memory/internal/SingletonPool.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
+#include "Mustard/Utility/FormatToLocalTime.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/bit"
-#include "muc/time"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -42,8 +42,6 @@
 #    include "Mustard/Utility/PrintStackTrace.h++"
 
 #    include "mplr/mplr.hpp"
-
-#    include "fmt/chrono.h"
 
 #    include <chrono>
 #    include <cstdio>
@@ -96,7 +94,7 @@ namespace {
 
 extern "C" {
 
-auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
+auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
     std::signal(sig, SIG_DFL);
     if (static auto called{false};
         called) {
@@ -106,7 +104,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
     }
     static struct Handler {
         MUSTARD_ALWAYS_INLINE Handler(int sig) {
-            const auto now{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
+            const auto now{std::chrono::system_clock::now()};
             const auto lineHeader{mplr::available() ?
                                       fmt::format("MPI{}> ", mplr::comm_world().rank()) :
                                       ""};
@@ -124,7 +122,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
                 Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
                            lineHeader, mplr::comm_world().rank(), mplr::processor_name());
             }
-            Print<'E'>(stderr, ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+            Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
             PrintStackTrace(64, 2, stderr, ts);
             Print<'E'>(stderr, "\n");
             switch (sig) {
@@ -142,9 +140,9 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
     } handler{sig};
 }
 
-[[noreturn]] auto MUSTARD_SIGABRT_Handler(int) -> void {
+[[noreturn]] auto Mustard_SIGABRT_Handler(int) -> void {
     std::signal(SIGABRT, SIG_DFL);
-    const auto now{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
+    const auto now{std::chrono::system_clock::now()};
     const auto lineHeader{mplr::available() ?
                               fmt::format("MPI{}> ", mplr::comm_world().rank()) :
                               ""};
@@ -155,7 +153,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
         Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
                    lineHeader, mplr::comm_world().rank(), mplr::processor_name());
     }
-    Print<'E'>(stderr, ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+    Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
     PrintStackTrace(64, 2, stderr, ts);
     Print<'E'>(stderr, "\n");
     Print<'E'>(stderr, ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
@@ -164,7 +162,7 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
     std::abort();
 }
 
-auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
+auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
     std::signal(sig, SIG_DFL);
     if (static auto called{false};
         called) {
@@ -174,7 +172,7 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
     }
     static struct Handler {
         MUSTARD_ALWAYS_INLINE Handler(int sig) {
-            const auto now{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
+            const auto now{std::chrono::system_clock::now()};
             const auto lineHeader{mplr::available() ?
                                       fmt::format("MPI{}> ", mplr::comm_world().rank()) :
                                       ""};
@@ -195,7 +193,7 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
                 Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
                            lineHeader, mplr::comm_world().rank(), mplr::processor_name());
             }
-            Print<'E'>(stderr, ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+            Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
             PrintStackTrace(64, 2, stderr, ts);
             Print<'E'>(stderr, "\n");
             Print<'E'>(stderr, ts, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");
@@ -226,12 +224,12 @@ EnvBase::EnvBase() :
     std::set_terminate(internal::TerminateHandler);
 
 #if MUSTARD_SIGNAL_HANDLER
-    std::signal(SIGABRT, internal::MUSTARD_SIGABRT_Handler);
-    std::signal(SIGFPE, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGILL, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGINT, internal::MUSTARD_SIGINT_SIGTERM_Handler);
-    std::signal(SIGSEGV, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGTERM, internal::MUSTARD_SIGINT_SIGTERM_Handler);
+    std::signal(SIGABRT, internal::Mustard_SIGABRT_Handler);
+    std::signal(SIGFPE, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGILL, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGINT, internal::Mustard_SIGINT_SIGTERM_Handler);
+    std::signal(SIGSEGV, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGTERM, internal::Mustard_SIGINT_SIGTERM_Handler);
 #endif
 
     if (static bool gInstantiated{false};

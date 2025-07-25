@@ -21,7 +21,7 @@
 #include "indicators/block_progress_bar.hpp"
 #include "indicators/cursor_control.hpp"
 
-#include "muc/time"
+#include "muc/chrono"
 
 #include "fmt/core.h"
 
@@ -43,15 +43,15 @@ struct ProgressBar::Impl {
                     indicators::option::MaxProgress{nTotal}},
         progress{},
         total{nTotal},
-        wallTimeStopWatch{},
-        lastPrintTime{},
+        runStopWatch{},
+        printStopWatch{},
         asyncPrint{} {}
 
     indicators::BlockProgressBar progressBar;
     std::size_t progress;
     std::size_t total;
-    muc::wall_time_stopwatch<> wallTimeStopWatch;
-    std::chrono::duration<double> lastPrintTime;
+    muc::chrono::stopwatch runStopWatch;
+    muc::chrono::stopwatch printStopWatch;
     std::future<void> asyncPrint;
 
     static std::mutex gPrintMutex;
@@ -93,17 +93,18 @@ auto ProgressBar::Start(std::size_t nTotal) -> void {
             fmt::format("{}/{}", progress, fImpl->total)});
         fImpl->progressBar.set_progress(progress);
     });
+    fImpl->runStopWatch.reset();
+    fImpl->printStopWatch.reset();
 }
 
-auto ProgressBar::Tick(std::chrono::duration<double> printInterval) -> void {
+auto ProgressBar::Tick(std::chrono::nanoseconds printInterval) -> void {
     ++fImpl->progress;
-    const std::chrono::duration<double> timeElapsed{fImpl->wallTimeStopWatch.s_elapsed()};
-    if (timeElapsed - fImpl->lastPrintTime < printInterval) {
+    if (fImpl->printStopWatch.read() < printInterval) {
         return;
     }
-    fImpl->lastPrintTime = timeElapsed;
     fImpl->asyncPrint.get();
-    fImpl->asyncPrint = std::async(std::mem_fn(&ProgressBar::Print), this, fImpl->progress, timeElapsed);
+    fImpl->asyncPrint = std::async(std::mem_fn(&ProgressBar::Print), this, fImpl->progress);
+    fImpl->printStopWatch.reset();
 }
 
 auto ProgressBar::Complete() -> void {
@@ -113,15 +114,16 @@ auto ProgressBar::Complete() -> void {
 
 auto ProgressBar::Stop() -> void {
     fImpl->asyncPrint.get();
-    Print(fImpl->progress, std::chrono::duration<double>{fImpl->wallTimeStopWatch.s_elapsed()});
+    Print(fImpl->progress);
     fImpl->progressBar.mark_as_completed();
     indicators::show_console_cursor(true);
     fImpl.reset();
 }
 
-auto ProgressBar::Print(std::size_t progress, std::chrono::duration<double> timeElapsed) -> void {
+auto ProgressBar::Print(std::size_t progress) -> void {
+    const muc::chrono::seconds<double> secondsElapsed{fImpl->runStopWatch.read()};
     fImpl->progressBar.set_option(indicators::option::PostfixText{
-        fmt::format("{}/{} ({:.3}/s)", progress, fImpl->total, progress / timeElapsed.count())});
+        fmt::format("{}/{} ({:.3}/s)", progress, fImpl->total, progress / secondsElapsed.count())});
     std::lock_guard lock{Impl::gPrintMutex};
     fImpl->progressBar.set_progress(progress);
 }

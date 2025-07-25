@@ -4,7 +4,7 @@
 
 #include "Eigen/Core"
 
-#include "muc/time"
+#include "muc/chrono"
 
 #include <iomanip>
 #include <iostream>
@@ -21,15 +21,15 @@ int main() {
 
     unsigned int r;
     for (int i = 0; i < 1000; ++i) { r = mt64(); }
-    muc::wall_time_stopwatch<> stopWatch;
+    muc::chrono::stopwatch stopwatch;
     for (int i = 0; i < 10'000'000; ++i) { r = mt64(); }
-    auto time = stopWatch.ms_elapsed();
+    muc::chrono::milliseconds<double> time{stopwatch.read()};
     std::cout << "    CLHEPX::...::MT1993764Engine : " << time << " ms (last integer: " << r << ')' << std::endl;
 
     for (int i = 0; i < 1000; ++i) { r = (unsigned int)(mt64x); }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) { r = (unsigned int)(mt64x); }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "       Math::...::MT1993764 : " << time << " ms (last integer: " << r << ')' << std::endl;
 
     std::cout << "2D random walk, 10 million steps:" << std::endl;
@@ -41,13 +41,13 @@ int main() {
                    Math::Random::Uniform<double>()(mt64)};
         v2d += delta2d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {Math::Random::Uniform<double>()(mt64),
                    Math::Random::Uniform<double>()(mt64)};
         v2d += delta2d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    CLHEPX::...::MT1993764Engine : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
 
     v2d = {0, 0};
@@ -56,13 +56,13 @@ int main() {
                    mt64x.flat()};
         v2d += delta2d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {mt64x.flat(),
                    mt64x.flat()};
         v2d += delta2d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "       Math::...::MT1993764 : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
 
     std::cout << "3D random walk, 10 million steps:" << std::endl;
@@ -75,14 +75,14 @@ int main() {
                    Math::Random::Uniform<double>()(mt64)};
         v3d += delta3d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {Math::Random::Uniform<double>()(mt64),
                    Math::Random::Uniform<double>()(mt64),
                    Math::Random::Uniform<double>()(mt64)};
         v3d += delta3d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    CLHEPX::...::MT1993764Engine : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
 
     v3d = {0, 0, 0};
@@ -92,14 +92,14 @@ int main() {
                    mt64x.flat()};
         v3d += delta3d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {mt64x.flat(),
                    mt64x.flat(),
                    mt64x.flat()};
         v3d += delta3d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "       Math::...::MT1993764 : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
 
     std::cout << "4D random walk, 10 million steps:" << std::endl;
@@ -113,7 +113,7 @@ int main() {
                    Math::Random::Uniform<double>()(mt64)};
         v4d += delta4d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {Math::Random::Uniform<double>()(mt64),
                    Math::Random::Uniform<double>()(mt64),
@@ -121,7 +121,7 @@ int main() {
                    Math::Random::Uniform<double>()(mt64)};
         v4d += delta4d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "    CLHEPX::...::MT1993764Engine : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
 
     v4d = {0, 0, 0, 0};
@@ -132,7 +132,7 @@ int main() {
                    mt64x.flat()};
         v4d += delta4d;
     }
-    stopWatch = {};
+    stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {mt64x.flat(),
                    mt64x.flat(),
@@ -140,7 +140,7 @@ int main() {
                    mt64x.flat()};
         v4d += delta4d;
     }
-    time = stopWatch.ms_elapsed();
+    time = stopwatch.read();
     std::cout << "       Math::...::MT1993764 : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
 
     return 0;

@@ -19,32 +19,10 @@
 #pragma once
 
 #include <chrono>
-#include <cstddef>
-#include <memory>
+#include <string>
 
 namespace Mustard::inline Utility {
 
-/// @brief A progress indicator for sequential program.
-/// @note Do not support MPI parallel program.
-class ProgressBar {
-public:
-    ProgressBar();
-    ProgressBar(ProgressBar&& other) noexcept;
-    ~ProgressBar();
-
-    auto operator=(ProgressBar&& other) noexcept -> ProgressBar&;
-
-    auto Start(std::size_t nTotal) -> void;
-    auto Tick(std::chrono::nanoseconds printInterval = std::chrono::milliseconds{33}) -> void;
-    auto Complete() -> void;
-    auto Stop() -> void;
-
-private:
-    auto Print(std::size_t progress) -> void;
-
-private:
-    struct Impl;
-    std::unique_ptr<Impl> fImpl;
-};
+auto FormatToLocalTime(const std::chrono::system_clock::time_point& now) -> std::string;
 
 } // namespace Mustard::inline Utility

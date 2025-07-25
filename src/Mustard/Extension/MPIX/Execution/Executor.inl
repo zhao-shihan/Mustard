@@ -42,11 +42,9 @@ Executor<T>::Executor(std::string executionName, std::string taskName, std::uniq
     fPrintProgressModulo{},
     fExecutionName{std::move(executionName)},
     fTaskName{std::move(taskName)},
-    fExecutionBeginSystemTime{},
-    fWallTimeStopwatch{},
-    fCPUTimeStopwatch{},
-    fExecutionWallTime{},
-    fExecutionCPUTime{},
+    fExecutionBeginTime{},
+    fStopwatch{},
+    fProcessorStopwatch{},
     fExecutionInfoGatheredByMaster{} {}
 
 template<std::integral T>
@@ -84,9 +82,9 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     fExecuting = true;
     fScheduler->PreLoopAction();
     worldComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
-    fExecutionBeginSystemTime = scsc::now();
-    fWallTimeStopwatch.reset();
-    fCPUTimeStopwatch.reset();
+    fExecutionBeginTime = std::chrono::system_clock::now();
+    fStopwatch.reset();
+    fProcessorStopwatch.reset();
     PreLoopReport();
     // main loop
     while (ExecutingTask() != Task().last) {
@@ -99,16 +97,21 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
         PostTaskReport(taskID);
     }
     // finalize
-    fExecutionWallTime = fWallTimeStopwatch.s_elapsed();
-    fExecutionCPUTime = fCPUTimeStopwatch.s_used();
-    if (worldComm.rank() == 0) {
-        fExecutionInfoGatheredByMaster.resize(worldComm.size());
-    }
-    const std::tuple executionInfo{fScheduler->fNLocalExecutedTask, fExecutionWallTime, fExecutionCPUTime};
-    auto gatherExecutionInfo{worldComm.igather(0, executionInfo, fExecutionInfoGatheredByMaster.data())};
-    fScheduler->PostLoopAction();
     fExecuting = false;
-    gatherExecutionInfo.wait(mplr::duty_ratio::preset::relaxed);
+    if (const std::tuple executionInfo{NLocalExecutedTask(), fStopwatch.read().count(), fProcessorStopwatch.read().count()};
+        worldComm.rank() == 0) {
+        std::vector<std::tuple<T, StopwatchDuration::rep, StopwatchDuration::rep>> executionInfoGatheredByMaster(worldComm.size());
+        worldComm.igather(0, executionInfo, executionInfoGatheredByMaster.data()).wait(mplr::duty_ratio::preset::relaxed);
+        fExecutionInfoGatheredByMaster.resize(worldComm.size());
+        std::ranges::transform(executionInfoGatheredByMaster, fExecutionInfoGatheredByMaster.begin(),
+                               [](auto&& t) {
+                                   return ExecutionInfo{.nLocalExecutedTask = get<0>(t),
+                                                        .time = StopwatchDuration{get<1>(t)},
+                                                        .processorTime = StopwatchDuration{get<2>(t)}};
+                               });
+    } else {
+        worldComm.igather(0, executionInfo).wait(mplr::duty_ratio::preset::relaxed);
+    }
     worldComm.ibarrier().wait(mplr::duty_ratio::preset::relaxed);
     PostLoopReport();
     return NLocalExecutedTask();
@@ -126,12 +129,14 @@ auto Executor<T>::PrintExecutionSummary() const -> void {
         return;
     }
     Print("+------------------+--------------> Summary <-------------+-------------------+\n"
-          "| Rank in world    | Executed          | Wall time (s)    | CPU time (s)      |\n"
+          "| Rank in world    | Executed          | Wall time (s)    | Processor t. (s)  |\n"
           "+------------------+-------------------+------------------+-------------------+\n");
     Expects(ssize(fExecutionInfoGatheredByMaster) == worldComm.size());
     for (int rank{}; rank < worldComm.size(); ++rank) {
-        const auto& [executed, wallTime, cpuTime]{fExecutionInfoGatheredByMaster[rank]};
-        PrintLn("| {:16} | {:17} | {:16.3f} | {:17.3f} |", rank, executed, wallTime, cpuTime);
+        const auto& [executed, time, processorTime]{fExecutionInfoGatheredByMaster[rank]};
+        using Seconds = muc::chrono::seconds<double>;
+        PrintLn("| {:16} | {:17} | {:16.3f} | {:17.3f} |",
+                rank, executed, Seconds{time}.count(), Seconds{processorTime}.count());
     }
     PrintLn("+------------------+--------------> Summary <-------------+-------------------+");
 }
@@ -149,8 +154,8 @@ auto Executor<T>::PreLoopReport() const -> void {
     Print("+----------------------------------> Start <----------------------------------+\n"
           "| {:75} |\n"
           "+----------------------------------> Start <----------------------------------+\n",
-          fmt::format("[{:%FT%T%z}] {} has started on {} process{}",
-                      muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime)), fExecutionName, worldComm.size(), worldComm.size() > 1 ? "es" : ""));
+          fmt::format("[{}] {} has started on {} process{}",
+                      FormatToLocalTime(fExecutionBeginTime), fExecutionName, worldComm.size(), worldComm.size() > 1 ? "es" : ""));
 }
 
 template<std::integral T>
@@ -160,11 +165,13 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
         return;
     }
     const auto [goodEstimation, nExecutedTask]{fScheduler->NExecutedTaskEstimation()};
-    const auto secondsElapsed{fWallTimeStopwatch.s_elapsed()};
-    const auto speed{nExecutedTask / secondsElapsed};
+    const auto elapsed{fStopwatch.read()};
+    const auto speed{static_cast<double>(nExecutedTask) / elapsed.count()};
+    using std::chrono_literals::operator""s;
     if (fPrintProgressModulo == 0) {
         // adaptive mode, print every ~3s
-        if ((iEnded + 1) % std::max(1ll, std::llround(speed * 3)) != 0) {
+        constexpr auto threeSeconds{StopwatchDuration{3s}.count()};
+        if ((iEnded + 1) % std::max(1ll, std::llround(speed * threeSeconds)) != 0) {
             return;
         }
     } else {
@@ -174,16 +181,18 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
         }
     }
     const auto& worldComm{mplr::comm_world()};
-    Print("MPI{}> [{:%FT%T%z}] {} {} has ended\n"
+    const auto perSecondSpeed{muc::chrono::seconds<double>{1} / StopwatchDuration{1} * speed};
+    const auto now{std::chrono::system_clock::now()};
+    Print("MPI{}> [{}] {} {} has ended\n"
           "MPI{}>   {} elaps., {}\n",
-          worldComm.rank(), muc::localtime(scsc::to_time_t(scsc::now())), fTaskName, iEnded,
-          worldComm.rank(), SToDHMS(secondsElapsed),
+          worldComm.rank(), FormatToLocalTime(now), fTaskName, iEnded,
+          worldComm.rank(), ToDayHrMinSecMs(elapsed),
           [&, good{goodEstimation}, nExecuted{nExecutedTask}] {
               if (good) {
-                  const auto eta{(NTask() - nExecuted) / speed};
+                  const StopwatchDuration eta{std::llround((NTask() - nExecuted) / speed)};
                   const auto progress{100. * nExecuted / NTask()};
                   return fmt::format("est. rem. {} ({:.3}/s), prog.: {} | {}/{} | {:.3}%",
-                                     SToDHMS(eta), speed, NLocalExecutedTask(), nExecuted, NTask(), progress);
+                                     ToDayHrMinSecMs(eta), perSecondSpeed, NLocalExecutedTask(), nExecuted, NTask(), progress);
               } else {
                   return fmt::format("local prog.: {}", NLocalExecutedTask());
               }
@@ -200,21 +209,22 @@ auto Executor<T>::PostLoopReport() const -> void {
     if (worldComm.rank() != 0) {
         return;
     }
-    const auto now{scsc::now()};
-    const auto maxWallTime{get<1>(*std::ranges::max_element(fExecutionInfoGatheredByMaster, std::less{},
-                                                            [](auto&& a) { return std::get<1>(a); }))};
-    const auto totalCpuTime{muc::ranges::transform_reduce(fExecutionInfoGatheredByMaster, 0., std::plus{},
-                                                          [](auto&& a) { return std::get<2>(a); })};
+    const auto maxTime{std::ranges::max_element(fExecutionInfoGatheredByMaster, std::less{}, [](auto&& a) { return a.time; })->time};
+    const auto totalProcessorTime{muc::ranges::transform_reduce(
+        fExecutionInfoGatheredByMaster, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; })};
+    using Seconds = muc::chrono::seconds<double>;
+    using std::chrono_literals::operator""s;
+    const auto now{std::chrono::system_clock::now()};
     Print("+-----------------------------------> End <-----------------------------------+\n"
           "| {:75} |\n"
           "| {:75} |\n"
           "| {:75} |\n"
           "| {:75} |\n"
           "+-----------------------------------> End <-----------------------------------+\n",
-          fmt::format("[{:%FT%T%z}] {} has ended on {} process{}", muc::localtime(scsc::to_time_t(now)), fExecutionName, worldComm.size(), worldComm.size() > 1 ? "es" : ""),
-          fmt::format("  Start time: {:%FT%T%z}", muc::localtime(scsc::to_time_t(fExecutionBeginSystemTime))),
-          fmt::format("   Wall time: {:.3f} seconds{}", maxWallTime, maxWallTime <= 60 ? "" : " (" + SToDHMS(maxWallTime) + ')'),
-          fmt::format("    CPU time: {:.3f} seconds{}", totalCpuTime, totalCpuTime <= 60 ? "" : " (" + SToDHMS(totalCpuTime) + ')'));
+          fmt::format("[{}] {} has ended on {} process{}", FormatToLocalTime(now), fExecutionName, worldComm.size(), worldComm.size() > 1 ? "es" : ""),
+          fmt::format("      Start time: {}", FormatToLocalTime(fExecutionBeginTime)),
+          fmt::format("       Wall time: {:.3f} seconds ({})", Seconds{maxTime}.count(), ToDayHrMinSecMs(maxTime)),
+          fmt::format("  Processor time: {:.3f} seconds ({})", Seconds{totalProcessorTime}.count(), ToDayHrMinSecMs(totalProcessorTime)));
 }
 
 template<std::integral T>
@@ -258,22 +268,47 @@ auto Executor<T>::DefaultScheduler() -> std::unique_ptr<Scheduler<T>> {
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-auto Executor<T>::SToDHMS(double s) -> std::string {
-    const auto totalSeconds{std::llround(s)};
-    const auto div86400{muc::div(totalSeconds, 86400ll)};
-    const auto div3600{muc::div(div86400.rem, 3600ll)};
-    const auto div60{muc::div(div3600.rem, 60ll)};
-    const auto& [day, hour, minute, second]{std::tie(div86400.quot, div3600.quot, div60.quot, div60.rem)};
-    if (day > 0) {
-        return fmt::format("{}d {}h {}m", day, hour, minute);
-    }
-    if (hour > 0) {
-        return fmt::format("{}h {}m", hour, minute);
-    }
-    if (minute > 0) {
-        return fmt::format("{}m {}s", minute, second);
-    }
-    return fmt::format("{}s", second);
+auto Executor<T>::ToDayHrMinSecMs(StopwatchDuration duration) -> std::string {
+    Expects(duration.count() >= 0);
+
+    constexpr auto msPerSecond{1000ll};
+    constexpr auto msPerMinute{60 * msPerSecond};
+    constexpr auto msPerHour{60 * msPerMinute};
+    constexpr auto msPerDay{24 * msPerHour};
+
+    const auto msTotal{std::chrono::round<std::chrono::duration<long long, std::milli>>(duration).count()};
+    const auto [day, rem1]{std::div(msTotal, msPerDay)};
+    const auto [hour, rem2]{std::div(rem1, msPerHour)};
+    const auto [minute, rem3]{std::div(rem2, msPerMinute)};
+    const auto [second, millisecond]{std::div(rem3, msPerSecond)};
+
+    std::string result;
+    do {
+        result.reserve(16);
+        if (day) {
+            result += fmt::format("{}d ", day);
+        }
+        if (hour) {
+            result += fmt::format("{}h ", hour);
+        }
+        if (minute) {
+            result += fmt::format("{}m ", minute);
+        }
+        if (day) {
+            break;
+        }
+        if (second) {
+            result += fmt::format("{}s ", second);
+        }
+        if (hour) {
+            break;
+        }
+        if (millisecond or result.empty()) {
+            result += fmt::format("{}ms ", millisecond);
+        }
+    } while (false);
+    result.pop_back();
+    return result;
 }
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution
