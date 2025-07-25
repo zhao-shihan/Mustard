@@ -69,10 +69,8 @@ public:
     using Index = T;
 
 public:
-    Executor();
-    Executor(std::string executionName, std::string taskName);
-    Executor(std::unique_ptr<Scheduler<T>> scheduler);
-    Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    Executor(std::unique_ptr<Scheduler<T>> scheduler = DefaultScheduler());
+    Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler = DefaultScheduler());
 
     auto SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void;
     auto ResetScheduler() -> void { SwitchScheduler(DefaultScheduler()); }
@@ -109,7 +107,7 @@ private:
 
 private:
     struct ExecutionInfo {
-        T nLocalExecutedTask;
+        T nExecutedTask;
         StopwatchDuration time;
         StopwatchDuration processorTime;
     };
@@ -130,6 +128,7 @@ private:
     muc::chrono::processor_stopwatch fProcessorStopwatch;
 
     std::vector<ExecutionInfo> fExecutionInfoGatheredByMaster;
+    ExecutionInfo fExecutionInfoReducedByMaster;
 };
 
 } // namespace Mustard::inline Extension::MPIX::inline Execution

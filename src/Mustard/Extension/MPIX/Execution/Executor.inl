@@ -20,16 +20,6 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-Executor<T>::Executor() :
-    Executor{DefaultScheduler()} {}
-
-template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-Executor<T>::Executor(std::string executionName, std::string taskName) :
-    Executor{std::move(executionName), std::move(taskName), DefaultScheduler()} {}
-
-template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 Executor<T>::Executor(std::unique_ptr<Scheduler<T>> scheduler) :
     Executor{"Execution", "Task", std::move(scheduler)} {}
 
@@ -45,7 +35,8 @@ Executor<T>::Executor(std::string executionName, std::string taskName, std::uniq
     fExecutionBeginTime{},
     fStopwatch{},
     fProcessorStopwatch{},
-    fExecutionInfoGatheredByMaster{} {}
+    fExecutionInfoGatheredByMaster{},
+    fExecutionInfoReducedByMaster{} {}
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
@@ -105,10 +96,16 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
         fExecutionInfoGatheredByMaster.resize(worldComm.size());
         std::ranges::transform(executionInfoGatheredByMaster, fExecutionInfoGatheredByMaster.begin(),
                                [](auto&& t) {
-                                   return ExecutionInfo{.nLocalExecutedTask = get<0>(t),
+                                   return ExecutionInfo{.nExecutedTask = get<0>(t),
                                                         .time = StopwatchDuration{get<1>(t)},
                                                         .processorTime = StopwatchDuration{get<2>(t)}};
                                });
+        auto& [totalExecutedTask, maxTime, totalProcessorTime]{fExecutionInfoReducedByMaster};
+        totalExecutedTask = muc::ranges::transform_reduce(
+            fExecutionInfoGatheredByMaster, T{}, std::plus{}, [](auto&& a) { return a.nExecutedTask; });
+        maxTime = std::ranges::max_element(fExecutionInfoGatheredByMaster, std::less{}, [](auto&& a) { return a.time; })->time;
+        totalProcessorTime = muc::ranges::transform_reduce(
+            fExecutionInfoGatheredByMaster, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; });
     } else {
         worldComm.igather(0, executionInfo).wait(mplr::duty_ratio::preset::relaxed);
     }
@@ -132,12 +129,16 @@ auto Executor<T>::PrintExecutionSummary() const -> void {
           "| Rank in world    | Executed          | Wall time (s)    | Processor t. (s)  |\n"
           "+------------------+-------------------+------------------+-------------------+\n");
     Expects(ssize(fExecutionInfoGatheredByMaster) == worldComm.size());
+    using Seconds = muc::chrono::seconds<double>;
     for (int rank{}; rank < worldComm.size(); ++rank) {
         const auto& [executed, time, processorTime]{fExecutionInfoGatheredByMaster[rank]};
-        using Seconds = muc::chrono::seconds<double>;
         PrintLn("| {:16} | {:17} | {:16.3f} | {:17.3f} |",
                 rank, executed, Seconds{time}.count(), Seconds{processorTime}.count());
     }
+    const auto& [nTotalExecutedTask, maxTime, totalProcessorTime]{fExecutionInfoReducedByMaster};
+    PrintLn("+------------------+-------------------+------------------+-------------------+\n"
+            "| Total or max     | {:17} | {:16.3f} | {:17.3f} |",
+            nTotalExecutedTask, Seconds{maxTime}.count(), Seconds{totalProcessorTime}.count());
     PrintLn("+------------------+--------------> Summary <-------------+-------------------+");
 }
 
@@ -209,9 +210,7 @@ auto Executor<T>::PostLoopReport() const -> void {
     if (worldComm.rank() != 0) {
         return;
     }
-    const auto maxTime{std::ranges::max_element(fExecutionInfoGatheredByMaster, std::less{}, [](auto&& a) { return a.time; })->time};
-    const auto totalProcessorTime{muc::ranges::transform_reduce(
-        fExecutionInfoGatheredByMaster, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; })};
+    const auto& [_, maxTime, totalProcessorTime]{fExecutionInfoReducedByMaster};
     using Seconds = muc::chrono::seconds<double>;
     using std::chrono_literals::operator""s;
     const auto now{std::chrono::system_clock::now()};
