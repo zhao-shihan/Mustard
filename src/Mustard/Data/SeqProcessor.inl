@@ -31,14 +31,14 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf,
 }
 
 template<TupleModelizable... Ts, std::integral AEventIDType>
-auto SeqProcessor::Process(ROOT::RDF::RNode rdf, AEventIDType, std::string eventIDColumnName,
+auto SeqProcessor::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::string eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
 }
 
 template<TupleModelizable... Ts, std::integral AEventIDType>
-auto SeqProcessor::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::index> eventSplit,
+auto SeqProcessor::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::vector<gsl::index> eventSplit,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     Expects(std::ranges::is_sorted(eventSplit));
 
@@ -60,7 +60,7 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::
 
 template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           AEventIDType, std::string eventIDColumnName,
+                           muc::type_tag<AEventIDType>, std::string eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
     auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
@@ -68,7 +68,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
 
 template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           AEventIDType, std::vector<std::string> eventIDColumnName,
+                           muc::type_tag<AEventIDType>, std::vector<std::string> eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
     auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
@@ -76,7 +76,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
 
 template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           AEventIDType, const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
+                           muc::type_tag<AEventIDType>, const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
     const auto& es{eventSplit};
 

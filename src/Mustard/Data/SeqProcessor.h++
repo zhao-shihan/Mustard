@@ -31,6 +31,7 @@
 #include "muc/concepts"
 #include "muc/numeric"
 #include "muc/ptrvec"
+#include "muc/utility"
 
 #include "gsl/gsl"
 
@@ -67,23 +68,23 @@ public:
                  std::invocable<std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index;
 
     template<TupleModelizable... Ts, std::integral AEventIDType>
-    auto Process(ROOT::RDF::RNode rdf, AEventIDType, std::string eventIDBranchName,
+    auto Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::string eventIDBranchName,
                  std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
     template<TupleModelizable... Ts, std::integral AEventIDType>
-    auto Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::index> eventSplit,
+    auto Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::vector<gsl::index> eventSplit,
                  std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
 
     template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                 AEventIDType, std::string eventIDBranchName,
+                 muc::type_tag<AEventIDType>, std::string eventIDBranchName,
                  std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index;
     template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                 AEventIDType, std::vector<std::string> eventIDBranchName,
+                 muc::type_tag<AEventIDType>, std::vector<std::string> eventIDBranchName,
                  std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index;
     template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
     auto Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                 AEventIDType, const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
+                 muc::type_tag<AEventIDType>, const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
                  std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index;
 
 private:

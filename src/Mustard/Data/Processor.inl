@@ -41,7 +41,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts, std::integral AEventIDType>
-auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, AEventIDType, std::string eventIDColumnName,
+auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::string eventIDColumnName,
                                    std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
@@ -49,7 +49,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, AEventIDType, std::stri
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 template<TupleModelizable... Ts, std::integral AEventIDType>
-auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::index> eventSplit,
+auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::vector<gsl::index> eventSplit,
                                    std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     Expects(std::ranges::is_sorted(eventSplit));
 
