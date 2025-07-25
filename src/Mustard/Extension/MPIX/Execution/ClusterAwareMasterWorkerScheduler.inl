@@ -120,7 +120,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
                 fRecvFromCM.wait();
                 intraNodeTaskID = fTaskIDRecvFromCM;
                 if (intraNodeTaskID != fS->fTask.last) {
-                    intraNodeTaskEnd = intraNodeTaskID + fS->fInterNodeBatchSize[Env::MPIEnv::Instance().LocalNodeID()];
+                    intraNodeTaskEnd = intraNodeTaskID + fS->fInterNodeBatchSize[mpiEnv.LocalNodeID()];
                     fRecvFromCM.start();
                     fSendToCM.start();
                 } else {

@@ -124,7 +124,7 @@ auto ProgressBar::Print(std::size_t progress) -> void {
     const muc::chrono::seconds<double> secondsElapsed{fImpl->runStopWatch.read()};
     fImpl->progressBar.set_option(indicators::option::PostfixText{
         fmt::format("{}/{} ({:.3}/s)", progress, fImpl->total, progress / secondsElapsed.count())});
-    std::lock_guard lock{Impl::gPrintMutex};
+    std::scoped_lock lock{Impl::gPrintMutex};
     fImpl->progressBar.set_progress(progress);
 }
 
