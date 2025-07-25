@@ -69,11 +69,14 @@ public:
     using Index = T;
 
 public:
-    Executor(std::unique_ptr<Scheduler<T>> scheduler = DefaultScheduler());
-    Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler = DefaultScheduler());
+    Executor(std::string_view scheduler = DefaultSchedulerCode());
+    Executor(std::string executionName, std::string taskName, std::string_view scheduler = DefaultSchedulerCode());
+    Executor(std::unique_ptr<Scheduler<T>> scheduler);
+    Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
+    auto SwitchScheduler(std::string_view scheduler) -> void { SwitchScheduler(DecodeScheduler(scheduler)); }
     auto SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void;
-    auto ResetScheduler() -> void { SwitchScheduler(DefaultScheduler()); }
+    auto ResetScheduler() -> void { SwitchScheduler(DecodeScheduler(DefaultSchedulerCode())); }
 
     auto PrintProgress(bool a) -> void { fPrintProgress = a; }
     auto PrintProgressModulo(long long mod) -> void { fPrintProgressModulo = mod; }
@@ -97,7 +100,8 @@ private:
     auto PostTaskReport(T iEnded) const -> void;
     auto PostLoopReport() const -> void;
 
-    static auto DefaultScheduler() -> std::unique_ptr<Scheduler<T>>;
+    static auto DecodeScheduler(std::string_view scheduler) -> std::unique_ptr<Scheduler<T>>;
+    static auto DefaultSchedulerCode() -> std::string;
 
 private:
     using StopwatchDuration = muc::chrono::stopwatch::duration;

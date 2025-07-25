@@ -20,6 +20,16 @@ namespace Mustard::inline Extension::MPIX::inline Execution {
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+Executor<T>::Executor(std::string_view scheduler) :
+    Executor{DecodeScheduler(scheduler)} {}
+
+template<std::integral T>
+    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+Executor<T>::Executor(std::string executionName, std::string taskName, std::string_view scheduler) :
+    Executor{std::move(executionName), std::move(taskName), DecodeScheduler(scheduler)} {}
+
+template<std::integral T>
+    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 Executor<T>::Executor(std::unique_ptr<Scheduler<T>> scheduler) :
     Executor{"Execution", "Task", std::move(scheduler)} {}
 
@@ -228,41 +238,45 @@ auto Executor<T>::PostLoopReport() const -> void {
 
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-auto Executor<T>::DefaultScheduler() -> std::unique_ptr<Scheduler<T>> {
-    static const std::map<std::string_view, std::function<auto()->std::unique_ptr<Scheduler<T>>>> scheduler{
+auto Executor<T>::DecodeScheduler(std::string_view scheduler) -> std::unique_ptr<Scheduler<T>> {
+    static const std::map<std::string_view, std::function<auto()->std::unique_ptr<Scheduler<T>>>> schedulerMap{
         {"clmw", [] { return std::make_unique<ClusterAwareMasterWorkerScheduler<T>>(); }},
         {"mw",   [] { return std::make_unique<MasterWorkerScheduler<T>>(); }            },
         {"seq",  [] { return std::make_unique<SequentialScheduler<T>>(); }              },
         {"shm",  [] { return std::make_unique<SharedMemoryScheduler<T>>(); }            },
         {"stat", [] { return std::make_unique<StaticScheduler<T>>(); }                  }
     };
+    try {
+        return schedulerMap.at(scheduler)();
+    } catch (const std::out_of_range&) {
+        std::vector<std::string_view> available(schedulerMap.size());
+        std::ranges::transform(schedulerMap, available.begin(), [](auto&& s) { return s.first; });
+        Throw<std::out_of_range>(fmt::format("Scheduler '{}' not found, available are {}", scheduler, available));
+    }
+}
 
+template<std::integral T>
+    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+auto Executor<T>::DefaultSchedulerCode() -> std::string {
     if (const auto envScheduler{envparse::parse<envparse::not_set_option::left_blank>("${MUSTARD_EXECUTION_SCHEDULER}")};
         not envScheduler.empty()) {
-        try {
-            return scheduler.at(envScheduler)();
-        } catch (const std::out_of_range&) {
-            std::vector<std::string_view> available(scheduler.size());
-            std::ranges::transform(scheduler, available.begin(), [](auto&& s) { return s.first; });
-            Throw<std::out_of_range>(fmt::format("Scheduler '{}' not found, available are {}", envScheduler, available));
-        }
+        return envScheduler;
     }
-
     if (not mplr::available()) {
-        return scheduler.at("seq")();
+        return "seq";
     }
     const auto& worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
-        return scheduler.at("seq")();
+        return "seq";
     }
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     if (mpiEnv.ClusterSize() == 1) {
-        return scheduler.at("shm")();
+        return "shm";
     }
     if (worldComm.size() <= 128) {
-        return scheduler.at("mw")();
+        return "mw";
     }
-    return scheduler.at("clmw")();
+    return "clmw";
 }
 
 template<std::integral T>
