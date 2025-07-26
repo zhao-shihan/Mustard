@@ -50,7 +50,7 @@ namespace {
 
 template<std::unsigned_integral T>
 auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     Expects(worldComm.rank() == 0);
 
     static_assert(std::same_as<Math::Random::Xoshiro256PP::SeedType, std::uint64_t>);
@@ -70,7 +70,7 @@ auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
 } // namespace internal
 
 auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> void {
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return;
     }

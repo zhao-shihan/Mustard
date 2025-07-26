@@ -57,7 +57,7 @@ auto RDFEventSplit(ROOT::RDF::RNode rdf,
         return internal::MakeFlatRDFEventSplit<T>(std::move(rdf), std::move(eventIDColumnName)).second;
     }};
     if (mplr::available()) {
-        const auto& worldComm{mplr::comm_world()};
+        const auto worldComm{mplr::comm_world()};
         auto eventSplit{worldComm.rank() == 0 ? MakeFlatRDFEventSplit() : std::vector<gsl::index>{}};
         auto eventSplitSize{eventSplit.size()};
         worldComm.bcast(0, eventSplitSize);
@@ -87,7 +87,7 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
         return internal::MakeFlatRDFEventSplit<T>(std::move(rdf[i]), eventIDColumnName[i]);
     }};
     if (mplr::available()) {
-        const auto& worldComm{mplr::comm_world()};
+        const auto worldComm{mplr::comm_world()};
         for (gsl::index i{}; i < nRDF; ++i) {
             if (worldComm.rank() == i % worldComm.size()) {
                 flatES[i] = MakeFlatRDFEventSplit(i);

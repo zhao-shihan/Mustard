@@ -38,7 +38,7 @@ auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path
         Throw<std::invalid_argument>(fmt::format("Invalid file name '{}'", stem.c_str()));
     }
 
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return path;
     }

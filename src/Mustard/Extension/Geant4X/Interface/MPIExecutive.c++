@@ -32,7 +32,7 @@ MPIExecutive::MPIExecutive() :
     WeakSingleton{this} {}
 
 auto MPIExecutive::CheckSequential() const -> void {
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return;
     }

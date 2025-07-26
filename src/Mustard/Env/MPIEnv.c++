@@ -59,7 +59,7 @@ MPIEnv::MPIEnv(NoBanner, int& argc, char**& argv,
     fNodeList{} {
     mplr::init(argc, argv);
 
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     fIntraNodeComm = mplr::communicator{mplr::communicator::split_shared_memory, worldComm};
     enum struct IntraNodeColor { Leader = 0,
                                  Other = MPI_UNDEFINED };
@@ -133,7 +133,7 @@ MPIEnv::MPIEnv(int argc, char* argv[],
 }
 
 MPIEnv::~MPIEnv() {
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     // Wait all processes before finalizing
     worldComm.ibarrier().wait(mplr::duty_ratio::preset::relaxed);
     // Show exit banner
@@ -150,7 +150,7 @@ auto MPIEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     // MPI version at runtime
     const auto mpiRuntimeVersion{mplr::get_version()};
     // Messages
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     Print(fmt::emphasis::bold,
           "\n"
           " Parallelized with MPI, running {}\n",

@@ -69,7 +69,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     if (task.last == task.first) {
         return 0;
     }
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     const auto nTask{task.last - task.first};
     if (nTask < static_cast<T>(worldComm.size())) {
         Throw<std::runtime_error>(fmt::format("Number of tasks ({}) < number of processes ({})", nTask, worldComm.size()));
@@ -127,7 +127,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
 template<std::integral T>
     requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PrintExecutionSummary() const -> void {
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     if (worldComm.rank() != 0) {
         return;
     }
@@ -158,7 +158,7 @@ auto Executor<T>::PreLoopReport() const -> void {
     if (not fPrintProgress) {
         return;
     }
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     if (worldComm.rank() != 0) {
         return;
     }
@@ -191,7 +191,7 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
             return;
         }
     }
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     const auto perSecondSpeed{muc::chrono::seconds<double>{1} / StopwatchDuration{1} * speed};
     const auto now{std::chrono::system_clock::now()};
     Print("MPI{}> [{}] {} {} has ended\n"
@@ -216,7 +216,7 @@ auto Executor<T>::PostLoopReport() const -> void {
     if (not fPrintProgress) {
         return;
     }
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     if (worldComm.rank() != 0) {
         return;
     }
@@ -265,7 +265,7 @@ auto Executor<T>::DefaultSchedulerCode() -> std::string {
     if (not mplr::available()) {
         return "seq";
     }
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return "seq";
     }

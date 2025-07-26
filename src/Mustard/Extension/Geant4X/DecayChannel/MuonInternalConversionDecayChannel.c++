@@ -131,7 +131,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
 
     using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
     muc::array2ld sum{};
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     {                               // Monte Carlo integration here
         muc::array2ld partialSum{}; // improve numeric stability
         MPIX::Executor<unsigned long long>{"Estimation", "Sample"}

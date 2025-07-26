@@ -85,7 +85,7 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     std::future<void> asyncProcess;
 
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     const auto batch{this->CalculateBatchConfiguration(worldComm.size(), n)};
     fExecutor.Execute(
         std::max(static_cast<Index>(worldComm.size()), batch.nBatch),
@@ -117,7 +117,7 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
 
 template<muc::instantiated_from<MPIX::Executor> AExecutor>
 auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what) -> bool {
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     const auto byPassWillOccur{static_cast<Index>(worldComm.size()) > n};
     if (byPassWillOccur) [[unlikely]] {
         MasterPrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
