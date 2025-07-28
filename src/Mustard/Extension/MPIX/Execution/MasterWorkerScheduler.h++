@@ -44,7 +44,7 @@ private:
     public:
         Master(MasterWorkerScheduler<T>* s);
 
-        auto StartAll() -> void { fRecv.startall(); }
+        auto StartAll() -> void;
         auto operator()() -> void;
 
     private:

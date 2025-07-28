@@ -38,7 +38,6 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::ClusterMaster(ClusterAwareM
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::StartAll() -> void {
     fRecvFromNM.startall();
-    fS->fInterNodeComm.barrier();
 }
 
 template<std::integral T>
@@ -93,6 +92,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::StartAll() -> void {
         fClusterMaster->StartAll();
         fClusterMasterThread = std::jthread{std::ref(*fClusterMaster)};
     }
+    fS->fInterNodeComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>
@@ -104,9 +104,6 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
     auto intraNodeTaskID{intraNodeFirstTaskID + mpiEnv.LocalNode().size * fS->fIntraNodeBatchSize};
     auto intraNodeTaskEnd{intraNodeFirstTaskID + fS->fInterNodeBatchSize[mpiEnv.LocalNodeID()]};
 
-    if (not fClusterMaster) {
-        fS->fInterNodeComm.barrier();
-    }
     fRecvFromCM.start();
     fSendToCM.start();
     while (true) {
@@ -199,6 +196,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::PreLoopAction() -> void {
         fNodeMaster->StartAll();
         fNodeMasterThread = std::jthread{std::ref(*fNodeMaster)};
     }
+    fIntraNodeComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>

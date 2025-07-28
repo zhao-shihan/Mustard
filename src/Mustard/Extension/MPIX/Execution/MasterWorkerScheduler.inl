@@ -36,6 +36,11 @@ MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
 }
 
 template<std::integral T>
+auto MasterWorkerScheduler<T>::Master::StartAll() -> void {
+    fRecv.startall();
+}
+
+template<std::integral T>
 auto MasterWorkerScheduler<T>::Master::operator()() -> void {
     T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
     while (true) {
@@ -91,6 +96,7 @@ auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
         fMaster->StartAll();
         fMasterThread = std::jthread{std::ref(*fMaster)};
     }
+    fComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>
