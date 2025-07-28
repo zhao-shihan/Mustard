@@ -99,10 +99,13 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
     }
     // finalize
     fExecuting = false;
-    if (const std::tuple executionInfo{NLocalExecutedTask(), fStopwatch.read().count(), fProcessorStopwatch.read().count()};
-        worldComm.rank() == 0) {
-        std::vector<std::tuple<T, StopwatchDuration::rep, StopwatchDuration::rep>> executionInfoGatheredByMaster(worldComm.size());
-        worldComm.igather(0, executionInfo, executionInfoGatheredByMaster.data()).wait(mplr::duty_ratio::preset::relaxed);
+    const std::tuple executionInfo{NLocalExecutedTask(), fStopwatch.read().count(), fProcessorStopwatch.read().count()};
+    std::vector<std::tuple<T, StopwatchDuration::rep, StopwatchDuration::rep>> executionInfoGatheredByMaster(
+        worldComm.rank() == 0 ? worldComm.size() : 0);
+    auto gatherExecutionInfo{worldComm.igather(0, executionInfo, executionInfoGatheredByMaster.data())};
+    fScheduler->PostLoopAction();
+    gatherExecutionInfo.wait(mplr::duty_ratio::preset::relaxed);
+    if (worldComm.rank() == 0) {
         fExecutionInfoGatheredByMaster.resize(worldComm.size());
         std::ranges::transform(executionInfoGatheredByMaster, fExecutionInfoGatheredByMaster.begin(),
                                [](auto&& t) {
@@ -116,8 +119,6 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
         maxTime = std::ranges::max_element(fExecutionInfoGatheredByMaster, std::less{}, [](auto&& a) { return a.time; })->time;
         totalProcessorTime = muc::ranges::transform_reduce(
             fExecutionInfoGatheredByMaster, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; });
-    } else {
-        worldComm.igather(0, executionInfo).wait(mplr::duty_ratio::preset::relaxed);
     }
     worldComm.ibarrier().wait(mplr::duty_ratio::preset::relaxed);
     PostLoopReport();
