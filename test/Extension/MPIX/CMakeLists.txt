@@ -1,14 +1,2 @@
-add_executable(TestSharedMemoryScheduler TestSharedMemoryScheduler.c++)
-target_link_libraries(TestSharedMemoryScheduler Mustard::Mustard)
-
 add_executable(TestExecutor TestExecutor.c++)
 target_link_libraries(TestExecutor Mustard::Mustard)
-
-add_executable(TestMasterWorkerScheduler TestMasterWorkerScheduler.c++)
-target_link_libraries(TestMasterWorkerScheduler Mustard::Mustard)
-
-add_executable(TestStaticScheduler TestStaticScheduler.c++)
-target_link_libraries(TestStaticScheduler Mustard::Mustard)
-
-add_executable(TestClusterAwareMasterWorkerScheduler TestClusterAwareMasterWorkerScheduler.c++)
-target_link_libraries(TestClusterAwareMasterWorkerScheduler Mustard::Mustard)
