@@ -79,7 +79,7 @@ public:
     auto ResetScheduler() -> void { SwitchScheduler(DecodeScheduler(DefaultSchedulerCode())); }
 
     auto PrintProgress(bool a) -> void { fPrintProgress = a; }
-    auto PrintProgressModulo(long long mod) -> void { fPrintProgressModulo = mod; }
+    auto PrintProgressInterval(muc::chrono::seconds<double> t) -> void { fPrintProgressInterval = std::max({}, t); }
     auto ExecutionName(std::string name) -> void { fExecutionName = std::move(name); }
     auto TaskName(std::string name) -> void { fTaskName = std::move(name); }
 
@@ -122,7 +122,7 @@ private:
     bool fExecuting;
 
     bool fPrintProgress;
-    long long fPrintProgressModulo;
+    muc::chrono::seconds<double> fPrintProgressInterval;
 
     std::string fExecutionName;
     std::string fTaskName;

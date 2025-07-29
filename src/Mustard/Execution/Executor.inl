@@ -39,7 +39,7 @@ Executor<T>::Executor(std::string executionName, std::string taskName, std::uniq
     fScheduler{std::move(scheduler)},
     fExecuting{},
     fPrintProgress{true},
-    fPrintProgressModulo{},
+    fPrintProgressInterval{3},
     fExecutionName{std::move(executionName)},
     fTaskName{std::move(taskName)},
     fExecutionBeginTime{},
@@ -175,24 +175,14 @@ auto Executor<T>::PreLoopReport() const -> void {
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostTaskReport(T iEnded) const -> void {
-    if (not fPrintProgress or fPrintProgressModulo < 0) {
+    if (not fPrintProgress) {
         return;
     }
     const auto [goodEstimation, nExecutedTask]{fScheduler->NExecutedTaskEstimation()};
     const auto elapsed{fStopwatch.read()};
     const auto speed{static_cast<double>(nExecutedTask) / elapsed.count()};
-    using std::chrono_literals::operator""s;
-    if (fPrintProgressModulo == 0) {
-        // adaptive mode, print every ~3s
-        constexpr auto threeSeconds{StopwatchDuration{3s}.count()};
-        if ((iEnded + 1) % std::max(1ll, std::llround(speed * threeSeconds)) != 0) {
-            return;
-        }
-    } else {
-        // manual mode
-        if ((iEnded + 1) % fPrintProgressModulo != 0) {
-            return;
-        }
+    if ((iEnded + 1) % std::max(1ll, std::llround(speed * fPrintProgressInterval.count())) != 0) {
+        return;
     }
     const auto worldComm{mplr::comm_world()};
     const auto perSecondSpeed{muc::chrono::seconds<double>{1} / StopwatchDuration{1} * speed};

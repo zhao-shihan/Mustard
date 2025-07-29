@@ -24,10 +24,9 @@
 
 #include "G4RunManager.hh"
 
-#include "gsl/gsl"
+#include "muc/chrono"
 
-#include <chrono>
-#include <memory>
+#include "gsl/gsl"
 
 namespace Mustard::Geant4X::inline Run {
 
@@ -53,8 +52,8 @@ public:
 
     static auto GetRunManager() -> auto { return static_cast<MPIRunManager*>(G4RunManager::GetRunManager()); }
 
-    auto PrintProgress(G4bool b) -> void { fExecutor.PrintProgress(b), printModulo = -1; }
-    auto PrintProgressModulo(G4int mod) -> void { fExecutor.PrintProgressModulo(mod), printModulo = -1; }
+    auto PrintProgress(G4bool print) -> void;
+    auto PrintProgressInterval(muc::chrono::seconds<double> t) -> void;
 
     virtual auto BeamOn(G4int nEvent, gsl::czstring macroFile = nullptr, G4int nSelect = -1) -> void override;
     virtual auto DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void override;

@@ -23,7 +23,7 @@
 #include <memory>
 
 class G4UIcmdWithABool;
-class G4UIcmdWithAnInteger;
+class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithoutParameter;
 class G4UIdirectory;
 
@@ -45,7 +45,7 @@ public:
 private:
     std::unique_ptr<G4UIdirectory> fDirectory;
     std::unique_ptr<G4UIcmdWithABool> fPrintProgress;
-    std::unique_ptr<G4UIcmdWithAnInteger> fPrintProgressModulo;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fPrintProgressInterval;
     std::unique_ptr<G4UIcmdWithoutParameter> fPrintRunSummary;
 };
 

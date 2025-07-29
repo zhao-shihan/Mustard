@@ -19,10 +19,13 @@
 #include "Mustard/Geant4X/Run/MPIRunManager.h++"
 #include "Mustard/Geant4X/Run/MPIRunMessenger.h++"
 
+#include "G4SystemOfUnits.hh"
 #include "G4UIcmdWithABool.hh"
-#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithoutParameter.hh"
 #include "G4UIdirectory.hh"
+
+#include "muc/chrono"
 
 namespace Mustard::Geant4X::inline Run {
 
@@ -30,7 +33,7 @@ MPIRunMessenger::MPIRunMessenger() :
     SingletonMessenger{},
     fDirectory{},
     fPrintProgress{},
-    fPrintProgressModulo{},
+    fPrintProgressInterval{},
     fPrintRunSummary{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Run/");
@@ -41,10 +44,12 @@ MPIRunMessenger::MPIRunMessenger() :
     fPrintProgress->SetParameterName("b", false);
     fPrintProgress->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    fPrintProgressModulo = std::make_unique<G4UIcmdWithAnInteger>("/Mustard/Run/PrintProgressModulo", this);
-    fPrintProgressModulo->SetGuidance("Set display frequency of run progress. If set to 0, the frequency is adaptive. Progress will not be displayed if set to <0. /run/printprogress is disabled once this is set.");
-    fPrintProgressModulo->SetParameterName("modulo", false);
-    fPrintProgressModulo->AvailableForStates(G4State_PreInit, G4State_Idle);
+    fPrintProgressInterval = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/Run/PrintProgressInterval", this);
+    fPrintProgressInterval->SetGuidance("Set display time interval of run progress. /run/printprogress is disabled once this is set.");
+    fPrintProgressInterval->SetParameterName("interval", false);
+    fPrintProgressInterval->SetUnitCategory("Time");
+    fPrintProgressInterval->SetRange("interval > 0");
+    fPrintProgressInterval->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     fPrintRunSummary = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Run/PrintRunSummary", this);
     fPrintRunSummary->SetGuidance("Print MPI run performace summary.");
@@ -58,9 +63,10 @@ auto MPIRunMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void 
         Deliver<MPIRunManager>([&](auto&& r) {
             r.PrintProgress(fPrintProgress->GetNewBoolValue(value));
         });
-    } else if (command == fPrintProgressModulo.get()) {
+    } else if (command == fPrintProgressInterval.get()) {
         Deliver<MPIRunManager>([&](auto&& r) {
-            r.PrintProgressModulo(fPrintProgressModulo->GetNewIntValue(value));
+            const muc::chrono::seconds<double> interval{fPrintProgressInterval->GetNewDoubleValue(value) / s};
+            r.PrintProgressInterval(interval);
         });
     } else if (command == fPrintRunSummary.get()) {
         Deliver<MPIRunManager>([&](auto&& r) {

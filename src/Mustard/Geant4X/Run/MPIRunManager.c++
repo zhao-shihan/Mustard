@@ -56,6 +56,16 @@ MPIRunManager::MPIRunManager() :
     SetVerboseLevel(muc::to_underlying(Env::BasicEnv::Instance().VerboseLevel()));
 }
 
+auto MPIRunManager::PrintProgress(G4bool print) -> void {
+    fExecutor.PrintProgress(print);
+    printModulo = -1;
+}
+
+auto MPIRunManager::PrintProgressInterval(muc::chrono::seconds<double> t) -> void {
+    fExecutor.PrintProgressInterval(t);
+    printModulo = -1;
+}
+
 auto MPIRunManager::BeamOn(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void {
     Parallel::ReseedRandomEngine();
     G4RunManager::BeamOn(nEvent, macroFile, nSelect);
