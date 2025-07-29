@@ -53,11 +53,7 @@ struct ProgressBar::Impl {
     muc::chrono::stopwatch runStopWatch;
     muc::chrono::stopwatch printStopWatch;
     std::future<void> asyncPrint;
-
-    static std::mutex gPrintMutex;
 };
-
-std::mutex ProgressBar::Impl::gPrintMutex{};
 
 ProgressBar::ProgressBar() = default;
 
@@ -124,7 +120,6 @@ auto ProgressBar::Print(std::size_t progress) -> void {
     const muc::chrono::seconds<double> secondsElapsed{fImpl->runStopWatch.read()};
     fImpl->progressBar.set_option(indicators::option::PostfixText{
         fmt::format("{}/{} ({:.3}/s)", progress, fImpl->total, progress / secondsElapsed.count())});
-    std::scoped_lock lock{Impl::gPrintMutex};
     fImpl->progressBar.set_progress(progress);
 }
 
