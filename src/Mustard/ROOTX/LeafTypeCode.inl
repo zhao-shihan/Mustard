@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::ROOTX {
+namespace Mustard::ROOTX {
 
-template<Concept::ROOTFundamental T>
+template<ROOTX::Fundamental T>
 constexpr auto LeafTypeCode() -> char {
     if constexpr (std::same_as<std::decay_t<T>, gsl::zstring>) {
         return 'C';
@@ -51,4 +51,4 @@ constexpr auto LeafTypeCode() -> char {
     }
 }
 
-} // namespace Mustard::inline Extension::ROOTX
+} // namespace Mustard::ROOTX

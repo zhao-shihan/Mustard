@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::ROOTX::Math {
+namespace Mustard::ROOTX::Math {
 
 template<Mustard::Math::Random::UniformPseudoRandomBitGenerator PRBG>
 AsTRandom<PRBG>::AsTRandom(typename PRBG::SeedType seed) :
@@ -39,4 +39,4 @@ auto AsTRandom<PRBG>::GetSeed() const -> UInt_t {
     return 0;
 }
 
-} // namespace Mustard::inline Extension::ROOTX::Math
+} // namespace Mustard::ROOTX::Math

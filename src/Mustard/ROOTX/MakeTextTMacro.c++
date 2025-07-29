@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Utility/CreateTemporaryFile.h++"
-#include "Mustard/Utility/MakeTextTMacro.h++"
+#include "Mustard/ROOTX/MakeTextTMacro.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "TMacro.h"
@@ -29,7 +29,7 @@
 #include <stdexcept>
 #include <system_error>
 
-namespace Mustard::inline Utility {
+namespace Mustard::ROOTX {
 
 auto MakeTextTMacro(std::string_view text, const std::string& name, const std::string& title) -> std::unique_ptr<TMacro> {
     const auto tempMacroPath{CreateTemporaryFile(name, ".C")};
@@ -60,4 +60,4 @@ auto {0}() -> void {{
     return macro;
 }
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::ROOTX

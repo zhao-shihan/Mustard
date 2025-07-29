@@ -40,11 +40,11 @@ namespace Mustard::Data {
 template<typename T>
 concept ValueAcceptable =
     [] {
-        if constexpr (Concept::ROOTFundamental<T>) {
+        if constexpr (ROOTX::Fundamental<T>) {
             return not std::same_as<std::decay_t<T>, gsl::zstring>;
         }
         if constexpr (internal::IsStdArray<T>{}) {
-            return Concept::ROOTFundamental<typename T::value_type> and
+            return ROOTX::Fundamental<typename T::value_type> and
                    not std::same_as<std::decay_t<typename T::value_type>, gsl::zstring>;
         }
         return std::is_class_v<T>;

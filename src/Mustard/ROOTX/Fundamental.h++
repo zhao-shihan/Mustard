@@ -25,10 +25,29 @@
 #include <concepts>
 #include <type_traits>
 
-namespace Mustard::Concept {
+namespace Mustard::ROOTX {
 
+/// @brief Concept defining fundamental types for ROOT framework and GSL string handling
+///
+/// This concept checks whether a type `T` is one of the core fundamental types used in ROOT I/O
+/// operations. It is primarily used for template constraints where only basic data types are
+/// accepted (e.g., serialization, type checking).
+///
+/// Satisfied if `T` is exactly one of:
+///   - `gsl::zstring` (after decay)
+///   - ROOT primitive types:
+///        `Char_t`, `UChar_t`, `Short_t`, `UShort_t`,
+///        `Int_t`, `UInt_t`, `Float_t`, `Double_t`,
+///        `Long64_t`, `ULong64_t`, `Long_t`, `ULong_t`,
+///        `Bool_t`
+///
+/// @tparam T Type to check against fundamental types
+///
+/// @note Special string handling: Uses `std::decay_t` for `gsl::zstring` to accept string literals
+/// @see https://root.cern.ch for ROOT fundamental types
+/// @see Guidelines Support Library (GSL) for `zstring` definition
 template<typename T>
-concept ROOTFundamental =
+concept Fundamental =
     std::same_as<std::decay_t<T>, gsl::zstring> or
     std::same_as<T, Char_t> or
     std::same_as<T, UChar_t> or
@@ -45,7 +64,7 @@ concept ROOTFundamental =
     std::same_as<T, Bool_t>;
 
 /* template<typename T>
-concept ROOTFundamentalArray =
+concept FundamentalArray =
     std::same_as<std::decay_t<T>, Char_t*> or
     std::same_as<std::decay_t<T>, UChar_t*> or
     std::same_as<std::decay_t<T>, Short_t*> or
@@ -61,7 +80,7 @@ concept ROOTFundamentalArray =
     std::same_as<std::decay_t<T>, Bool_t*>;
 
 template<typename T>
-concept ROOTFundamentalWithArray =
-    ROOTFundamental<T> or ROOTFundamentalArray<T>; */
+concept FundamentalWithArray =
+    Fundamental<T> or FundamentalArray<T>; */
 
-} // namespace Mustard::Concept
+} // namespace Mustard::ROOTX

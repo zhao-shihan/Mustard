@@ -16,16 +16,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+namespace Mustard::ROOTX::Math {
 
-#include <memory>
-#include <string>
-#include <string_view>
+template<Mustard::Math::Random::UniformPseudoRandomBitGenerator PRBG>
+AsTRandomEngine<PRBG>::AsTRandomEngine(typename PRBG::SeedType seed) :
+    fPRBG{seed} {}
 
-class TMacro;
-
-namespace Mustard::inline Utility {
-
-auto MakeTextTMacro(std::string_view text, const std::string& name, const std::string& title = {}) -> std::unique_ptr<TMacro>;
-
-} // namespace Mustard::inline Utility
+} // namespace Mustard::ROOTX::Math

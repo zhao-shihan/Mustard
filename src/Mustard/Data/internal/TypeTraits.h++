@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Concept/ROOTFundamental.h++"
+#include "Mustard/ROOTX/Fundamental.h++"
 
 #include <type_traits>
 

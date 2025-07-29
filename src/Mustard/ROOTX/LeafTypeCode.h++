@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Concept/ROOTFundamental.h++"
+#include "Mustard/ROOTX/Fundamental.h++"
 
 #include "RtypesCore.h"
 
@@ -27,14 +27,14 @@
 #include <concepts>
 #include <type_traits>
 
-namespace Mustard::inline Extension::ROOTX {
+namespace Mustard::ROOTX {
 
 /// @brief Returns ROOT TLeaf type character code for fundamental types
 ///
 /// Maps ROOT's fundamental types to their corresponding TLeaf type codes.
 /// This is a compile-time function used for ROOT I/O operations.
 ///
-/// @tparam T Type to get the leaf code for (must satisfy Concept::ROOTFundamental)
+/// @tparam T Type to get the leaf code for (must satisfy ROOTX::Fundamental)
 ///
 /// @return Single-character code used by ROOT's TLeaf system:
 ///   - 'C': gsl::zstring (C-style string)
@@ -55,9 +55,9 @@ namespace Mustard::inline Extension::ROOTX {
 /// @note The function is constexpr and evaluated at compile-time
 /// @warning Type must satisfy the ROOTFundamental concept
 /// @see TLeaf, ROOT data types documentation
-template<Concept::ROOTFundamental T>
+template<ROOTX::Fundamental T>
 constexpr auto LeafTypeCode() -> char;
 
-} // namespace Mustard::inline Extension::ROOTX
+} // namespace Mustard::ROOTX
 
-#include "Mustard/Extension/ROOTX/LeafTypeCode.inl"
+#include "Mustard/ROOTX/LeafTypeCode.inl"

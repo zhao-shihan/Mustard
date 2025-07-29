@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Extension/CLHEPX/Random/Xoshiro.h++"
-#include "Mustard/Extension/ROOTX/Math/Xoshiro.h++"
+#include "Mustard/ROOTX/Math/Xoshiro.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Utility/UseXoshiro.h++"
 
