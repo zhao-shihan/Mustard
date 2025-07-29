@@ -127,7 +127,7 @@ auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
             Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGINT:
-                Print<'E'>(stderr, ts, "Ctrl-C has been pressed or an external interrupt received."); // no '\n' looks good for now
+                Print<'E'>(stderr, ts, "Ctrl-C pressed or an external interrupt received."); // no '\n' looks good for now
                 break;
             case SIGTERM:
                 Print<'E'>(stderr, ts, "The process is terminated.\n");
@@ -196,7 +196,7 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
             Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
             PrintStackTrace(64, 2, stderr, ts);
             Print<'E'>(stderr, "\n");
-            Print<'E'>(stderr, ts, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");
+            Print<'E'>(stderr, ts, "It is likely that the program has one or more errors. Try seeking help from debugging tools.\n");
             Print<'E'>(stderr, "\n");
             std::fflush(stderr);
             std::raise(sig);
