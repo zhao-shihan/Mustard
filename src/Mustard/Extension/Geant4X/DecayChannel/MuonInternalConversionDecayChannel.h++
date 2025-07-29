@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Extension/CLHEPX/RAMBO.h++"
+#include "Mustard/CLHEPX/RAMBO.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/DecayChannelExtension.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannelMessenger.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"

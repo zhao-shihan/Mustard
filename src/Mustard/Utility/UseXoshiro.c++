@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Extension/CLHEPX/Random/Xoshiro.h++"
+#include "Mustard/CLHEPX/Random/Xoshiro.h++"
 #include "Mustard/ROOTX/Math/Xoshiro.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Utility/UseXoshiro.h++"

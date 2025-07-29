@@ -1,4 +1,4 @@
-#include "Mustard/Extension/CLHEPX/Random/Xoshiro.h++"
+#include "Mustard/CLHEPX/Random/Xoshiro.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256SS.h++"
 

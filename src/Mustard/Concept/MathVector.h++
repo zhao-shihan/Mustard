@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Compatibility/CLHEPDefectFix/Hep2VectorDivisionAssignment.h++"
+#include "Mustard/CLHEPX/CLHEPDefectFix/Hep2VectorDivisionAssignment.h++"
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 

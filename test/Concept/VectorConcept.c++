@@ -17,7 +17,6 @@
 #include <iostream>
 #include <vector>
 
-using namespace Mustard::Compatibility::CLHEPDefectFix::Hep2VectorDivisionAssignment;
 using namespace Mustard::Concept;
 
 static_assert(InputVector<float*, float, 3>);

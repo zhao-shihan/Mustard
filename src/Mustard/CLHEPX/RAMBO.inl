@@ -16,14 +16,14 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::CLHEPX {
+namespace Mustard::CLHEPX {
 
 template<int N>
     requires(N >= 2)
 constexpr RAMBO<N>::RAMBO(double eCM, std::array<double, N> mass) :
     fECM{eCM},
     fMass{std::move(mass)},
-    fAllMassAreTiny{std::ranges::all_of(fMass, [&](auto m) { return muc::pow<2>(m / fECM) < fgTiny; })} {
+    fAllMassAreTiny{std::ranges::all_of(fMass, [&](auto m) { return muc::pow<2>(m / fECM) < muc::default_tolerance<double>; })} {
     if (eCM <= muc::ranges::reduce(fMass)) {
         Throw<std::domain_error>("No enough energy");
     }
@@ -42,7 +42,7 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
             const auto s{std::sqrt(1 - muc::pow<2>(c))};
             const auto f{CLHEP::twopi * u[4 * i + 1]};
             const auto r12{u[4 * i + 2] * u[4 * i + 3]};
-            const auto En{r12 > 0 ? -std::log(r12) : 747}; // -log(1e-323)
+            const auto En{-std::log(std::max(std::numeric_limits<double>::min(), r12))};
             p[i][0] = En;
             p[i][1] = En * s * std::sin(f);
             p[i][2] = En * s * std::cos(f);
@@ -78,7 +78,7 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
             return state;
         }};
 
-    // if none of the reduced masses is > fgTiny, return
+    // if none of the reduced masses is > tolerance, return
     if (fAllMassAreTiny) {
         return {weight, State()};
     }
@@ -146,4 +146,4 @@ auto RAMBO<N>::operator()(CLHEP::HepRandomEngine& rng, const CLHEP::Hep3Vector& 
     return (*this)(u, beta);
 }
 
-} // namespace Mustard::inline Extension::CLHEPX
+} // namespace Mustard::CLHEPX

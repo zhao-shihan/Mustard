@@ -20,12 +20,12 @@
 
 #include "CLHEP/Vector/TwoVector.h"
 
-namespace Mustard::inline Compatibility::inline CLHEPDefectFix::inline Hep2VectorDivisionAssignment {
+namespace CLHEP {
 
-inline auto& operator/=(CLHEP::Hep2Vector& v, double c) {
+inline auto operator/=(CLHEP::Hep2Vector& v, double c) -> auto& {
     v[0] /= c;
     v[1] /= c;
     return v;
 }
 
-} // namespace Mustard::inline Compatibility::inline CLHEPDefectFix::inline Hep2VectorDivisionAssignment
+} // namespace CLHEP

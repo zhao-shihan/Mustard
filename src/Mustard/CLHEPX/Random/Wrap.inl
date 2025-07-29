@@ -16,11 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::CLHEPX::Random {
-
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-Wrap<PRBG>::Wrap() :
-    Wrap{20030202} {}
+namespace Mustard::CLHEPX::Random {
 
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 Wrap<PRBG>::Wrap(long seed) :
@@ -121,4 +117,4 @@ auto Wrap<PRBG>::getState(std::istream& is) -> decltype(is) {
     return is;
 }
 
-} // namespace Mustard::inline Extension::CLHEPX::Random
+} // namespace Mustard::CLHEPX::Random
