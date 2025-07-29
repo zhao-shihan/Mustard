@@ -18,29 +18,46 @@
 
 #pragma once
 
-#include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
+#include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Parallel/MPIDataType.h++"
+#include "Mustard/Utility/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mpi.h"
 
+#include "gsl/gsl"
+
+#include <algorithm>
+#include <cmath>
 #include <concepts>
+#include <stdexcept>
+#include <string>
 #include <utility>
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
-class SequentialScheduler : public Scheduler<T> {
+class SharedMemoryScheduler : public Scheduler<T> {
 public:
-    SequentialScheduler();
+    SharedMemoryScheduler();
+    ~SharedMemoryScheduler();
 
 private:
-    virtual auto PreLoopAction() -> void override { this->fExecutingTask = this->fTask.first; }
+    virtual auto PreLoopAction() -> void override;
     virtual auto PreTaskAction() -> void override {}
-    virtual auto PostTaskAction() -> void override { this->fExecutingTask += 1; }
+    virtual auto PostTaskAction() -> void override;
     virtual auto PostLoopAction() -> void override {}
 
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
+
+private:
+    volatile T* fMainTaskID;
+    MPI_Win fMainTaskIDWindow;
+    T fBatchSize;
+    T fTaskCounter;
+
+    static constexpr long double fgImbalancingFactor{1e-4};
 };
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution
 
-#include "Mustard/Extension/MPIX/Execution/SequentialScheduler.inl"
+#include "Mustard/Execution/SharedMemoryScheduler.inl"

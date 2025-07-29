@@ -198,7 +198,7 @@ auto DescriptionIO::IxportImpl(const std::filesystem::path& yamlFile, const std:
 }
 
 auto DescriptionIO::ParallelExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path {
-    auto truePath{MPIX::ParallelizePath(yamlFile)};
+    auto truePath{Parallel::ProcessSpecificPath(yamlFile)};
     ExportImpl(truePath, fileComment, descriptions);
     return truePath;
 }

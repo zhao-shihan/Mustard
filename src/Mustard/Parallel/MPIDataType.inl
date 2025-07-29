@@ -16,23 +16,12 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include "Mustard/Concept/MPIPredefined.h++"
-
-#include "mpi.h"
-
-#include "muc/utility"
-
-#include <concepts>
-#include <cstddef>
-
-namespace Mustard::inline Extension::MPIX {
+namespace Mustard::Parallel {
 
 template<typename T>
-    requires Concept::MPIPredefined<std::decay_t<std::remove_pointer_t<std::decay_t<T>>>>
-auto DataType() -> MPI_Datatype {
-    using U = std::decay_t<std::remove_pointer_t<std::decay_t<T>>>;
+    requires MPIPredefined<std::remove_pointer_t<std::decay_t<T>>>
+auto MPIDataType() -> MPI_Datatype {
+    using U = std::remove_pointer_t<std::decay_t<T>>;
     if constexpr (std::same_as<U, char>) {
         return MPI_CHAR;
     } else if constexpr (std::same_as<U, signed short int>) {
@@ -42,9 +31,7 @@ auto DataType() -> MPI_Datatype {
     } else if constexpr (std::same_as<U, signed long>) {
         return MPI_LONG;
     } else if constexpr (std::same_as<U, signed long long>) {
-        return MPI_LONG_LONG_INT;
-        /* } else if constexpr (std::same_as<U, signed long long>) {
-            return MPI_LONG_LONG; */
+        return MPI_LONG_LONG;
     } else if constexpr (std::same_as<U, signed char>) {
         return MPI_SIGNED_CHAR;
     } else if constexpr (std::same_as<U, unsigned char>) {
@@ -103,8 +90,8 @@ auto DataType() -> MPI_Datatype {
 }
 
 template<typename T>
-auto DataType(T&&) -> MPI_Datatype {
-    return DataType<T>();
+auto MPIDataType(T&&) -> MPI_Datatype {
+    return MPIDataType<T>();
 }
 
-} // namespace Mustard::inline Extension::MPIX
+} // namespace Mustard::Parallel

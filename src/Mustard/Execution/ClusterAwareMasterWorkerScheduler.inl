@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
 ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::ClusterMaster(ClusterAwareMasterWorkerScheduler<T>* s) :
@@ -235,4 +235,4 @@ auto ClusterAwareMasterWorkerScheduler<T>::NExecutedTaskEstimation() const -> st
             this->fExecutingTask - this->fTask.first};
 }
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution

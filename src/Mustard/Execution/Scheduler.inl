@@ -16,15 +16,13 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+namespace Mustard::inline Execution {
 
-namespace CLHEP {
-class HepRandomEngine;
-} // namespace CLHEP
-class TRandom;
+template<std::integral T>
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+auto Scheduler<T>::Reset() -> void {
+    fExecutingTask = fTask.first;
+    fNLocalExecutedTask = 0;
+}
 
-namespace Mustard::inline Utility {
-
-auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng = {}, TRandom* tRandom = {}) -> void;
-
-} // namespace Mustard::inline Utility
+} // namespace Mustard::inline Execution

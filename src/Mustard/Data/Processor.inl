@@ -18,7 +18,7 @@
 
 namespace Mustard::Data {
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 Processor<AExecutor>::Processor(AExecutor executor) :
     Base{},
     fExecutor{std::move(executor)} {
@@ -26,7 +26,7 @@ Processor<AExecutor>::Processor(AExecutor executor) :
     fExecutor.TaskName("Batch");
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
                                    std::invocable<bool, std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index {
@@ -39,7 +39,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
     return ProcessImpl(asyncReader, nEntry, "entries", std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 template<TupleModelizable... Ts, std::integral AEventIDType>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::string eventIDColumnName,
                                    std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
@@ -47,7 +47,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDT
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 template<TupleModelizable... Ts, std::integral AEventIDType>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::vector<gsl::index> eventSplit,
                                    std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
@@ -69,7 +69,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDT
     return ProcessImpl(asyncReader, nEvent, "events", std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 template<typename AData>
 auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n, std::string_view what,
                                        std::invocable<bool, typename AData::value_type> auto&& F) -> Index {
@@ -115,7 +115,7 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     return nProcessed;
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what) -> bool {
     const auto worldComm{mplr::comm_world()};
     const auto byPassWillOccur{static_cast<Index>(worldComm.size()) > n};

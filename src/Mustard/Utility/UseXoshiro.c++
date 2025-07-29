@@ -18,7 +18,7 @@
 
 #include "Mustard/Extension/CLHEPX/Random/Xoshiro.h++"
 #include "Mustard/Extension/ROOTX/Math/Xoshiro.h++"
-#include "Mustard/Utility/MPIReseedRandomEngine.h++"
+#include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Utility/UseXoshiro.h++"
 
 #include "CLHEP/Random/Random.h"
@@ -52,8 +52,8 @@ namespace Mustard::inline Utility {
         gRandom->SetSeed(std::mt19937_64{std::bit_cast<std::uint64_t>(               \
             muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}()); \
         /* Reseed in parallel computing */                                           \
-        if (mplr::available()) {                                         \
-            MPIReseedRandomEngine();                                                 \
+        if (mplr::available()) {                                                     \
+            Parallel::ReseedRandomEngine();                                          \
         }                                                                            \
     }                                                                                \
                                                                                      \

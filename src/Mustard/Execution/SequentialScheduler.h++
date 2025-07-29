@@ -16,20 +16,31 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+#pragma once
+
+#include "Mustard/Execution/Scheduler.h++"
+
+#include "mplr/mplr.hpp"
+
+#include <concepts>
+#include <utility>
+
+namespace Mustard::inline Execution {
 
 template<std::integral T>
-SequentialScheduler<T>::SequentialScheduler() :
-    Scheduler<T>{} {
-    if (mplr::available() and mplr::comm_world().size() > 1) {
-        Throw<std::runtime_error>("Running with more than one process");
-    }
-}
+class SequentialScheduler : public Scheduler<T> {
+public:
+    SequentialScheduler();
 
-template<std::integral T>
-auto SequentialScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
-    return {this->fNLocalExecutedTask > 10,
-            this->fExecutingTask - this->fTask.first};
-}
+private:
+    virtual auto PreLoopAction() -> void override { this->fExecutingTask = this->fTask.first; }
+    virtual auto PreTaskAction() -> void override {}
+    virtual auto PostTaskAction() -> void override { this->fExecutingTask += 1; }
+    virtual auto PostLoopAction() -> void override {}
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+    virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
+};
+
+} // namespace Mustard::inline Execution
+
+#include "Mustard/Execution/SequentialScheduler.inl"

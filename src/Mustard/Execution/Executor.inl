@@ -16,25 +16,25 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 Executor<T>::Executor(std::string_view scheduler) :
     Executor{DecodeScheduler(scheduler)} {}
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 Executor<T>::Executor(std::string executionName, std::string taskName, std::string_view scheduler) :
     Executor{std::move(executionName), std::move(taskName), DecodeScheduler(scheduler)} {}
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 Executor<T>::Executor(std::unique_ptr<Scheduler<T>> scheduler) :
     Executor{"Execution", "Task", std::move(scheduler)} {}
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 Executor<T>::Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
     fScheduler{std::move(scheduler)},
     fExecuting{},
@@ -49,7 +49,7 @@ Executor<T>::Executor(std::string executionName, std::string taskName, std::uniq
     fExecutionInfoReducedByMaster{} {}
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void {
     if (fExecuting) {
         Throw<std::logic_error>("Try switching scheduler during executing");
@@ -60,7 +60,7 @@ auto Executor<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> vo
 }
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
@@ -126,7 +126,7 @@ auto Executor<T>::Execute(typename Scheduler<T>::Task task, std::invocable<T> au
 }
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PrintExecutionSummary() const -> void {
     const auto worldComm{mplr::comm_world()};
     if (worldComm.rank() != 0) {
@@ -156,7 +156,7 @@ auto Executor<T>::PrintExecutionSummary() const -> void {
 }
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PreLoopReport() const -> void {
     if (not fPrintProgress) {
         return;
@@ -173,7 +173,7 @@ auto Executor<T>::PreLoopReport() const -> void {
 }
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostTaskReport(T iEnded) const -> void {
     if (not fPrintProgress or fPrintProgressModulo < 0) {
         return;
@@ -214,7 +214,7 @@ auto Executor<T>::PostTaskReport(T iEnded) const -> void {
 }
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::PostLoopReport() const -> void {
     if (not fPrintProgress) {
         return;
@@ -240,7 +240,7 @@ auto Executor<T>::PostLoopReport() const -> void {
 }
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::DecodeScheduler(std::string_view scheduler) -> std::unique_ptr<Scheduler<T>> {
     static const std::map<std::string_view, std::function<auto()->std::unique_ptr<Scheduler<T>>>> schedulerMap{
         {"clmw", [] { return std::make_unique<ClusterAwareMasterWorkerScheduler<T>>(); }},
@@ -259,7 +259,7 @@ auto Executor<T>::DecodeScheduler(std::string_view scheduler) -> std::unique_ptr
 }
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::DefaultSchedulerCode() -> std::string {
     if (const auto envScheduler{envparse::parse<envparse::not_set_option::left_blank>("${MUSTARD_EXECUTION_SCHEDULER}")};
         not envScheduler.empty()) {
@@ -283,7 +283,7 @@ auto Executor<T>::DefaultSchedulerCode() -> std::string {
 }
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto Executor<T>::ToDayHrMinSecMs(StopwatchDuration duration) -> std::string {
     Expects(duration.count() >= 0);
 
@@ -327,4 +327,4 @@ auto Executor<T>::ToDayHrMinSecMs(StopwatchDuration duration) -> std::string {
     return result;
 }
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution

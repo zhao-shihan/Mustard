@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
 SharedMemoryScheduler<T>::SharedMemoryScheduler() :
@@ -68,7 +68,7 @@ template<std::integral T>
 auto SharedMemoryScheduler<T>::PostTaskAction() -> void {
     if (++fTaskCounter == fBatchSize) {
         MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, fMainTaskIDWindow);
-        MPI_Fetch_and_op(&fBatchSize, &this->fExecutingTask, MPIX::DataType<T>(), 0, 0, MPI_SUM, fMainTaskIDWindow);
+        MPI_Fetch_and_op(&fBatchSize, &this->fExecutingTask, Parallel::MPIDataType<T>(), 0, 0, MPI_SUM, fMainTaskIDWindow);
         MPI_Win_unlock(0, fMainTaskIDWindow);
         this->fExecutingTask = std::min(this->fExecutingTask, this->fTask.last);
         fTaskCounter = 0;
@@ -83,4 +83,4 @@ auto SharedMemoryScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool
             this->fExecutingTask - this->fTask.first};
 }
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution

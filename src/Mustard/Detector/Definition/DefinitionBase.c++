@@ -18,7 +18,7 @@
 
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/ParallelizePath.h++"
+#include "Mustard/Parallel/ProcessSpecificPath.h++"
 
 #include "G4Exception.hh"
 #include "G4FieldManager.hh"
@@ -112,7 +112,7 @@ auto Export(std::filesystem::path gdmlFile, gsl::not_null<G4LogicalVolume*> logi
 }
 
 auto ParallelExport(std::filesystem::path gdmlFile, gsl::not_null<G4LogicalVolume*> logic) -> std::filesystem::path {
-    auto truePath{MPIX::ParallelizePath(std::move(gdmlFile))};
+    auto truePath{Parallel::ProcessSpecificPath(std::move(gdmlFile))};
     Export(truePath, logic);
     return truePath;
 }

@@ -16,13 +16,26 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+#pragma once
 
-template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-auto Scheduler<T>::Reset() -> void {
-    fExecutingTask = fTask.first;
-    fNLocalExecutedTask = 0;
-}
+#include "Mustard/Parallel/MPIPredefined.h++"
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+#include "mpi.h"
+
+#include "muc/utility"
+
+#include <concepts>
+#include <cstddef>
+
+namespace Mustard::Parallel {
+
+template<typename T>
+    requires MPIPredefined<std::remove_pointer_t<std::decay_t<T>>>
+auto MPIDataType() -> MPI_Datatype;
+
+template<typename T>
+auto MPIDataType(T&&) -> MPI_Datatype;
+
+} // namespace Mustard::Parallel
+
+#include "Mustard/Parallel/MPIDataType.inl"

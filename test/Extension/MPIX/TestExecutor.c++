@@ -1,6 +1,6 @@
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/Execution/ClusterAwareMasterWorkerScheduler.h++"
-#include "Mustard/Extension/MPIX/Execution/Executor.h++"
+#include "Mustard/Execution/ClusterAwareMasterWorkerScheduler.h++"
+#include "Mustard/Execution/Executor.h++"
 #include "Mustard/Utility/Print.h++"
 
 #include "mplr/mplr.hpp"
@@ -57,7 +57,7 @@ auto CheckIndexList(int truthN, const std::vector<int>& localIndexList) -> void 
 auto main(int argc, char* argv[]) -> int {
     Mustard::Env::MPIEnv env{argc, argv, {}};
 
-    MPIX::Executor<int> executor;
+    Executor<int> executor;
 
     const auto n{gsl::narrow<int>(std::stoul(argv[1]))};
     const auto worldComm{mplr::comm_world()};

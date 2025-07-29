@@ -18,20 +18,20 @@
 
 #pragma once
 
-#include "Mustard/Concept/MPIPredefined.h++"
+#include "Mustard/Parallel/MPIPredefined.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
 #include <concepts>
 #include <utility>
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 class Executor;
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 class Scheduler : public NonCopyableBase {
     friend class Executor<T>;
 
@@ -63,6 +63,6 @@ protected:
     T fNLocalExecutedTask;
 };
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution
 
-#include "Mustard/Extension/MPIX/Execution/Scheduler.inl"
+#include "Mustard/Execution/Scheduler.inl"

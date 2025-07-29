@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
+#include "Mustard/Execution/Scheduler.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "mplr/mplr.hpp"
@@ -41,7 +41,7 @@
 #include <utility>
 #include <vector>
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
 class ClusterAwareMasterWorkerScheduler : public Scheduler<T> {
@@ -121,6 +121,6 @@ private:
     static constexpr long long fgMaxInterNodeBatchSizeMultiple{10};
 };
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution
 
-#include "Mustard/Extension/MPIX/Execution/ClusterAwareMasterWorkerScheduler.inl"
+#include "Mustard/Execution/ClusterAwareMasterWorkerScheduler.inl"

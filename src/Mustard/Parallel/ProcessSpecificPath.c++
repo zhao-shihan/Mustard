@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/ParallelizePath.h++"
+#include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "mplr/mplr.hpp"
@@ -27,9 +27,9 @@
 #include <cstddef>
 #include <exception>
 
-namespace Mustard::inline Extension::MPIX {
+namespace Mustard::Parallel {
 
-auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path {
+auto ProcessSpecificPath(const std::filesystem::path& path) -> std::filesystem::path {
     auto stem{path.stem()};
     if (stem.empty()) {
         Throw<std::invalid_argument>("Empty file name");
@@ -60,4 +60,4 @@ auto ParallelizePath(const std::filesystem::path& path) -> std::filesystem::path
     return parent / stem.concat(fmt::format("_mpi{}.", worldComm.rank())).replace_extension(path.extension());
 }
 
-} // namespace Mustard::inline Extension::MPIX
+} // namespace Mustard::Parallel

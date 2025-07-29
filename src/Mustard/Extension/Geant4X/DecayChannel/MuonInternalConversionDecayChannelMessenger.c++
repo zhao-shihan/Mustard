@@ -18,7 +18,7 @@
 
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannelMessenger.h++"
-#include "Mustard/Utility/MPIReseedRandomEngine.h++"
+#include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Utility/Print.h++"
 
 #include "G4UIcmdWithADouble.hh"
@@ -101,7 +101,7 @@ auto MuonInternalConversionDecayChannelMessenger::SetNewValue(G4UIcommand* comma
         is >> kinematicsName >> parentName >> nKiloSample;
         Deliver<MuonInternalConversionDecayChannel>([&](auto&& r) {
             if (r.GetKinematicsName() == kinematicsName and r.GetParentName() == parentName) {
-                MPIReseedRandomEngine();
+                Parallel::ReseedRandomEngine();
                 const auto nSample{1000 * nKiloSample};
                 MasterPrintLn("Estimating mu->eeevv weight normalization factor with {} samples...", nSample);
                 const auto [result, error, nEff]{r.EstimateWeightNormalizationFactor(nSample)};

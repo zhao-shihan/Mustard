@@ -18,7 +18,7 @@ AnalysisBase<ADerived, AAppName>::AnalysisBase(ADerived* self) :
 template<typename ADerived, muc::ceta_string AAppName>
 auto AnalysisBase<ADerived, AAppName>::RunBeginAction(int runID) -> void {
     // open ROOT file
-    auto fullFilePath{Mustard::MPIX::ParallelizePath(fFilePath).replace_extension(".root").generic_string()};
+    auto fullFilePath{Mustard::Parallel::ProcessSpecificPath(fFilePath).replace_extension(".root").generic_string()};
     const auto filePathChanged{fullFilePath != fLastUsedFullFilePath};
     fFile = TFile::Open(fullFilePath.c_str(), filePathChanged ? fFileMode.c_str() : "UPDATE",
                         "", ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose);

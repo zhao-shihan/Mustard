@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Execution/Executor.h++"
 #include "Mustard/Extension/Geant4X/DecayChannel/MuonInternalConversionDecayChannel.h++"
-#include "Mustard/Extension/MPIX/DataType.h++"
-#include "Mustard/Extension/MPIX/Execution/Executor.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/PrettyLog.h++"
@@ -134,7 +133,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
     const auto worldComm{mplr::comm_world()};
     {                               // Monte Carlo integration here
         muc::array2ld partialSum{}; // improve numeric stability
-        MPIX::Executor<unsigned long long>{"Estimation", "Sample"}
+        Executor<unsigned long long>{"Estimation", "Sample"}
             .Execute(n, [&, partialSumThreshold = muc::llround(std::sqrt(n / worldComm.size()))](auto i) {
                 MainSamplingLoop();
                 const auto bias{originalBias(fEvent.state)};

@@ -18,14 +18,14 @@
 
 #pragma once
 
-#include "Mustard/Concept/MPIPredefined.h++"
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/Execution/ClusterAwareMasterWorkerScheduler.h++"
-#include "Mustard/Extension/MPIX/Execution/MasterWorkerScheduler.h++"
-#include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
-#include "Mustard/Extension/MPIX/Execution/SequentialScheduler.h++"
-#include "Mustard/Extension/MPIX/Execution/SharedMemoryScheduler.h++"
-#include "Mustard/Extension/MPIX/Execution/StaticScheduler.h++"
+#include "Mustard/Execution/ClusterAwareMasterWorkerScheduler.h++"
+#include "Mustard/Execution/MasterWorkerScheduler.h++"
+#include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Execution/SequentialScheduler.h++"
+#include "Mustard/Execution/SharedMemoryScheduler.h++"
+#include "Mustard/Execution/StaticScheduler.h++"
+#include "Mustard/Parallel/MPIPredefined.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/Print.h++"
@@ -60,10 +60,10 @@
 #include <tuple>
 #include <utility>
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
-    requires(Concept::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 class Executor final {
 public:
     using Index = T;
@@ -135,6 +135,6 @@ private:
     ExecutionInfo fExecutionInfoReducedByMaster;
 };
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution
 
-#include "Mustard/Extension/MPIX/Execution/Executor.inl"
+#include "Mustard/Execution/Executor.inl"

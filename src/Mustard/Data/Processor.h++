@@ -24,7 +24,7 @@
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
-#include "Mustard/Extension/MPIX/Execution/Executor.h++"
+#include "Mustard/Execution/Executor.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "ROOT/RDataFrame.hxx"
@@ -55,7 +55,7 @@ namespace Mustard::Data {
 
 /// @brief A distributed data processor.
 /// @tparam AExecutor Underlying MPI executor type.
-template<muc::instantiated_from<MPIX::Executor> AExecutor = MPIX::Executor<gsl::index>>
+template<muc::instantiated_from<Executor> AExecutor = Executor<gsl::index>>
 class Processor : public internal::ProcessorBase<typename AExecutor::Index> {
 private:
     using Base = internal::ProcessorBase<typename AExecutor::Index>;

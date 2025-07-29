@@ -18,7 +18,7 @@
 
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256PP.h++"
-#include "Mustard/Utility/MPIReseedRandomEngine.h++"
+#include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Random/RandFlat.h"
@@ -43,11 +43,23 @@
 #include <utility>
 #include <vector>
 
-namespace Mustard::inline Utility {
+namespace Mustard::Parallel {
 
 namespace internal {
 namespace {
 
+/// @brief Generates a set of unique seeds for MPI ranks using a master RNG
+///
+/// Helper function called only by MPI rank 0 to generate a set of unique seeds
+/// for all MPI processes. Uses Xoshiro256++ RNG initialized with the provided seed.
+///
+/// @tparam T Unsigned integral type for seeds (must be same width as seed components)
+/// @param xsr256Seed Seed value for Xoshiro256++ (bit-castable to uint64_t)
+///
+/// @return Set of unique seeds in range [1, max-1] with size = MPI world size
+///
+/// @note Called exclusively by MPI rank 0 during seed generation
+/// @warning Must satisfy: worldComm.rank() == 0 (enforced by Expects)
 template<std::unsigned_integral T>
 auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
     const auto worldComm{mplr::comm_world()};
@@ -69,7 +81,10 @@ auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
 } // namespace
 } // namespace internal
 
-auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> void {
+auto ReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> void {
+    if (not mplr::available()) {
+        return;
+    }
     const auto worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return;
@@ -120,10 +135,10 @@ auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -
     }
 
     if (get<0>(seedRecv) != (clhepRng == nullptr)) {
-        Throw<std::logic_error>("CLHEP random engine null/!null inconsistent");
+        Throw<std::invalid_argument>("CLHEP random engine null/!null inconsistent");
     }
     if (get<2>(seedRecv) != (tRandom == nullptr)) {
-        Throw<std::logic_error>("ROOT random engine null/!null inconsistent");
+        Throw<std::invalid_argument>("ROOT random engine null/!null inconsistent");
     }
     if (clhepRng) {
         Ensures(get<1>(seedRecv) != 0 and get<1>(seedRecv) != -1); // not 0x00...00 and not 0xff...ff
@@ -135,4 +150,4 @@ auto MPIReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -
     }
 }
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::Parallel

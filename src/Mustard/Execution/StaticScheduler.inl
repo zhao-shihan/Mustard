@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
 auto StaticScheduler<T>::PreLoopAction() -> void {
@@ -41,4 +41,4 @@ auto StaticScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
             this->fExecutingTask - this->fTask.first};
 }
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution

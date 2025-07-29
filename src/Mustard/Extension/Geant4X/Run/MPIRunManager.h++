@@ -18,8 +18,8 @@
 
 #pragma once
 
+#include "Mustard/Execution/Executor.h++"
 #include "Mustard/Extension/Geant4X/Run/MPIRunMessenger.h++"
-#include "Mustard/Extension/MPIX/Execution/Executor.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
 #include "G4RunManager.hh"
@@ -62,7 +62,7 @@ public:
     auto PrintRunSummary() const -> void { fExecutor.PrintExecutionSummary(); }
 
 private:
-    MPIX::Executor<G4int> fExecutor;
+    Executor<G4int> fExecutor;
 
     MPIRunMessenger::Register<MPIRunManager> fMessengerRegister;
 };

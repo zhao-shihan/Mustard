@@ -18,7 +18,7 @@
 
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Extension/Geant4X/Run/MPIRunManager.h++"
-#include "Mustard/Utility/MPIReseedRandomEngine.h++"
+#include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4Run.hh"
@@ -57,7 +57,7 @@ MPIRunManager::MPIRunManager() :
 }
 
 auto MPIRunManager::BeamOn(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void {
-    MPIReseedRandomEngine();
+    Parallel::ReseedRandomEngine();
     G4RunManager::BeamOn(nEvent, macroFile, nSelect);
 }
 

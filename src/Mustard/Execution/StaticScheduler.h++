@@ -18,46 +18,25 @@
 
 #pragma once
 
-#include "Mustard/Extension/MPIX/DataType.h++"
-#include "Mustard/Extension/MPIX/Execution/Scheduler.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/Execution/Scheduler.h++"
 
-#include "mpi.h"
+#include "mplr/mplr.hpp"
 
-#include "gsl/gsl"
-
-#include <algorithm>
-#include <cmath>
 #include <concepts>
-#include <stdexcept>
-#include <string>
 #include <utility>
 
-namespace Mustard::inline Extension::MPIX::inline Execution {
+namespace Mustard::inline Execution {
 
 template<std::integral T>
-class SharedMemoryScheduler : public Scheduler<T> {
-public:
-    SharedMemoryScheduler();
-    ~SharedMemoryScheduler();
-
-private:
+class StaticScheduler : public Scheduler<T> {
     virtual auto PreLoopAction() -> void override;
     virtual auto PreTaskAction() -> void override {}
     virtual auto PostTaskAction() -> void override;
     virtual auto PostLoopAction() -> void override {}
 
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
-
-private:
-    volatile T* fMainTaskID;
-    MPI_Win fMainTaskIDWindow;
-    T fBatchSize;
-    T fTaskCounter;
-
-    static constexpr long double fgImbalancingFactor{1e-4};
 };
 
-} // namespace Mustard::inline Extension::MPIX::inline Execution
+} // namespace Mustard::inline Execution
 
-#include "Mustard/Extension/MPIX/Execution/SharedMemoryScheduler.inl"
+#include "Mustard/Execution/StaticScheduler.inl"

@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Extension/MPIX/DataType.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "ROOT/RDataFrame.hxx"
