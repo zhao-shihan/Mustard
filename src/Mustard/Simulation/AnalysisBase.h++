@@ -2,7 +2,7 @@
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
-#include "Mustard/Extension/Geant4X/Utility/ConvertGeometry.h++"
+#include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Simulation/AnalysisBaseMessenger.h++"
 #include "Mustard/Utility/PrettyLog.h++"
