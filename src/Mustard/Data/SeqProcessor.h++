@@ -24,7 +24,7 @@
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
-#include "Mustard/Extension/gslx/index_sequence.h++"
+#include "Mustard/gslx/index_sequence.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/ProgressBar.h++"
 

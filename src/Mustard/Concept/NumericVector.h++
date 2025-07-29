@@ -20,7 +20,7 @@
 
 #include "Mustard/Concept/InputVector.h++"
 #include "Mustard/Concept/Subscriptable.h++"
-#include "Mustard/Extension/gslx/index_sequence.h++"
+#include "Mustard/gslx/index_sequence.h++"
 
 #include "gsl/gsl"
 

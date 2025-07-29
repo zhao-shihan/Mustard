@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Data/Value.h++"
-#include "Mustard/Extension/gslx/index_sequence.h++"
+#include "Mustard/gslx/index_sequence.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
 
 #include "muc/ceta_string"

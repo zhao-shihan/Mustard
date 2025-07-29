@@ -21,7 +21,7 @@
 #include "Mustard/ROOTX/Fundamental.h++"
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/internal/TypeTraits.h++"
-#include "Mustard/Extension/gslx/index_sequence.h++"
+#include "Mustard/gslx/index_sequence.h++"
 
 #include "TTree.h"
 
