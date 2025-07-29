@@ -147,9 +147,11 @@ auto Executor<T>::PrintExecutionSummary() const -> void {
                 rank, executed, Seconds{time}.count(), Seconds{processorTime}.count());
     }
     const auto& [nTotalExecutedTask, maxTime, totalProcessorTime]{fExecutionInfoReducedByMaster};
-    PrintLn("+------------------+-------------------+------------------+-------------------+\n"
-            "| Total or max     | {:17} | {:16.3f} | {:17.3f} |",
-            nTotalExecutedTask, Seconds{maxTime}.count(), Seconds{totalProcessorTime}.count());
+    if (worldComm.size() > 1) {
+        PrintLn("+------------------+-------------------+------------------+-------------------+\n"
+                "| Total or max     | {:17} | {:16.3f} | {:17.3f} |",
+                nTotalExecutedTask, Seconds{maxTime}.count(), Seconds{totalProcessorTime}.count());
+    }
     PrintLn("+------------------+--------------> Summary <-------------+-------------------+");
 }
 
