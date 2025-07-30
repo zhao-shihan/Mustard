@@ -19,19 +19,14 @@
 namespace Mustard::CLHEPX {
 
 template<int N>
-    requires(N >= 2)
-constexpr RAMBO<N>::RAMBO(double eCM, std::array<double, N> mass) :
-    fECM{eCM},
-    fMass{std::move(mass)},
-    fAllMassAreTiny{std::ranges::all_of(fMass, [&](auto m) { return muc::pow<2>(m / fECM) < muc::default_tolerance<double>; })} {
-    if (eCM <= muc::ranges::reduce(fMass)) {
-        Throw<std::domain_error>("No enough energy");
-    }
-}
+constexpr RAMBO<N>::RAMBO(double eCM, const std::array<double, N>& mass) :
+    EventGenerator<N, 4 * N>{eCM, mass},
+    fAllMassAreTiny{std::ranges::all_of(mass, [&](auto m) {
+        return muc::pow<2>(m / eCM) < muc::default_tolerance<double>;
+    })} {}
 
 template<int N>
-    requires(N >= 2)
-auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
+auto RAMBO<N>::operator()(const RandomState& u) const -> Event {
     // call the massless genPoint, initializing weight
     auto [p, weight]{[&] {
         std::array<std::array<double, 4>, N> p;
@@ -56,7 +51,7 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
             R[j] /= -Rmass;
         }
         const auto a{1 / (1 - R[0])};
-        const auto x{fECM / Rmass};
+        const auto x{this->fECM / Rmass};
         for (int i = 0; i < N; i++) {
             double bq = R[1] * p[i][1] + R[2] * p[i][2] + R[3] * p[i][3];
             for (int j = 1; j < 4; j++) {
@@ -88,16 +83,16 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
         [&, &p = p](double xi) {
             double sum{};
             for (int i{}; i < N; i++) {
-                sum += muc::hypot(fMass[i], xi * p[i][0]);
+                sum += muc::hypot(this->fMass[i], xi * p[i][0]);
             }
-            return sum - fECM;
+            return sum - this->fECM;
         },
         0., 1.)};
     if (not xiConverged) [[unlikely]] {
         PrintWarning(fmt::format("Momentum scale (xi = {}) not converged", xi));
     }
     for (auto iMom{0}; iMom < N; iMom++) {
-        p[iMom][0] = muc::hypot(fMass[iMom], xi * p[iMom][0]);
+        p[iMom][0] = muc::hypot(this->fMass[iMom], xi * p[iMom][0]);
         p[iMom][1] *= xi;
         p[iMom][2] *= xi;
         p[iMom][3] *= xi;
@@ -115,35 +110,9 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
     }
     // There's a typo in eq. 4.11 of the Rambo paper by Kleiss,
     // Stirling and Ellis, the Ecm below is not present there
-    weight *= muc::pow<2 * N - 3>(sumpnorm / fECM) * prodpnormdivE * fECM / sumpnormsquadivE;
+    weight *= muc::pow<2 * N - 3>(sumpnorm / this->fECM) * prodpnormdivE * this->fECM / sumpnormsquadivE;
 
     return {weight, State()};
-}
-
-template<int N>
-    requires(N >= 2)
-auto RAMBO<N>::operator()(CLHEP::HepRandomEngine& rng) const -> Event {
-    std::array<double, 4 * N> u;
-    rng.flatArray(4 * N, u.data());
-    return (*this)(u);
-}
-
-template<int N>
-    requires(N >= 2)
-auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u, const CLHEP::Hep3Vector& beta) const -> Event {
-    auto [weight, state] = (*this)(u);
-    for (auto&& p : state) {
-        p.boost(beta);
-    }
-    return {weight, state};
-}
-
-template<int N>
-    requires(N >= 2)
-auto RAMBO<N>::operator()(CLHEP::HepRandomEngine& rng, const CLHEP::Hep3Vector& beta) const -> Event {
-    std::array<double, 4 * N> u;
-    rng.flatArray(4 * N, u.data());
-    return (*this)(u, beta);
 }
 
 } // namespace Mustard::CLHEPX
