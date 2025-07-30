@@ -51,7 +51,7 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
                 R[j] += p[i][j];
             }
         }
-        const auto Rmass{std::sqrt(muc::pow<2>(R[0]) - muc::hypot2(R[1], R[2], R[3]))};
+        const auto Rmass{std::sqrt(muc::pow<2>(R[0]) - muc::hypot_sq(R[1], R[2], R[3]))};
         for (auto j{0}; j < 4; j++) {
             R[j] /= -Rmass;
         }
@@ -107,7 +107,7 @@ auto RAMBO<N>::operator()(const std::array<double, 4 * N>& u) const -> Event {
     double prodpnormdivE{1};
     double sumpnormsquadivE{};
     for (auto iMom{0}; iMom < N; iMom++) {
-        auto pnormsqua{muc::hypot2(p[iMom][1], p[iMom][2], p[iMom][3])};
+        auto pnormsqua{muc::hypot_sq(p[iMom][1], p[iMom][2], p[iMom][3])};
         auto pnorm{std::sqrt(pnormsqua)};
         sumpnorm += pnorm;
         prodpnormdivE *= pnorm / p[iMom][0];
