@@ -28,21 +28,24 @@ namespace Mustard::inline Execution {
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-class Executor;
-
-template<std::integral T>
-    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 class Scheduler : public NonCopyableBase {
-    friend class Executor<T>;
+public:
+    struct Task {
+        T first;
+        T last;
+    };
 
 public:
     virtual ~Scheduler() = default;
 
-protected:
-    auto NTask() const -> T { return fTask.last - fTask.first; }
+    auto Task() const -> auto { return fTask; }
+    auto NTask() const -> auto { return fTask.last - fTask.first; }
+    auto ExecutingTask() const -> auto { return fExecutingTask; }
+    auto NLocalExecutedTask() const -> auto { return fNLocalExecutedTask; }
 
-private:
+    auto Task(struct Task task) -> void { fTask = task; }
     auto Reset() -> void;
+    auto IncrementNLocalExecutedTask() -> void { ++fNLocalExecutedTask; }
 
     virtual auto PreLoopAction() -> void = 0;
     virtual auto PreTaskAction() -> void = 0;
@@ -52,13 +55,7 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> = 0;
 
 protected:
-    struct Task {
-        T first;
-        T last;
-    };
-
-protected:
-    Task fTask;
+    struct Task fTask;
     T fExecutingTask;
     T fNLocalExecutedTask;
 };

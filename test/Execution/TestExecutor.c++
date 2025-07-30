@@ -1,5 +1,4 @@
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Execution/ClusterAwareMasterWorkerScheduler.h++"
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/Utility/Print.h++"
 
@@ -81,8 +80,6 @@ auto main(int argc, char* argv[]) -> int {
 
     std::this_thread::sleep_for(1s);
 
-    executor.PrintProgress(true);
-    executor.PrintProgressModulo(-1);
     localIndexList.clear();
     executor.Execute(n,
                      [&](auto i) {
@@ -95,19 +92,7 @@ auto main(int argc, char* argv[]) -> int {
 
     std::this_thread::sleep_for(1s);
 
-    localIndexList.clear();
-    executor.Execute(n,
-                     [&](auto i) {
-                         localIndexList.emplace_back(i);
-                         std::this_thread::sleep_for(500ms);
-                     });
-    executor.PrintExecutionSummary();
-    CheckIndexList(n, localIndexList);
-    MasterPrintLn("");
-
-    std::this_thread::sleep_for(1s);
-
-    executor.PrintProgressModulo(1);
+    executor.PrintProgressInterval(100ms);
     localIndexList.clear();
     executor.Execute(n,
                      [&](auto i) {

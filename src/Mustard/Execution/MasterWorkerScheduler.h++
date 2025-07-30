@@ -58,7 +58,6 @@ private:
 public:
     MasterWorkerScheduler();
 
-private:
     virtual auto PreLoopAction() -> void override;
     virtual auto PreTaskAction() -> void override;
     virtual auto PostTaskAction() -> void override;

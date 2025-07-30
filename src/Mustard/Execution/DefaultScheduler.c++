@@ -16,28 +16,35 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Execution/DefaultScheduler.h++"
 
 #include "mplr/mplr.hpp"
 
-#include <concepts>
-#include <utility>
+#include "envparse/parse.h++"
 
 namespace Mustard::inline Execution {
 
-template<std::integral T>
-class StaticScheduler : public Scheduler<T> {
-public:
-    virtual auto PreLoopAction() -> void override;
-    virtual auto PreTaskAction() -> void override {}
-    virtual auto PostTaskAction() -> void override;
-    virtual auto PostLoopAction() -> void override {}
-
-    virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
-};
+auto DefaultSchedulerCode() -> std::string {
+    if (const auto envScheduler{envparse::parse<envparse::not_set_option::left_blank>("${MUSTARD_EXECUTION_SCHEDULER}")};
+        not envScheduler.empty()) {
+        return envScheduler;
+    }
+    if (not mplr::available()) {
+        return "seq";
+    }
+    const auto worldComm{mplr::comm_world()};
+    if (worldComm.size() == 1) {
+        return "seq";
+    }
+    const auto& mpiEnv{Env::MPIEnv::Instance()};
+    if (mpiEnv.ClusterSize() == 1) {
+        return "shm";
+    }
+    if (worldComm.size() <= 128) {
+        return "mw";
+    }
+    return "clmw";
+}
 
 } // namespace Mustard::inline Execution
-
-#include "Mustard/Execution/StaticScheduler.inl"

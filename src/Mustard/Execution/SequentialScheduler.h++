@@ -32,7 +32,6 @@ class SequentialScheduler : public Scheduler<T> {
 public:
     SequentialScheduler();
 
-private:
     virtual auto PreLoopAction() -> void override { this->fExecutingTask = this->fTask.first; }
     virtual auto PreTaskAction() -> void override {}
     virtual auto PostTaskAction() -> void override { this->fExecutingTask += 1; }

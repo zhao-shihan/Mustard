@@ -19,44 +19,35 @@
 #pragma once
 
 #include "Mustard/Execution/Scheduler.h++"
-#include "Mustard/Parallel/MPIDataType.h++"
+#include "Mustard/Execution/internal/ExecutorImplBase.h++"
 #include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/Utility/ProgressBar.h++"
 
-#include "mpi.h"
+#include "muc/chrono"
 
 #include "gsl/gsl"
 
-#include <algorithm>
-#include <cmath>
+#include <chrono>
 #include <concepts>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-namespace Mustard::inline Execution {
+namespace Mustard::inline Execution::internal {
 
 template<std::integral T>
-class SharedMemoryScheduler : public Scheduler<T> {
+class SequentialExecutorImpl final : public ExecutorImplBase<T> {
 public:
-    SharedMemoryScheduler();
-    ~SharedMemoryScheduler();
+    SequentialExecutorImpl(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
-    virtual auto PreLoopAction() -> void override;
-    virtual auto PreTaskAction() -> void override {}
-    virtual auto PostTaskAction() -> void override;
-    virtual auto PostLoopAction() -> void override {}
-
-    virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
+    auto Execute(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto PrintExecutionSummary() const -> void;
 
 private:
-    volatile T* fMainTaskID;
-    MPI_Win fMainTaskIDWindow;
-    T fBatchSize;
-    T fTaskCounter;
-
-    static constexpr long double fgImbalancingFactor{1e-4};
+    ProgressBar fProgressBar;
 };
 
-} // namespace Mustard::inline Execution
+} // namespace Mustard::inline Execution::internal
 
-#include "Mustard/Execution/SharedMemoryScheduler.inl"
+#include "Mustard/Execution/internal/SequentialExecutorImpl.inl"
