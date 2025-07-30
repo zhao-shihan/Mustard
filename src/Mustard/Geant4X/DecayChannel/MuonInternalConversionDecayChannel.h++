@@ -54,7 +54,7 @@ protected:
     auto UpdateState(double delta) -> void;
     auto MainSamplingLoop() -> void;
 
-    static auto UnbiasedM2(const CLHEPX::RAMBO<5>::Event& event) -> double;
+    static auto MSqRR2009PRD(const CLHEPX::RAMBO<5>::Event& event) -> double;
 
 protected:
     double fMetropolisDelta;
@@ -66,7 +66,7 @@ protected:
     bool fReady;
     std::array<double, 5 * 4> fRawState;
     CLHEPX::RAMBO<5>::Event fEvent;
-    double fBiasedM2;
+    double fBiasedMSq;
 
     Math::Random::Xoshiro256Plus fXoshiro256Plus;
     unsigned int fReseedCounter : 8;

@@ -53,7 +53,7 @@ MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4S
     fReady{},
     fRawState{},
     fEvent{},
-    fBiasedM2{},
+    fBiasedMSq{},
     fXoshiro256Plus{},
     fReseedCounter{},
     fMessengerRegister{this} {
@@ -98,7 +98,7 @@ auto MuonInternalConversionDecayChannel::Initialize() -> void {
         fEvent = fRAMBO(fRawState);
         if (const auto bias{BiasWithCheck(fEvent.state)};
             bias >= std::numeric_limits<double>::min()) {
-            fBiasedM2 = bias * UnbiasedM2(fEvent);
+            fBiasedMSq = bias * MSq(fEvent);
             break;
         }
     }
@@ -121,7 +121,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
     auto originalReady{std::move(fReady)};
     auto originalRawState{std::move(fRawState)};
     auto originalEvent{std::move(fEvent)};
-    auto originalBiasedM2{std::move(fBiasedM2)};
+    auto originalBiasedMSq{std::move(fBiasedMSq)};
 
     // --- above is protected ---
 
@@ -157,7 +157,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
     fReady = std::move(originalReady);
     fRawState = std::move(originalRawState);
     fEvent = std::move(originalEvent);
-    fBiasedM2 = std::move(originalBiasedM2);
+    fBiasedMSq = std::move(originalBiasedMSq);
 
     return {result, error, nEff};
 }
@@ -214,12 +214,12 @@ auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
             continue;
         }
 
-        const auto newBiasedM2{bias * UnbiasedM2(newEvent)};
-        if (newBiasedM2 >= fBiasedM2 or
-            newBiasedM2 >= fBiasedM2 * Math::Random::Distribution::Uniform<double>{}(fXoshiro256Plus)) {
+        const auto newBiasedMSq{bias * MSqRR2009PRD(newEvent)};
+        if (newBiasedMSq >= fBiasedMSq or
+            newBiasedMSq >= fBiasedMSq * Math::Random::Distribution::Uniform<double>{}(fXoshiro256Plus)) {
             fRawState = newRawState;
             fEvent = newEvent;
-            fBiasedM2 = newBiasedM2;
+            fBiasedMSq = newBiasedMSq;
             fWeight = 1 / bias;
             return;
         }
@@ -240,8 +240,10 @@ auto MuonInternalConversionDecayChannel::MainSamplingLoop() -> void {
     UpdateState(fMetropolisDelta);
 }
 
-auto MuonInternalConversionDecayChannel::UnbiasedM2(const CLHEPX::RAMBO<5>::Event& event) -> double {
+auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const CLHEPX::RAMBO<5>::Event& event) -> double {
     // Tree level mu -> eeevv (2 diagrams)
+    // Ref: Rashid M. Djilkibaev, and Rostislav V. Konoplich, Rare muon decay mu+->e+e-e+vevmu, Phys. Rev. D 79, 073004 (arXiv:0812.1355)
+    // Adapt from mu3e2nu.tex in https://arxiv.org/src/0812.1355
 
     const auto& [p, p1, p2, k1, k2]{event.state};
 
