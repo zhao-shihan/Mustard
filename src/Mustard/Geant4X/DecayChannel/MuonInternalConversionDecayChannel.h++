@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/CLHEPX/RAMBO.h++"
+#include "Mustard/CLHEPX/GENBOD.h++"
 #include "Mustard/Geant4X/DecayChannel/DecayChannelExtension.h++"
 #include "Mustard/Geant4X/DecayChannel/MuonInternalConversionDecayChannelMessenger.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
@@ -38,11 +38,20 @@ namespace Mustard::Geant4X::inline DecayChannel {
 class MuonInternalConversionDecayChannel : public G4VDecayChannel,
                                            public DecayChannelExtension {
 public:
+    enum struct MSqVersion {
+        RR2009PRD,
+        McMulePre010
+    };
+
+public:
     MuonInternalConversionDecayChannel(const G4String& parentName, G4double br, G4int verbose = 1);
+
+    auto MSqVersion(MSqVersion ver) { fMSqVersion = ver; }
+    auto MSqVersion(std::string_view ver);
 
     auto MetropolisDelta(double delta) -> void { fMetropolisDelta = muc::clamp<"()">(delta, 0., 0.5); }
     auto MetropolisDiscard(int n) -> void { fMetropolisDiscard = std::max(0, n); }
-    auto Bias(std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> b) -> void;
+    auto Bias(std::function<auto(const CLHEPX::GENBOD<5>::State&)->double> b) -> void;
 
     auto Initialize() -> void;
     auto EstimateWeightNormalizationFactor(unsigned long long n) -> std::tuple<double, double, double>; // return: factor, error, Neff
@@ -50,22 +59,25 @@ public:
     auto DecayIt(G4double) -> G4DecayProducts* override;
 
 protected:
-    auto BiasWithCheck(const CLHEPX::RAMBO<5>::State& state) const -> double;
+    auto BiasWithCheck(const CLHEPX::GENBOD<5>::State& state) const -> double;
     auto UpdateState(double delta) -> void;
     auto MainSamplingLoop() -> void;
 
-    static auto MSqRR2009PRD(const CLHEPX::RAMBO<5>::Event& event) -> double;
+    auto WeightedMSq(const CLHEPX::GENBOD<5>::Event& event) -> double;
+    static auto MSqRR2009PRD(const CLHEPX::GENBOD<5>::State& state) -> double;
+    static auto MSqMcMulePre010(const CLHEPX::GENBOD<5>::State& state) -> double;
 
 protected:
+    enum MSqVersion fMSqVersion;
     double fMetropolisDelta;
     int fMetropolisDiscard;
-    std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> fBias;
+    std::function<auto(const CLHEPX::GENBOD<5>::State&)->double> fBias;
 
-    CLHEPX::RAMBO<5> fRAMBO;
+    CLHEPX::GENBOD<5> fGENBOD;
 
     bool fReady;
-    CLHEPX::RAMBO<5>::RandomState fRandomState;
-    CLHEPX::RAMBO<5>::Event fEvent;
+    CLHEPX::GENBOD<5>::RandomState fRandomState;
+    CLHEPX::GENBOD<5>::Event fEvent;
     double fBiasedMSq;
 
     Math::Random::Xoshiro256Plus fXoshiro256Plus;

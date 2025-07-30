@@ -31,6 +31,7 @@
 
 #include "muc/array"
 #include "muc/math"
+#include "muc/utility"
 
 #include "gsl/gsl"
 
@@ -46,10 +47,11 @@ using namespace PhysicalConstant;
 
 MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4String& parentName, G4double br, G4int verbose) : // clang-format off
     G4VDecayChannel{"MuonICDecay", verbose}, // clang-format on
+    fMSqVersion{MSqVersion::RR2009PRD},
     fMetropolisDelta{0.05},
     fMetropolisDiscard{100},
     fBias{[](auto&&) { return 1; }},
-    fRAMBO{muon_mass_c2, {electron_mass_c2, electron_mass_c2, electron_mass_c2, 0, 0}},
+    fGENBOD{muon_mass_c2, {electron_mass_c2, electron_mass_c2, electron_mass_c2, 0, 0}},
     fReady{},
     fRandomState{},
     fEvent{},
@@ -83,7 +85,17 @@ MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4S
     }
 }
 
-auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const CLHEPX::RAMBO<5>::State&)->double> b) -> void {
+auto MuonInternalConversionDecayChannel::MSqVersion(std::string_view ver) {
+    if (ver == "RR2009PRD") {
+        fMSqVersion = MSqVersion::RR2009PRD;
+    } else if (ver == "McMulePre010") {
+        fMSqVersion = MSqVersion::McMulePre010;
+    } else {
+        Throw<std::invalid_argument>(fmt::format("No squared amplitude version named '{}'", ver));
+    }
+}
+
+auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const CLHEPX::GENBOD<5>::State&)->double> b) -> void {
     fBias = std::move(b);
     fReady = false;
 }
@@ -95,10 +107,10 @@ auto MuonInternalConversionDecayChannel::Initialize() -> void {
     // initialize
     while (true) {
         std::ranges::generate(fRandomState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });
-        fEvent = fRAMBO(fRandomState);
+        fEvent = fGENBOD(fRandomState);
         if (const auto bias{BiasWithCheck(fEvent.state)};
             bias >= std::numeric_limits<double>::min()) {
-            fBiasedMSq = bias * MSqRR2009PRD(fEvent);
+            fBiasedMSq = bias * WeightedMSq(fEvent);
             break;
         }
     }
@@ -190,7 +202,7 @@ auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
     return products;
 }
 
-auto MuonInternalConversionDecayChannel::BiasWithCheck(const CLHEPX::RAMBO<5>::State& state) const -> double {
+auto MuonInternalConversionDecayChannel::BiasWithCheck(const CLHEPX::GENBOD<5>::State& state) const -> double {
     const auto bias{fBias(state)};
     if (bias < 0) {
         Throw<std::runtime_error>("Bias should be non-negative");
@@ -199,8 +211,8 @@ auto MuonInternalConversionDecayChannel::BiasWithCheck(const CLHEPX::RAMBO<5>::S
 }
 
 auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
-    CLHEPX::RAMBO<5>::RandomState newRandomState;
-    CLHEPX::RAMBO<5>::Event newEvent;
+    CLHEPX::GENBOD<5>::RandomState newRandomState;
+    CLHEPX::GENBOD<5>::Event newEvent;
     while (true) {
         std::ranges::transform(std::as_const(fRandomState), newRandomState.begin(),
                                [&](auto u) {
@@ -208,13 +220,13 @@ auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
                                        muc::clamp<"()">(u - delta, 0., 1.),
                                        muc::clamp<"()">(u + delta, 0., 1.)}(fXoshiro256Plus);
                                });
-        newEvent = fRAMBO(newRandomState);
+        newEvent = fGENBOD(newRandomState);
         const auto bias{BiasWithCheck(newEvent.state)};
         if (bias <= std::numeric_limits<double>::min()) {
             continue;
         }
 
-        const auto newBiasedMSq{bias * MSqRR2009PRD(newEvent)};
+        const auto newBiasedMSq{bias * WeightedMSq(newEvent)};
         if (newBiasedMSq >= fBiasedMSq or
             newBiasedMSq >= fBiasedMSq * Math::Random::Distribution::Uniform<double>{}(fXoshiro256Plus)) {
             fRandomState = newRandomState;
@@ -240,12 +252,22 @@ auto MuonInternalConversionDecayChannel::MainSamplingLoop() -> void {
     UpdateState(fMetropolisDelta);
 }
 
-auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const CLHEPX::RAMBO<5>::Event& event) -> double {
+auto MuonInternalConversionDecayChannel::WeightedMSq(const CLHEPX::GENBOD<5>::Event& event) -> double {
+    switch (fMSqVersion) {
+    case MSqVersion::RR2009PRD:
+        return event.weight * MSqRR2009PRD(event.state);
+    case MSqVersion::McMulePre010:
+        return event.weight * MSqMcMulePre010(event.state);
+    }
+    muc::unreachable();
+}
+
+auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const CLHEPX::GENBOD<5>::State& state) -> double {
     // Tree level mu -> eeevv (2 diagrams)
     // Ref: Rashid M. Djilkibaev, and Rostislav V. Konoplich, Rare muon decay mu+->e+e-e+vevmu, Phys. Rev. D 79, 073004 (arXiv:0812.1355)
     // Adapt from mu3e2nu.tex in https://arxiv.org/src/0812.1355
 
-    const auto& [p, p1, p2, k1, k2]{event.state};
+    const auto& [p, p1, p2, k1, k2]{state};
 
     constexpr auto u2{muon_mass_c2 * muon_mass_c2};
     constexpr auto m2{electron_mass_c2 * electron_mass_c2};
@@ -395,7 +417,11 @@ auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const CLHEPX::RAMBO<5>::Ev
     const auto matr2mu{C2 * C2 * D1 * D1 * tr22 - C2 * C3 * D1 * D2 * tr24 + C3 * C3 * D2 * D2 * tr44};
     const auto matr2emu{C1 * C2 * D1 * D1 * tr12 - C1 * C3 * D1 * D2 * tr14 - C1 * C2 * D1 * D2 * tr23 + C1 * C3 * D2 * D2 * tr34};
 
-    return event.weight * (matr2e + matr2mu + matr2emu);
+    return matr2e + matr2mu + matr2emu;
+}
+
+auto MuonInternalConversionDecayChannel::MSqMcMulePre010(const CLHEPX::GENBOD<5>::State& state) -> double {
+    return 0; // TODO;
 }
 
 } // namespace Mustard::Geant4X::inline DecayChannel
