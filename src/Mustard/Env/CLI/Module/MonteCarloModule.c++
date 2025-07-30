@@ -17,6 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/CLI/Module/MonteCarloModule.h++"
+#include "Mustard/Parallel/ReseedRandomEngine.h++"
 
 #include "CLHEP/Random/Random.h"
 
@@ -44,13 +45,14 @@ auto MonteCarloModule::SeedRandomIfFlagged() const -> bool {
                                     std::bit_cast<int>(std::random_device{}())};
     if (const auto clhepRandom{CLHEP::HepRandom::getTheEngine()};
         clhepRandom) {
-        clhepRandom->setSeed(theSeed, 3);
+        clhepRandom->setSeed(theSeed, 0);
     }
     if (gRandom) {
         // Try to decorrelate with CLHEP
         const auto rootSeed{std::mt19937_64{static_cast<unsigned long>(theSeed)}()};
         gRandom->SetSeed(rootSeed);
     }
+    Parallel::ReseedRandomEngine();
     return true;
 }
 
