@@ -98,7 +98,7 @@ auto MuonInternalConversionDecayChannel::Initialize() -> void {
         fEvent = fRAMBO(fRawState);
         if (const auto bias{BiasWithCheck(fEvent.state)};
             bias >= std::numeric_limits<double>::min()) {
-            fBiasedMSq = bias * MSq(fEvent);
+            fBiasedMSq = bias * MSqRR2009PRD(fEvent);
             break;
         }
     }
