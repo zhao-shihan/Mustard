@@ -37,11 +37,18 @@
 
 namespace Mustard::CLHEPX {
 
-/// @brief RAMBO (Random Momenta Beautifully Organized) phase space generator
+/// @brief N-body phase space generator using RAMBO algorithm
 ///
-/// Implements the RAMBO algorithm for generating N-particle phase space events
-/// according to Lorentz-invariant phase space. Based on:
-///   Kleiss, Stirling, Ellis, "A New Monte Carlo Treatment of Multiparticle Phase Space at High Energies"
+/// Implements the RAMBO algorithm for generating N-particle phase space events.
+/// Based on:
+///   R. Kleiss, W.J. Stirling, S.D. Ellis, "A New Monte Carlo Treatment Of
+///   Multiparticle Phase Space At High-Energies", CPC40 (1986) 359.
+///
+/// RAMBO is slower than GENBOD, but with following good properties:
+///  - For massless final states, RAMBO can generate weight=1 events.
+///  - For near-massless final states RAMBO can generate weight~1 events.
+/// This generator is very suitable for generating unweighted massless
+/// final states.
 ///
 /// @tparam N Number of final state particles (N >= 2)
 template<int N>
