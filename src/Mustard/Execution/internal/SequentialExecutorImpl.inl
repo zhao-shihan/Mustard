@@ -23,7 +23,7 @@ SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std
     ExecutorImplBase<T>{std::move(executionName), std::move(taskName), std::move(scheduler)},
     fProgressBar{} {
     using std::chrono_literals::operator""ms;
-    this->fPrintProgressInterval = 33ms;
+    this->fPrintProgressInterval = 50ms;
 }
 
 template<std::integral T>
@@ -81,7 +81,7 @@ auto SequentialExecutorImpl<T>::PrintExecutionSummary() const -> void {
     Print("+-------------------------+-------> Summary <-------+-------------------------+\n"
           "| Executed                | Wall time (s)           | Processor time (s)      |\n"
           "+-------------------------+-------------------------+-------------------------+\n"
-          "| {:25} | {:25.3f} | {:25.3f} |\n"
+          "| {:23} | {:23.3f} | {:23.3f} |\n"
           "+-------------------------+-------> Summary <-------+-------------------------+\n",
           executed, Seconds{time}.count(), Seconds{processorTime}.count());
 }
