@@ -51,7 +51,7 @@ MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4S
     fBias{[](auto&&) { return 1; }},
     fRAMBO{muon_mass_c2, {electron_mass_c2, electron_mass_c2, electron_mass_c2, 0, 0}},
     fReady{},
-    fRawState{},
+    fRandomState{},
     fEvent{},
     fBiasedMSq{},
     fXoshiro256Plus{},
@@ -94,8 +94,8 @@ auto MuonInternalConversionDecayChannel::Initialize() -> void {
     }
     // initialize
     while (true) {
-        std::ranges::generate(fRawState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });
-        fEvent = fRAMBO(fRawState);
+        std::ranges::generate(fRandomState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });
+        fEvent = fRAMBO(fRandomState);
         if (const auto bias{BiasWithCheck(fEvent.state)};
             bias >= std::numeric_limits<double>::min()) {
             fBiasedMSq = bias * MSqRR2009PRD(fEvent);
@@ -119,7 +119,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
     // store state
     auto originalBias{std::move(fBias)};
     auto originalReady{std::move(fReady)};
-    auto originalRawState{std::move(fRawState)};
+    auto originalRandomState{std::move(fRandomState)};
     auto originalEvent{std::move(fEvent)};
     auto originalBiasedMSq{std::move(fBiasedMSq)};
 
@@ -155,7 +155,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
     // restore state
     fBias = std::move(originalBias);
     fReady = std::move(originalReady);
-    fRawState = std::move(originalRawState);
+    fRandomState = std::move(originalRandomState);
     fEvent = std::move(originalEvent);
     fBiasedMSq = std::move(originalBiasedMSq);
 
@@ -199,16 +199,16 @@ auto MuonInternalConversionDecayChannel::BiasWithCheck(const CLHEPX::RAMBO<5>::S
 }
 
 auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
-    decltype(fRawState) newRawState;
-    decltype(fEvent) newEvent;
+    CLHEPX::RAMBO<5>::RandomState newRandomState;
+    CLHEPX::RAMBO<5>::Event newEvent;
     while (true) {
-        std::ranges::transform(std::as_const(fRawState), newRawState.begin(),
+        std::ranges::transform(std::as_const(fRandomState), newRandomState.begin(),
                                [&](auto u) {
                                    return Math::Random::Distribution::UniformCompact{
                                        muc::clamp<"()">(u - delta, 0., 1.),
                                        muc::clamp<"()">(u + delta, 0., 1.)}(fXoshiro256Plus);
                                });
-        newEvent = fRAMBO(newRawState);
+        newEvent = fRAMBO(newRandomState);
         const auto bias{BiasWithCheck(newEvent.state)};
         if (bias <= std::numeric_limits<double>::min()) {
             continue;
@@ -217,7 +217,7 @@ auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
         const auto newBiasedMSq{bias * MSqRR2009PRD(newEvent)};
         if (newBiasedMSq >= fBiasedMSq or
             newBiasedMSq >= fBiasedMSq * Math::Random::Distribution::Uniform<double>{}(fXoshiro256Plus)) {
-            fRawState = newRawState;
+            fRandomState = newRandomState;
             fEvent = newEvent;
             fBiasedMSq = newBiasedMSq;
             fWeight = 1 / bias;

@@ -64,7 +64,7 @@ protected:
     CLHEPX::RAMBO<5> fRAMBO;
 
     bool fReady;
-    std::array<double, 5 * 4> fRawState;
+    CLHEPX::RAMBO<5>::RandomState fRandomState;
     CLHEPX::RAMBO<5>::Event fEvent;
     double fBiasedMSq;
 
