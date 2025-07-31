@@ -32,7 +32,16 @@ auto GENBOD<N>::operator()(const RandomState& u) const -> Event {
     u0.front() = 0;
     random = std::ranges::copy_n(random, N - 2, u0.begin() + 1).in;
     u0.back() = 1;
-    muc::timsort(u0.begin() + 1, u0.end() - 1);
+    [](double arr[]) {
+        for (auto i{1}; i < N - 2; ++i) {
+            const auto key{arr[i]};
+            auto j{i - 1};
+            for (; j >= 0 and arr[j] > key; --j) {
+                arr[j + 1] = arr[j];
+            }
+            arr[j + 1] = key;
+        }
+    }(u0.data() + 1);
 
     std::array<double, N> invMass;
     double sumMass{};
@@ -52,7 +61,7 @@ auto GENBOD<N>::operator()(const RandomState& u) const -> Event {
     }
 
     // clang-format off
-    event.state[0] = {{0, pRel[0], 0}, muc::hypot(pRel[0], this->fMass[0])}; // clang-format on
+    event.state[0] = {{0, pRel[0], 0}, muc::hypot(pRel[0], this->fMass[0])};          // clang-format on
     for (int i{1};; ++i) { // clang-format off
         event.state[i] = {{0, -pRel[i - 1], 0}, muc::hypot(pRel[i - 1], this->fMass[i])}; // clang-format on
 

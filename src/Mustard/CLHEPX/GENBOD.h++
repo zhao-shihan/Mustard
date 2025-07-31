@@ -24,7 +24,6 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/LorentzVector.h"
 
-#include "muc/algorithm"
 #include "muc/math"
 #include "muc/numeric"
 
