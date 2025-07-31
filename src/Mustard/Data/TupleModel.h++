@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Data/Value.h++"
-#include "Mustard/gslx/index_sequence.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/ceta_string"
 #include "muc/concepts"

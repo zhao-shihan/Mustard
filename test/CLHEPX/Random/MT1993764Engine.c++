@@ -20,15 +20,23 @@ int main() {
     std::cout << "Simply generate 10 million integers:" << std::endl;
 
     unsigned int r;
-    for (int i = 0; i < 1000; ++i) { r = mt64(); }
+    for (int i = 0; i < 1000; ++i) {
+        r = mt64();
+    }
     muc::chrono::stopwatch stopwatch;
-    for (int i = 0; i < 10'000'000; ++i) { r = mt64(); }
+    for (int i = 0; i < 10'000'000; ++i) {
+        r = mt64();
+    }
     muc::chrono::milliseconds<double> time{stopwatch.read()};
     std::cout << "    CLHEPX::...::MT1993764Engine : " << time << " ms (last integer: " << r << ')' << std::endl;
 
-    for (int i = 0; i < 1000; ++i) { r = (unsigned int)(mt64x); }
+    for (int i = 0; i < 1000; ++i) {
+        r = (unsigned int)(mt64x);
+    }
     stopwatch = {};
-    for (int i = 0; i < 10'000'000; ++i) { r = (unsigned int)(mt64x); }
+    for (int i = 0; i < 10'000'000; ++i) {
+        r = (unsigned int)(mt64x);
+    }
     time = stopwatch.read();
     std::cout << "       Math::...::MT1993764 : " << time << " ms (last integer: " << r << ')' << std::endl;
 

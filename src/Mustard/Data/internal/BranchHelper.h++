@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "Mustard/ROOTX/Fundamental.h++"
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/internal/TypeTraits.h++"
+#include "Mustard/ROOTX/Fundamental.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "TTree.h"

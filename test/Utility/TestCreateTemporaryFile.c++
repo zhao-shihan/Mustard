@@ -13,7 +13,9 @@ auto main(int argc, char* argv[]) -> int {
 
     const auto path{CreateTemporaryFile(argv[1], argv[2])};
     std::cout << path << std::endl;
-    if (not std::filesystem::exists(path)) { throw std::runtime_error{"bug"}; }
+    if (not std::filesystem::exists(path)) {
+        throw std::runtime_error{"bug"};
+    }
 
     std::getchar();
 

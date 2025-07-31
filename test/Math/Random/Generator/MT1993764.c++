@@ -2,8 +2,8 @@
 
 #include "Eigen/Core"
 
-#include "muc/numeric"
 #include "muc/chrono"
+#include "muc/numeric"
 
 #include <algorithm>
 #include <array>
@@ -21,15 +21,23 @@ int main() {
     std::cout << "Simply generate 10 million integers:" << std::endl;
 
     uintmax_t r;
-    for (int i = 0; i < 1'000'000; ++i) { r = stdMT1993764(); }
+    for (int i = 0; i < 1'000'000; ++i) {
+        r = stdMT1993764();
+    }
     muc::chrono::stopwatch stopwatch;
-    for (int i = 0; i < 10'000'000; ++i) { r = stdMT1993764(); }
+    for (int i = 0; i < 10'000'000; ++i) {
+        r = stdMT1993764();
+    }
     muc::chrono::milliseconds<double> time{stopwatch.read()};
     std::cout << "    std::mt19937_64 : " << time << " ms (last integer: " << r << ')' << std::endl;
 
-    for (int i = 0; i < 1'000'000; ++i) { r = mt1993764(); }
+    for (int i = 0; i < 1'000'000; ++i) {
+        r = mt1993764();
+    }
     stopwatch = {};
-    for (int i = 0; i < 10'000'000; ++i) { r = mt1993764(); }
+    for (int i = 0; i < 10'000'000; ++i) {
+        r = mt1993764();
+    }
     time = stopwatch.read();
     std::cout << "    Mustard MT19937-64 : " << time << " ms (last integer: " << r << ')' << std::endl;
 
@@ -37,16 +45,24 @@ int main() {
     std::array<double, 16> arr16;
 
     muc::ranges::iota(arr16, 0);
-    for (int i = 0; i < 100'000; ++i) { std::ranges::shuffle(arr16, stdMT1993764); }
+    for (int i = 0; i < 100'000; ++i) {
+        std::ranges::shuffle(arr16, stdMT1993764);
+    }
     stopwatch = {};
-    for (int i = 0; i < 1'000'000; ++i) { std::ranges::shuffle(arr16, stdMT1993764); }
+    for (int i = 0; i < 1'000'000; ++i) {
+        std::ranges::shuffle(arr16, stdMT1993764);
+    }
     time = stopwatch.read();
     std::cout << "    std::mt19937_64 : " << time << " ms (first element: " << arr16.front() << ')' << std::endl;
 
     muc::ranges::iota(arr16, 0);
-    for (int i = 0; i < 100'000; ++i) { std::ranges::shuffle(arr16, mt1993764); }
+    for (int i = 0; i < 100'000; ++i) {
+        std::ranges::shuffle(arr16, mt1993764);
+    }
     stopwatch = {};
-    for (int i = 0; i < 1'000'000; ++i) { std::ranges::shuffle(arr16, mt1993764); }
+    for (int i = 0; i < 1'000'000; ++i) {
+        std::ranges::shuffle(arr16, mt1993764);
+    }
     time = stopwatch.read();
     std::cout << "    Mustard MT19937-64 : " << time << " ms (first element: " << arr16.front() << ')' << std::endl;
 
@@ -54,16 +70,24 @@ int main() {
     std::array<double, 4096> arr4096;
 
     muc::ranges::iota(arr4096, 0);
-    for (int i = 0; i < 1'000; ++i) { std::ranges::shuffle(arr4096, stdMT1993764); }
+    for (int i = 0; i < 1'000; ++i) {
+        std::ranges::shuffle(arr4096, stdMT1993764);
+    }
     stopwatch = {};
-    for (int i = 0; i < 10'000; ++i) { std::ranges::shuffle(arr4096, stdMT1993764); }
+    for (int i = 0; i < 10'000; ++i) {
+        std::ranges::shuffle(arr4096, stdMT1993764);
+    }
     time = stopwatch.read();
     std::cout << "    std::mt19937_64 : " << time << " ms (first element: " << arr4096.front() << ')' << std::endl;
 
     muc::ranges::iota(arr4096, 0);
-    for (int i = 0; i < 1'000; ++i) { std::ranges::shuffle(arr4096, mt1993764); }
+    for (int i = 0; i < 1'000; ++i) {
+        std::ranges::shuffle(arr4096, mt1993764);
+    }
     stopwatch = {};
-    for (int i = 0; i < 10'000; ++i) { std::ranges::shuffle(arr4096, mt1993764); }
+    for (int i = 0; i < 10'000; ++i) {
+        std::ranges::shuffle(arr4096, mt1993764);
+    }
     time = stopwatch.read();
     std::cout << "    Mustard MT19937-64 : " << time << " ms (first element: " << arr4096.front() << ')' << std::endl;
 

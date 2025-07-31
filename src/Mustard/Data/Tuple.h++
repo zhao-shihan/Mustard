@@ -20,9 +20,9 @@
 
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/Value.h++"
-#include "Mustard/gslx/index_sequence.h++"
 #include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/ceta_string"
 #include "muc/concepts"

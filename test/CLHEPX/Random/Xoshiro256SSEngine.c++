@@ -20,15 +20,23 @@ int main() {
     std::cout << "Simply generate 10 million integers:" << std::endl;
 
     unsigned int r;
-    for (int i = 0; i < 1000; ++i) { r = xoshiro256SS(); }
+    for (int i = 0; i < 1000; ++i) {
+        r = xoshiro256SS();
+    }
     muc::chrono::stopwatch stopwatch;
-    for (int i = 0; i < 10'000'000; ++i) { r = xoshiro256SS(); }
+    for (int i = 0; i < 10'000'000; ++i) {
+        r = xoshiro256SS();
+    }
     muc::chrono::milliseconds<double> time{stopwatch.read()};
     std::cout << "    CLHEPX::...::Xoshiro256SSEngine : " << time << " ms (last integer: " << r << ')' << std::endl;
 
-    for (int i = 0; i < 1000; ++i) { r = (unsigned int)(xoshiro256SSX); }
+    for (int i = 0; i < 1000; ++i) {
+        r = (unsigned int)(xoshiro256SSX);
+    }
     stopwatch = {};
-    for (int i = 0; i < 10'000'000; ++i) { r = (unsigned int)(xoshiro256SSX); }
+    for (int i = 0; i < 10'000'000; ++i) {
+        r = (unsigned int)(xoshiro256SSX);
+    }
     time = stopwatch.read();
     std::cout << "     Math::...::Xoshiro256SS : " << time << " ms (last integer: " << r << ')' << std::endl;
 

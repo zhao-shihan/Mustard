@@ -20,8 +20,8 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/internal/ReadHelper.h++"
-#include "Mustard/gslx/index_sequence.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/ptrvec"
 
