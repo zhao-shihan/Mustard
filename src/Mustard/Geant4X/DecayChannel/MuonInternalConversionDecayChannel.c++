@@ -23,6 +23,8 @@
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
+#include "CLHEP/Vector/LorentzVector.h"
+
 #include "G4DecayProducts.hh"
 #include "G4DynamicParticle.hh"
 #include "Randomize.hh"
@@ -47,7 +49,7 @@ using namespace PhysicalConstant;
 
 MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4String& parentName, G4double br, G4int verbose) : // clang-format off
     G4VDecayChannel{"MuonICDecay", verbose}, // clang-format on
-    fMSqVersion{MSqVersion::RR2009PRD},
+    fMSqVersion{MSqVersion::McMule2020},
     fMetropolisDelta{0.05},
     fMetropolisDiscard{100},
     fBias{[](auto&&) { return 1; }},
@@ -86,16 +88,16 @@ MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4S
 }
 
 auto MuonInternalConversionDecayChannel::MSqVersion(std::string_view ver) {
-    if (ver == "RR2009PRD") {
+    if (ver == "McMule2020") {
+        fMSqVersion = MSqVersion::McMule2020;
+    } else if (ver == "RR2009PRD") {
         fMSqVersion = MSqVersion::RR2009PRD;
-    } else if (ver == "McMulePre010") {
-        fMSqVersion = MSqVersion::McMulePre010;
     } else {
         Throw<std::invalid_argument>(fmt::format("No squared amplitude version named '{}'", ver));
     }
 }
 
-auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const CLHEPX::GENBOD<5>::State&)->double> b) -> void {
+auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const GENBOD<5>::State&)->double> b) -> void {
     fBias = std::move(b);
     fReady = false;
 }
@@ -202,7 +204,7 @@ auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
     return products;
 }
 
-auto MuonInternalConversionDecayChannel::BiasWithCheck(const CLHEPX::GENBOD<5>::State& state) const -> double {
+auto MuonInternalConversionDecayChannel::BiasWithCheck(const GENBOD<5>::State& state) const -> double {
     const auto bias{fBias(state)};
     if (bias < 0) {
         Throw<std::runtime_error>("Bias should be non-negative");
@@ -211,8 +213,8 @@ auto MuonInternalConversionDecayChannel::BiasWithCheck(const CLHEPX::GENBOD<5>::
 }
 
 auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
-    CLHEPX::GENBOD<5>::RandomState newRandomState;
-    CLHEPX::GENBOD<5>::Event newEvent;
+    GENBOD<5>::RandomState newRandomState;
+    GENBOD<5>::Event newEvent;
     while (true) {
         std::ranges::transform(std::as_const(fRandomState), newRandomState.begin(),
                                [&](auto u) {
@@ -252,17 +254,487 @@ auto MuonInternalConversionDecayChannel::MainSamplingLoop() -> void {
     UpdateState(fMetropolisDelta);
 }
 
-auto MuonInternalConversionDecayChannel::WeightedMSq(const CLHEPX::GENBOD<5>::Event& event) -> double {
+auto MuonInternalConversionDecayChannel::WeightedMSq(const GENBOD<5>::Event& event) -> double {
     switch (fMSqVersion) {
+    case MSqVersion::McMule2020:
+        return event.weight * MSqMcMule2020(event.state);
     case MSqVersion::RR2009PRD:
         return event.weight * MSqRR2009PRD(event.state);
-    case MSqVersion::McMulePre010:
-        return event.weight * MSqMcMulePre010(event.state);
     }
     muc::unreachable();
 }
 
-auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const CLHEPX::GENBOD<5>::State& state) -> double {
+auto MuonInternalConversionDecayChannel::MSqMcMule2020(const GENBOD<5>::State& state) -> double {
+    const CLHEP::HepLorentzVector q1{muon_mass_c2};
+    const auto& [q2, q6, q5, q4, q3]{state};
+    const CLHEP::HepLorentzVector pol1{parent_polarization};
+
+    // Adapt from McMule v0.5.0, mudecrare/mudecrare_pm2ennee.f95, FUNCTION PM2ENNEE
+    //
+    // Copyright 2020-2024  Yannick Ulrich and others (The McMule development team)
+    //
+
+    const auto s12 = q1 * q2;
+    const auto s13 = q1 * q3;
+    const auto s14 = q1 * q4;
+    const auto s15 = q1 * q5;
+    const auto s16 = q1 * q6;
+    const auto s23 = q2 * q3;
+    const auto s24 = q2 * q4;
+    const auto s25 = q2 * q5;
+    const auto s26 = q2 * q6;
+    const auto s34 = q3 * q4;
+    const auto s35 = q3 * q5;
+    const auto s36 = q3 * q6;
+    const auto s45 = q4 * q5;
+    const auto s46 = q4 * q6;
+    const auto s56 = q5 * q6;
+
+    const auto s2n = q2 * pol1;
+    const auto s3n = q3 * pol1;
+    const auto s4n = q4 * pol1;
+    const auto s5n = q5 * pol1;
+    const auto s6n = q6 * pol1;
+
+    const auto M1 = std::sqrt(q1.m2() / 2);
+    const auto M2 = std::sqrt(std::abs(q2.m2()) / 2);
+
+    using muc::pow;
+
+    const auto if11 =
+        -4 * pow<4>(M2) * s13 * s24 - 4 * pow<2>(M1) * pow<2>(M2) * s13 * s24 -
+        2 * pow<2>(M2) * s13 * s15 * s24 - 2 * pow<2>(M2) * s13 * s16 * s24 +
+        2 * s13 * s15 * s16 * s24 + 4 * pow<2>(M1) * pow<2>(M2) * s24 * s35 +
+        4 * pow<2>(M2) * s15 * s24 * s35 + 2 * pow<2>(M2) * s16 * s24 * s35 -
+        s15 * s16 * s24 * s35 + pow<2>(s16) * s24 * s35 +
+        4 * pow<2>(M1) * pow<2>(M2) * s24 * s36 + 2 * pow<2>(M2) * s15 * s24 * s36 +
+        pow<2>(s15) * s24 * s36 + 4 * pow<2>(M2) * s16 * s24 * s36 -
+        s15 * s16 * s24 * s36 + 4 * M1 * pow<4>(M2) * s24 * s3n +
+        4 * pow<3>(M1) * pow<2>(M2) * s24 * s3n - 2 * M1 * s15 * s16 * s24 * s3n -
+        2 * pow<2>(M1) * s13 * s24 * s56 - 2 * pow<2>(M2) * s13 * s24 * s56 -
+        s13 * s15 * s24 * s56 - s13 * s16 * s24 * s56 +
+        2 * pow<2>(M1) * s24 * s35 * s56 + s15 * s24 * s35 * s56 +
+        2 * pow<2>(M1) * s24 * s36 * s56 + s16 * s24 * s36 * s56 +
+        2 * pow<3>(M1) * s24 * s3n * s56 + 2 * M1 * pow<2>(M2) * s24 * s3n * s56 +
+        2 * M1 * pow<2>(M2) * s13 * s24 * s5n -
+        4 * M1 * pow<2>(M2) * s24 * s35 * s5n -
+        2 * M1 * pow<2>(M2) * s24 * s36 * s5n - M1 * s15 * s24 * s36 * s5n +
+        M1 * s16 * s24 * s36 * s5n + M1 * s13 * s24 * s56 * s5n -
+        M1 * s24 * s35 * s56 * s5n + 2 * M1 * pow<2>(M2) * s13 * s24 * s6n -
+        2 * M1 * pow<2>(M2) * s24 * s35 * s6n + M1 * s15 * s24 * s35 * s6n -
+        M1 * s16 * s24 * s35 * s6n - 4 * M1 * pow<2>(M2) * s24 * s36 * s6n +
+        M1 * s13 * s24 * s56 * s6n - M1 * s24 * s36 * s56 * s6n;
+    const auto if22 =
+        -8 * pow<4>(M2) * s13 * s24 + 2 * pow<2>(M2) * s13 * s24 * s25 +
+        2 * pow<2>(M2) * s13 * s24 * s26 + 2 * s13 * s24 * s25 * s26 +
+        8 * M1 * pow<4>(M2) * s24 * s3n - 2 * M1 * pow<2>(M2) * s24 * s25 * s3n -
+        2 * M1 * pow<2>(M2) * s24 * s26 * s3n - 2 * M1 * s24 * s25 * s26 * s3n -
+        4 * pow<4>(M2) * s13 * s45 + 4 * pow<2>(M2) * s13 * s25 * s45 +
+        2 * pow<2>(M2) * s13 * s26 * s45 + s13 * s25 * s26 * s45 -
+        s13 * pow<2>(s26) * s45 + 4 * M1 * pow<4>(M2) * s3n * s45 -
+        4 * M1 * pow<2>(M2) * s25 * s3n * s45 -
+        2 * M1 * pow<2>(M2) * s26 * s3n * s45 - M1 * s25 * s26 * s3n * s45 +
+        M1 * pow<2>(s26) * s3n * s45 - 4 * pow<4>(M2) * s13 * s46 +
+        2 * pow<2>(M2) * s13 * s25 * s46 - s13 * pow<2>(s25) * s46 +
+        4 * pow<2>(M2) * s13 * s26 * s46 + s13 * s25 * s26 * s46 +
+        4 * M1 * pow<4>(M2) * s3n * s46 - 2 * M1 * pow<2>(M2) * s25 * s3n * s46 +
+        M1 * pow<2>(s25) * s3n * s46 - 4 * M1 * pow<2>(M2) * s26 * s3n * s46 -
+        M1 * s25 * s26 * s3n * s46 - 4 * pow<2>(M2) * s13 * s24 * s56 +
+        s13 * s24 * s25 * s56 + s13 * s24 * s26 * s56 +
+        4 * M1 * pow<2>(M2) * s24 * s3n * s56 - M1 * s24 * s25 * s3n * s56 -
+        M1 * s24 * s26 * s3n * s56 - 2 * pow<2>(M2) * s13 * s45 * s56 +
+        s13 * s25 * s45 * s56 + 2 * M1 * pow<2>(M2) * s3n * s45 * s56 -
+        M1 * s25 * s3n * s45 * s56 - 2 * pow<2>(M2) * s13 * s46 * s56 +
+        s13 * s26 * s46 * s56 + 2 * M1 * pow<2>(M2) * s3n * s46 * s56 -
+        M1 * s26 * s3n * s46 * s56;
+    const auto if33 =
+        -4 * pow<4>(M2) * s13 * s45 - 4 * pow<2>(M1) * pow<2>(M2) * s13 * s45 -
+        2 * pow<2>(M2) * s12 * s13 * s45 - 2 * pow<2>(M2) * s13 * s16 * s45 +
+        2 * s12 * s13 * s16 * s45 + 4 * pow<2>(M1) * pow<2>(M2) * s23 * s45 +
+        4 * pow<2>(M2) * s12 * s23 * s45 + 2 * pow<2>(M2) * s16 * s23 * s45 -
+        s12 * s16 * s23 * s45 + pow<2>(s16) * s23 * s45 -
+        2 * pow<2>(M1) * s13 * s26 * s45 - 2 * pow<2>(M2) * s13 * s26 * s45 -
+        s12 * s13 * s26 * s45 - s13 * s16 * s26 * s45 +
+        2 * pow<2>(M1) * s23 * s26 * s45 + s12 * s23 * s26 * s45 +
+        2 * M1 * pow<2>(M2) * s13 * s2n * s45 -
+        4 * M1 * pow<2>(M2) * s23 * s2n * s45 + M1 * s13 * s26 * s2n * s45 -
+        M1 * s23 * s26 * s2n * s45 + 4 * pow<2>(M1) * pow<2>(M2) * s36 * s45 +
+        2 * pow<2>(M2) * s12 * s36 * s45 + pow<2>(s12) * s36 * s45 +
+        4 * pow<2>(M2) * s16 * s36 * s45 - s12 * s16 * s36 * s45 +
+        2 * pow<2>(M1) * s26 * s36 * s45 + s16 * s26 * s36 * s45 -
+        2 * M1 * pow<2>(M2) * s2n * s36 * s45 - M1 * s12 * s2n * s36 * s45 +
+        M1 * s16 * s2n * s36 * s45 + 4 * M1 * pow<4>(M2) * s3n * s45 +
+        4 * pow<3>(M1) * pow<2>(M2) * s3n * s45 - 2 * M1 * s12 * s16 * s3n * s45 +
+        2 * pow<3>(M1) * s26 * s3n * s45 + 2 * M1 * pow<2>(M2) * s26 * s3n * s45 +
+        2 * M1 * pow<2>(M2) * s13 * s45 * s6n -
+        2 * M1 * pow<2>(M2) * s23 * s45 * s6n + M1 * s12 * s23 * s45 * s6n -
+        M1 * s16 * s23 * s45 * s6n + M1 * s13 * s26 * s45 * s6n -
+        4 * M1 * pow<2>(M2) * s36 * s45 * s6n - M1 * s26 * s36 * s45 * s6n;
+    const auto if44 =
+        -4 * pow<4>(M2) * s13 * s24 + 4 * pow<2>(M2) * s13 * s24 * s25 -
+        2 * pow<2>(M2) * s13 * s24 * s26 + s13 * s24 * s25 * s26 +
+        4 * M1 * pow<4>(M2) * s24 * s3n - 4 * M1 * pow<2>(M2) * s24 * s25 * s3n +
+        2 * M1 * pow<2>(M2) * s24 * s26 * s3n - M1 * s24 * s25 * s26 * s3n -
+        8 * pow<4>(M2) * s13 * s45 + 2 * pow<2>(M2) * s13 * s25 * s45 -
+        4 * pow<2>(M2) * s13 * s26 * s45 + s13 * s25 * s26 * s45 +
+        8 * M1 * pow<4>(M2) * s3n * s45 - 2 * M1 * pow<2>(M2) * s25 * s3n * s45 +
+        4 * M1 * pow<2>(M2) * s26 * s3n * s45 - M1 * s25 * s26 * s3n * s45 -
+        4 * pow<4>(M2) * s13 * s46 + 2 * pow<2>(M2) * s13 * s25 * s46 -
+        s13 * pow<2>(s25) * s46 - 2 * pow<2>(M2) * s13 * s26 * s46 +
+        4 * M1 * pow<4>(M2) * s3n * s46 - 2 * M1 * pow<2>(M2) * s25 * s3n * s46 +
+        M1 * pow<2>(s25) * s3n * s46 + 2 * M1 * pow<2>(M2) * s26 * s3n * s46 +
+        2 * pow<2>(M2) * s13 * s24 * s56 + s13 * s24 * s25 * s56 -
+        2 * M1 * pow<2>(M2) * s24 * s3n * s56 - M1 * s24 * s25 * s3n * s56 +
+        2 * pow<2>(M2) * s13 * s45 * s56 + 2 * s13 * s25 * s45 * s56 +
+        s13 * s26 * s45 * s56 - 2 * M1 * pow<2>(M2) * s3n * s45 * s56 -
+        2 * M1 * s25 * s3n * s45 * s56 - M1 * s26 * s3n * s45 * s56 +
+        4 * pow<2>(M2) * s13 * s46 * s56 + s13 * s25 * s46 * s56 +
+        s13 * s26 * s46 * s56 - 4 * M1 * pow<2>(M2) * s3n * s46 * s56 -
+        M1 * s25 * s3n * s46 * s56 - M1 * s26 * s3n * s46 * s56 -
+        s13 * s24 * pow<2>(s56) + M1 * s24 * s3n * pow<2>(s56);
+    const auto if12 =
+        -8 * pow<4>(M2) * s14 * s23 - 4 * pow<2>(M2) * s12 * s13 * s24 -
+        2 * pow<2>(M2) * s15 * s23 * s24 - 2 * pow<2>(M2) * s16 * s23 * s24 +
+        2 * pow<2>(M2) * s13 * s14 * s25 + 2 * s13 * s16 * s24 * s25 +
+        2 * pow<2>(M2) * s13 * s14 * s26 + 2 * s13 * s15 * s24 * s26 +
+        8 * pow<4>(M2) * s12 * s34 - 2 * pow<2>(M2) * s15 * s25 * s34 -
+        2 * pow<2>(M2) * s16 * s26 * s34 - 8 * M1 * pow<4>(M2) * s2n * s34 +
+        2 * pow<2>(M2) * s12 * s24 * s35 + 2 * pow<2>(M2) * s14 * s25 * s35 -
+        s16 * s24 * s25 * s35 + s16 * s24 * s26 * s35 -
+        2 * M1 * pow<2>(M2) * s24 * s2n * s35 + 2 * pow<2>(M2) * s12 * s24 * s36 +
+        s15 * s24 * s25 * s36 + 2 * pow<2>(M2) * s14 * s26 * s36 -
+        s15 * s24 * s26 * s36 - 2 * M1 * pow<2>(M2) * s24 * s2n * s36 +
+        4 * M1 * pow<2>(M2) * s12 * s24 * s3n -
+        2 * M1 * pow<2>(M2) * s14 * s25 * s3n - 2 * M1 * s16 * s24 * s25 * s3n -
+        2 * M1 * pow<2>(M2) * s14 * s26 * s3n - 2 * M1 * s15 * s24 * s26 * s3n -
+        2 * pow<2>(M2) * s12 * s13 * s45 + 2 * pow<2>(M2) * s15 * s23 * s45 +
+        s13 * s15 * s26 * s45 - s13 * s16 * s26 * s45 -
+        2 * pow<2>(M2) * s12 * s35 * s45 + 2 * s16 * s26 * s35 * s45 +
+        2 * M1 * pow<2>(M2) * s2n * s35 * s45 - 2 * s15 * s26 * s36 * s45 +
+        2 * M1 * pow<2>(M2) * s12 * s3n * s45 - M1 * s15 * s26 * s3n * s45 +
+        M1 * s16 * s26 * s3n * s45 - 2 * pow<2>(M2) * s12 * s13 * s46 +
+        2 * pow<2>(M2) * s16 * s23 * s46 - s13 * s15 * s25 * s46 +
+        s13 * s16 * s25 * s46 - 2 * s16 * s25 * s35 * s46 -
+        2 * pow<2>(M2) * s12 * s36 * s46 + 2 * s15 * s25 * s36 * s46 +
+        2 * M1 * pow<2>(M2) * s2n * s36 * s46 +
+        2 * M1 * pow<2>(M2) * s12 * s3n * s46 + M1 * s15 * s25 * s3n * s46 -
+        M1 * s16 * s25 * s3n * s46 + 8 * M1 * pow<4>(M2) * s23 * s4n -
+        2 * M1 * pow<2>(M2) * s25 * s35 * s4n -
+        2 * M1 * pow<2>(M2) * s26 * s36 * s4n - 4 * pow<2>(M2) * s14 * s23 * s56 -
+        2 * s12 * s13 * s24 * s56 - s15 * s23 * s24 * s56 - s16 * s23 * s24 * s56 +
+        s13 * s14 * s25 * s56 + s13 * s14 * s26 * s56 +
+        4 * pow<2>(M2) * s12 * s34 * s56 + s16 * s25 * s34 * s56 +
+        s15 * s26 * s34 * s56 - 4 * M1 * pow<2>(M2) * s2n * s34 * s56 +
+        s12 * s24 * s35 * s56 - s14 * s26 * s35 * s56 - M1 * s24 * s2n * s35 * s56 +
+        s12 * s24 * s36 * s56 - s14 * s25 * s36 * s56 - M1 * s24 * s2n * s36 * s56 +
+        2 * M1 * s12 * s24 * s3n * s56 - M1 * s14 * s25 * s3n * s56 -
+        M1 * s14 * s26 * s3n * s56 - s12 * s13 * s45 * s56 - s16 * s23 * s45 * s56 +
+        s12 * s36 * s45 * s56 - M1 * s2n * s36 * s45 * s56 +
+        M1 * s12 * s3n * s45 * s56 - s12 * s13 * s46 * s56 - s15 * s23 * s46 * s56 +
+        s12 * s35 * s46 * s56 - M1 * s2n * s35 * s46 * s56 +
+        M1 * s12 * s3n * s46 * s56 + 4 * M1 * pow<2>(M2) * s23 * s4n * s56 +
+        M1 * s26 * s35 * s4n * s56 + M1 * s25 * s36 * s4n * s56 +
+        2 * M1 * pow<2>(M2) * s23 * s24 * s5n +
+        2 * M1 * pow<2>(M2) * s25 * s34 * s5n - M1 * s24 * s25 * s36 * s5n +
+        M1 * s24 * s26 * s36 * s5n - 2 * M1 * pow<2>(M2) * s23 * s45 * s5n +
+        2 * M1 * s26 * s36 * s45 * s5n - 2 * M1 * s25 * s36 * s46 * s5n +
+        M1 * s23 * s24 * s56 * s5n - M1 * s26 * s34 * s56 * s5n +
+        M1 * s23 * s46 * s56 * s5n + 2 * M1 * pow<2>(M2) * s23 * s24 * s6n +
+        2 * M1 * pow<2>(M2) * s26 * s34 * s6n + M1 * s24 * s25 * s35 * s6n -
+        M1 * s24 * s26 * s35 * s6n - 2 * M1 * s26 * s35 * s45 * s6n -
+        2 * M1 * pow<2>(M2) * s23 * s46 * s6n + 2 * M1 * s25 * s35 * s46 * s6n +
+        M1 * s23 * s24 * s56 * s6n - M1 * s25 * s34 * s56 * s6n +
+        M1 * s23 * s45 * s56 * s6n;
+    const auto if13 =
+        4 * pow<4>(M2) * s13 * s14 - 2 * pow<2>(M2) * s13 * s14 * s16 -
+        2 * pow<4>(M2) * s14 * s23 - pow<2>(M2) * s14 * s15 * s23 -
+        pow<2>(M2) * s14 * s16 * s23 + 2 * pow<4>(M2) * s13 * s24 +
+        2 * pow<2>(M1) * pow<2>(M2) * s13 * s24 - pow<2>(M2) * s13 * s15 * s24 +
+        pow<2>(M2) * s13 * s16 * s24 - s13 * s15 * s16 * s24 +
+        2 * pow<2>(M2) * s13 * s14 * s25 + s13 * s14 * s16 * s25 +
+        2 * pow<2>(M2) * s13 * s14 * s26 - 8 * pow<2>(M1) * pow<4>(M2) * s34 -
+        2 * pow<4>(M2) * s12 * s34 - 2 * pow<4>(M2) * s15 * s34 +
+        2 * pow<2>(M2) * s12 * s15 * s34 - 4 * pow<4>(M2) * s16 * s34 +
+        2 * pow<2>(M2) * s12 * s16 * s34 + 2 * pow<2>(M2) * s15 * s16 * s34 -
+        4 * pow<2>(M1) * pow<2>(M2) * s25 * s34 + pow<2>(s16) * s25 * s34 -
+        4 * pow<2>(M1) * pow<2>(M2) * s26 * s34 - pow<2>(M2) * s15 * s26 * s34 -
+        pow<2>(M2) * s16 * s26 * s34 + 2 * M1 * pow<4>(M2) * s2n * s34 -
+        M1 * pow<2>(M2) * s15 * s2n * s34 - M1 * pow<2>(M2) * s16 * s2n * s34 -
+        2 * pow<4>(M2) * s14 * s35 - pow<2>(M2) * s12 * s14 * s35 -
+        pow<2>(M2) * s14 * s16 * s35 + 2 * pow<2>(M1) * pow<2>(M2) * s24 * s35 -
+        pow<2>(s16) * s24 * s35 - pow<2>(M2) * s14 * s26 * s35 -
+        4 * pow<4>(M2) * s14 * s36 - pow<2>(M2) * s12 * s14 * s36 -
+        pow<2>(M2) * s14 * s15 * s36 - 2 * pow<2>(M1) * pow<2>(M2) * s24 * s36 -
+        2 * pow<2>(M2) * s16 * s24 * s36 + s15 * s16 * s24 * s36 -
+        s14 * s16 * s25 * s36 - pow<2>(M2) * s14 * s26 * s36 +
+        2 * M1 * pow<2>(M2) * s14 * s16 * s3n - 2 * M1 * pow<4>(M2) * s24 * s3n -
+        2 * pow<3>(M1) * pow<2>(M2) * s24 * s3n + M1 * s15 * s16 * s24 * s3n -
+        M1 * s14 * s16 * s25 * s3n + 2 * pow<4>(M2) * s13 * s45 +
+        2 * pow<2>(M1) * pow<2>(M2) * s13 * s45 - pow<2>(M2) * s12 * s13 * s45 +
+        pow<2>(M2) * s13 * s16 * s45 - s12 * s13 * s16 * s45 +
+        2 * pow<2>(M1) * pow<2>(M2) * s23 * s45 - pow<2>(s16) * s23 * s45 +
+        pow<2>(M1) * s13 * s26 * s45 + pow<2>(M2) * s13 * s26 * s45 +
+        s13 * s16 * s26 * s45 + M1 * pow<2>(M2) * s13 * s2n * s45 -
+        2 * pow<2>(M1) * pow<2>(M2) * s36 * s45 - 2 * pow<2>(M2) * s16 * s36 * s45 +
+        s12 * s16 * s36 * s45 - 2 * pow<2>(M1) * s26 * s36 * s45 -
+        s16 * s26 * s36 * s45 - M1 * s16 * s2n * s36 * s45 -
+        2 * M1 * pow<4>(M2) * s3n * s45 - 2 * pow<3>(M1) * pow<2>(M2) * s3n * s45 +
+        M1 * s12 * s16 * s3n * s45 - pow<3>(M1) * s26 * s3n * s45 -
+        M1 * pow<2>(M2) * s26 * s3n * s45 + 2 * pow<4>(M2) * s13 * s46 +
+        2 * pow<2>(M1) * pow<2>(M2) * s13 * s46 - pow<2>(M2) * s12 * s13 * s46 -
+        pow<2>(M2) * s13 * s15 * s46 + 2 * pow<2>(M1) * pow<2>(M2) * s23 * s46 +
+        pow<2>(M2) * s15 * s23 * s46 + pow<2>(M2) * s16 * s23 * s46 -
+        pow<2>(M1) * s13 * s25 * s46 - pow<2>(M2) * s13 * s25 * s46 -
+        s13 * s16 * s25 * s46 + M1 * pow<2>(M2) * s13 * s2n * s46 +
+        2 * pow<2>(M1) * pow<2>(M2) * s35 * s46 + pow<2>(M2) * s12 * s35 * s46 +
+        pow<2>(M2) * s16 * s35 * s46 - M1 * pow<2>(M2) * s2n * s35 * s46 +
+        pow<2>(M2) * s12 * s36 * s46 + pow<2>(M2) * s15 * s36 * s46 +
+        2 * pow<2>(M1) * s25 * s36 * s46 + s16 * s25 * s36 * s46 -
+        M1 * pow<2>(M2) * s2n * s36 * s46 - 2 * M1 * pow<4>(M2) * s3n * s46 -
+        2 * pow<3>(M1) * pow<2>(M2) * s3n * s46 + pow<3>(M1) * s25 * s3n * s46 +
+        M1 * pow<2>(M2) * s25 * s3n * s46 - 4 * M1 * pow<4>(M2) * s13 * s4n +
+        2 * M1 * pow<4>(M2) * s23 * s4n + M1 * pow<2>(M2) * s15 * s23 * s4n +
+        M1 * pow<2>(M2) * s16 * s23 * s4n - 2 * M1 * pow<2>(M2) * s13 * s25 * s4n -
+        2 * M1 * pow<2>(M2) * s13 * s26 * s4n + 2 * M1 * pow<4>(M2) * s35 * s4n +
+        M1 * pow<2>(M2) * s12 * s35 * s4n + M1 * pow<2>(M2) * s16 * s35 * s4n +
+        M1 * pow<2>(M2) * s26 * s35 * s4n + 4 * M1 * pow<4>(M2) * s36 * s4n +
+        M1 * pow<2>(M2) * s12 * s36 * s4n + M1 * pow<2>(M2) * s15 * s36 * s4n +
+        M1 * s16 * s25 * s36 * s4n + M1 * pow<2>(M2) * s26 * s36 * s4n +
+        2 * pow<2>(M2) * s13 * s14 * s56 - pow<2>(M2) * s14 * s23 * s56 +
+        pow<2>(M1) * s13 * s24 * s56 + pow<2>(M2) * s13 * s24 * s56 +
+        s13 * s16 * s24 * s56 - 4 * pow<2>(M1) * pow<2>(M2) * s34 * s56 -
+        pow<2>(M2) * s12 * s34 * s56 - pow<2>(M2) * s16 * s34 * s56 +
+        M1 * pow<2>(M2) * s2n * s34 * s56 - pow<2>(M2) * s14 * s36 * s56 -
+        2 * pow<2>(M1) * s24 * s36 * s56 - s16 * s24 * s36 * s56 -
+        pow<3>(M1) * s24 * s3n * s56 - M1 * pow<2>(M2) * s24 * s3n * s56 -
+        2 * M1 * pow<2>(M2) * s13 * s4n * s56 + M1 * pow<2>(M2) * s23 * s4n * s56 +
+        M1 * pow<2>(M2) * s36 * s4n * s56 + M1 * pow<2>(M2) * s13 * s24 * s5n +
+        2 * M1 * pow<4>(M2) * s34 * s5n - M1 * pow<2>(M2) * s12 * s34 * s5n -
+        M1 * pow<2>(M2) * s16 * s34 * s5n + M1 * pow<2>(M2) * s26 * s34 * s5n -
+        M1 * s16 * s24 * s36 * s5n + M1 * pow<2>(M2) * s13 * s46 * s5n -
+        M1 * pow<2>(M2) * s23 * s46 * s5n - M1 * pow<2>(M2) * s36 * s46 * s5n -
+        M1 * pow<2>(M2) * s13 * s24 * s6n + 4 * M1 * pow<4>(M2) * s34 * s6n -
+        M1 * pow<2>(M2) * s12 * s34 * s6n - M1 * pow<2>(M2) * s15 * s34 * s6n -
+        M1 * s16 * s25 * s34 * s6n + M1 * pow<2>(M2) * s26 * s34 * s6n +
+        M1 * s16 * s24 * s35 * s6n + 2 * M1 * pow<2>(M2) * s24 * s36 * s6n -
+        M1 * pow<2>(M2) * s13 * s45 * s6n + M1 * s16 * s23 * s45 * s6n -
+        M1 * s13 * s26 * s45 * s6n + 2 * M1 * pow<2>(M2) * s36 * s45 * s6n +
+        M1 * s26 * s36 * s45 * s6n - M1 * pow<2>(M2) * s23 * s46 * s6n +
+        M1 * s13 * s25 * s46 * s6n - M1 * pow<2>(M2) * s35 * s46 * s6n -
+        M1 * s25 * s36 * s46 * s6n - M1 * s13 * s24 * s56 * s6n +
+        M1 * pow<2>(M2) * s34 * s56 * s6n + M1 * s24 * s36 * s56 * s6n;
+    const auto if14 =
+        -4 * pow<4>(M2) * s14 * s23 - 2 * pow<2>(M2) * s12 * s13 * s24 +
+        4 * pow<2>(M2) * s13 * s15 * s24 - 4 * pow<2>(M2) * s13 * s16 * s24 -
+        2 * pow<2>(M2) * s16 * s23 * s24 + 2 * pow<2>(M2) * s13 * s14 * s25 +
+        s13 * s16 * s24 * s25 + s13 * s15 * s24 * s26 + 4 * pow<4>(M2) * s12 * s34 -
+        2 * pow<4>(M2) * s15 * s34 + 2 * pow<4>(M2) * s16 * s34 -
+        pow<2>(M2) * s15 * s25 * s34 + pow<2>(M2) * s16 * s25 * s34 -
+        pow<2>(M2) * s15 * s26 * s34 - pow<2>(M2) * s16 * s26 * s34 -
+        4 * M1 * pow<4>(M2) * s2n * s34 + 2 * pow<4>(M2) * s14 * s35 +
+        4 * pow<2>(M2) * s16 * s24 * s35 + pow<2>(M2) * s14 * s25 * s35 +
+        pow<2>(M2) * s14 * s26 * s35 + s16 * s24 * s26 * s35 -
+        2 * pow<4>(M2) * s14 * s36 + 2 * pow<2>(M2) * s12 * s24 * s36 -
+        4 * pow<2>(M2) * s15 * s24 * s36 - pow<2>(M2) * s14 * s25 * s36 +
+        pow<2>(M2) * s14 * s26 * s36 - s15 * s24 * s26 * s36 -
+        2 * M1 * pow<2>(M2) * s24 * s2n * s36 +
+        2 * M1 * pow<2>(M2) * s12 * s24 * s3n -
+        4 * M1 * pow<2>(M2) * s15 * s24 * s3n +
+        4 * M1 * pow<2>(M2) * s16 * s24 * s3n -
+        2 * M1 * pow<2>(M2) * s14 * s25 * s3n - M1 * s16 * s24 * s25 * s3n -
+        M1 * s15 * s24 * s26 * s3n - 2 * pow<2>(M2) * s12 * s13 * s45 +
+        2 * pow<2>(M2) * s13 * s15 * s45 - 2 * pow<2>(M2) * s13 * s16 * s45 +
+        pow<2>(M2) * s15 * s23 * s45 - pow<2>(M2) * s16 * s23 * s45 +
+        s13 * s15 * s26 * s45 - pow<2>(M2) * s12 * s35 * s45 +
+        pow<2>(M2) * s16 * s35 * s45 + s16 * s26 * s35 * s45 +
+        M1 * pow<2>(M2) * s2n * s35 * s45 + pow<2>(M2) * s12 * s36 * s45 -
+        pow<2>(M2) * s15 * s36 * s45 - s15 * s26 * s36 * s45 -
+        M1 * pow<2>(M2) * s2n * s36 * s45 + 2 * M1 * pow<2>(M2) * s12 * s3n * s45 -
+        2 * M1 * pow<2>(M2) * s15 * s3n * s45 +
+        2 * M1 * pow<2>(M2) * s16 * s3n * s45 - M1 * s15 * s26 * s3n * s45 +
+        2 * pow<2>(M2) * s13 * s15 * s46 - 2 * pow<2>(M2) * s13 * s16 * s46 +
+        pow<2>(M2) * s15 * s23 * s46 + pow<2>(M2) * s16 * s23 * s46 -
+        s13 * s15 * s25 * s46 - pow<2>(M2) * s12 * s35 * s46 +
+        pow<2>(M2) * s16 * s35 * s46 - s16 * s25 * s35 * s46 +
+        M1 * pow<2>(M2) * s2n * s35 * s46 - pow<2>(M2) * s12 * s36 * s46 -
+        pow<2>(M2) * s15 * s36 * s46 + s15 * s25 * s36 * s46 +
+        M1 * pow<2>(M2) * s2n * s36 * s46 - 2 * M1 * pow<2>(M2) * s15 * s3n * s46 +
+        2 * M1 * pow<2>(M2) * s16 * s3n * s46 + M1 * s15 * s25 * s3n * s46 +
+        4 * M1 * pow<4>(M2) * s23 * s4n - 2 * M1 * pow<4>(M2) * s35 * s4n -
+        M1 * pow<2>(M2) * s25 * s35 * s4n - M1 * pow<2>(M2) * s26 * s35 * s4n +
+        2 * M1 * pow<4>(M2) * s36 * s4n + M1 * pow<2>(M2) * s25 * s36 * s4n -
+        M1 * pow<2>(M2) * s26 * s36 * s4n - 2 * pow<2>(M2) * s14 * s23 * s56 -
+        s12 * s13 * s24 * s56 - s16 * s23 * s24 * s56 + s13 * s14 * s25 * s56 +
+        2 * pow<2>(M2) * s12 * s34 * s56 - pow<2>(M2) * s15 * s34 * s56 +
+        pow<2>(M2) * s16 * s34 * s56 + s16 * s25 * s34 * s56 -
+        2 * M1 * pow<2>(M2) * s2n * s34 * s56 + pow<2>(M2) * s14 * s35 * s56 -
+        pow<2>(M2) * s14 * s36 * s56 + s12 * s24 * s36 * s56 -
+        s14 * s25 * s36 * s56 - M1 * s24 * s2n * s36 * s56 +
+        M1 * s12 * s24 * s3n * s56 - M1 * s14 * s25 * s3n * s56 -
+        s12 * s13 * s45 * s56 - s16 * s23 * s45 * s56 + s12 * s36 * s45 * s56 -
+        M1 * s2n * s36 * s45 * s56 + M1 * s12 * s3n * s45 * s56 +
+        2 * M1 * pow<2>(M2) * s23 * s4n * s56 - M1 * pow<2>(M2) * s35 * s4n * s56 +
+        M1 * pow<2>(M2) * s36 * s4n * s56 + M1 * s25 * s36 * s4n * s56 +
+        2 * M1 * pow<4>(M2) * s34 * s5n + M1 * pow<2>(M2) * s25 * s34 * s5n +
+        M1 * pow<2>(M2) * s26 * s34 * s5n + 4 * M1 * pow<2>(M2) * s24 * s36 * s5n +
+        M1 * s24 * s26 * s36 * s5n - M1 * pow<2>(M2) * s23 * s45 * s5n +
+        M1 * pow<2>(M2) * s36 * s45 * s5n + M1 * s26 * s36 * s45 * s5n -
+        M1 * pow<2>(M2) * s23 * s46 * s5n + M1 * pow<2>(M2) * s36 * s46 * s5n -
+        M1 * s25 * s36 * s46 * s5n + M1 * pow<2>(M2) * s34 * s56 * s5n +
+        2 * M1 * pow<2>(M2) * s23 * s24 * s6n - 2 * M1 * pow<4>(M2) * s34 * s6n -
+        M1 * pow<2>(M2) * s25 * s34 * s6n + M1 * pow<2>(M2) * s26 * s34 * s6n -
+        4 * M1 * pow<2>(M2) * s24 * s35 * s6n - M1 * s24 * s26 * s35 * s6n +
+        M1 * pow<2>(M2) * s23 * s45 * s6n - M1 * pow<2>(M2) * s35 * s45 * s6n -
+        M1 * s26 * s35 * s45 * s6n - M1 * pow<2>(M2) * s23 * s46 * s6n -
+        M1 * pow<2>(M2) * s35 * s46 * s6n + M1 * s25 * s35 * s46 * s6n +
+        M1 * s23 * s24 * s56 * s6n - M1 * pow<2>(M2) * s34 * s56 * s6n -
+        M1 * s25 * s34 * s56 * s6n + M1 * s23 * s45 * s56 * s6n;
+    const auto if23 =
+        2 * pow<4>(M2) * s14 * s23 + 2 * pow<2>(M2) * s12 * s13 * s24 -
+        2 * pow<2>(M2) * s13 * s15 * s24 - 2 * pow<2>(M2) * s13 * s16 * s24 -
+        pow<2>(M2) * s15 * s23 * s24 + pow<2>(M2) * s16 * s23 * s24 +
+        2 * pow<2>(M2) * s13 * s14 * s25 + pow<2>(M2) * s14 * s23 * s25 +
+        pow<2>(M2) * s14 * s23 * s26 - s13 * s15 * s24 * s26 +
+        s13 * s14 * s25 * s26 - 2 * pow<4>(M2) * s12 * s34 +
+        4 * pow<4>(M2) * s15 * s34 + 2 * pow<4>(M2) * s16 * s34 -
+        pow<2>(M2) * s12 * s25 * s34 + pow<2>(M2) * s16 * s25 * s34 -
+        pow<2>(M2) * s12 * s26 * s34 + 2 * pow<2>(M2) * s15 * s26 * s34 +
+        pow<2>(M2) * s16 * s26 * s34 + s16 * s25 * s26 * s34 +
+        2 * M1 * pow<4>(M2) * s2n * s34 + M1 * pow<2>(M2) * s25 * s2n * s34 +
+        M1 * pow<2>(M2) * s26 * s2n * s34 - 4 * pow<4>(M2) * s14 * s35 +
+        pow<2>(M2) * s12 * s24 * s35 - pow<2>(M2) * s16 * s24 * s35 -
+        2 * pow<2>(M2) * s14 * s26 * s35 - s16 * s24 * s26 * s35 -
+        M1 * pow<2>(M2) * s24 * s2n * s35 - 2 * pow<4>(M2) * s14 * s36 -
+        pow<2>(M2) * s12 * s24 * s36 + pow<2>(M2) * s15 * s24 * s36 -
+        pow<2>(M2) * s14 * s25 * s36 - pow<2>(M2) * s14 * s26 * s36 +
+        s15 * s24 * s26 * s36 - s14 * s25 * s26 * s36 +
+        M1 * pow<2>(M2) * s24 * s2n * s36 - 2 * M1 * pow<2>(M2) * s12 * s24 * s3n +
+        2 * M1 * pow<2>(M2) * s15 * s24 * s3n +
+        2 * M1 * pow<2>(M2) * s16 * s24 * s3n -
+        2 * M1 * pow<2>(M2) * s14 * s25 * s3n + M1 * s15 * s24 * s26 * s3n -
+        M1 * s14 * s25 * s26 * s3n + 4 * pow<2>(M2) * s12 * s13 * s45 -
+        2 * pow<2>(M2) * s13 * s15 * s45 - 4 * pow<2>(M2) * s13 * s16 * s45 +
+        4 * pow<2>(M2) * s16 * s23 * s45 + s13 * s16 * s25 * s45 -
+        s13 * s15 * s26 * s45 - 2 * pow<2>(M2) * s16 * s35 * s45 -
+        s16 * s26 * s35 * s45 - 4 * pow<2>(M2) * s12 * s36 * s45 +
+        2 * pow<2>(M2) * s15 * s36 * s45 + s15 * s26 * s36 * s45 +
+        4 * M1 * pow<2>(M2) * s2n * s36 * s45 -
+        4 * M1 * pow<2>(M2) * s12 * s3n * s45 +
+        2 * M1 * pow<2>(M2) * s15 * s3n * s45 +
+        4 * M1 * pow<2>(M2) * s16 * s3n * s45 - M1 * s16 * s25 * s3n * s45 +
+        M1 * s15 * s26 * s3n * s45 + 2 * pow<2>(M2) * s12 * s13 * s46 -
+        2 * pow<2>(M2) * s13 * s16 * s46 - pow<2>(M2) * s15 * s23 * s46 +
+        pow<2>(M2) * s16 * s23 * s46 - s12 * s13 * s25 * s46 -
+        s16 * s23 * s25 * s46 + pow<2>(M2) * s12 * s35 * s46 +
+        pow<2>(M2) * s16 * s35 * s46 - M1 * pow<2>(M2) * s2n * s35 * s46 -
+        pow<2>(M2) * s12 * s36 * s46 - pow<2>(M2) * s15 * s36 * s46 +
+        s12 * s25 * s36 * s46 + M1 * pow<2>(M2) * s2n * s36 * s46 -
+        M1 * s25 * s2n * s36 * s46 - 2 * M1 * pow<2>(M2) * s12 * s3n * s46 +
+        2 * M1 * pow<2>(M2) * s16 * s3n * s46 + M1 * s12 * s25 * s3n * s46 -
+        2 * M1 * pow<4>(M2) * s23 * s4n - M1 * pow<2>(M2) * s23 * s25 * s4n -
+        M1 * pow<2>(M2) * s23 * s26 * s4n + 4 * M1 * pow<4>(M2) * s35 * s4n +
+        2 * M1 * pow<2>(M2) * s26 * s35 * s4n + 2 * M1 * pow<4>(M2) * s36 * s4n +
+        M1 * pow<2>(M2) * s25 * s36 * s4n + M1 * pow<2>(M2) * s26 * s36 * s4n +
+        M1 * s25 * s26 * s36 * s4n + pow<2>(M2) * s14 * s23 * s56 +
+        s12 * s13 * s24 * s56 + s16 * s23 * s24 * s56 -
+        pow<2>(M2) * s12 * s34 * s56 - pow<2>(M2) * s16 * s34 * s56 +
+        M1 * pow<2>(M2) * s2n * s34 * s56 + pow<2>(M2) * s14 * s36 * s56 -
+        s12 * s24 * s36 * s56 + M1 * s24 * s2n * s36 * s56 -
+        M1 * s12 * s24 * s3n * s56 + s12 * s13 * s45 * s56 + s16 * s23 * s45 * s56 -
+        s12 * s36 * s45 * s56 + M1 * s2n * s36 * s45 * s56 -
+        M1 * s12 * s3n * s45 * s56 - M1 * pow<2>(M2) * s23 * s4n * s56 -
+        M1 * pow<2>(M2) * s36 * s4n * s56 + M1 * pow<2>(M2) * s23 * s24 * s5n -
+        4 * M1 * pow<4>(M2) * s34 * s5n - 2 * M1 * pow<2>(M2) * s26 * s34 * s5n -
+        M1 * pow<2>(M2) * s24 * s36 * s5n - M1 * s24 * s26 * s36 * s5n -
+        2 * M1 * pow<2>(M2) * s36 * s45 * s5n - M1 * s26 * s36 * s45 * s5n +
+        M1 * pow<2>(M2) * s23 * s46 * s5n + M1 * pow<2>(M2) * s36 * s46 * s5n -
+        M1 * pow<2>(M2) * s23 * s24 * s6n - 2 * M1 * pow<4>(M2) * s34 * s6n -
+        M1 * pow<2>(M2) * s25 * s34 * s6n - M1 * pow<2>(M2) * s26 * s34 * s6n -
+        M1 * s25 * s26 * s34 * s6n + M1 * pow<2>(M2) * s24 * s35 * s6n +
+        M1 * s24 * s26 * s35 * s6n - 4 * M1 * pow<2>(M2) * s23 * s45 * s6n +
+        2 * M1 * pow<2>(M2) * s35 * s45 * s6n + M1 * s26 * s35 * s45 * s6n -
+        M1 * pow<2>(M2) * s23 * s46 * s6n + M1 * s23 * s25 * s46 * s6n -
+        M1 * pow<2>(M2) * s35 * s46 * s6n - M1 * s23 * s24 * s56 * s6n +
+        M1 * pow<2>(M2) * s34 * s56 * s6n - M1 * s23 * s45 * s56 * s6n;
+    const auto if24 =
+        -8 * pow<4>(M2) * s13 * s24 + 8 * pow<2>(M2) * s13 * s24 * s25 -
+        4 * pow<2>(M2) * s13 * s24 * s26 + 2 * s13 * s24 * s25 * s26 +
+        8 * M1 * pow<4>(M2) * s24 * s3n - 8 * M1 * pow<2>(M2) * s24 * s25 * s3n +
+        4 * M1 * pow<2>(M2) * s24 * s26 * s3n - 2 * M1 * s24 * s25 * s26 * s3n -
+        8 * pow<4>(M2) * s13 * s45 + 8 * pow<2>(M2) * s13 * s25 * s45 -
+        4 * pow<2>(M2) * s13 * s26 * s45 + 2 * s13 * s25 * s26 * s45 +
+        8 * M1 * pow<4>(M2) * s3n * s45 - 8 * M1 * pow<2>(M2) * s25 * s3n * s45 +
+        4 * M1 * pow<2>(M2) * s26 * s3n * s45 - 2 * M1 * s25 * s26 * s3n * s45 +
+        8 * pow<2>(M2) * s13 * s25 * s46 - 2 * s13 * pow<2>(s25) * s46 -
+        8 * M1 * pow<2>(M2) * s25 * s3n * s46 + 2 * M1 * pow<2>(s25) * s3n * s46 -
+        4 * pow<2>(M2) * s13 * s24 * s56 + 2 * s13 * s24 * s25 * s56 +
+        4 * M1 * pow<2>(M2) * s24 * s3n * s56 - 2 * M1 * s24 * s25 * s3n * s56 -
+        4 * pow<2>(M2) * s13 * s45 * s56 + 2 * s13 * s25 * s45 * s56 +
+        4 * M1 * pow<2>(M2) * s3n * s45 * s56 - 2 * M1 * s25 * s3n * s45 * s56;
+    const auto if34 =
+        -2 * pow<2>(M2) * s13 * s15 * s24 - 2 * pow<2>(M2) * s15 * s23 * s24 +
+        2 * pow<2>(M2) * s13 * s14 * s25 + 2 * pow<2>(M2) * s14 * s23 * s25 -
+        s13 * s15 * s24 * s26 + s13 * s14 * s25 * s26 + 8 * pow<4>(M2) * s15 * s34 -
+        2 * pow<2>(M2) * s12 * s25 * s34 + 4 * pow<2>(M2) * s15 * s26 * s34 +
+        s16 * s25 * s26 * s34 + 2 * M1 * pow<2>(M2) * s25 * s2n * s34 -
+        8 * pow<4>(M2) * s14 * s35 + 2 * pow<2>(M2) * s12 * s24 * s35 -
+        4 * pow<2>(M2) * s14 * s26 * s35 - s16 * s24 * s26 * s35 -
+        2 * M1 * pow<2>(M2) * s24 * s2n * s35 + s15 * s24 * s26 * s36 -
+        s14 * s25 * s26 * s36 + 2 * M1 * pow<2>(M2) * s15 * s24 * s3n -
+        2 * M1 * pow<2>(M2) * s14 * s25 * s3n + M1 * s15 * s24 * s26 * s3n -
+        M1 * s14 * s25 * s26 * s3n - 4 * pow<2>(M2) * s13 * s15 * s45 +
+        2 * pow<2>(M2) * s15 * s23 * s45 + 2 * s13 * s16 * s25 * s45 -
+        s16 * s23 * s25 * s45 - 2 * s13 * s15 * s26 * s45 + s15 * s23 * s26 * s45 -
+        2 * pow<2>(M2) * s12 * s35 * s45 - 2 * pow<2>(M2) * s16 * s35 * s45 -
+        s12 * s26 * s35 * s45 - s16 * s26 * s35 * s45 +
+        2 * M1 * pow<2>(M2) * s2n * s35 * s45 + M1 * s26 * s2n * s35 * s45 +
+        2 * pow<2>(M2) * s15 * s36 * s45 + s12 * s25 * s36 * s45 +
+        s15 * s26 * s36 * s45 - M1 * s25 * s2n * s36 * s45 +
+        4 * M1 * pow<2>(M2) * s15 * s3n * s45 - 2 * M1 * s16 * s25 * s3n * s45 +
+        2 * M1 * s15 * s26 * s3n * s45 - 2 * pow<2>(M2) * s13 * s15 * s46 -
+        s12 * s13 * s25 * s46 + s13 * s16 * s25 * s46 - 2 * s16 * s23 * s25 * s46 -
+        s13 * s15 * s26 * s46 + s15 * s23 * s26 * s46 +
+        2 * pow<2>(M2) * s16 * s35 * s46 - s12 * s26 * s35 * s46 +
+        M1 * s26 * s2n * s35 * s46 - 2 * pow<2>(M2) * s15 * s36 * s46 +
+        2 * s12 * s25 * s36 * s46 - 2 * M1 * s25 * s2n * s36 * s46 +
+        2 * M1 * pow<2>(M2) * s15 * s3n * s46 + M1 * s12 * s25 * s3n * s46 -
+        M1 * s16 * s25 * s3n * s46 + M1 * s15 * s26 * s3n * s46 -
+        2 * M1 * pow<2>(M2) * s23 * s25 * s4n + 8 * M1 * pow<4>(M2) * s35 * s4n +
+        4 * M1 * pow<2>(M2) * s26 * s35 * s4n + M1 * s25 * s26 * s36 * s4n +
+        2 * pow<2>(M2) * s13 * s14 * s56 + s12 * s13 * s24 * s56 -
+        s13 * s16 * s24 * s56 + 2 * s16 * s23 * s24 * s56 + s13 * s14 * s26 * s56 -
+        s14 * s23 * s26 * s56 - 2 * pow<2>(M2) * s16 * s34 * s56 +
+        s12 * s26 * s34 * s56 - M1 * s26 * s2n * s34 * s56 +
+        2 * pow<2>(M2) * s14 * s36 * s56 - 2 * s12 * s24 * s36 * s56 +
+        2 * M1 * s24 * s2n * s36 * s56 - 2 * M1 * pow<2>(M2) * s14 * s3n * s56 -
+        M1 * s12 * s24 * s3n * s56 + M1 * s16 * s24 * s3n * s56 -
+        M1 * s14 * s26 * s3n * s56 + 2 * s12 * s13 * s45 * s56 +
+        s16 * s23 * s45 * s56 - s12 * s36 * s45 * s56 + M1 * s2n * s36 * s45 * s56 -
+        2 * M1 * s12 * s3n * s45 * s56 + M1 * s23 * s26 * s4n * s56 -
+        2 * M1 * pow<2>(M2) * s36 * s4n * s56 +
+        2 * M1 * pow<2>(M2) * s23 * s24 * s5n - 8 * M1 * pow<4>(M2) * s34 * s5n -
+        4 * M1 * pow<2>(M2) * s26 * s34 * s5n - M1 * s24 * s26 * s36 * s5n -
+        2 * M1 * pow<2>(M2) * s23 * s45 * s5n - M1 * s23 * s26 * s45 * s5n -
+        2 * M1 * pow<2>(M2) * s36 * s45 * s5n - M1 * s26 * s36 * s45 * s5n -
+        M1 * s23 * s26 * s46 * s5n + 2 * M1 * pow<2>(M2) * s36 * s46 * s5n -
+        M1 * s25 * s26 * s34 * s6n + M1 * s24 * s26 * s35 * s6n +
+        M1 * s23 * s25 * s45 * s6n + 2 * M1 * pow<2>(M2) * s35 * s45 * s6n +
+        M1 * s26 * s35 * s45 * s6n + 2 * M1 * s23 * s25 * s46 * s6n -
+        2 * M1 * pow<2>(M2) * s35 * s46 * s6n - 2 * M1 * s23 * s24 * s56 * s6n +
+        2 * M1 * pow<2>(M2) * s34 * s56 * s6n - M1 * s23 * s45 * s56 * s6n;
+
+    const auto den1 = (2 * pow<2>(M2) + s56) * (2 * pow<2>(M2) - s15 - s16 + s56);
+    const auto den2 = (2 * pow<2>(M2) + s56) * (2 * pow<2>(M2) + s25 + s26 + s56);
+    const auto den3 = (2 * pow<2>(M2) + s26) * (2 * pow<2>(M2) - s12 - s16 + s26);
+    const auto den4 = (2 * pow<2>(M2) + s26) * (2 * pow<2>(M2) + s25 + s26 + s56);
+
+    return if11 / pow<2>(den1) + if22 / pow<2>(den2) + if33 / pow<2>(den3) +
+           if44 / pow<2>(den4) + if12 / (den1 * den2) + if13 / (den1 * den3) +
+           if14 / (den1 * den4) + if23 / (den2 * den3) +
+           if24 / (den2 * den4) + if34 / (den3 * den4);
+}
+
+auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const GENBOD<5>::State& state) -> double {
     // Tree level mu -> eeevv (2 diagrams)
     // Ref: Rashid M. Djilkibaev, and Rostislav V. Konoplich, Rare muon decay mu+->e+e-e+vevmu, Phys. Rev. D 79, 073004 (arXiv:0812.1355)
     // Adapt from mu3e2nu.tex in https://arxiv.org/src/0812.1355
@@ -484,10 +956,6 @@ auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const CLHEPX::GENBOD<5>::S
                         C1 * C2 * D1 * D2 * tr23 + C1 * C3 * D2 * D2 * tr34};
 
     return matr2e + matr2mu + matr2emu;
-}
-
-auto MuonInternalConversionDecayChannel::MSqMcMulePre010(const CLHEPX::GENBOD<5>::State& state) -> double {
-    return 0; // TODO;
 }
 
 } // namespace Mustard::Geant4X::inline DecayChannel
