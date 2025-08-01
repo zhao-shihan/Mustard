@@ -72,11 +72,11 @@ auto Wrap<PRBG>::restoreStatus(gsl::czstring filename) -> void {
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::showStatus() const -> void {
     constexpr std::string_view split = "----------------------------------------------------------------";
-    const auto engineName = name();
-    const auto firstSplit = static_cast<std::intmax_t>(split.length()) -         // length(split) -
-                            static_cast<std::intmax_t>(engineName.length() + 9); // length(" " + engineName + " status ")
-    const auto firstSplitL = std::max<std::intmax_t>(3, firstSplit / 2);
-    const auto firstSplitR = std::max<std::intmax_t>(3, Math::IsEven(firstSplit) ? firstSplitL : (firstSplitL + 1));
+    const auto engineName{name()};
+    const auto firstSplit{static_cast<gsl::index>(split.length()) -          // length(split) -
+                          static_cast<gsl::index>(engineName.length() + 9)}; // length(" " + engineName + " status ")
+    const auto firstSplitL{std::max<gsl::index>(3, firstSplit / 2)};
+    const auto firstSplitR{std::max<gsl::index>(3, muc::even(firstSplit) ? firstSplitL : (firstSplitL + 1))};
     std::cout << std::string(firstSplitL, '-') << ' ' << engineName << " status " << std::string(firstSplitR, '-') << '\n'
               << "Initial seed: " << theSeed << '\n'
               << "Current state: " << fPRBG << '\n'

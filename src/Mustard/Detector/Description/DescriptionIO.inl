@@ -21,20 +21,20 @@ namespace Mustard::Detector::Description {
 namespace internal {
 namespace {
 
-template<std::intmax_t i, typename T>
+template<gsl::index i, typename T>
 struct FillDescriptionArray {
     constexpr void operator()(std::array<DescriptionBase<>*, std::tuple_size_v<T>>& descriptions) const {
         std::get<i>(descriptions) = &std::tuple_element_t<i, T>::Instance();
     }
 };
 
-template<std::intmax_t Begin, std::intmax_t End,
-         template<std::intmax_t, typename...> typename, typename...>
+template<gsl::index Begin, gsl::index End,
+         template<gsl::index, typename...> typename, typename...>
     requires(Begin >= End)
 constexpr void StaticForEach(auto&&...) {}
 
-template<std::intmax_t Begin, std::intmax_t End,
-         template<std::intmax_t, typename...> typename AFunctor, typename... AFunctorArgs>
+template<gsl::index Begin, gsl::index End,
+         template<gsl::index, typename...> typename AFunctor, typename... AFunctorArgs>
     requires(Begin < End and std::default_initializable<AFunctor<Begin, AFunctorArgs...>>)
 constexpr void StaticForEach(auto&&... args) {
     AFunctor<Begin, AFunctorArgs...>()(std::forward<decltype(args)>(args)...);
