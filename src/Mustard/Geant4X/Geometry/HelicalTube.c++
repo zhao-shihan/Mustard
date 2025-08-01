@@ -17,7 +17,6 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Geometry/HelicalTube.h++"
-#include "Mustard/Math/Parity.h++"
 #include "Mustard/Utility/MathConstant.h++"
 
 #include "G4TriangularFacet.hh"
@@ -95,8 +94,7 @@ HelicalTube::HelicalTube(std::string name,
     Eigen::MatrixX<G4Point3D> x(nU, nV);
     for (auto i{0ll}; i < nU; ++i) {
         for (auto j{0ll}; j < nV; ++j) {
-            x(i, j) = Surface(u[i], Mustard::Math::IsEven(j) ? v[j] :
-                                                               v[j] + deltaV / 2);
+            x(i, j) = Surface(u[i], muc::even(j) ? v[j] : v[j] + deltaV / 2);
         }
     }
 

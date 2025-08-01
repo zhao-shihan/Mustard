@@ -18,13 +18,13 @@
 
 #pragma once
 
-#include "Mustard/Math/Parity.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/UniformPseudoRandomBitGenerator.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Random/RandomEngine.h"
 
+#include "muc/math"
 #include "muc/utility"
 
 #include "gsl/gsl"
