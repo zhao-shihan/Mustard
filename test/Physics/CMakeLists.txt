@@ -1,0 +1,2 @@
+add_executable(TestPhaseSpaceGenerator TestPhaseSpaceGenerator.c++)
+target_link_libraries(TestPhaseSpaceGenerator Mustard::Mustard)

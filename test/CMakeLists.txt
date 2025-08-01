@@ -1,4 +1,4 @@
-add_subdirectory(CLHEPX)
+add_subdirectory(Physics)
 add_subdirectory(Concept)
 add_subdirectory(Env)
 add_subdirectory(Execution)
