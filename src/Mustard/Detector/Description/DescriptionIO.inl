@@ -182,7 +182,7 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlFile, const std:
             throw InvalidFile{};
         }
 
-        Output(geomYaml, fileComment, yamlOut);
+        EmitYAML(geomYaml, fileComment, yamlOut);
     } catch (const InvalidFile&) {
         PrintError("Cannot open yaml file, export failed");
     }
@@ -224,7 +224,7 @@ auto DescriptionIO::ToStringImpl(const std::ranges::input_range auto& descriptio
     }
 
     std::ostringstream oss;
-    Output(geomYaml, {}, oss);
+    EmitYAML(geomYaml, {}, oss);
     return oss.str();
 }
 

@@ -95,7 +95,8 @@ private:
     static auto ParallelExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path;
     static auto ParallelIxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
     static auto ToStringImpl(const std::ranges::input_range auto& descriptions) -> std::string;
-    static auto Output(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void;
+    static auto EmitYAML(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void;
+    static auto EmitYAMLImpl(const YAML::Node& node, YAML::Emitter& emitter, bool inFlow = false) -> void;
 
 private:
     static std::set<gsl::not_null<DescriptionBase<>*>> fgInstanceSet;
