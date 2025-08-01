@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::CLHEPX {
+namespace Mustard::inline Physics {
 
 template<int N>
 constexpr RAMBO<N>::RAMBO(double eCM, const std::array<double, N>& mass) :
@@ -115,4 +115,4 @@ auto RAMBO<N>::operator()(const RandomState& u) const -> Event {
     return {weight, State()};
 }
 
-} // namespace Mustard::CLHEPX
+} // namespace Mustard::inline Physics

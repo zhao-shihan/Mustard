@@ -31,7 +31,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace Mustard::CLHEPX {
+namespace Mustard::inline Physics {
 
 namespace internal {
 
@@ -153,6 +153,6 @@ public:
     auto operator()(const RandomState& u, CLHEP::Hep3Vector beta) const -> Event;
 };
 
-} // namespace Mustard::CLHEPX
+} // namespace Mustard::inline Physics
 
-#include "Mustard/CLHEPX/EventGenerator.inl"
+#include "Mustard/Physics/EventGenerator.inl"

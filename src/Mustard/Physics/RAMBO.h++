@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/CLHEPX/EventGenerator.h++"
+#include "Mustard/Physics/EventGenerator.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -26,8 +26,6 @@
 
 #include "muc/math"
 #include "muc/numeric"
-
-#include "gsl/gsl"
 
 #include "fmt/core.h"
 
@@ -37,52 +35,47 @@
 #include <limits>
 #include <utility>
 
-namespace Mustard::CLHEPX {
+namespace Mustard::inline Physics {
 
-/// @brief N-body phase space generator using GENBOD algorithm
+/// @brief N-body phase space generator using RAMBO algorithm
 ///
-/// Implements the GENBOD function (W515 from CERNLIB) for generating
-/// N-particle phase space events.
+/// Implements the RAMBO algorithm for generating N-particle phase space events.
 /// Based on:
-///   F. James, Monte Carlo Phase Space, CERN 68-15 (1968)
+///   R. Kleiss, W.J. Stirling, S.D. Ellis, "A New Monte Carlo Treatment Of
+///   Multiparticle Phase Space At High-Energies", CPC40 (1986) 359.
 ///
-/// Algorithm steps:
-///  1. Generate sorted uniform variates for invariant masses
-///  2. Calculate relative momenta in sequential rest frames
-///  3. Construct initial two-particle system
-///  4. Iteratively add particles with random rotations and apply
-///     correct boosts
-///
-/// GENBOD is faster than RAMBO, but event weights can vary largly
-/// when final states are massless. This generator is suitable for
-/// general uses.
+/// RAMBO is slower than GENBOD, but with following good properties:
+///  - For massless final states, RAMBO can generate weight=1 events.
+///  - For near-massless final states RAMBO can generate weight~1 events.
+/// This generator is very suitable for generating unweighted massless
+/// final states.
 ///
 /// @tparam N Number of final state particles (N >= 2)
 template<int N>
-class GENBOD : public EventGenerator<N, 3 * N - 4> {
+class RAMBO : public EventGenerator<N, 4 * N> {
 public:
     /// @brief Particle four-momentum container type
-    using typename EventGenerator<N, 3 * N - 4>::State;
+    using typename EventGenerator<N, 4 * N>::State;
     /// @brief Random state container type
-    using typename EventGenerator<N, 3 * N - 4>::RandomState;
+    using typename EventGenerator<N, 4 * N>::RandomState;
     /// @brief Generated event type
-    using typename EventGenerator<N, 3 * N - 4>::Event;
+    using typename EventGenerator<N, 4 * N>::Event;
 
 public:
     /// @brief Construct RAMBO generator
     /// @param eCM Center-of-mass energy (must exceed sum of masses)
     /// @param mass Array of particle masses (index order preserved)
-    constexpr GENBOD(double eCM, const std::array<double, N>& mass);
+    constexpr RAMBO(double eCM, const std::array<double, N>& mass);
 
     /// @brief Generate event using precomputed random numbers
-    /// @param u Flat random numbers in 0--1 (3 * N - 4 values required)
+    /// @param u Flat random numbers in 0--1 (4*N values required)
     /// @return Generated event
     virtual auto operator()(const RandomState& u) const -> Event override;
 
 private:
-    double fEkCM; ///< Kinetic energy in CM frame (eCM - ∑mass)
+    bool fAllMassAreTiny; ///< Massless approximation flag
 };
 
-} // namespace Mustard::CLHEPX
+} // namespace Mustard::inline Physics
 
-#include "Mustard/CLHEPX/GENBOD.inl"
+#include "Mustard/Physics/RAMBO.inl"

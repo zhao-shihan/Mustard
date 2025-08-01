@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::CLHEPX {
+namespace Mustard::inline Physics {
 
 template<int N>
 constexpr GENBOD<N>::GENBOD(double eCM, const std::array<double, N>& mass) :
@@ -98,4 +98,4 @@ auto GENBOD<N>::operator()(const RandomState& u) const -> Event {
     return event;
 }
 
-} // namespace Mustard::CLHEPX
+} // namespace Mustard::inline Physics
