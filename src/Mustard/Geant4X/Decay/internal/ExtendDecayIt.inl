@@ -164,7 +164,7 @@ auto ExtendDecayIt<Decay>::DecayIt(const G4Track& aTrack, const G4Step&) -> G4VP
 #endif
             products = decaychannel->DecayIt(aParticle->GetMass());
             // apply weight if necessary /* ++ */
-            if (const auto edc{dynamic_cast<const DecayChannelExtension*>(decaychannel)}; edc) { /* ++ */
+            if (const auto edc{dynamic_cast<const DecayChannelExtension*>(decaychannel)}) {      /* ++ */
                 this->fParticleChangeForDecay.ProposeWeight(aTrack.GetWeight() * edc->Weight()); /* ++ */
             } /* ++ */
 #ifdef G4VERBOSE
