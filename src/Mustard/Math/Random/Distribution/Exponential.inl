@@ -64,7 +64,7 @@ MUSTARD_STRONG_INLINE constexpr auto Exponential<T>::operator()(UniformRandomBit
 template<std::floating_point T>
 MUSTARD_ALWAYS_INLINE constexpr auto ExponentialFast<T>::operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> T {
     static_assert(Uniform<T>::Stateless());
-    return -p.Expectation() * internal::FastLogForOpen01(Uniform<T>{}(g));
+    return -p.Expectation() * Math::internal::FastLogOn01(Uniform<T>{}(g));
 }
 
 } // namespace Mustard::Math::Random::inline Distribution

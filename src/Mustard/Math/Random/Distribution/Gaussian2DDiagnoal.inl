@@ -80,7 +80,7 @@ MUSTARD_STRONG_INLINE auto Gaussian2DDiagnoal<T>::operator()(UniformRandomBitGen
 
 template<Concept::NumericVector2FloatingPoint T>
 MUSTARD_STRONG_INLINE auto Gaussian2DDiagnoalFast<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(internal::FastLogForOpen01)
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
 }
 
 #undef MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET

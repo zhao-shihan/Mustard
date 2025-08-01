@@ -34,12 +34,12 @@
 #include <limits>
 #include <numbers>
 
-namespace Mustard::Math::Random::inline Distribution::internal {
+namespace Mustard::Math::internal {
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto FastLogForOpen01(T x) -> auto {
-    assert(0 < x and x < 1);
-    muc::assume(0 < x and x < 1);
+MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> auto {
+    assert(0 < x and x <= 1);
+    muc::assume(0 < x and x <= 1);
     if constexpr (std::numeric_limits<T>::is_iec559) {
         using B =
             std::conditional_t<
@@ -66,4 +66,4 @@ MUSTARD_ALWAYS_INLINE constexpr auto FastLogForOpen01(T x) -> auto {
     }
 }
 
-} // namespace Mustard::Math::Random::inline Distribution::internal
+} // namespace Mustard::Math::internal

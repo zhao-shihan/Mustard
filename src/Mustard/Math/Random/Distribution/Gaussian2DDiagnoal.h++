@@ -20,8 +20,8 @@
 
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/Distribution/UniformRectangle.h++"
-#include "Mustard/Math/Random/Distribution/internal/FastLogForOpen01.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
+#include "Mustard/Math/internal/FastLogOn01.h++"
 #include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
