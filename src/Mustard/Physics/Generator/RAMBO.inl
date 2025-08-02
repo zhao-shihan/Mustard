@@ -19,14 +19,9 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int N>
-constexpr RAMBO<N>::RAMBO(double eCM, const std::array<double, N>& mass) :
-    EventGenerator<N, 4 * N>{eCM, mass},
-    fAllMassAreTiny{std::ranges::all_of(mass, [&](auto m) {
-        return muc::pow<2>(m / eCM) < muc::default_tolerance<double>;
-    })} {}
+auto RAMBO<N>::operator()(double cmsE, const RandomState& u) const -> Event {
+    this->CheckCMSEnergy(cmsE);
 
-template<int N>
-auto RAMBO<N>::operator()(const RandomState& u) const -> Event {
     // call the massless genPoint, initializing weight
     auto [p, weight]{[&] {
         std::array<std::array<double, 4>, N> p;
@@ -51,7 +46,7 @@ auto RAMBO<N>::operator()(const RandomState& u) const -> Event {
             R[j] /= -Rmass;
         }
         const auto a{1 / (1 - R[0])};
-        const auto x{this->fECM / Rmass};
+        const auto x{cmsE / Rmass};
         for (int i = 0; i < N; i++) {
             double bq = R[1] * p[i][1] + R[2] * p[i][2] + R[3] * p[i][3];
             for (int j = 1; j < 4; j++) {
@@ -63,7 +58,7 @@ auto RAMBO<N>::operator()(const RandomState& u) const -> Event {
         return std::pair{p, 1.};
     }()};
 
-    const auto State{
+    const auto Momenta{
         [&p = p] {
             std::array<CLHEP::HepLorentzVector, N> state;
             std::ranges::transform(p, state.begin(),
@@ -74,8 +69,10 @@ auto RAMBO<N>::operator()(const RandomState& u) const -> Event {
         }};
 
     // if none of the reduced masses is > tolerance, return
-    if (fAllMassAreTiny) {
-        return {weight, State()};
+    if (std::ranges::all_of(this->fMass, [&](auto m) {
+            return muc::pow<2>(m / cmsE) < muc::default_tolerance<double>;
+        })) {
+        return {weight, this->fPDGID, Momenta()};
     }
 
     // rescale all the momenta
@@ -85,7 +82,7 @@ auto RAMBO<N>::operator()(const RandomState& u) const -> Event {
             for (int i{}; i < N; i++) {
                 sum += muc::hypot(this->fMass[i], xi * p[i][0]);
             }
-            return sum - this->fECM;
+            return sum - cmsE;
         },
         0., 1.)};
     if (not xiConverged) [[unlikely]] {
@@ -110,9 +107,9 @@ auto RAMBO<N>::operator()(const RandomState& u) const -> Event {
     }
     // There's a typo in eq. 4.11 of the Rambo paper by Kleiss,
     // Stirling and Ellis, the Ecm below is not present there
-    weight *= muc::pow<2 * N - 3>(sumpnorm / this->fECM) * prodpnormdivE * this->fECM / sumpnormsquadivE;
+    weight *= muc::pow<2 * N - 3>(sumpnorm / cmsE) * prodpnormdivE * cmsE / sumpnormsquadivE;
 
-    return {weight, State()};
+    return {weight, this->fPDGID, Momenta()};
 }
 
 } // namespace Mustard::inline Physics::inline Generator

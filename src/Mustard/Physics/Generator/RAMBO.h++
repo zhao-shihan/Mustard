@@ -55,25 +55,21 @@ template<int N>
 class RAMBO : public EventGenerator<N, 4 * N> {
 public:
     /// @brief Particle four-momentum container type
-    using typename EventGenerator<N, 4 * N>::State;
+    using typename EventGenerator<N, 4 * N>::Momenta;
     /// @brief Random state container type
     using typename EventGenerator<N, 4 * N>::RandomState;
     /// @brief Generated event type
     using typename EventGenerator<N, 4 * N>::Event;
 
 public:
-    /// @brief Construct RAMBO generator
-    /// @param eCM Center-of-mass energy (must exceed sum of masses)
-    /// @param mass Array of particle masses (index order preserved)
-    constexpr RAMBO(double eCM, const std::array<double, N>& mass);
+    // Inherit constructor
+    using EventGenerator<N, 4 * N>::EventGenerator;
 
-    /// @brief Generate event using precomputed random numbers
+    /// @brief Generate event in center-of-mass frame using precomputed random numbers
+    /// @param cmsE Center-of-mass energy
     /// @param u Flat random numbers in 0--1 (4*N values required)
     /// @return Generated event
-    virtual auto operator()(const RandomState& u) const -> Event override;
-
-private:
-    bool fAllMassAreTiny; ///< Massless approximation flag
+    virtual auto operator()(double cmsE, const RandomState& u) const -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

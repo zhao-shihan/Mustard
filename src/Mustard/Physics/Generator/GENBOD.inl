@@ -19,14 +19,9 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int N>
-constexpr GENBOD<N>::GENBOD(double eCM, const std::array<double, N>& mass) :
-    EventGenerator<N, 3 * N - 4>{eCM, mass},
-    fEkCM{eCM - muc::ranges::reduce(mass)} {
-    Ensures(fEkCM > 0);
-}
+auto GENBOD<N>::operator()(double cmsE, const RandomState& u) const -> Event {
+    this->CheckCMSEnergy(cmsE);
 
-template<int N>
-auto GENBOD<N>::operator()(const RandomState& u) const -> Event {
     auto random{u.cbegin()};
     std::array<double, N> u0;
     u0.front() = 0;
@@ -45,12 +40,13 @@ auto GENBOD<N>::operator()(const RandomState& u) const -> Event {
 
     std::array<double, N> invMass;
     double sumMass{};
+    const auto cmsEk{cmsE - this->fSumMass};
     for (int i{}; i < N; ++i) {
         sumMass += this->fMass[i];
-        invMass[i] = u0[i] * fEkCM + sumMass;
+        invMass[i] = u0[i] * cmsEk + sumMass;
     }
 
-    Event event{.weight = 1, .state = {}};
+    Event event{.weight = 1, .pdgID = this->fPDGID, .p = {}};
     std::array<double, N> pRel;
     for (int i{}; i < N - 1; ++i) {
         constexpr auto RelativeMomentum{[](double m12, double m1, double m2) {
@@ -61,9 +57,9 @@ auto GENBOD<N>::operator()(const RandomState& u) const -> Event {
     }
 
     // clang-format off
-    event.state[0] = {{0, pRel[0], 0}, muc::hypot(pRel[0], this->fMass[0])};          // clang-format on
+    event.p[0] = {{0, pRel[0], 0}, muc::hypot(pRel[0], this->fMass[0])};          // clang-format on
     for (int i{1};; ++i) { // clang-format off
-        event.state[i] = {{0, -pRel[i - 1], 0}, muc::hypot(pRel[i - 1], this->fMass[i])}; // clang-format on
+        event.p[i] = {{0, -pRel[i - 1], 0}, muc::hypot(pRel[i - 1], this->fMass[i])}; // clang-format on
 
         const auto cZ{2 * (*random++) - 1};
         const auto sZ{std::sqrt(1 - muc::pow<2>(cZ))};
@@ -71,7 +67,7 @@ auto GENBOD<N>::operator()(const RandomState& u) const -> Event {
         const auto cY{std::cos(phiY)};
         const auto sY{std::sin(phiY)};
         for (int j{}; j <= i; ++j) {
-            auto& p{event.state[j]};
+            auto& p{event.p[j]};
             auto x{p.x()};
             const auto y{p.y()};
             p.setPx(cZ * x - sZ * y);
@@ -88,7 +84,7 @@ auto GENBOD<N>::operator()(const RandomState& u) const -> Event {
 
         const auto beta{pRel[i] / muc::hypot(pRel[i], invMass[i])};
         for (int j{}; j <= i; ++j) {
-            event.state[j].boost(0, beta, 0);
+            event.p[j].boost(0, beta, 0);
         }
     }
 

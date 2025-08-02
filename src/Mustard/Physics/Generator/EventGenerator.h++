@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Random/Random.h"
@@ -27,9 +28,12 @@
 
 #include "muc/numeric"
 
+#include "fmt/core.h"
+
 #include <array>
 #include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace Mustard::inline Physics::inline Generator {
 
@@ -71,43 +75,70 @@ template<int N>
 class EventGenerator<N, internal::AnyRandomStateDim> {
 public:
     /// @brief Particle four-momentum container type
-    using State = std::array<CLHEP::HepLorentzVector, N>;
+    using Momenta = std::array<CLHEP::HepLorentzVector, N>;
     /// @brief Generated event type
     struct Event {
-        double weight; ///< Event weight
-        State state;   ///< Particle four-momenta
+        double weight;            ///< Event weight
+        std::array<int, N> pdgID; ///< Particle PDG IDs
+        Momenta p;                ///< Particle four-momenta
     };
 
 public:
     /// @brief Construct event generator
-    /// @param eCM Center-of-mass energy (must exceed sum of masses)
+    /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @exception std::domain_error if center-of-mass energy is insufficient
-    constexpr EventGenerator(double eCM, const std::array<double, N>& mass);
+    constexpr EventGenerator(const std::array<int, N>& pdgID, const std::array<double, N>& mass);
 
     // Virtual destructor
     constexpr virtual ~EventGenerator() = default;
 
-    /// @brief Generate event using CLHEP random engine
-    /// @param rng Reference to CLHEP random engine
-    /// @return Generated event
-    virtual auto operator()(CLHEP::HepRandomEngine& rng) const -> Event = 0;
-    /// @brief Generate event using global CLHEP engine
-    /// @return Generated event
-    auto operator()() const -> Event;
+    constexpr auto PDGID() const -> const auto& { return fPDGID; }
+    constexpr auto PDGID(int i) const -> auto { return fPDGID[i]; }
+    constexpr auto Mass() const -> const auto& { return fMass; }
+    constexpr auto Mass(int i) const -> auto { return fMass[i]; }
 
-    /// @brief Generate event with lab-frame boost using CLHEP engine
+    constexpr auto PDGID(const std::array<int, N>& pdgID) -> void { fPDGID = pdgID; }
+    constexpr auto PDGID(int i, int pdgID) -> void { fPDGID[i] = pdgID; }
+    constexpr auto Mass(const std::array<double, N>& mass) -> void { fMass = mass; }
+    constexpr auto Mass(int i, double mass) -> void { fMass[i] = mass; }
+
+    /// @brief Generate event in center-of-mass frame
+    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param rng Reference to CLHEP random engine
-    /// @param beta Boost vector (v/c) for lab frame
     /// @return Generated event
-    auto operator()(CLHEP::HepRandomEngine& rng, CLHEP::Hep3Vector beta) const -> Event;
-    /// @brief Generate boosted event using global CLHEP engine
+    virtual auto operator()(double cmsE, CLHEP::HepRandomEngine& rng) const -> Event = 0;
+    /// @brief Generate event in center-of-mass frame using global CLHEP engine
+    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @return Generated event
-    auto operator()(CLHEP::Hep3Vector beta) const -> Event;
+    auto operator()(double cmsE) const -> Event;
+    /// @brief Generate event in center-of-mass frame,
+    /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
+    /// @return Generated event
+    auto operator()(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) const -> Event;
+
+    /// @brief Generate event with lab-frame boost
+    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
+    /// @param beta Boost vector for lab frame
+    /// @param rng Reference to CLHEP random engine (default: global CLHEP engine)
+    /// @return Generated event
+    auto operator()(double cmsE, CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) const -> Event;
+    /// @brief Generate boosted event using global CLHEP engine,
+    /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
+    /// @param beta Boost vector for lab frame
+    /// @param rng Reference to CLHEP random engine (default: global CLHEP engine)
+    /// @return Generated event
+    auto operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) const -> Event;
 
 protected:
-    double fECM;                 ///< Center-of-mass energy
-    std::array<double, N> fMass; ///< Particle rest masses
+    /// @brief Check if center-of-mass energy is sufficient
+    /// @param cmsE Center-of-mass energy
+    /// @exception std::domain_error if center-of-mass energy is insufficient
+    MUSTARD_ALWAYS_INLINE auto CheckCMSEnergy(double cmsE) const -> void;
+
+protected:
+    std::array<int, N> fPDGID;   ///< Final state PDG IDs
+    std::array<double, N> fMass; ///< Final state rest masses
+    double fSumMass;             ///< Sum of final state rest masses
 };
 
 /// @class EventGenerator<N, M>
@@ -127,7 +158,7 @@ template<int N, int M>
 class EventGenerator : public EventGenerator<N, internal::AnyRandomStateDim> {
 public:
     /// @brief Particle four-momentum container type
-    using typename EventGenerator<N, internal::AnyRandomStateDim>::State;
+    using typename EventGenerator<N, internal::AnyRandomStateDim>::Momenta;
     /// @brief Random state container type
     using RandomState = std::array<double, M>;
     /// @brief Generated event type
@@ -137,20 +168,35 @@ public:
     // Inherit constructor
     using EventGenerator<N, internal::AnyRandomStateDim>::EventGenerator;
 
-    /// @brief Generate event using precomputed random numbers
+    /// @brief Generate event in center-of-mass frame using precomputed random numbers
+    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param u Flat random numbers in 0--1 (M values required)
     /// @return Generated event
-    virtual auto operator()(const RandomState& u) const -> Event = 0;
-    /// @brief Generate event using CLHEP random engine
-    /// @param rng Reference to CLHEP random engine
+    virtual auto operator()(double cmsE, const RandomState& u) const -> Event = 0;
+    /// @brief Generate event in center-of-mass frame using precomputed random numbers
+    /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
+    /// @param u Flat random numbers in 0--1 (M values required)
     /// @return Generated event
-    auto operator()(CLHEP::HepRandomEngine& rng) const -> Event override final;
+    auto operator()(const RandomState& u) const -> Event;
 
     /// @brief Generate event with lab-frame boost using precomputed randoms
+    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param u Flat random numbers in 0--1 (M values)
-    /// @param beta Boost vector (v/c) for lab frame transformation
+    /// @param beta Boost vector for lab frame
     /// @return Generated event
-    auto operator()(const RandomState& u, CLHEP::Hep3Vector beta) const -> Event;
+    auto operator()(double cmsE, CLHEP::Hep3Vector beta, const RandomState& u) const -> Event;
+    /// @brief Generate event with lab-frame boost using precomputed randoms
+    /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
+    /// @param u Flat random numbers in 0--1 (M values)
+    /// @param beta Boost vector for lab frame
+    /// @return Generated event
+    auto operator()(CLHEP::Hep3Vector beta, const RandomState& u) const -> Event;
+
+    /// @brief Generate event in center-of-mass frame
+    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
+    /// @param rng Reference to CLHEP random engine
+    /// @return Generated event
+    virtual auto operator()(double cmsE, CLHEP::HepRandomEngine& rng) const -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

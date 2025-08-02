@@ -51,7 +51,7 @@ public:
 
     auto MetropolisDelta(double delta) -> void { fMetropolisDelta = muc::clamp<"()">(delta, 0., 0.5); }
     auto MetropolisDiscard(int n) -> void { fMetropolisDiscard = std::max(0, n); }
-    auto Bias(std::function<auto(const GENBOD<5>::State&)->double> b) -> void;
+    auto Bias(std::function<auto(const GENBOD<5>::Momenta&)->double> b) -> void;
 
     auto Initialize() -> void;
     auto EstimateWeightNormalizationFactor(unsigned long long n) -> std::tuple<double, double, double>; // return: factor, error, Neff
@@ -59,19 +59,19 @@ public:
     auto DecayIt(G4double) -> G4DecayProducts* override;
 
 protected:
-    auto BiasWithCheck(const GENBOD<5>::State& state) const -> double;
+    auto BiasWithCheck(const GENBOD<5>::Momenta& momenta) const -> double;
     auto UpdateState(double delta) -> void;
     auto MainSamplingLoop() -> void;
 
     auto WeightedMSq(const GENBOD<5>::Event& event) -> double;
-    auto MSqMcMule2020(const GENBOD<5>::State& state) -> double;
-    static auto MSqRR2009PRD(const GENBOD<5>::State& state) -> double;
+    auto MSqMcMule2020(const GENBOD<5>::Momenta& momenta) -> double;
+    static auto MSqRR2009PRD(const GENBOD<5>::Momenta& momenta) -> double;
 
 protected:
     enum MSqVersion fMSqVersion;
     double fMetropolisDelta;
     int fMetropolisDiscard;
-    std::function<auto(const GENBOD<5>::State&)->double> fBias;
+    std::function<auto(const GENBOD<5>::Momenta&)->double> fBias;
 
     GENBOD<5> fGENBOD;
 

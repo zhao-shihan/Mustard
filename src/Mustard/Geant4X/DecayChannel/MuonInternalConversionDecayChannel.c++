@@ -27,6 +27,7 @@
 
 #include "G4DecayProducts.hh"
 #include "G4DynamicParticle.hh"
+#include "G4ParticleTable.hh"
 #include "Randomize.hh"
 
 #include "mplr/mplr.hpp"
@@ -53,7 +54,7 @@ MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4S
     fMetropolisDelta{0.05},
     fMetropolisDiscard{100},
     fBias{[](auto&&) { return 1; }},
-    fGENBOD{muon_mass_c2, {electron_mass_c2, electron_mass_c2, electron_mass_c2, 0, 0}},
+    fGENBOD{{}, {electron_mass_c2, electron_mass_c2, electron_mass_c2, 0, 0}},
     fReady{},
     fRandomState{},
     fEvent{},
@@ -64,18 +65,31 @@ MuonInternalConversionDecayChannel::MuonInternalConversionDecayChannel(const G4S
     SetParent(parentName);
     SetBR(br);
     SetNumberOfDaughters(5);
+    const auto table{G4ParticleTable::GetParticleTable()};
     if (parentName == "mu+") {
         SetDaughter(0, "e+");
         SetDaughter(1, "e-");
         SetDaughter(2, "e+");
         SetDaughter(3, "anti_nu_mu");
         SetDaughter(4, "nu_e");
+        fGENBOD.PDGID(
+            {table->FindParticle("e+")->GetPDGEncoding(),
+             table->FindParticle("e-")->GetPDGEncoding(),
+             table->FindParticle("e+")->GetPDGEncoding(),
+             table->FindParticle("anti_nu_mu")->GetPDGEncoding(),
+             table->FindParticle("nu_e")->GetPDGEncoding()});
     } else if (parentName == "mu-") {
         SetDaughter(0, "e-");
         SetDaughter(1, "e+");
         SetDaughter(2, "e-");
         SetDaughter(3, "nu_mu");
         SetDaughter(4, "anti_nu_e");
+        fGENBOD.PDGID(
+            {table->FindParticle("e-")->GetPDGEncoding(),
+             table->FindParticle("e+")->GetPDGEncoding(),
+             table->FindParticle("e-")->GetPDGEncoding(),
+             table->FindParticle("nu_mu")->GetPDGEncoding(),
+             table->FindParticle("anti_nu_e")->GetPDGEncoding()});
     } else {
 #ifdef G4VERBOSE
         if (GetVerboseLevel() > 0) {
@@ -97,7 +111,7 @@ auto MuonInternalConversionDecayChannel::MSqVersion(std::string_view ver) {
     }
 }
 
-auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const GENBOD<5>::State&)->double> b) -> void {
+auto MuonInternalConversionDecayChannel::Bias(std::function<auto(const GENBOD<5>::Momenta&)->double> b) -> void {
     fBias = std::move(b);
     fReady = false;
 }
@@ -109,8 +123,8 @@ auto MuonInternalConversionDecayChannel::Initialize() -> void {
     // initialize
     while (true) {
         std::ranges::generate(fRandomState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });
-        fEvent = fGENBOD(fRandomState);
-        if (const auto bias{BiasWithCheck(fEvent.state)};
+        fEvent = fGENBOD(muon_mass_c2, fRandomState);
+        if (const auto bias{BiasWithCheck(fEvent.p)};
             bias >= std::numeric_limits<double>::min()) {
             fBiasedMSq = bias * WeightedMSq(fEvent);
             break;
@@ -150,7 +164,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
         Executor<unsigned long long>{"Estimation", "Sample"}
             .Execute(n, [&, partialSumThreshold = muc::llround(std::sqrt(n / worldComm.size()))](auto i) {
                 MainSamplingLoop();
-                const auto bias{originalBias(fEvent.state)};
+                const auto bias{originalBias(fEvent.p)};
                 partialSum += muc::array2ld{bias, muc::pow<2>(bias)};
                 if ((i + 1) % partialSumThreshold == 0) {
                     sum += partialSum;
@@ -190,7 +204,7 @@ auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
     // clang-format off
     auto products{new G4DecayProducts{G4DynamicParticle{G4MT_parent, {}, 0}}}; // clang-format on
     for (int i{}; i < 5; ++i) {
-        products->PushProducts(new G4DynamicParticle{G4MT_daughters[i], fEvent.state[i]});
+        products->PushProducts(new G4DynamicParticle{G4MT_daughters[i], fEvent.p[i]});
     }
 
 #ifdef G4VERBOSE
@@ -204,8 +218,8 @@ auto MuonInternalConversionDecayChannel::DecayIt(G4double) -> G4DecayProducts* {
     return products;
 }
 
-auto MuonInternalConversionDecayChannel::BiasWithCheck(const GENBOD<5>::State& state) const -> double {
-    const auto bias{fBias(state)};
+auto MuonInternalConversionDecayChannel::BiasWithCheck(const GENBOD<5>::Momenta& momenta) const -> double {
+    const auto bias{fBias(momenta)};
     if (bias < 0) {
         Throw<std::runtime_error>("Bias should be non-negative");
     }
@@ -222,8 +236,8 @@ auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
                                        muc::clamp<"()">(u - delta, 0., 1.),
                                        muc::clamp<"()">(u + delta, 0., 1.)}(fXoshiro256Plus);
                                });
-        newEvent = fGENBOD(newRandomState);
-        const auto bias{BiasWithCheck(newEvent.state)};
+        newEvent = fGENBOD(muon_mass_c2, newRandomState);
+        const auto bias{BiasWithCheck(newEvent.p)};
         if (bias <= std::numeric_limits<double>::min()) {
             continue;
         }
@@ -257,16 +271,16 @@ auto MuonInternalConversionDecayChannel::MainSamplingLoop() -> void {
 auto MuonInternalConversionDecayChannel::WeightedMSq(const GENBOD<5>::Event& event) -> double {
     switch (fMSqVersion) {
     case MSqVersion::McMule2020:
-        return event.weight * MSqMcMule2020(event.state);
+        return event.weight * MSqMcMule2020(event.p);
     case MSqVersion::RR2009PRD:
-        return event.weight * MSqRR2009PRD(event.state);
+        return event.weight * MSqRR2009PRD(event.p);
     }
     muc::unreachable();
 }
 
-auto MuonInternalConversionDecayChannel::MSqMcMule2020(const GENBOD<5>::State& state) -> double {
+auto MuonInternalConversionDecayChannel::MSqMcMule2020(const GENBOD<5>::Momenta& momenta) -> double {
     const CLHEP::HepLorentzVector q1{muon_mass_c2};
-    const auto& [q2, q6, q5, q4, q3]{state};
+    const auto& [q2, q6, q5, q4, q3]{momenta};
     const CLHEP::HepLorentzVector pol1{parent_polarization};
 
     // Adapt from McMule v0.5.0, mudecrare/mudecrare_pm2ennee.f95, FUNCTION PM2ENNEE
@@ -734,12 +748,12 @@ auto MuonInternalConversionDecayChannel::MSqMcMule2020(const GENBOD<5>::State& s
            if24 / (den2 * den4) + if34 / (den3 * den4);
 }
 
-auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const GENBOD<5>::State& state) -> double {
+auto MuonInternalConversionDecayChannel::MSqRR2009PRD(const GENBOD<5>::Momenta& momenta) -> double {
     // Tree level mu -> eeevv (2 diagrams)
     // Ref: Rashid M. Djilkibaev, and Rostislav V. Konoplich, Rare muon decay mu+->e+e-e+vevmu, Phys. Rev. D 79, 073004 (arXiv:0812.1355)
     // Adapt from mu3e2nu.tex in https://arxiv.org/src/0812.1355
 
-    const auto& [p, p1, p2, k1, k2]{state};
+    const auto& [p, p1, p2, k1, k2]{momenta};
 
     constexpr auto u2{muon_mass_c2 * muon_mass_c2};
     constexpr auto m2{electron_mass_c2 * electron_mass_c2};

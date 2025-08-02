@@ -62,25 +62,21 @@ template<int N>
 class GENBOD : public EventGenerator<N, 3 * N - 4> {
 public:
     /// @brief Particle four-momentum container type
-    using typename EventGenerator<N, 3 * N - 4>::State;
+    using typename EventGenerator<N, 3 * N - 4>::Momenta;
     /// @brief Random state container type
     using typename EventGenerator<N, 3 * N - 4>::RandomState;
     /// @brief Generated event type
     using typename EventGenerator<N, 3 * N - 4>::Event;
 
 public:
-    /// @brief Construct RAMBO generator
-    /// @param eCM Center-of-mass energy (must exceed sum of masses)
-    /// @param mass Array of particle masses (index order preserved)
-    constexpr GENBOD(double eCM, const std::array<double, N>& mass);
+    // Inherit constructor
+    using EventGenerator<N, 3 * N - 4>::EventGenerator;
 
-    /// @brief Generate event using precomputed random numbers
-    /// @param u Flat random numbers in 0--1 (3 * N - 4 values required)
+    /// @brief Generate event in center-of-mass frame using precomputed random numbers
+    /// @param cmsE Center-of-mass energy
+    /// @param u Flat random numbers in 0--1 (3*N-4 values required)
     /// @return Generated event
-    virtual auto operator()(const RandomState& u) const -> Event override;
-
-private:
-    double fEkCM; ///< Kinetic energy in CM frame (eCM - ∑mass)
+    virtual auto operator()(double cmsE, const RandomState& u) const -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator
