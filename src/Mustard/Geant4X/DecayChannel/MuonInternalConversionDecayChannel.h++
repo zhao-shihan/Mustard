@@ -21,7 +21,7 @@
 #include "Mustard/Geant4X/DecayChannel/DecayChannelExtension.h++"
 #include "Mustard/Geant4X/DecayChannel/MuonInternalConversionDecayChannelMessenger.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
-#include "Mustard/Physics/GENBOD.h++"
+#include "Mustard/Physics/Generator/GENBOD.h++"
 
 #include "G4VDecayChannel.hh"
 

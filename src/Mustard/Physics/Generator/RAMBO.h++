@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Physics/EventGenerator.h++"
+#include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -35,7 +35,7 @@
 #include <limits>
 #include <utility>
 
-namespace Mustard::inline Physics {
+namespace Mustard::inline Physics::inline Generator {
 
 /// @brief N-body phase space generator using RAMBO algorithm
 ///
@@ -76,6 +76,6 @@ private:
     bool fAllMassAreTiny; ///< Massless approximation flag
 };
 
-} // namespace Mustard::inline Physics
+} // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/RAMBO.inl"
+#include "Mustard/Physics/Generator/RAMBO.inl"

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Physics {
+namespace Mustard::inline Physics::inline Generator {
 
 template<int N>
     requires(N >= 2)
@@ -68,4 +68,4 @@ auto EventGenerator<N, M>::operator()(const RandomState& u, CLHEP::Hep3Vector be
     return {weight, state};
 }
 
-} // namespace Mustard::inline Physics
+} // namespace Mustard::inline Physics::inline Generator

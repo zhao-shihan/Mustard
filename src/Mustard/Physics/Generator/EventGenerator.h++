@@ -31,7 +31,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace Mustard::inline Physics {
+namespace Mustard::inline Physics::inline Generator {
 
 namespace internal {
 
@@ -153,6 +153,6 @@ public:
     auto operator()(const RandomState& u, CLHEP::Hep3Vector beta) const -> Event;
 };
 
-} // namespace Mustard::inline Physics
+} // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/EventGenerator.inl"
+#include "Mustard/Physics/Generator/EventGenerator.inl"

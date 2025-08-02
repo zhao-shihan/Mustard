@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Physics/EventGenerator.h++"
+#include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -37,7 +37,7 @@
 #include <limits>
 #include <utility>
 
-namespace Mustard::inline Physics {
+namespace Mustard::inline Physics::inline Generator {
 
 /// @brief N-body phase space generator using GENBOD algorithm
 ///
@@ -83,6 +83,6 @@ private:
     double fEkCM; ///< Kinetic energy in CM frame (eCM - ∑mass)
 };
 
-} // namespace Mustard::inline Physics
+} // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/GENBOD.inl"
+#include "Mustard/Physics/Generator/GENBOD.inl"
