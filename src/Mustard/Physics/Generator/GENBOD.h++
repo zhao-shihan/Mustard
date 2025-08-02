@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Physics/Generator/EventGenerator.h++"
+#include "Mustard/Physics/Generator/VersatileEventGenerator.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -59,18 +59,16 @@ namespace Mustard::inline Physics::inline Generator {
 ///
 /// @tparam N Number of final state particles (N >= 2)
 template<int N>
-class GENBOD : public EventGenerator<N, 3 * N - 4> {
+class GENBOD : public VersatileEventGenerator<N, 3 * N - 4> {
 public:
-    /// @brief Particle four-momentum container type
-    using typename EventGenerator<N, 3 * N - 4>::Momenta;
     /// @brief Random state container type
-    using typename EventGenerator<N, 3 * N - 4>::RandomState;
+    using typename VersatileEventGenerator<N, 3 * N - 4>::RandomState;
     /// @brief Generated event type
-    using typename EventGenerator<N, 3 * N - 4>::Event;
+    using typename VersatileEventGenerator<N, 3 * N - 4>::Event;
 
 public:
     // Inherit constructor
-    using EventGenerator<N, 3 * N - 4>::EventGenerator;
+    using VersatileEventGenerator<N, 3 * N - 4>::VersatileEventGenerator;
 
     /// @brief Generate event in center-of-mass frame using precomputed random numbers
     /// @param cmsE Center-of-mass energy

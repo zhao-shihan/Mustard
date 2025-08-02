@@ -18,17 +18,10 @@
 
 #pragma once
 
-#include "Mustard/Utility/InlineMacro.h++"
-#include "Mustard/Utility/PrettyLog.h++"
-
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
-
-#include "muc/numeric"
-
-#include "fmt/core.h"
 
 #include <array>
 #include <limits>
@@ -84,23 +77,8 @@ public:
     };
 
 public:
-    /// @brief Construct event generator
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
-    constexpr EventGenerator(const std::array<int, N>& pdgID, const std::array<double, N>& mass);
-
     // Virtual destructor
     constexpr virtual ~EventGenerator() = default;
-
-    constexpr auto PDGID() const -> const auto& { return fPDGID; }
-    constexpr auto PDGID(int i) const -> auto { return fPDGID[i]; }
-    constexpr auto Mass() const -> const auto& { return fMass; }
-    constexpr auto Mass(int i) const -> auto { return fMass[i]; }
-
-    constexpr auto PDGID(const std::array<int, N>& pdgID) -> void { fPDGID = pdgID; }
-    constexpr auto PDGID(int i, int pdgID) -> void { fPDGID[i] = pdgID; }
-    constexpr auto Mass(const std::array<double, N>& mass) -> void { fMass = mass; }
-    constexpr auto Mass(int i, double mass) -> void { fMass[i] = mass; }
 
     /// @brief Generate event in center-of-mass frame
     /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
@@ -128,17 +106,6 @@ public:
     /// @param rng Reference to CLHEP random engine (default: global CLHEP engine)
     /// @return Generated event
     auto operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) const -> Event;
-
-protected:
-    /// @brief Check if center-of-mass energy is sufficient
-    /// @param cmsE Center-of-mass energy
-    /// @exception std::domain_error if center-of-mass energy is insufficient
-    MUSTARD_ALWAYS_INLINE auto CheckCMSEnergy(double cmsE) const -> void;
-
-protected:
-    std::array<int, N> fPDGID;   ///< Final state PDG IDs
-    std::array<double, N> fMass; ///< Final state rest masses
-    double fSumMass;             ///< Sum of final state rest masses
 };
 
 /// @class EventGenerator<N, M>
@@ -157,17 +124,12 @@ template<int N, int M>
     requires(N >= 2 and M >= 3 * N - 4)
 class EventGenerator : public EventGenerator<N, internal::AnyRandomStateDim> {
 public:
-    /// @brief Particle four-momentum container type
-    using typename EventGenerator<N, internal::AnyRandomStateDim>::Momenta;
     /// @brief Random state container type
     using RandomState = std::array<double, M>;
     /// @brief Generated event type
     using typename EventGenerator<N, internal::AnyRandomStateDim>::Event;
 
 public:
-    // Inherit constructor
-    using EventGenerator<N, internal::AnyRandomStateDim>::EventGenerator;
-
     /// @brief Generate event in center-of-mass frame using precomputed random numbers
     /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param u Flat random numbers in 0--1 (M values required)

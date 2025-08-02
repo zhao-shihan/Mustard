@@ -20,13 +20,6 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int N>
     requires(N >= 2)
-constexpr EventGenerator<N, internal::AnyRandomStateDim>::EventGenerator(const std::array<int, N>& pdgID, const std::array<double, N>& mass) :
-    fPDGID{pdgID},
-    fMass{mass},
-    fSumMass{muc::ranges::reduce(mass)} {}
-
-template<int N>
-    requires(N >= 2)
 auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(double cmsE) const -> Event {
     return (*this)(cmsE, *CLHEP::HepRandom::getTheEngine());
 }
@@ -51,14 +44,6 @@ template<int N>
     requires(N >= 2)
 auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng) const -> Event {
     return (*this)(0., std::move(beta), rng);
-}
-
-template<int N>
-    requires(N >= 2)
-MUSTARD_ALWAYS_INLINE auto EventGenerator<N, internal::AnyRandomStateDim>::CheckCMSEnergy(double cmsE) const -> void {
-    if (cmsE <= fSumMass) {
-        Throw<std::domain_error>(fmt::format("CMS energy ({}) < sum of final state masses ({})", cmsE, fSumMass));
-    }
 }
 
 template<int N, int M>
