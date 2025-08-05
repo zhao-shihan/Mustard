@@ -41,6 +41,8 @@ class SequentialExecutorImpl final : public ExecutorImplBase<T> {
 public:
     SequentialExecutorImpl(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
+    auto NProcess() const -> int { return 1; }
+
     auto Execute(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto PrintExecutionSummary() const -> void;
 

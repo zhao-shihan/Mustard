@@ -60,6 +60,54 @@ auto Executor<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> vo
 }
 
 template<std::integral T>
+auto Executor<T>::NProcess() const -> int {
+    return std::visit([&](auto&& impl) {
+        return impl.NProcess();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::Task() const -> struct Scheduler<T>::Task {
+    return std::visit([&](auto&& impl) {
+        return impl.Task();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::NTask() const -> T {
+    return std::visit([&](auto&& impl) {
+        return impl.NTask();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::ExecutingTask() const -> T {
+    return std::visit([&](auto&& impl) {
+        return impl.ExecutingTask();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::NLocalExecutedTask() const -> T {
+    return std::visit([&](auto&& impl) {
+        return impl.NLocalExecutedTask();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::Executing() const -> bool {
+    return std::visit([&](auto&& impl) {
+        return impl.Executing();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
 auto Executor<T>::PrintProgress(bool print) -> void {
     std::visit([&](auto&& impl) {
         impl.PrintProgress(print);
@@ -92,30 +140,6 @@ auto Executor<T>::TaskName(std::string name) -> void {
 }
 
 template<std::integral T>
-auto Executor<T>::Task() const -> struct Scheduler<T>::Task {
-    return std::visit([&](auto&& impl) {
-        return impl.Task();
-    },
-                      *fImpl);
-}
-
-template<std::integral T>
-auto Executor<T>::NTask() const -> T {
-    return std::visit([&](auto&& impl) {
-        return impl.NTask();
-    },
-                      *fImpl);
-}
-
-template<std::integral T>
-auto Executor<T>::Executing() const -> bool {
-    return std::visit([&](auto&& impl) {
-        return impl.Executing();
-    },
-                      *fImpl);
-}
-
-template<std::integral T>
 auto Executor<T>::Execute(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     return std::visit([&](auto&& impl) {
         return impl.Execute(std::move(task), std::forward<decltype(F)>(F));
@@ -126,22 +150,6 @@ auto Executor<T>::Execute(struct Scheduler<T>::Task task, std::invocable<T> auto
 template<std::integral T>
 auto Executor<T>::Execute(T size, std::invocable<T> auto&& F) -> T {
     return Execute({0, size}, std::forward<decltype(F)>(F));
-}
-
-template<std::integral T>
-auto Executor<T>::ExecutingTask() const -> T {
-    return std::visit([&](auto&& impl) {
-        return impl.ExecutingTask();
-    },
-                      *fImpl);
-}
-
-template<std::integral T>
-auto Executor<T>::NLocalExecutedTask() const -> T {
-    return std::visit([&](auto&& impl) {
-        return impl.NLocalExecutedTask();
-    },
-                      *fImpl);
 }
 
 template<std::integral T>

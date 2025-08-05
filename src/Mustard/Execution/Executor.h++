@@ -47,6 +47,8 @@ public:
     auto SwitchScheduler(std::string_view scheduler) -> void;
     auto SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void;
 
+    auto NProcess() const -> int;
+
     auto Task() const -> struct Scheduler<T>::Task;
     auto NTask() const -> T;
     auto ExecutingTask() const -> T;
