@@ -19,7 +19,7 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int N>
-auto RAMBO<N>::operator()(double cmsE, const RandomState& u) const -> Event {
+auto RAMBO<N>::operator()(double cmsE, const RandomState& u) -> Event {
     this->CheckCMSEnergy(cmsE);
 
     // call the massless genPoint, initializing weight

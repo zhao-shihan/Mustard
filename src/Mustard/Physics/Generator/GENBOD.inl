@@ -19,7 +19,7 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int N>
-auto GENBOD<N>::operator()(double cmsE, const RandomState& u) const -> Event {
+auto GENBOD<N>::operator()(double cmsE, const RandomState& u) -> Event {
     this->CheckCMSEnergy(cmsE);
 
     auto random{u.cbegin()};

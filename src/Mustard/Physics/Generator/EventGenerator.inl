@@ -20,19 +20,19 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int N>
     requires(N >= 2)
-auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(double cmsE) const -> Event {
+auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(double cmsE) -> Event {
     return (*this)(cmsE, *CLHEP::HepRandom::getTheEngine());
 }
 
 template<int N>
     requires(N >= 2)
-auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(CLHEP::HepRandomEngine& rng) const -> Event {
+auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(CLHEP::HepRandomEngine& rng) -> Event {
     return (*this)(0., rng);
 }
 
 template<int N>
     requires(N >= 2)
-auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(double cmsE, CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng) const -> Event {
+auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(double cmsE, CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng) -> Event {
     auto event{(*this)(cmsE, rng)};
     for (auto&& p : event.p) {
         p.boost(beta);
@@ -42,19 +42,19 @@ auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(double cmsE, CLH
 
 template<int N>
     requires(N >= 2)
-auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng) const -> Event {
+auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng) -> Event {
     return (*this)(0., std::move(beta), rng);
 }
 
 template<int N, int M>
     requires(N >= 2 and M >= 3 * N - 4)
-auto EventGenerator<N, M>::operator()(const RandomState& u) const -> Event {
+auto EventGenerator<N, M>::operator()(const RandomState& u) -> Event {
     return (*this)(0., u);
 }
 
 template<int N, int M>
     requires(N >= 2 and M >= 3 * N - 4)
-auto EventGenerator<N, M>::operator()(double cmsE, CLHEP::Hep3Vector beta, const RandomState& u) const -> Event {
+auto EventGenerator<N, M>::operator()(double cmsE, CLHEP::Hep3Vector beta, const RandomState& u) -> Event {
     auto event{(*this)(cmsE, u)};
     for (auto&& p : event.p) {
         p.boost(beta);
@@ -64,13 +64,13 @@ auto EventGenerator<N, M>::operator()(double cmsE, CLHEP::Hep3Vector beta, const
 
 template<int N, int M>
     requires(N >= 2 and M >= 3 * N - 4)
-auto EventGenerator<N, M>::operator()(CLHEP::Hep3Vector beta, const RandomState& u) const -> Event {
+auto EventGenerator<N, M>::operator()(CLHEP::Hep3Vector beta, const RandomState& u) -> Event {
     return (*this)(0., std::move(beta), u);
 }
 
 template<int N, int M>
     requires(N >= 2 and M >= 3 * N - 4)
-auto EventGenerator<N, M>::operator()(double cmsE, CLHEP::HepRandomEngine& rng) const -> Event {
+auto EventGenerator<N, M>::operator()(double cmsE, CLHEP::HepRandomEngine& rng) -> Event {
     RandomState u;
     rng.flatArray(M, u.data());
     return (*this)(cmsE, u);

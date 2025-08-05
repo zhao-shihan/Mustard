@@ -84,28 +84,28 @@ public:
     /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
-    virtual auto operator()(double cmsE, CLHEP::HepRandomEngine& rng) const -> Event = 0;
+    virtual auto operator()(double cmsE, CLHEP::HepRandomEngine& rng) -> Event = 0;
     /// @brief Generate event in center-of-mass frame using global CLHEP engine
     /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @return Generated event
-    auto operator()(double cmsE) const -> Event;
+    auto operator()(double cmsE) -> Event;
     /// @brief Generate event in center-of-mass frame,
     /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
     /// @return Generated event
-    auto operator()(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) const -> Event;
+    auto operator()(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
 
     /// @brief Generate event with lab-frame boost
     /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param beta Boost vector for lab frame
     /// @param rng Reference to CLHEP random engine (default: global CLHEP engine)
     /// @return Generated event
-    auto operator()(double cmsE, CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) const -> Event;
+    auto operator()(double cmsE, CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
     /// @brief Generate boosted event using global CLHEP engine,
     /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
     /// @param beta Boost vector for lab frame
     /// @param rng Reference to CLHEP random engine (default: global CLHEP engine)
     /// @return Generated event
-    auto operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) const -> Event;
+    auto operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
 };
 
 /// @class EventGenerator<N, M>
@@ -134,31 +134,31 @@ public:
     /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param u Flat random numbers in 0--1 (M values required)
     /// @return Generated event
-    virtual auto operator()(double cmsE, const RandomState& u) const -> Event = 0;
+    virtual auto operator()(double cmsE, const RandomState& u) -> Event = 0;
     /// @brief Generate event in center-of-mass frame using precomputed random numbers
     /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
     /// @param u Flat random numbers in 0--1 (M values required)
     /// @return Generated event
-    auto operator()(const RandomState& u) const -> Event;
+    auto operator()(const RandomState& u) -> Event;
 
     /// @brief Generate event with lab-frame boost using precomputed randoms
     /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param u Flat random numbers in 0--1 (M values)
     /// @param beta Boost vector for lab frame
     /// @return Generated event
-    auto operator()(double cmsE, CLHEP::Hep3Vector beta, const RandomState& u) const -> Event;
+    auto operator()(double cmsE, CLHEP::Hep3Vector beta, const RandomState& u) -> Event;
     /// @brief Generate event with lab-frame boost using precomputed randoms
     /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
     /// @param u Flat random numbers in 0--1 (M values)
     /// @param beta Boost vector for lab frame
     /// @return Generated event
-    auto operator()(CLHEP::Hep3Vector beta, const RandomState& u) const -> Event;
+    auto operator()(CLHEP::Hep3Vector beta, const RandomState& u) -> Event;
 
     /// @brief Generate event in center-of-mass frame
     /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
-    virtual auto operator()(double cmsE, CLHEP::HepRandomEngine& rng) const -> Event override;
+    virtual auto operator()(double cmsE, CLHEP::HepRandomEngine& rng) -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

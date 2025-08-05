@@ -69,7 +69,7 @@ public:
     /// @param cmsE Center-of-mass energy
     /// @param u Flat random numbers in 0--1 (4*N values required)
     /// @return Generated event
-    virtual auto operator()(double cmsE, const RandomState& u) const -> Event override;
+    virtual auto operator()(double cmsE, const RandomState& u) -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

@@ -36,7 +36,7 @@ auto main(int argc, char* argv[]) -> int {
     const auto nBin{gsl::narrow<int>(muc::llround(std::sqrt(nEvent / 100000)))};
     Mustard::Executor<unsigned long long> executor{"Generation", "Sample"};
 
-    constexpr auto FillDalitzPlot{[](const Mustard::EventGenerator<3>& generator,
+    constexpr auto FillDalitzPlot{[](Mustard::EventGenerator<3>& generator,
                                      double cmsE, TH2D& dalitzPlot, TH2D& weightPlot) {
         const auto event{generator(cmsE)};
         const auto& [p1, p2, p3]{event.p};
