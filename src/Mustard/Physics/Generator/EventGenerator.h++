@@ -91,6 +91,7 @@ public:
     auto operator()(double cmsE) -> Event;
     /// @brief Generate event in center-of-mass frame,
     /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
+    /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     auto operator()(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
 
