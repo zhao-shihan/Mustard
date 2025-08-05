@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Physics/Generator/MuonInternalConversionDecay.h++"
+#include "Mustard/Physics/Generator/InternalConversionMuonDecay.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 
@@ -33,13 +33,13 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-MuonInternalConversionDecay::MuonInternalConversionDecay(std::string_view parent) :
+InternalConversionMuonDecay::InternalConversionMuonDecay(std::string_view parent) :
     MetropolisHastingsGenerator{muon_mass_c2, {}, {}, 0.001, 1000} {
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2, electron_mass_c2});
 }
 
-auto MuonInternalConversionDecay::Parent(std::string_view parent) -> void {
+auto InternalConversionMuonDecay::Parent(std::string_view parent) -> void {
     if (parent == "mu-") {
         PDGID({11, -12, 14, -11, 11});
     } else if (parent == "mu+") {
@@ -49,12 +49,12 @@ auto MuonInternalConversionDecay::Parent(std::string_view parent) -> void {
     }
 }
 
-auto MuonInternalConversionDecay::MSqOption(enum MSqOption option) -> void {
+auto InternalConversionMuonDecay::MSqOption(enum MSqOption option) -> void {
     fMSqOption = option;
     BurnInRequired();
 }
 
-auto MuonInternalConversionDecay::MSqOption(std::string_view option) -> void {
+auto InternalConversionMuonDecay::MSqOption(std::string_view option) -> void {
     if (option == "McMule2020") {
         MSqOption(MSqOption::McMule2020);
     } else if (option == "RR2009PRD") {
@@ -64,12 +64,12 @@ auto MuonInternalConversionDecay::MSqOption(std::string_view option) -> void {
     }
 }
 
-auto MuonInternalConversionDecay::Polarization(CLHEP::Hep3Vector pol) -> void {
+auto InternalConversionMuonDecay::Polarization(CLHEP::Hep3Vector pol) -> void {
     fPolarization = pol;
     BurnInRequired();
 }
 
-auto MuonInternalConversionDecay::SquaredAmplitude(const Momenta& momenta) const -> double {
+auto InternalConversionMuonDecay::SquaredAmplitude(const Momenta& momenta) const -> double {
     switch (fMSqOption) {
     case MSqOption::McMule2020:
         return MSqMcMule2020(momenta);
@@ -79,7 +79,7 @@ auto MuonInternalConversionDecay::SquaredAmplitude(const Momenta& momenta) const
     muc::unreachable();
 }
 
-auto MuonInternalConversionDecay::MSqMcMule2020(const Momenta& momenta) const -> double {
+auto InternalConversionMuonDecay::MSqMcMule2020(const Momenta& momenta) const -> double {
     const CLHEP::HepLorentzVector q1{CMSEnergy()};
     const auto& [q2, q3, q4, q5, q6]{momenta};
     const CLHEP::HepLorentzVector pol1{fPolarization};
@@ -549,7 +549,7 @@ auto MuonInternalConversionDecay::MSqMcMule2020(const Momenta& momenta) const ->
            if24 / (den2 * den4) + if34 / (den3 * den4);
 }
 
-auto MuonInternalConversionDecay::MSqRR2009PRD(const Momenta& momenta) const -> double {
+auto InternalConversionMuonDecay::MSqRR2009PRD(const Momenta& momenta) const -> double {
     // Tree level mu -> eeevv (2 diagrams)
     // Ref: Rashid M. Djilkibaev, and Rostislav V. Konoplich, Rare muon decay mu+->e+e-e+vevmu, Phys. Rev. D 79, 073004 (arXiv:0812.1355)
     // Adapt from mu3e2nu.tex in https://arxiv.org/src/0812.1355

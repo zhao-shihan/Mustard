@@ -26,9 +26,9 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-/// @class MuonInternalConversionDecay
+/// @class InternalConversionMuonDecay
 /// @brief MCMC generator for mu->evvee decays
-class MuonInternalConversionDecay : public MetropolisHastingsGenerator<5> {
+class InternalConversionMuonDecay : public MetropolisHastingsGenerator<5> {
 public:
     /// @brief Squared amplitude options
     enum struct MSqOption {
@@ -39,7 +39,7 @@ public:
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
-    explicit MuonInternalConversionDecay(std::string_view parent);
+    explicit InternalConversionMuonDecay(std::string_view parent);
 
     /// @brief Set parent particle type
     /// @param parent "mu-" or "mu+"
@@ -64,7 +64,7 @@ private:
     auto MSqMcMule2020(const Momenta& momenta) const -> double;
     auto MSqRR2009PRD(const Momenta& momenta) const -> double;
 
-public:
+private:
     enum MSqOption fMSqOption;       ///< Selected squared amplitude implementation
     CLHEP::Hep3Vector fPolarization; ///< Muon polarization vector (in CMS)
 };
