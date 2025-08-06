@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Utility/InlineMacro.h++"
-
 #include "mplr/mplr.hpp"
 
 #include <concepts>
@@ -64,7 +62,7 @@ auto MasterPrintError(std::string_view message, const std::source_location& loca
 /// @param message The exception message.
 /// @param location Source location. Default is current.
 template<std::constructible_from<std::string> AException>
-[[noreturn]] MUSTARD_ALWAYS_INLINE auto Throw(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+[[noreturn]] auto Throw(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
 auto PrettyInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
 auto PrettyWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
