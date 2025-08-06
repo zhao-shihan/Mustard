@@ -22,14 +22,13 @@
 
 #include "TChain.h"
 #include "TFile.h"
-#include "TTreeReader.h"
-#include "TTreeReaderValue.h"
 
 #include "G4Event.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4PrimaryVertex.hh"
 #include "G4Run.hh"
 #include "G4RunManager.hh"
+#include "G4StateManager.hh"
 #include "G4ThreeVector.hh"
 
 #include "muc/array"
@@ -45,40 +44,34 @@
 
 namespace Mustard::Geant4X::inline Generator {
 
-struct FromDataPrimaryGenerator::EventData {
-    TTreeReader reader;
-    TTreeReaderValue<double> t{reader, "t"};
-    TTreeReaderValue<float> x{reader, "x"};
-    TTreeReaderValue<float> y{reader, "y"};
-    TTreeReaderValue<float> z{reader, "z"};
-    TTreeReaderValue<std::vector<int>> pdgID{reader, "pdgID"};
-    TTreeReaderValue<std::vector<float>> px{reader, "px"};
-    TTreeReaderValue<std::vector<float>> py{reader, "py"};
-    TTreeReaderValue<std::vector<float>> pz{reader, "pz"};
-    TTreeReaderValue<float> w{reader, "w"};
-};
-
 FromDataPrimaryGenerator::FromDataPrimaryGenerator() :
     fChain{},
-    fEventData{std::make_unique_for_overwrite<struct EventData>()},
-    fNVertex{1},
+    fEventData{},
+    fNVertex{},
     fCurrentRun{},
     fEndEntryForCurrentRun{},
     fFromDataPrimaryGeneratorMessengerRegister{this} {}
 
-FromDataPrimaryGenerator::FromDataPrimaryGenerator(const std::filesystem::path& file, const std::string& data) :
+FromDataPrimaryGenerator::FromDataPrimaryGenerator(const std::filesystem::path& file, const std::string& data, int nVertex) :
     FromDataPrimaryGenerator{} {
     EventData(file, data);
+    NVertex(nVertex);
 }
 
 FromDataPrimaryGenerator::~FromDataPrimaryGenerator() = default;
 
 auto FromDataPrimaryGenerator::EventData(const std::filesystem::path& file, const std::string& data) -> void {
+    CheckG4Status();
     fChain = std::make_unique<TChain>(data.c_str());
     fChain->Add(file.generic_string().c_str());
-    fEventData->reader.SetTree(fChain.get());
+    fEventData.reader.SetTree(fChain.get());
     // Reset entry index reference
     fEndEntryForCurrentRun = 0;
+}
+
+auto FromDataPrimaryGenerator::NVertex(int n) -> void {
+    CheckG4Status();
+    fNVertex = std::max(0, n);
 }
 
 auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
@@ -90,7 +83,7 @@ auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
     // use 'last entry' as reference index looks not good but G4Run may be destructed so I have to do so
     const auto iBegin{fEndEntryForCurrentRun - run->GetNumberOfEventToBeProcessed() + event->GetEventID()};
 
-    auto& [reader, t, x, y, z, particlePdgID, momentumX, momentumY, momentumZ, weight]{*fEventData};
+    auto& [reader, t, x, y, z, pID, pX, pY, pZ, weight]{fEventData};
     if (reader.IsInvalid()) [[unlikely]] {
         Mustard::PrintError("TTreeReader is invalid");
         return;
@@ -98,6 +91,9 @@ auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
     if (reader.GetEntries() == 0) [[unlikely]] {
         Mustard::PrintError("TTreeReader has no entry to read");
         return;
+    }
+    if (reader.GetEntries() % fNVertex != 0) [[unlikely]] {
+        Mustard::PrintWarning("The number of entries cannot be exactly divided by the number of vertices");
     }
     reader.SetEntry((iBegin * fNVertex) % reader.GetEntries());
 
@@ -110,7 +106,7 @@ auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
             }
         }
 
-        const auto& [pdgID, px, py, pz]{std::tie(*particlePdgID, *momentumX, *momentumY, *momentumZ)};
+        const auto& [pdgID, px, py, pz]{std::tie(*pID, *pX, *pY, *pZ)};
         if (pdgID.size() != px.size() or pdgID.size() != py.size() or pdgID.size() != pz.size()) {
             Mustard::PrintError(fmt::format("pdgID.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent, skipping",
                                             pdgID.size(), px.size(), py.size(), pz.size()));
@@ -124,6 +120,21 @@ auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
         }
         primaryVertex->SetWeight(*weight);
         event->AddPrimaryVertex(primaryVertex);
+    }
+}
+
+auto FromDataPrimaryGenerator::CheckG4Status() -> void {
+    switch (G4StateManager::GetStateManager()->GetCurrentState()) {
+    case G4State_PreInit:
+    case G4State_Init:
+    case G4State_Idle:
+        return;
+    case G4State_GeomClosed:
+    case G4State_EventProc:
+    case G4State_Quit:
+    case G4State_Abort:
+    default:
+        Mustard::Throw<std::runtime_error>("Invalid G4 application state");
     }
 }
 
