@@ -126,11 +126,17 @@ private:
     /// @param delta Maximun step along one direction in random state space
     /// @param rng Reference to CLHEP random engine
     auto NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void;
-    /// @brief Get bias with non-negativity check
+    /// @brief Get bias with range check
     /// @param momenta Final states' 4-momenta
-    /// @exception `std::runtime_error` if negative bias value produced
+    /// @exception `std::runtime_error` if invalid bias value produced
     /// @return B(p1, ..., pN)
-    auto BiasWithCheck(const Momenta& momenta) const -> double;
+    auto ValidBias(const Momenta& momenta) const -> double;
+    /// @brief Get reweighted PDF value with range check
+    /// @param event Final states from phase space
+    /// @param bias Bias value at the same phase space point (from BiasWithCheck)
+    /// @exception `std::runtime_error` if invalid PDF value produced
+    /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN)
+    auto ValidBiasedPDF(const Event& event, double bias) const -> double;
 
 public:
     /// @brief Print and validate normalization factor quality

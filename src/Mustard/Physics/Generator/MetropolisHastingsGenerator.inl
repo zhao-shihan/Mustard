@@ -63,9 +63,9 @@ auto MetropolisHastingsGenerator<N>::BurnIn(CLHEP::HepRandomEngine& rng) -> void
     while (true) {
         std::ranges::generate(fRandomState, [&rng] { return rng.flat(); });
         fEvent = fGENBOD(fCMSEnergy, fRandomState);
-        if (const auto bias{BiasWithCheck(fEvent.p)};
+        if (const auto bias{ValidBias(fEvent.p)};
             bias >= std::numeric_limits<double>::min()) {
-            fBiasedPDF = bias * fEvent.weight * SquaredAmplitude(fEvent.p);
+            fBiasedPDF = ValidBiasedPDF(fEvent, bias);
             break;
         }
     }
@@ -92,12 +92,12 @@ auto MetropolisHastingsGenerator<N>::NextEvent(double delta, CLHEP::HepRandomEng
                                    return CLHEP::RandFlat::shoot(&rng, low, up);
                                });
         proposedEvent = fGENBOD(fCMSEnergy, proposedRandomState);
-        const auto proposedBias{BiasWithCheck(proposedEvent.p)};
+        const auto proposedBias{ValidBias(proposedEvent.p)};
         if (proposedBias <= std::numeric_limits<double>::min()) {
             continue;
         }
 
-        const auto proposedBiasedPDF{proposedBias * proposedEvent.weight * SquaredAmplitude(proposedEvent.p)};
+        const auto proposedBiasedPDF{ValidBiasedPDF(proposedEvent, proposedBias)};
         if (proposedBiasedPDF >= fBiasedPDF or
             proposedBiasedPDF >= fBiasedPDF * rng.flat()) {
             fRandomState = proposedRandomState;
@@ -110,16 +110,48 @@ auto MetropolisHastingsGenerator<N>::NextEvent(double delta, CLHEP::HepRandomEng
 }
 
 template<int N>
-auto MetropolisHastingsGenerator<N>::BiasWithCheck(const Momenta& momenta) const -> double {
+auto MetropolisHastingsGenerator<N>::ValidBias(const Momenta& momenta) const -> double {
     const auto bias{fBias(momenta)};
-    if (bias < 0) {
+    constexpr auto Format{[](const Momenta& momenta) {
         std::string where;
         for (auto&& p : momenta) {
             where += fmt::format("[{}, {}, {}; {}]", p.x(), p.y(), p.z(), p.e());
         }
-        Throw<std::runtime_error>(fmt::format("Bias should be non-negative (got {} at {})", bias, where));
+        return where;
+    }};
+    if (bias < 0) {
+        Throw<std::runtime_error>(fmt::format("Bias should be non-negative (got {} at {})", bias, Format(momenta)));
+    }
+    if (std::isinf(bias)) {
+        Throw<std::runtime_error>(fmt::format("Infinity bias found (got {} at {})", bias, Format(momenta)));
+    }
+    if (std::isnan(bias)) {
+        Throw<std::runtime_error>(fmt::format("NAN bias found (got {} at {})", bias, Format(momenta)));
     }
     return bias;
+}
+
+template<int N>
+auto MetropolisHastingsGenerator<N>::ValidBiasedPDF(const Event& event, double bias) const -> double {
+    const auto value{event.weight * SquaredAmplitude(event.p) * bias};
+    const auto Where{[&] {
+        auto where{fmt::format("({})", event.weight)};
+        for (auto&& p : event.p) {
+            where += fmt::format("[{}, {}, {}; {}]", p.x(), p.y(), p.z(), p.e());
+        }
+        where += fmt::format(" Bias={}", bias);
+        return where;
+    }};
+    if (value < 0) {
+        Throw<std::runtime_error>(fmt::format("Negative biased PDF found (got {} at {})", value, Where()));
+    }
+    if (std::isinf(value)) {
+        Throw<std::runtime_error>(fmt::format("Infinity biased PDF found (got {} at {})", value, Where()));
+    }
+    if (std::isnan(value)) {
+        Throw<std::runtime_error>(fmt::format("NAN biased PDF found (got {} at {})", value, Where()));
+    }
+    return value;
 }
 
 template<int N>
@@ -195,7 +227,8 @@ auto MetropolisHastingsGenerator<N>::CheckWeightNormalizationFactor(WeightNormal
         MasterPrintWarning("N_eff TOO LOW. "
                            "This generally means there are a few highly weighted events "
                            "and THEY CAN BIAS THE ESTIMATIONS. "
-                           "The estimation should be considered inaccurate.");
+                           "The estimation should be considered inaccurate. "
+                           "Try increasing statistics.");
     }
     return ok;
 }
