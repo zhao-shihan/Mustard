@@ -119,14 +119,11 @@ auto MetropolisHastingsGenerator<N>::ValidBias(const Momenta& momenta) const -> 
         }
         return where;
     }};
+    if (not std::isfinite(bias)) {
+        Throw<std::runtime_error>(fmt::format("Infinite bias found (got {} at {})", bias, Format(momenta)));
+    }
     if (bias < 0) {
-        Throw<std::runtime_error>(fmt::format("Bias should be non-negative (got {} at {})", bias, Format(momenta)));
-    }
-    if (std::isinf(bias)) {
-        Throw<std::runtime_error>(fmt::format("Infinity bias found (got {} at {})", bias, Format(momenta)));
-    }
-    if (std::isnan(bias)) {
-        Throw<std::runtime_error>(fmt::format("NAN bias found (got {} at {})", bias, Format(momenta)));
+        Throw<std::runtime_error>(fmt::format("Negative bias found (got {} at {})", bias, Format(momenta)));
     }
     return bias;
 }
@@ -142,14 +139,11 @@ auto MetropolisHastingsGenerator<N>::ValidBiasedPDF(const Event& event, double b
         where += fmt::format(" Bias={}", bias);
         return where;
     }};
+    if (not std::isfinite(value)) {
+        Throw<std::runtime_error>(fmt::format("Infinite biased PDF found (got {} at {})", value, Where()));
+    }
     if (value < 0) {
         Throw<std::runtime_error>(fmt::format("Negative biased PDF found (got {} at {})", value, Where()));
-    }
-    if (std::isinf(value)) {
-        Throw<std::runtime_error>(fmt::format("Infinity biased PDF found (got {} at {})", value, Where()));
-    }
-    if (std::isnan(value)) {
-        Throw<std::runtime_error>(fmt::format("NAN biased PDF found (got {} at {})", value, Where()));
     }
     return value;
 }
