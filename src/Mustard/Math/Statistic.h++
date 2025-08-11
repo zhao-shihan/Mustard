@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Concept/InputVector.h++"
 #include "Mustard/Utility/PrettyLog.h++"
 #include "Mustard/Utility/VectorCast.h++"

@@ -26,6 +26,7 @@
 #include "Mustard/Utility/VectorValueType.h++"
 
 #include "muc/array"
+#include "muc/concepts"
 #include "muc/math"
 
 #include <array>
@@ -62,15 +63,15 @@ public:
     constexpr auto Center(VT x0, VT y0) -> void { CenterX(x0), CenterY(y0); }
     constexpr auto Center(T r0) -> void { Center(r0[0], r0[1]); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicUniformDiskParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicUniformDiskParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -120,9 +121,9 @@ public:
 
     static constexpr auto Stateless() -> bool { return true; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const UniformDiskBase<T, AUniformDisk>& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, UniformDiskBase<T, AUniformDisk>& self) -> auto& { return is >> self.fParameter; }
 
 protected:

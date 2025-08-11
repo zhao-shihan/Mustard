@@ -18,11 +18,12 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
 #include "Mustard/Math/internal/FastLogOn01.h++"
 #include "Mustard/Utility/InlineMacro.h++"
+
+#include "muc/concepts"
 
 #include <cmath>
 #include <concepts>
@@ -48,15 +49,15 @@ public:
 
     constexpr auto Expectation(T expectation) -> void { fExpectation = expectation; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicExponentialParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicExponentialParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -94,9 +95,9 @@ public:
 
     static constexpr auto Stateless() -> bool { return true; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const ExponentialBase& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, ExponentialBase& self) -> auto& { return is >> self.fParameter; }
 
 protected:

@@ -34,7 +34,7 @@ constexpr BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::BasicGaussia
     fSigmaY{pY.second} {}
 
 template<Concept::NumericVector2FloatingPoint T, template<typename> typename AGaussian2DDiagnoal>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<VectorValueType<T>>::max_digits10)};
     return os << fMuX << ' ' << fSigmaX << ' ' << fMuY << ' ' << fSigmaY
@@ -42,7 +42,7 @@ auto BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::StreamOutput(std:
 }
 
 template<Concept::NumericVector2FloatingPoint T, template<typename> typename AGaussian2DDiagnoal>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fMuX >> fSigmaX >> fMuY >> fSigmaY;
 }

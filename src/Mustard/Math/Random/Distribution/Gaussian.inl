@@ -27,7 +27,7 @@ constexpr BasicGaussianParameter<T, AGaussian>::BasicGaussianParameter(T mu, T s
     fSigma{sigma} {}
 
 template<std::floating_point T, template<typename> typename AGaussian>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussianParameter<T, AGaussian>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<T>::max_digits10)};
     return os << fMu << ' ' << fSigma
@@ -35,7 +35,7 @@ auto BasicGaussianParameter<T, AGaussian>::StreamOutput(std::basic_ostream<AChar
 }
 
 template<std::floating_point T, template<typename> typename AGaussian>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussianParameter<T, AGaussian>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fMu >> fSigma;
 }

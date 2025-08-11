@@ -23,6 +23,8 @@
 #include "Mustard/Utility/InlineMacro.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
+#include "muc/concepts"
+
 #include "gsl/gsl"
 
 #include <array>
@@ -81,15 +83,15 @@ public:
     template<gsl::index I>
     constexpr auto Parameter(const std::tuple_element_t<I, std::tuple<typename Ds::ParameterType...>>& p) -> void { this->template Margin<I>() = p; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const JointParameterInterface& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, JointParameterInterface& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 };
 
@@ -124,24 +126,24 @@ public:
 
     static constexpr auto Stateless() -> bool { return (... and Ds::Stateless()); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const JointInterface& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, JointInterface& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 };
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
 class Joint;
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
 class JointParameter final : public JointParameterInterface<JointParameter<T, Ds...>,
                                                             Joint<T, Ds...>,
                                                             Ds...> {
@@ -152,7 +154,7 @@ template<typename... Ps>
 JointParameter(Ps...) -> JointParameter<std::array<std::common_type_t<typename Ps::DistributionType::ResultType...>, sizeof...(Ps)>, typename Ps::DistributionType...>;
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
 class Joint final : public JointInterface<Joint<T, Ds...>,
                                           JointParameter<T, Ds...>,
                                           T,

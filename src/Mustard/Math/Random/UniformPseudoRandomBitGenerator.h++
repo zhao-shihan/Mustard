@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "Mustard/Concept/StreamIOable.h++"
 #include "Mustard/Math/Random/UniformRandomBitGenerator.h++"
+
+#include "muc/concepts"
 
 #include <concepts>
 #include <random>
@@ -61,7 +62,7 @@ concept UniformPseudoRandomBitGenerator =
         // 8. It is a standard-layout type.
         requires std::is_standard_layout_v<G>;
         // 9. Its state can be saved and restored.
-        requires Concept::StreamIOable<G>;
+        requires muc::stream_ioable<G>;
         // 10. Extra requirements.
         requires std::derived_from<G, UniformPseudoRandomBitGeneratorBase<G, typename G::ResultType, typename G::SeedType>>;
         requires std::is_final_v<G>;

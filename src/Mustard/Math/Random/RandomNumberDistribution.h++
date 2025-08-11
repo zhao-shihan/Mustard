@@ -19,8 +19,9 @@
 #pragma once
 
 #include "Mustard/Concept/NumericVector.h++"
-#include "Mustard/Concept/StreamIOable.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro512SS.h++"
+
+#include "muc/concepts"
 
 #include <concepts>
 #include <istream>
@@ -160,7 +161,7 @@ concept STDRandomNumberDistribution =
         // Traits stream template parameters, otherwise the behavior is undefined.
         // If bad input is encountered, is.setstate(std::ios::failbit) is called,
         // which may throw std::ios_base::failure. d is unchanged in that case."
-        requires Concept::StreamIOable<D>;
+        requires muc::stream_ioable<D>;
     };
 
 template<typename ADerived, typename ADistribution>
@@ -179,7 +180,7 @@ concept DistributionParameter =
         // 3. It is TriviallyCopyable (a C++ named requirements).
         requires std::is_trivially_copyable_v<P>;
         // 4. It can be input and output.
-        requires Concept::StreamIOable<P>;
+        requires muc::stream_ioable<P>;
         // 5. Extra requirements.
         requires std::derived_from<P, DistributionParameterBase<P, typename P::DistributionType>>;
         requires std::is_final_v<P>;

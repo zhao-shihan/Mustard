@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
 #include "Mustard/Utility/InlineMacro.h++"
 
+#include "muc/concepts"
 #include "muc/utility"
 
 #include <concepts>
@@ -33,7 +33,7 @@ namespace Mustard::Math::Random::inline Distribution {
 
 namespace internal {
 
-template<Concept::Arithmetic T, template<typename> typename AUniform>
+template<muc::arithmetic T, template<typename> typename AUniform>
 class BasicUniformParameter final : public DistributionParameterBase<BasicUniformParameter<T, AUniform>, AUniform<T>> {
 public:
     constexpr BasicUniformParameter();
@@ -45,15 +45,15 @@ public:
     constexpr auto Infimum(T inf) -> void { fInfimum = inf; }
     constexpr auto Supremum(T sup) -> void { fSupremum = sup; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicUniformParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicUniformParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -61,7 +61,7 @@ private:
     T fSupremum;
 };
 
-template<template<typename> typename ADerived, Concept::Arithmetic T>
+template<template<typename> typename ADerived, muc::arithmetic T>
 class UniformBase : public RandomNumberDistributionBase<ADerived<T>,
                                                         BasicUniformParameter<T, ADerived>,
                                                         T> {
@@ -94,9 +94,9 @@ public:
 
     static constexpr auto Stateless() -> bool { return true; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const UniformBase& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, UniformBase& self) -> auto& { return is >> self.fParameter; }
 
 protected:
@@ -137,12 +137,12 @@ class UniformInteger;
 
 /// @brief Generates uniform random value on a interval.
 /// @tparam T The value type.
-template<Concept::Arithmetic T>
+template<muc::arithmetic T>
 using Uniform = std::conditional_t<std::floating_point<T>,
                                    UniformReal<std::conditional_t<std::floating_point<T>, T, double>>,
                                    UniformInteger<std::conditional_t<std::integral<T>, T, int>>>;
 
-template<Concept::Arithmetic T>
+template<muc::arithmetic T>
 using UniformParameter = internal::BasicUniformParameter<T, Uniform>;
 
 /// @brief Generates uniform random floating-point value on an open (excluding end-point) interval.

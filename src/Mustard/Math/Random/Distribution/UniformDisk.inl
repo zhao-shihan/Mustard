@@ -46,7 +46,7 @@ constexpr BasicUniformDiskParameter<T, AUniformDisk>::BasicUniformDiskParameter(
     fCenterY{0} {}
 
 template<Concept::NumericVector2Any T, template<typename> typename AUniformDisk>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicUniformDiskParameter<T, AUniformDisk>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<VectorValueType<T>>::max_digits10)};
     return os << fRadius << ' ' << fCenter[0] << ' ' << fCenter[1]
@@ -54,7 +54,7 @@ auto BasicUniformDiskParameter<T, AUniformDisk>::StreamOutput(std::basic_ostream
 }
 
 template<Concept::NumericVector2Any T, template<typename> typename AUniformDisk>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicUniformDiskParameter<T, AUniformDisk>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fRadius >> fCenter[0] >> fCenter[1];
 }

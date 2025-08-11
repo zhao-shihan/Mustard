@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Math/Random/UniformPseudoRandomBitGeneratorBase.h++"
+
+#include "muc/concepts"
 
 #include <random>
 
@@ -38,9 +39,9 @@ public:
     static constexpr auto Min() -> auto { return std::mt19937_64::min(); }
     static constexpr auto Max() -> auto { return std::mt19937_64::max(); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const MT1993764& self) -> decltype(auto) { return os << self.fMT; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, MT1993764& self) -> decltype(auto) { return is >> self.fMT; }
 
 private:

@@ -30,7 +30,7 @@ constexpr BasicExponentialParameter<T, AExponential>::BasicExponentialParameter(
     fExpectation{expectation} {}
 
 template<std::floating_point T, template<typename> typename AExponential>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicExponentialParameter<T, AExponential>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<T>::max_digits10)};
     return os << fExpectation
@@ -38,7 +38,7 @@ auto BasicExponentialParameter<T, AExponential>::StreamOutput(std::basic_ostream
 }
 
 template<std::floating_point T, template<typename> typename AExponential>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicExponentialParameter<T, AExponential>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fExpectation;
 }

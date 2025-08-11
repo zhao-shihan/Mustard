@@ -26,6 +26,7 @@
 #include "Mustard/Utility/VectorValueType.h++"
 
 #include "muc/array"
+#include "muc/concepts"
 #include "muc/math"
 
 #include <array>
@@ -60,15 +61,15 @@ public:
     constexpr auto MuY(VT muY) -> void { fMuY = muY; }
     constexpr auto SigmaY(VT sigmaY) -> void { fSigmaY = sigmaY; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicGaussian2DDiagnoalParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicGaussian2DDiagnoalParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -111,9 +112,9 @@ public:
     constexpr auto MuY(VT muY) -> void { fParameter.MuY(muY); }
     constexpr auto SigmaY(VT sigmaY) -> void { fParameter.SigmaY(sigmaY); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const Gaussian2DDiagnoalBase& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, Gaussian2DDiagnoalBase& self) -> auto& { return is >> self.fParameter; }
 
 protected:
