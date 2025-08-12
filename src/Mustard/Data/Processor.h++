@@ -25,7 +25,7 @@
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
 #include "Mustard/Execution/Executor.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "ROOT/RDataFrame.hxx"
 

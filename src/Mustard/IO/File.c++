@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/IO/File.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
-#include "Mustard/Utility/File.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "TFile.h"
 
@@ -32,7 +32,7 @@
 #include <string_view>
 #include <utility>
 
-namespace Mustard::inline Utility {
+namespace Mustard::inline IO {
 
 template<>
 File<>::~File() = default;
@@ -146,4 +146,4 @@ auto File<TFile>::Open(Option option, std::filesystem::path filePath, std::strin
     }
 }
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::inline IO

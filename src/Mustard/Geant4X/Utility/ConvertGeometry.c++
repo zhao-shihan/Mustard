@@ -17,8 +17,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
-#include "Mustard/Utility/CreateTemporaryFile.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/CreateTemporaryFile.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "TMacro.h"
 

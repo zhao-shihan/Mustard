@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Generator/FromDataPrimaryGenerator.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "TChain.h"

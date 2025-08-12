@@ -20,10 +20,10 @@
 
 #include "Mustard/Execution/DefaultScheduler.h++"
 #include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/IO/Print.h++"
 #include "Mustard/Parallel/MPIPredefined.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
-#include "Mustard/Utility/PrettyLog.h++"
-#include "Mustard/Utility/Print.h++"
 
 #include "mplr/mplr.hpp"
 

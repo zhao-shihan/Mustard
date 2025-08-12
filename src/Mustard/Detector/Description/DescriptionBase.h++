@@ -21,8 +21,8 @@
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "yaml-cpp/yaml.h"
 

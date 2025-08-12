@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Concept/InputVector.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "Eigen/Core"

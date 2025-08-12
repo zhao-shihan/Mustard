@@ -18,8 +18,8 @@
 
 #pragma once
 
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4FieldManager.hh"
 #include "G4LogicalVolume.hh"

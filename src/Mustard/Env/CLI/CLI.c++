@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/CLI/CLI.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Version.h++"
 
 #include "fmt/core.h"

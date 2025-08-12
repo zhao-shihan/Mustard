@@ -20,8 +20,8 @@
 #include "Mustard/Env/Memory/internal/SingletonPool.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/bit"
 #include "muc/utility"
@@ -37,8 +37,8 @@
 
 #if MUSTARD_SIGNAL_HANDLER
 
+#    include "Mustard/IO/Print.h++"
 #    include "Mustard/Utility/InlineMacro.h++"
-#    include "Mustard/Utility/Print.h++"
 #    include "Mustard/Utility/PrintStackTrace.h++"
 
 #    include "mplr/mplr.hpp"

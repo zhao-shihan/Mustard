@@ -20,7 +20,7 @@
 
 #include "Mustard/Execution/Scheduler.h++"
 #include "Mustard/Execution/internal/ExecutorImplBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/ProgressBar.h++"
 
 #include "muc/chrono"

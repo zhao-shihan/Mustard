@@ -30,7 +30,7 @@
 #include <cstdio>
 #include <ostream>
 
-namespace Mustard::inline Utility {
+namespace Mustard::inline IO {
 
 /// @brief Verbose level controlled print function.
 /// @tparam L Verbose level threshold. Available values are:
@@ -282,6 +282,6 @@ auto MasterPrint(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts..
 template<char L = 'E'>
 auto MasterVPrint(auto&&... args) -> void;
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::inline IO
 
-#include "Mustard/Utility/Print.inl"
+#include "Mustard/IO/Print.inl"

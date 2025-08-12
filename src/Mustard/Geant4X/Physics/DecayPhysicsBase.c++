@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Physics/DecayPhysicsBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "G4DecayTable.hh"
 
@@ -38,7 +38,7 @@ auto DecayPhysicsBase::UpdateDecayBRFor(const G4ParticleDefinition* particle) ->
     }
     if (mainDecayBR < -std::numeric_limits<double>::epsilon()) {
         decay->DumpInfo();
-        PrettyWarning("Try resetting all BRs");
+        PrintWarning("Try resetting all BRs");
         ResetDecayBR();
         Throw<std::runtime_error>("Impossible to normalize decay branching ratio (sum of rare channel BR > 1), all BRs have been reset");
     }

@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/MPIDataType.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "mpi.h"
 

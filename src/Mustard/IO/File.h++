@@ -33,7 +33,7 @@
 
 class TFile;
 
-namespace Mustard::inline Utility {
+namespace Mustard::inline IO {
 
 /// @brief MPI-aware file wrapper with heterogeneous/homogeneous access modes
 ///
@@ -222,4 +222,4 @@ private:
     std::unique_ptr<TFile> fFile;
 };
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::inline IO

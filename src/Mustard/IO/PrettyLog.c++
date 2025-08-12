@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
-#include "Mustard/Utility/PrettyLog.h++"
-#include "Mustard/Utility/Print.h++"
 
 #include "mplr/mplr.hpp"
 
@@ -26,9 +26,10 @@
 #include "fmt/color.h"
 
 #include <chrono>
+#include <cstdio>
 #include <filesystem>
 
-namespace Mustard::inline Utility {
+namespace Mustard::inline IO {
 
 namespace internal {
 namespace {
@@ -47,29 +48,34 @@ auto PrettyLogHead(std::string_view prefix, const std::source_location& location
 }
 
 } // namespace
+
+auto PrettyException(std::string_view message, const std::source_location& location) -> std::string {
+    return fmt::format("{}: {}", PrettyLogHead("", location), message);
+}
+
 } // namespace internal
 
 auto PrintInfo(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::deep_sky_blue)};
-    Print<'I'>(ts, "{}: ", internal::PrettyLogHead("Information from ", location));
-    Print<'I'>(ts | fmt::emphasis::bold, "{}", message);
-    Print<'I'>("\n");
+    Print<'I'>(stderr, ts, "{}: ", internal::PrettyLogHead("Information from ", location));
+    Print<'I'>(stderr, ts | fmt::emphasis::bold, "{}", message);
+    Print<'I'>(stderr, "\n");
 }
 
 auto PrintWarning(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::white) | bg(fmt::color::dark_orange)};
-    Print<'W'>(ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
-    Print<'W'>(ts, " {}: ", internal::PrettyLogHead("Warning from ", location));
-    Print<'W'>(ts | fmt::emphasis::bold, "{}", message);
-    Print<'W'>("\n");
+    Print<'W'>(stderr, ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
+    Print<'W'>(stderr, ts, " {}: ", internal::PrettyLogHead("Warning from ", location));
+    Print<'W'>(stderr, ts | fmt::emphasis::bold, "{}", message);
+    Print<'W'>(stderr, "\n");
 }
 
 auto PrintError(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::white) | bg(fmt::color::red)};
-    Print<'E'>(ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
-    Print<'E'>(ts, " {}: ", internal::PrettyLogHead("Error from ", location));
-    Print<'E'>(ts | fmt::emphasis::bold, "{}", message);
-    Print<'E'>("\n");
+    Print<'E'>(stderr, ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
+    Print<'E'>(stderr, ts, " {}: ", internal::PrettyLogHead("Error from ", location));
+    Print<'E'>(stderr, ts | fmt::emphasis::bold, "{}", message);
+    Print<'E'>(stderr, "\n");
 }
 
 auto MasterPrintInfo(std::string_view message, const std::source_location& location) -> void {
@@ -93,20 +99,4 @@ auto MasterPrintError(std::string_view message, const std::source_location& loca
     }
 }
 
-auto PrettyInfo(std::string_view message, const std::source_location& location) -> std::string {
-    return fmt::format("{}: {}", internal::PrettyLogHead("Information from ", location), message);
-}
-
-auto PrettyWarning(std::string_view message, const std::source_location& location) -> std::string {
-    return fmt::format("{}: {}", internal::PrettyLogHead("Warning from ", location), message);
-}
-
-auto PrettyError(std::string_view message, const std::source_location& location) -> std::string {
-    return fmt::format("{}: {}", internal::PrettyLogHead("Error from ", location), message);
-}
-
-auto PrettyException(std::string_view message, const std::source_location& location) -> std::string {
-    return fmt::format("{}: {}", internal::PrettyLogHead("", location), message);
-}
-
-} // namespace Mustard::inline Utility
+} // namespace Mustard::inline IO

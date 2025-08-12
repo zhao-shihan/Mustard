@@ -53,7 +53,7 @@ AsyncReader<AData>::~AsyncReader() {
         Throw<std::logic_error>("Last read data not acquired");
     }
     if (not fExhausted) {
-        PrettyWarning("Data have not been exhausted");
+        PrintWarning("Data have not been exhausted");
     }
 }
 

@@ -1,5 +1,5 @@
 #include "Mustard/Application/SubprogramLauncher.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "argparse/argparse.hpp"
 

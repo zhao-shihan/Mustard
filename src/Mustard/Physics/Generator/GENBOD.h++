@@ -18,8 +18,8 @@
 
 #pragma once
 
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Physics/Generator/VersatileEventGenerator.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/LorentzVector.h"

@@ -17,8 +17,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Utility/CreateTemporaryFile.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/CreateTemporaryFile.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "mplr/mplr.hpp"
 
@@ -29,7 +29,7 @@
 #include <stdexcept>
 #include <system_error>
 
-namespace Mustard::inline Utility {
+namespace Mustard::inline IO {
 
 auto CreateTemporaryFile(std::string_view signature, std::filesystem::path extension) -> std::filesystem::path {
     std::minstd_rand random;
@@ -82,4 +82,4 @@ auto CreateTemporaryFile(std::string_view signature, std::filesystem::path exten
     return path;
 }
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::inline IO

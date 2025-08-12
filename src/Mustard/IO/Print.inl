@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Utility {
+namespace Mustard::inline IO {
 
 template<char L, typename... Ts>
 auto Print(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
@@ -226,4 +226,4 @@ auto MasterVPrint(auto&&... args) -> void {
     }
 }
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::inline IO

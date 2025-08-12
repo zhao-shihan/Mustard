@@ -20,7 +20,7 @@
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Execution/Scheduler.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "mplr/mplr.hpp"
 

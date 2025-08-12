@@ -17,8 +17,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Interface/MPIExecutive.h++"
-#include "Mustard/Utility/PrettyLog.h++"
-#include "Mustard/Utility/Print.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/IO/Print.h++"
 
 #include "mplr/mplr.hpp"
 

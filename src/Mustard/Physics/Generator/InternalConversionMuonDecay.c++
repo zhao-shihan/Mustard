@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Physics/Generator/InternalConversionMuonDecay.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Vector/LorentzVector.h"
 

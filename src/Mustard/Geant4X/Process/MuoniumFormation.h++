@@ -22,9 +22,9 @@
 #include "Mustard/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
 #include "Mustard/Geant4X/Physics/TargetForMuoniumPhysics.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "G4MuonPlus.hh"
 #include "G4ParticleChange.hh"

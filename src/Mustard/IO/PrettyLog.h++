@@ -25,7 +25,7 @@
 #include <string>
 #include <string_view>
 
-namespace Mustard::inline Utility {
+namespace Mustard::inline IO {
 
 /// @brief Print pretty information.
 /// @param message The message.
@@ -64,11 +64,10 @@ auto MasterPrintError(std::string_view message, const std::source_location& loca
 template<std::constructible_from<std::string> AException>
 [[noreturn]] auto Throw(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
-auto PrettyInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
-auto PrettyWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
-auto PrettyError(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
-auto PrettyException(std::string_view message, const std::source_location& location = std::source_location::current()) -> std::string;
+namespace internal {
+auto PrettyException(std::string_view message, const std::source_location& location) -> std::string;
+} // namespace internal
 
-} // namespace Mustard::inline Utility
+} // namespace Mustard::inline IO
 
-#include "Mustard/Utility/PrettyLog.inl"
+#include "Mustard/IO/PrettyLog.inl"

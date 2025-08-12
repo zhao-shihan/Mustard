@@ -18,9 +18,9 @@
 
 #pragma once
 
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Utility/InlineMacro.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "muc/numeric"
 

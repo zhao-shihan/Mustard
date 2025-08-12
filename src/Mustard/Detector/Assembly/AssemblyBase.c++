@@ -18,7 +18,7 @@
 
 #include "Mustard/Detector/Assembly/AssemblyBase.h++"
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 namespace Mustard::Detector::Assembly {
 

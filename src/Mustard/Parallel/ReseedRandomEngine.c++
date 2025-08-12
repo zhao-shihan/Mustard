@@ -16,10 +16,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256PP.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/Random.h"

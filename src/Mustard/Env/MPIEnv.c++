@@ -17,8 +17,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Utility/PrettyLog.h++"
-#include "Mustard/Utility/Print.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/IO/Print.h++"
 
 #include "TROOT.h"
 

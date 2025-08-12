@@ -17,8 +17,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "mplr/mplr.hpp"
 
