@@ -27,6 +27,7 @@
 #include "fmt/core.h"
 
 #include <array>
+#include <source_location>
 #include <stdexcept>
 
 namespace Mustard::inline Physics::inline Generator {
@@ -34,18 +35,15 @@ namespace Mustard::inline Physics::inline Generator {
 /// @class VersatileEventGenerator
 /// @brief Base class for N-particle event generators with mutable final states.
 ///
-/// @tparam N Number of particles in final state (N ≥ 2)
-/// @tparam M Dimension of random state (default=AnyRandomStateDim)
-///
-/// @requires
-/// - N ≥ 2 (minimum two particles)
-/// - M ≥ 3N - 4 (sufficient random dimensions for phase space)
-template<int N, int M = internal::AnyRandomStateDim>
-class VersatileEventGenerator : public EventGenerator<N, M> {
+/// @tparam M Number of initial-state particles (M ≥ 1)
+/// @tparam N Number of final-state particles (N ≥ 1)
+/// @tparam D Dimension of random state (default or D ≥ Dim(phase space))
+template<int M, int N, int D = -1>
+class VersatileEventGenerator : public EventGenerator<M, N, D> {
 public:
     /// @brief Construct event generator
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
+    /// @param pdgID Array of final-state particle PDG IDs (index order preserved)
+    /// @param mass Array of final-state particle masses (index order preserved)
     constexpr VersatileEventGenerator(const std::array<int, N>& pdgID, const std::array<double, N>& mass);
 
     constexpr auto PDGID() const -> const auto& { return fPDGID; }
@@ -62,12 +60,12 @@ protected:
     /// @brief Check if center-of-mass energy is sufficient
     /// @param cmsE Center-of-mass energy
     /// @exception std::domain_error if center-of-mass energy is insufficient
-    MUSTARD_ALWAYS_INLINE auto CheckCMSEnergy(double cmsE) const -> void;
+    MUSTARD_ALWAYS_INLINE auto CheckCMSEnergy(double cmsE, const std::source_location& location = std::source_location::current()) const -> void;
 
 protected:
-    std::array<int, N> fPDGID;   ///< Final state PDG IDs
-    std::array<double, N> fMass; ///< Final state rest masses
-    double fSumMass;             ///< Sum of final state rest masses
+    std::array<int, N> fPDGID;   ///< Final-state PDG IDs
+    std::array<double, N> fMass; ///< Final-state rest masses
+    double fSumMass;             ///< Sum of final-state rest masses
 };
 
 } // namespace Mustard::inline Physics::inline Generator

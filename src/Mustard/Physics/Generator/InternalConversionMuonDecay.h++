@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Physics/Generator/MetropolisHastingsGenerator.h++"
+#include "Mustard/Physics/Amplitude/InternalConversionMuonDecayMSqMcMule.h++"
+#include "Mustard/Physics/Generator/PolarizedMetropolisHastingsGenerator.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -27,46 +28,23 @@
 namespace Mustard::inline Physics::inline Generator {
 
 /// @class InternalConversionMuonDecay
-/// @brief MCMC generator for mu->evvee decays
-class InternalConversionMuonDecay : public MetropolisHastingsGenerator<5> {
-public:
-    /// @brief Squared amplitude options
-    enum struct MSqOption {
-        McMule2020, ///< Squared amplitude from McMule legacy code (2020)
-        RR2009PRD   ///< Unpolarized squared amplitude from Rashid M. Djilkibaev and Rostislav V. Konoplich (2009)
-    };
-
+/// @brief MCMC generator for mu->ennee decays
+/// Kinematics: mu- -> e- nu nu e+ e-
+///             mu+ -> e+ nu nu e- e+
+class InternalConversionMuonDecay : public PolarizedMetropolisHastingsGenerator<1, 5, InternalConversionMuonDecayMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
-    explicit InternalConversionMuonDecay(std::string_view parent);
+    /// @param polarization Muon polarization vector
+    /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
+    /// @param discard Samples discarded between two events generated in the Markov chain
+    explicit InternalConversionMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization,
+                                         double delta, int discard);
 
     /// @brief Set parent particle type
     /// @param parent "mu-" or "mu+"
     /// @exception std::invalid_argument for invalid parent names
     auto Parent(std::string_view parent) -> void;
-    /// @brief Select squared amplitude implementation
-    auto MSqOption(enum MSqOption option) -> void;
-    /// @brief Select squared amplitude implementation
-    /// @param option Same as enum MSqOption
-    /// @exception std::invalid_argument for invalid option names
-    auto MSqOption(std::string_view option) -> void;
-    /// @brief Set initial muon polarization vector
-    /// @param pol 3-vector polarization in CMS (|pol| ≤ 1)
-    auto Polarization(CLHEP::Hep3Vector pol) -> void;
-
-    /// @brief Calculate squared amplitude
-    /// @param momenta Final-state particle momenta
-    /// @return |M|² value
-    virtual auto SquaredAmplitude(const Momenta& momenta) const -> double override;
-
-private:
-    auto MSqMcMule2020(const Momenta& momenta) const -> double;
-    auto MSqRR2009PRD(const Momenta& momenta) const -> double;
-
-private:
-    enum MSqOption fMSqOption;       ///< Selected squared amplitude implementation
-    CLHEP::Hep3Vector fPolarization; ///< Muon polarization vector (in CMS)
 };
 
 } // namespace Mustard::inline Physics::inline Generator

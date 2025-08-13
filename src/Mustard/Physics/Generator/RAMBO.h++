@@ -44,32 +44,40 @@ namespace Mustard::inline Physics::inline Generator {
 ///   R. Kleiss, W.J. Stirling, S.D. Ellis, "A New Monte Carlo Treatment Of
 ///   Multiparticle Phase Space At High-Energies", CPC40 (1986) 359.
 ///
-/// RAMBO is slower than GENBOD, but with following good properties:
-///  - For massless final states, RAMBO can generate weight=1 events.
-///  - For near-massless final states RAMBO can generate weight~1 events.
 /// This generator is very suitable for generating unweighted massless
 /// final states.
 ///
-/// @tparam N Number of final state particles (N >= 2)
-template<int N>
-class RAMBO : public VersatileEventGenerator<N, 4 * N> {
+/// Complexity: O(N), but typically (e.g. N < 10) slower than GENBOD when
+/// final states are massive. RAMBO will be faster with massless final states.
+///
+/// However, RAMBO has following good properties:
+///  - For massless final states, RAMBO can generate weight=1 events.
+///  - For near-massless final states RAMBO can generate weight~1 events.
+///
+/// @tparam M Number of initial-state particles (M ≥ 1)
+/// @tparam N Number of final-state particles (N ≥ 2)
+template<int M, int N>
+    requires(N >= 2)
+class RAMBO : public VersatileEventGenerator<M, N, 4 * N> {
 public:
-    /// @brief Particle four-momentum container type
-    using typename VersatileEventGenerator<N, 4 * N>::Momenta;
-    /// @brief Random state container type
-    using typename VersatileEventGenerator<N, 4 * N>::RandomState;
+    /// @brief Initial-state 4-momentum
+    using typename VersatileEventGenerator<M, N, 4 * N>::InitialStateMomenta;
+    /// @brief Final-state 4-momentum container type
+    using typename VersatileEventGenerator<M, N, 4 * N>::FinalStateMomenta;
     /// @brief Generated event type
-    using typename VersatileEventGenerator<N, 4 * N>::Event;
+    using typename VersatileEventGenerator<M, N, 4 * N>::Event;
+    /// @brief Random state container type
+    using typename VersatileEventGenerator<M, N, 4 * N>::RandomState;
 
 public:
     // Inherit constructor
-    using VersatileEventGenerator<N, 4 * N>::VersatileEventGenerator;
+    using VersatileEventGenerator<M, N, 4 * N>::VersatileEventGenerator;
 
     /// @brief Generate event in center-of-mass frame using precomputed random numbers
-    /// @param cmsE Center-of-mass energy
-    /// @param u Flat random numbers in 0--1 (4*N values required)
+    /// @param pI Initial-state 4-momenta
+    /// @param u Flat random numbers in 0--1
     /// @return Generated event
-    virtual auto operator()(double cmsE, const RandomState& u) -> Event override;
+    virtual auto operator()(InitialStateMomenta pI, const RandomState& u) -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

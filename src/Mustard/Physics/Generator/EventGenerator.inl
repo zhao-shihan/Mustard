@@ -18,62 +18,54 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-template<int N>
-    requires(N >= 2)
-auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(double cmsE) -> Event {
-    return (*this)(cmsE, *CLHEP::HepRandom::getTheEngine());
+template<int M, int N>
+auto EventGenerator<M, N>::operator()(const InitialStateMomenta& pI) -> Event {
+    return (*this)(pI, *CLHEP::HepRandom::getTheEngine());
 }
 
-template<int N>
-    requires(N >= 2)
-auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(CLHEP::HepRandomEngine& rng) -> Event {
-    return (*this)(0., rng);
+template<int M, int N>
+auto EventGenerator<M, N>::operator()(CLHEP::HepRandomEngine& rng) -> Event {
+    return (*this)(InitialStateMomenta{}, rng);
 }
 
-template<int N>
-    requires(N >= 2)
-auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(double cmsE, CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng) -> Event {
-    auto event{(*this)(cmsE, rng)};
-    for (auto&& p : event.p) {
-        p.boost(beta);
+template<int M, int N>
+auto EventGenerator<M, N>::CalculateCMSEnergy(const InitialStateMomenta& pI) -> double {
+    if constexpr (M == 1) {
+        return pI.m();
+    } else {
+        return muc::ranges::reduce(pI).m();
     }
-    return event;
 }
 
-template<int N>
-    requires(N >= 2)
-auto EventGenerator<N, internal::AnyRandomStateDim>::operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng) -> Event {
-    return (*this)(0., std::move(beta), rng);
-}
-
-template<int N, int M>
-    requires(N >= 2 and M >= 3 * N - 4)
-auto EventGenerator<N, M>::operator()(const RandomState& u) -> Event {
-    return (*this)(0., u);
-}
-
-template<int N, int M>
-    requires(N >= 2 and M >= 3 * N - 4)
-auto EventGenerator<N, M>::operator()(double cmsE, CLHEP::Hep3Vector beta, const RandomState& u) -> Event {
-    auto event{(*this)(cmsE, u)};
-    for (auto&& p : event.p) {
-        p.boost(beta);
+template<int M, int N>
+auto EventGenerator<M, N>::BoostToCMS(InitialStateMomenta& p) -> CLHEP::Hep3Vector {
+    if constexpr (M == 1) {
+        p = CLHEP::HepLorentzVector{p.m()};
+        return p.boostVector();
+    } else {
+        const auto beta{muc::ranges::reduce(p).boostVector()};
+        std::ranges::for_each(p, [b = -beta](auto&& p) { p.boost(b); });
+        return beta;
     }
-    return event;
 }
 
-template<int N, int M>
-    requires(N >= 2 and M >= 3 * N - 4)
-auto EventGenerator<N, M>::operator()(CLHEP::Hep3Vector beta, const RandomState& u) -> Event {
-    return (*this)(0., std::move(beta), u);
+template<int M, int N>
+auto EventGenerator<M, N>::BoostToOriginalFrame(CLHEP::Hep3Vector beta, FinalStateMomenta& p) -> void {
+    std::ranges::for_each(p, [&beta](auto&& p) { p.boost(beta); });
 }
 
-template<int N, int M>
-    requires(N >= 2 and M >= 3 * N - 4)
-auto EventGenerator<N, M>::operator()(double cmsE, CLHEP::HepRandomEngine& rng) -> Event {
+template<int M, int N, int D>
+    requires(M >= 1 and N >= 1 and (D == -1 or D >= 3 * N - 4))
+auto EventGenerator<M, N, D>::operator()(const RandomState& u) -> Event {
+    return (*this)(InitialStateMomenta{}, u);
+}
+
+template<int M, int N, int D>
+    requires(M >= 1 and N >= 1 and (D == -1 or D >= 3 * N - 4))
+auto EventGenerator<M, N, D>::operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event {
     RandomState u;
-    rng.flatArray(M, u.data());
-    return (*this)(cmsE, u);
+    rng.flatArray(D, u.data());
+    return (*this)(std::move(pI), u);
 }
 
 } // namespace Mustard::inline Physics::inline Generator

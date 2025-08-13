@@ -23,6 +23,9 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include "muc/numeric"
+
+#include <algorithm>
 #include <array>
 #include <limits>
 #include <stdexcept>
@@ -30,136 +33,122 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-namespace internal {
-
-/// @internal
-/// @brief Sentinel value for random state dimension
-///
-/// Special value indicating the generator doesn't require fixed-size random states.
-/// Used to enable partial template specialization.
-inline constexpr int AnyRandomStateDim{std::numeric_limits<int>::max()};
-
-} // namespace internal
-
 /// @class EventGenerator
-/// @brief Base class for N-particle event generators
+/// @brief Base class for M-to-N event generators
 ///
-/// Abstract base class for generating events with N final-state particles.
-/// Provides common interface for event generation with/without lab-frame boosts.
+/// Abstract base class for generating events with M-body initial state
+/// and N-body final state.
+/// Provides common interface for event generation.
 ///
-/// @tparam N Number of particles in final state (N ≥ 2)
-/// @tparam M Dimension of random state (default=AnyRandomStateDim)
+/// D = -1: The base class.
+/// D >= 3N-4: Can uses fixed-size arrays of pre-generated random numbers.
 ///
-/// @requires
-/// - N ≥ 2 (minimum two particles)
-/// - M ≥ 3N - 4 (sufficient random dimensions for phase space)
-template<int N, int M = internal::AnyRandomStateDim>
-    requires(N >= 2 and M >= 3 * N - 4)
+/// @tparam M Number of initial-state particles (M ≥ 1)
+/// @tparam N Number of final-state particles (N ≥ 1)
+/// @tparam D Dimension of random state (default or D ≥ Dim(phase space))
+template<int M, int N, int D = -1>
+    requires(M >= 1 and N >= 1 and (D == -1 or D >= 3 * N - 4))
 class EventGenerator;
 
-/// @class EventGenerator<N, internal::AnyRandomStateDim>
-/// @brief Specialization for engine-based random number generation
+/// @class EventGenerator<M, N>
+/// @brief Specialization for random-engine-based generator
 ///
 /// Uses CLHEP random engines directly.
 ///
-/// @tparam N Number of particles (inherited from primary template)
-template<int N>
-    requires(N >= 2)
-class EventGenerator<N, internal::AnyRandomStateDim> {
+/// @tparam M Number of initial-state particles (M ≥ 1)
+/// @tparam N Number of final-state particles (N ≥ 1)
+template<int M, int N>
+class EventGenerator<M, N> {
 public:
-    /// @brief Particle four-momentum container type
-    using Momenta = std::array<CLHEP::HepLorentzVector, N>;
+    /// @brief Initial-state 4-momentum (or container type when M>1)
+    using InitialStateMomenta = std::conditional_t<M == 1, CLHEP::HepLorentzVector,
+                                                   std::array<CLHEP::HepLorentzVector, M>>;
+    /// @brief Final-state 4-momentum container type
+    using FinalStateMomenta = std::array<CLHEP::HepLorentzVector, N>;
     /// @brief Generated event type
     struct Event {
         double weight;            ///< Event weight
         std::array<int, N> pdgID; ///< Particle PDG IDs
-        Momenta p;                ///< Particle four-momenta
+        FinalStateMomenta p;      ///< Particle 4-momenta
     };
 
 public:
     // Virtual destructor
     constexpr virtual ~EventGenerator() = default;
 
-    /// @brief Generate event in center-of-mass frame
-    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
+    /// @brief Generate event according to initial state
+    /// @param p Initial-state 4-momenta (maybe unused, depend on specific generator)
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
-    virtual auto operator()(double cmsE, CLHEP::HepRandomEngine& rng) -> Event = 0;
-    /// @brief Generate event in center-of-mass frame using global CLHEP engine
-    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
+    virtual auto operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event = 0;
+    /// @brief Generate event according to initial state using global CLHEP engine
+    /// @param p Initial-state 4-momenta (maybe unused, depend on specific generator)
     /// @return Generated event
-    auto operator()(double cmsE) -> Event;
-    /// @brief Generate event in center-of-mass frame,
-    /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
+    auto operator()(const InitialStateMomenta& pI) -> Event;
+    /// @brief Generate event in center-of-mass frame.
+    /// This overload is intended for generators with fixed CMS energy (e.g. decay)
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     auto operator()(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
 
-    /// @brief Generate event with lab-frame boost
-    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
-    /// @param beta Boost vector for lab frame
-    /// @param rng Reference to CLHEP random engine (default: global CLHEP engine)
-    /// @return Generated event
-    auto operator()(double cmsE, CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
-    /// @brief Generate boosted event using global CLHEP engine,
-    /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
-    /// @param beta Boost vector for lab frame
-    /// @param rng Reference to CLHEP random engine (default: global CLHEP engine)
-    /// @return Generated event
-    auto operator()(CLHEP::Hep3Vector beta, CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
+protected:
+    /// @brief Calculate center-of-mass energy from initial state
+    /// @param p Initial-state 4-momenta
+    /// @return Total CM energy (invariant mass)
+    static auto CalculateCMSEnergy(const InitialStateMomenta& pI) -> double;
+    /// @brief Boost initial state to CM frame
+    ///
+    /// Transforms initial-state momenta to center-of-mass frame:
+    ///   - For 1-body initial state: resets momentum to (m,0,0,0)
+    ///   - For multiple-body initial state: boosts to zero-momentum frame
+    ///
+    /// @param p Initial-state 4-momenta (modified in-place)
+    /// @return Boost vector (β) from CM frame to original frame
+    ///
+    /// @note Return value should be saved for `BoostToOriginalFrame` call
+    /// @warning Always called before event generation in CM frame
+    [[nodiscard]] static auto BoostToCMS(InitialStateMomenta& p) -> CLHEP::Hep3Vector;
+    /// @brief Boost final state to original frame
+    ///
+    /// Applies inverse boost to return final state from CM frame
+    /// to original frame.
+    ///
+    /// @param beta Boost vector returned from `BoostToCMS` call
+    /// @param p Final-state 4-momenta (modified in-place)
+    ///
+    /// @note Must use the β returned by `BoostToCMS` for correct transformation
+    /// @warning Always called after event generation in CM frame
+    static auto BoostToOriginalFrame(CLHEP::Hep3Vector beta, FinalStateMomenta& p) -> void;
 };
 
-/// @class EventGenerator<N, M>
-/// @ingroup event_generation
-/// @brief Specialization for precomputed random state generation
-///
-/// Can uses fixed-size arrays of pre-generated random numbers.
-///
-/// @tparam N Number of particles (N ≥ 2)
-/// @tparam M Dimension of random state (M ≥ 3N - 4)
-///
-/// @requires
-/// - N ≥ 2 (minimum two particles)
-/// - M ≥ 3N - 4 (sufficient random dimensions for phase space)
-template<int N, int M>
-    requires(N >= 2 and M >= 3 * N - 4)
-class EventGenerator : public EventGenerator<N, internal::AnyRandomStateDim> {
+template<int M, int N, int D>
+    requires(M >= 1 and N >= 1 and (D == -1 or D >= 3 * N - 4))
+class EventGenerator : public EventGenerator<M, N> {
 public:
-    /// @brief Random state container type
-    using RandomState = std::array<double, M>;
+    /// @brief Initial-state 4-momentum (or container type when M>1)
+    using typename EventGenerator<M, N>::InitialStateMomenta;
     /// @brief Generated event type
-    using typename EventGenerator<N, internal::AnyRandomStateDim>::Event;
+    using typename EventGenerator<M, N>::Event;
+    /// @brief Random state container type
+    using RandomState = std::array<double, D>;
 
 public:
-    /// @brief Generate event in center-of-mass frame using precomputed random numbers
-    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
-    /// @param u Flat random numbers in 0--1 (M values required)
+    /// @brief Generate event according to initial state using precomputed random numbers
+    /// @param p Initial-state 4-momenta (maybe unused, depend on specific generator)
+    /// @param u Flat random numbers in 0--1 (D values required)
     /// @return Generated event
-    virtual auto operator()(double cmsE, const RandomState& u) -> Event = 0;
-    /// @brief Generate event in center-of-mass frame using precomputed random numbers
-    /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
-    /// @param u Flat random numbers in 0--1 (M values required)
+    virtual auto operator()(InitialStateMomenta pI, const RandomState& u) -> Event = 0;
+    /// @brief Generate event in center-of-mass frame using precomputed random numbers.
+    /// This overload is intended for generators with fixed CMS energy (e.g. decay)
+    /// @param u Flat random numbers in 0--1 (D values required)
     /// @return Generated event
     auto operator()(const RandomState& u) -> Event;
 
-    /// @brief Generate event with lab-frame boost using precomputed randoms
-    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
-    /// @param u Flat random numbers in 0--1 (M values)
-    /// @param beta Boost vector for lab frame
-    /// @return Generated event
-    auto operator()(double cmsE, CLHEP::Hep3Vector beta, const RandomState& u) -> Event;
-    /// @brief Generate event with lab-frame boost using precomputed randoms
-    /// this overload is intended for generators with fixed CMS energy (CMS energy unused)
-    /// @param u Flat random numbers in 0--1 (M values)
-    /// @param beta Boost vector for lab frame
-    /// @return Generated event
-    auto operator()(CLHEP::Hep3Vector beta, const RandomState& u) -> Event;
-
-    /// @brief Generate event in center-of-mass frame
-    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
+    /// @brief Generate event according to initial state
+    /// @param p Initial-state 4-momenta (maybe unused, depend on specific generator)
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
-    virtual auto operator()(double cmsE, CLHEP::HepRandomEngine& rng) -> Event override;
+    virtual auto operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

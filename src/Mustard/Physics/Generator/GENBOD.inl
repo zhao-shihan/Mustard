@@ -18,9 +18,12 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-template<int N>
-auto GENBOD<N>::operator()(double cmsE, const RandomState& u) -> Event {
+template<int M, int N>
+    requires(N >= 2)
+auto GENBOD<M, N>::operator()(InitialStateMomenta pI, const RandomState& u) -> Event {
+    const auto cmsE{this->CalculateCMSEnergy(pI)};
     this->CheckCMSEnergy(cmsE);
+    const auto beta{this->BoostToCMS(pI)};
 
     auto random{u.cbegin()};
     std::array<double, N> u0;
@@ -91,6 +94,7 @@ auto GENBOD<N>::operator()(double cmsE, const RandomState& u) -> Event {
     // Ensure the random state is exactly exhausted
     Ensures(random == u.cend());
 
+    this->BoostToOriginalFrame(beta, event.p);
     return event;
 }
 

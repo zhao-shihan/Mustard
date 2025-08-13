@@ -18,11 +18,14 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-template<int N>
-auto RAMBO<N>::operator()(double cmsE, const RandomState& u) -> Event {
+template<int M, int N>
+    requires(N >= 2)
+auto RAMBO<M, N>::operator()(InitialStateMomenta pI, const RandomState& u) -> Event {
+    const auto cmsE{this->CalculateCMSEnergy(pI)};
     this->CheckCMSEnergy(cmsE);
+    const auto beta{this->BoostToCMS(pI)};
 
-    // call the massless genPoint, initializing weight
+    // generate massless final state
     auto [p, weight]{[&] {
         std::array<std::array<double, 4>, N> p;
         std::array<double, 4> R{};
@@ -58,15 +61,15 @@ auto RAMBO<N>::operator()(double cmsE, const RandomState& u) -> Event {
         return std::pair{p, 1.};
     }()};
 
-    const auto Momenta{
-        [&p = p] {
-            std::array<CLHEP::HepLorentzVector, N> state;
-            std::ranges::transform(p, state.begin(),
-                                   [](const auto& q) -> CLHEP::HepLorentzVector {
-                                       return {q[1], q[2], q[3], q[0]};
-                                   });
-            return state;
-        }};
+    const auto Momenta{[&] {
+        std::array<CLHEP::HepLorentzVector, N> pF;
+        std::ranges::transform(p, pF.begin(),
+                               [](const auto& q) -> CLHEP::HepLorentzVector {
+                                   return {q[1], q[2], q[3], q[0]};
+                               });
+        this->BoostToOriginalFrame(beta, pF);
+        return pF;
+    }};
 
     // if none of the reduced masses is > tolerance, return
     if (std::ranges::all_of(this->fMass, [&](auto m) {
@@ -75,7 +78,7 @@ auto RAMBO<N>::operator()(double cmsE, const RandomState& u) -> Event {
         return {weight, this->fPDGID, Momenta()};
     }
 
-    // rescale all the momenta
+    // rescale all the momenta and weight
     const auto [xi, xiConverged]{muc::find_root::zbrent(
         [&, &p = p](double xi) {
             double sum{};

@@ -21,21 +21,25 @@
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
+#include "Mustard/Physics/Amplitude/SquaredAmplitude.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 #include "muc/array"
 #include "muc/math"
+#include "muc/numeric"
 
 #include "fmt/core.h"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <functional>
 #include <limits>
 #include <utility>
@@ -46,16 +50,27 @@ namespace Mustard::inline Physics::inline Generator {
 /// @brief Metropolis-Hastings MCMC sampler for event generation,
 /// possibly with user-defined bias.
 ///
-/// Generates events distributed according to |M|² × bias.
+/// Generates events distributed according to |M|² × bias, and
+/// weight = 1 / bias.
 ///
+/// The Markov chain requires burn-in after each change to
+/// center-of-mass energy. So this generator is unsuitable
+/// for case where frequent variation of CMS energy is required.
+///
+/// @tparam M Number of initial-state particles
 /// @tparam N Number of final-state particles
-template<int N>
-class MetropolisHastingsGenerator : public EventGenerator<N> {
+/// @tparam A Squared amplitude of the process to be generated
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+class MetropolisHastingsGenerator : public EventGenerator<M, N> {
 public:
-    /// @brief Particle four-momentum container type
-    using typename EventGenerator<N>::Momenta;
+    /// @brief Initial-state 4-momentum
+    using typename EventGenerator<M, N>::InitialStateMomenta;
+    /// @brief Final-state 4-momentum container type
+    using typename EventGenerator<M, N>::FinalStateMomenta;
     /// @brief Generated event type
-    using typename EventGenerator<N>::Event;
+    using typename EventGenerator<M, N>::Event;
+    /// @brief User-defined bias function type
+    using BiasFunction = std::function<auto(const FinalStateMomenta&)->double>;
 
 public:
     /// @brief Construct event generator
@@ -67,31 +82,24 @@ public:
     MetropolisHastingsGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                 double delta, int discard);
 
-    /// @brief Set center-of-mass energy
-    /// @param cmsE Center-of-mass energy
-    auto CMSEnergy(double cmsE) -> void;
-
     /// @brief Set MCMC step size
     /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
-    auto MHDelta(double delta) -> void { fMHDelta = delta; }
+    auto MCMCDelta(double delta) -> void;
     /// @brief Set discard count between samples
     /// @param discard Samples discarded between two events generated in the Markov chain
-    auto MHDiscard(int n) -> void { fMHDiscard = n; }
+    auto MCMCDiscard(int n) -> void { fMCMCDiscard = n; }
     /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
     /// @param B User-defined bias
-    auto Bias(std::function<auto(const Momenta&)->double> B) -> void;
+    auto Bias(BiasFunction B) -> void;
 
     /// @brief Initialize Markov chain
     /// @param rng Reference to CLHEP random engine
     auto BurnIn(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
     /// @brief Generate event in center-of-mass frame
-    /// @param cmsE Center-of-mass energy (maybe unused, depend on specific generator)
+    /// @param pI Initial-state 4-momenta (only for its boost)
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
-    virtual auto operator()(double, CLHEP::HepRandomEngine& rng) -> Event override;
-
-    /// @brief Process-specific squared amplitude |M|²
-    virtual auto SquaredAmplitude(const Momenta& momenta) const -> double = 0;
+    virtual auto operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event override;
 
 public:
     /// @brief Weight normalization result
@@ -106,10 +114,17 @@ public:
     /// Multiply event weights with the factor to normalize weights to the number of (generated) events
     /// @note Use CheckWeightNormalizationFactor to check the result
     auto EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor;
+    /// @brief Print and validate normalization factor quality
+    /// @return true if normalization factor quality is OK
+    static auto CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool;
 
 protected:
     /// @brief Get currently set center-of-mass frame energy
     auto CMSEnergy() const -> auto { return fCMSEnergy; }
+    /// @brief Set center-of-mass energy
+    /// @param cmsE Center-of-mass energy
+    /// @warning The Markov chain requires burn-in after center-of-mass energy changes
+    auto CMSEnergy(double cmsE) -> void;
 
     /// @brief Set particle PDG IDs
     /// @param pdgID Array of particle PDG IDs
@@ -122,6 +137,10 @@ protected:
     auto BurnInRequired() -> void { fBurntIn = false; }
 
 private:
+    /// @brief Check if initial state momentum passed to generator matches
+    ///        currently set CMS energy
+    /// @param pI Initial-state 4-momenta passed to generator
+    auto CheckCMSEnergyUnchanged(const InitialStateMomenta& pI) const -> void;
     /// @brief Advance Markov chain by one event
     /// @param delta Maximun step along one direction in random state space
     /// @param rng Reference to CLHEP random engine
@@ -130,7 +149,7 @@ private:
     /// @param momenta Final states' 4-momenta
     /// @exception `std::runtime_error` if invalid bias value produced
     /// @return B(p1, ..., pN)
-    auto ValidBias(const Momenta& momenta) const -> double;
+    auto ValidBias(const FinalStateMomenta& momenta) const -> double;
     /// @brief Get reweighted PDF value with range check
     /// @param event Final states from phase space
     /// @param bias Bias value at the same phase space point (from BiasWithCheck)
@@ -138,23 +157,28 @@ private:
     /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN)
     auto ValidBiasedPDF(const Event& event, double bias) const -> double;
 
-public:
-    /// @brief Print and validate normalization factor quality
-    /// @return true if normalization factor quality is OK
-    static auto CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool;
+private:
+    struct MarkovChain {
+        GENBOD<M, N>::RandomState state; ///< State of the chain
+        double acceptance;               ///< Acceptance of a sample
+    };
+
+protected:
+    [[no_unique_address]] A fSquaredAmplitude; ///< Squared amplitude
 
 private:
-    double fCMSEnergy;                                 ///< Currently set CM energy
-    GENBOD<N> fGENBOD;                                 ///< Phase space generator
-                                                       //
-    double fMHDelta;                                   ///< MCMC max step size along one dimension
-    int fMHDiscard;                                    ///< Events discarded between 2 samples
-    std::function<auto(const Momenta&)->double> fBias; ///< User bias function
-                                                       //
-    bool fBurntIn;                                     ///< Burn-in completed flag
-    GENBOD<N>::RandomState fRandomState;               ///< Current random state
-    Event fEvent;                                      ///< Current event in chain
-    double fBiasedPDF;                                 ///< Current biased PDF value
+    double fCMSEnergy;        ///< Currently set CM energy
+    GENBOD<M, N> fGENBOD;     ///< Phase space generator
+    BiasFunction fBias;       ///< User bias function
+                              //
+    double fMCMCDelta;        ///< MCMC max step size along one dimension
+    int fMCMCDiscard;         ///< Events discarded between 2 samples
+                              //
+    bool fBurntIn;            ///< Burn-in completed flag
+    MarkovChain fMarkovChain; ///< Current Markov chain state
+    Event fEvent;             ///< Current event in chain
+
+    static constexpr double fgMCStateSpaceDimension{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
 };
 
 } // namespace Mustard::inline Physics::inline Generator

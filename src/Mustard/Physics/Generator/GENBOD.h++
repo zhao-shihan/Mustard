@@ -53,28 +53,36 @@ namespace Mustard::inline Physics::inline Generator {
 ///  4. Iteratively add particles with random rotations and apply
 ///     correct boosts
 ///
-/// GENBOD is faster than RAMBO, but event weights can vary largly
-/// when final states are massless. This generator is suitable for
-/// general uses.
+/// Complexity: O(N^2), but typically (e.g. N < 10) faster than RAMBO when
+/// final states are massive.
+///
+/// However, unlike RAMBO, event weights from GENBOD can vary largly
+/// although final states are massless. RAMBO is recommended for
+/// generating unweighted massless final states.
 ///
 /// @tparam N Number of final state particles (N >= 2)
-template<int N>
-class GENBOD : public VersatileEventGenerator<N, 3 * N - 4> {
+template<int M, int N>
+    requires(N >= 2)
+class GENBOD : public VersatileEventGenerator<M, N, 3 * N - 4> {
 public:
-    /// @brief Random state container type
-    using typename VersatileEventGenerator<N, 3 * N - 4>::RandomState;
+    /// @brief Initial-state 4-momentum
+    using typename VersatileEventGenerator<M, N, 3 * N - 4>::InitialStateMomenta;
+    /// @brief Final-state 4-momentum container type
+    using typename VersatileEventGenerator<M, N, 3 * N - 4>::FinalStateMomenta;
     /// @brief Generated event type
-    using typename VersatileEventGenerator<N, 3 * N - 4>::Event;
+    using typename VersatileEventGenerator<M, N, 3 * N - 4>::Event;
+    /// @brief Random state container type
+    using typename VersatileEventGenerator<M, N, 3 * N - 4>::RandomState;
 
 public:
     // Inherit constructor
-    using VersatileEventGenerator<N, 3 * N - 4>::VersatileEventGenerator;
+    using VersatileEventGenerator<M, N, 3 * N - 4>::VersatileEventGenerator;
 
     /// @brief Generate event in center-of-mass frame using precomputed random numbers
-    /// @param cmsE Center-of-mass energy
-    /// @param u Flat random numbers in 0--1 (3*N-4 values required)
+    /// @param pI Initial-state 4-momenta
+    /// @param u Flat random numbers in 0--1
     /// @return Generated event
-    virtual auto operator()(double cmsE, const RandomState& u) -> Event override;
+    virtual auto operator()(InitialStateMomenta pI, const RandomState& u) -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

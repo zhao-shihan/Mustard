@@ -18,54 +18,53 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-template<int N>
-MetropolisHastingsGenerator<N>::MetropolisHastingsGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                            double delta, int discard) :
-    EventGenerator<N>{},
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+MetropolisHastingsGenerator<M, N, A>::MetropolisHastingsGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                                  double delta, int discard) :
+    EventGenerator<M, N>{},
+    fSquaredAmplitude{},
     fCMSEnergy{cmsE},
     fGENBOD{pdgID, mass},
-    fMHDelta{delta},
-    fMHDiscard{discard},
     fBias{[](auto&&) { return 1; }},
+    fMCMCDelta{delta},
+    fMCMCDiscard{discard},
     fBurntIn{},
-    fRandomState{},
-    fEvent{},
-    fBiasedPDF{} {}
+    fMarkovChain{},
+    fEvent{} {}
 
-template<int N>
-auto MetropolisHastingsGenerator<N>::operator()(double, CLHEP::HepRandomEngine& rng) -> Event {
-    BurnIn(rng);
-    for (int i{}; i < fMHDiscard; ++i) {
-        NextEvent(fMHDelta, rng);
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::MCMCDelta(double delta) -> void {
+    // The step size will increase as the roughly the square root of the number of dimensions
+    // so we reduce delta according to state space dimension
+    fMCMCDelta = delta / std::sqrt(fgMCStateSpaceDimension);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::CMSEnergy(double cmsE) -> void {
+    if (not muc::isclose(cmsE, fCMSEnergy)) {
+        BurnInRequired();
     }
-    NextEvent(fMHDelta, rng);
-    return fEvent;
-}
-
-template<int N>
-auto MetropolisHastingsGenerator<N>::CMSEnergy(double cmsE) -> void {
     fCMSEnergy = cmsE;
-    BurnInRequired();
 }
 
-template<int N>
-auto MetropolisHastingsGenerator<N>::Bias(std::function<auto(const Momenta&)->double> B) -> void {
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::Bias(BiasFunction B) -> void {
     fBias = std::move(B);
     BurnInRequired();
 }
 
-template<int N>
-auto MetropolisHastingsGenerator<N>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
     if (fBurntIn) {
         return;
     }
     // find phase space
     while (true) {
-        std::ranges::generate(fRandomState, [&rng] { return rng.flat(); });
-        fEvent = fGENBOD(fCMSEnergy, fRandomState);
+        std::ranges::generate(fMarkovChain.state, [&rng] { return rng.flat(); });
+        fEvent = fGENBOD({fCMSEnergy, {}}, fMarkovChain.state);
         if (const auto bias{ValidBias(fEvent.p)};
             bias >= std::numeric_limits<double>::min()) {
-            fBiasedPDF = ValidBiasedPDF(fEvent, bias);
+            fMarkovChain.acceptance = ValidBiasedPDF(fEvent, bias);
             break;
         }
     }
@@ -80,39 +79,65 @@ auto MetropolisHastingsGenerator<N>::BurnIn(CLHEP::HepRandomEngine& rng) -> void
     fBurntIn = true;
 }
 
-template<int N>
-auto MetropolisHastingsGenerator<N>::NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void {
-    typename GENBOD<N>::RandomState proposedRandomState;
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event {
+    CheckCMSEnergyUnchanged(pI);
+    const auto beta{this->BoostToCMS(pI)};
+
+    BurnIn(rng);
+    for (int i{}; i < fMCMCDiscard; ++i) {
+        NextEvent(fMCMCDelta, rng);
+    }
+    NextEvent(fMCMCDelta, rng);
+
+    this->BoostToOriginalFrame(beta, fEvent.p);
+    return fEvent;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::CheckCMSEnergyUnchanged(const InitialStateMomenta& pI) const -> void {
+    if (pI == InitialStateMomenta{}) {
+        return;
+    }
+    const auto cmsE{this->CalculateCMSEnergy(pI)};
+    if (not muc::isclose(cmsE, fCMSEnergy)) {
+        PrintWarning(fmt::format("Initial state 4-momenta does not match currently set CMS energy (got {}, expect {})", cmsE, fCMSEnergy));
+    }
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void {
+    typename GENBOD<M, N>::RandomState proposedRandomState;
     Event proposedEvent;
     while (true) {
-        std::ranges::transform(std::as_const(fRandomState), proposedRandomState.begin(),
+        std::ranges::transform(std::as_const(fMarkovChain.state), proposedRandomState.begin(),
                                [&](auto u) {
                                    const auto low{std::clamp(u - delta, 0., 1.)};
                                    const auto up{std::clamp(u + delta, 0., 1.)};
                                    return CLHEP::RandFlat::shoot(&rng, low, up);
                                });
-        proposedEvent = fGENBOD(fCMSEnergy, proposedRandomState);
+        proposedEvent = fGENBOD({fCMSEnergy, {}}, proposedRandomState);
         const auto proposedBias{ValidBias(proposedEvent.p)};
         if (proposedBias <= std::numeric_limits<double>::min()) {
             continue;
         }
 
-        const auto proposedBiasedPDF{ValidBiasedPDF(proposedEvent, proposedBias)};
-        if (proposedBiasedPDF >= fBiasedPDF or
-            proposedBiasedPDF >= fBiasedPDF * rng.flat()) {
-            fRandomState = proposedRandomState;
+        const auto proposedAcceptance{ValidBiasedPDF(proposedEvent, proposedBias)};
+        if (proposedAcceptance >= fMarkovChain.acceptance or
+            proposedAcceptance >= fMarkovChain.acceptance * rng.flat()) {
+            fMarkovChain.state = proposedRandomState;
             fEvent = proposedEvent;
             fEvent.weight = 1 / proposedBias;
-            fBiasedPDF = proposedBiasedPDF;
+            fMarkovChain.acceptance = proposedAcceptance;
             return;
         }
     }
 }
 
-template<int N>
-auto MetropolisHastingsGenerator<N>::ValidBias(const Momenta& momenta) const -> double {
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::ValidBias(const FinalStateMomenta& momenta) const -> double {
     const auto bias{fBias(momenta)};
-    constexpr auto Format{[](const Momenta& momenta) {
+    constexpr auto Format{[](const FinalStateMomenta& momenta) {
         std::string where;
         for (auto&& p : momenta) {
             where += fmt::format("[{}, {}, {}; {}]", p.x(), p.y(), p.z(), p.e());
@@ -128,9 +153,9 @@ auto MetropolisHastingsGenerator<N>::ValidBias(const Momenta& momenta) const -> 
     return bias;
 }
 
-template<int N>
-auto MetropolisHastingsGenerator<N>::ValidBiasedPDF(const Event& event, double bias) const -> double {
-    const auto value{event.weight * SquaredAmplitude(event.p) * bias};
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::ValidBiasedPDF(const Event& event, double bias) const -> double {
+    const auto value{event.weight * fSquaredAmplitude({fCMSEnergy, {}}, event.p) * bias};
     const auto Where{[&] {
         auto where{fmt::format("({})", event.weight)};
         for (auto&& p : event.p) {
@@ -148,19 +173,17 @@ auto MetropolisHastingsGenerator<N>::ValidBiasedPDF(const Event& event, double b
     return value;
 }
 
-template<int N>
-auto MetropolisHastingsGenerator<N>::EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor {
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor {
     auto originalBias{std::move(fBias)};
     auto originalBurntIn{std::move(fBurntIn)};
-    auto originalRandomState{std::move(fRandomState)};
+    auto originalMarkovChain{std::move(fMarkovChain)};
     auto originalEvent{std::move(fEvent)};
-    auto originalBiasedPDF{std::move(fBiasedPDF)};
     auto _{gsl::finally([&] {
         fBias = std::move(originalBias);
         fBurntIn = std::move(originalBurntIn);
-        fRandomState = std::move(originalRandomState);
+        fMarkovChain = std::move(originalMarkovChain);
         fEvent = std::move(originalEvent);
-        fBiasedPDF = std::move(originalBiasedPDF);
     })};
 
     WeightNormalizationFactor result{.factor = std::numeric_limits<double>::quiet_NaN(),
@@ -203,14 +226,8 @@ auto MetropolisHastingsGenerator<N>::EstimateWeightNormalizationFactor(unsigned 
     return result;
 }
 
-template<int N>
-auto MetropolisHastingsGenerator<N>::Mass(const std::array<double, N>& mass) -> void {
-    fGENBOD.Mass(mass);
-    BurnInRequired();
-}
-
-template<int N>
-auto MetropolisHastingsGenerator<N>::CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool {
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool {
     const auto [result, error, nEff]{wnf};
     const auto ok{nEff >= 10000};
     MasterPrintLn("Weight normalization factor of user-defined bias:\n"
@@ -225,6 +242,15 @@ auto MetropolisHastingsGenerator<N>::CheckWeightNormalizationFactor(WeightNormal
                            "Try increasing statistics.");
     }
     return ok;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::Mass(const std::array<double, N>& mass) -> void {
+    if (not std::ranges::equal(mass, fGENBOD.Mass(),
+                               [](auto a, auto b) { return muc::isclose(a, b); })) {
+        BurnInRequired();
+    }
+    fGENBOD.Mass(mass);
 }
 
 } // namespace Mustard::inline Physics::inline Generator

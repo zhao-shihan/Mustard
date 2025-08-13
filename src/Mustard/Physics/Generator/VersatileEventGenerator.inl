@@ -18,17 +18,17 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-template<int N, int M>
-constexpr VersatileEventGenerator<N, M>::VersatileEventGenerator(const std::array<int, N>& pdgID, const std::array<double, N>& mass) :
-    EventGenerator<N, M>{},
+template<int M, int N, int D>
+constexpr VersatileEventGenerator<M, N, D>::VersatileEventGenerator(const std::array<int, N>& pdgID, const std::array<double, N>& mass) :
+    EventGenerator<M, N, D>{},
     fPDGID{pdgID},
     fMass{mass},
     fSumMass{muc::ranges::reduce(mass)} {}
 
-template<int N, int M>
-MUSTARD_ALWAYS_INLINE auto VersatileEventGenerator<N, M>::CheckCMSEnergy(double cmsE) const -> void {
+template<int M, int N, int D>
+MUSTARD_ALWAYS_INLINE auto VersatileEventGenerator<M, N, D>::CheckCMSEnergy(double cmsE, const std::source_location& location) const -> void {
     if (cmsE <= fSumMass) {
-        Throw<std::domain_error>(fmt::format("CMS energy ({}) < sum of final state masses ({})", cmsE, fSumMass));
+        Throw<std::domain_error>(fmt::format("CMS energy ({}) < sum of final state masses ({})", cmsE, fSumMass), location);
     }
 }
 

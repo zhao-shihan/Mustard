@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Physics/Generator/MetropolisHastingsGenerator.h++"
+#include "Mustard/Physics/Amplitude/DoubleRadiativeMuonDecayMSqMcMule.h++"
+#include "Mustard/Physics/Generator/PolarizedMetropolisHastingsGenerator.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -28,41 +29,26 @@
 namespace Mustard::inline Physics::inline Generator {
 
 /// @class DoubleRadiativeMuonDecay
-/// @brief MCMC generator for mu->evvgg decays
+/// @brief MCMC generator for mu->enngg decays
+/// Kinematics: mu- -> e- nu nu gamma gamma
+///             mu+ -> e+ nu nu gamma gamma
 /// @warning IR safety is not automatically guaranteed.
 /// Always set bias function to ensure IR-safe generation.
-class DoubleRadiativeMuonDecay : public MetropolisHastingsGenerator<5> {
+class DoubleRadiativeMuonDecay : public PolarizedMetropolisHastingsGenerator<1, 5, DoubleRadiativeMuonDecayMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
+    /// @param polarization Muon polarization vector
     /// @param B User-defined bias (should always include IR cut)
-    DoubleRadiativeMuonDecay(std::string_view parent, std::function<auto(const Momenta&)->double> B);
+    /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
+    /// @param discard Samples discarded between two events generated in the Markov chain
+    DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, BiasFunction B,
+                             double delta, int discard);
 
     /// @brief Set parent particle type
     /// @param parent "mu-" or "mu+"
     /// @exception std::invalid_argument for invalid parent names
     auto Parent(std::string_view parent) -> void;
-    /// @brief Set initial muon polarization vector
-    /// @param pol 3-vector polarization in CMS (|pol| ≤ 1)
-    auto Polarization(CLHEP::Hep3Vector pol) -> void;
-
-    /// @brief Calculate squared amplitude
-    /// @param momenta Final-state particle momenta
-    /// @return |M|² value
-    virtual auto SquaredAmplitude(const Momenta& momenta) const -> double override;
-
-private:
-    static auto MSqUnpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                               double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    static auto MSqPolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    static auto MSqPolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    static auto MSqPolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-
-private:
-    CLHEP::Hep3Vector fPolarization; ///< Muon polarization vector (in CMS)
 };
 
 } // namespace Mustard::inline Physics::inline Generator
