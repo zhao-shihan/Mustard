@@ -95,11 +95,14 @@ public:
     /// @brief Initialize Markov chain
     /// @param rng Reference to CLHEP random engine
     auto BurnIn(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
+
     /// @brief Generate event in center-of-mass frame
     /// @param pI Initial-state 4-momenta (only for its boost)
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     virtual auto operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event override;
+    // Inherit operator() overloads
+    using EventGenerator<M, N>::operator();
 
 public:
     /// @brief Weight normalization result

@@ -83,6 +83,8 @@ public:
     /// @param u Flat random numbers in 0--1
     /// @return Generated event
     virtual auto operator()(InitialStateMomenta pI, const RandomState& u) -> Event override;
+    // Inherit operator() overloads
+    using VersatileEventGenerator<M, N, 3 * N - 4>::operator();
 };
 
 } // namespace Mustard::inline Physics::inline Generator

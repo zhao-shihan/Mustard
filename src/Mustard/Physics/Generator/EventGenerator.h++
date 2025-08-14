@@ -149,6 +149,8 @@ public:
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     virtual auto operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event override;
+    // Inherit operator() overloads
+    using EventGenerator<M, N>::operator();
 };
 
 } // namespace Mustard::inline Physics::inline Generator
