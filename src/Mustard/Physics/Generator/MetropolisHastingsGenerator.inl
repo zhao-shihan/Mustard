@@ -34,17 +34,8 @@ MetropolisHastingsGenerator<M, N, A>::MetropolisHastingsGenerator(double cmsE, c
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MetropolisHastingsGenerator<M, N, A>::MCMCDelta(double delta) -> void {
-    // The step size will increase as the roughly the square root of the number of dimensions
-    // so we reduce delta according to state space dimension
-    fMCMCDelta = delta / std::sqrt(fgMCStateSpaceDimension);
-}
-
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MetropolisHastingsGenerator<M, N, A>::CMSEnergy(double cmsE) -> void {
-    if (not muc::isclose(cmsE, fCMSEnergy)) {
-        BurnInRequired();
-    }
-    fCMSEnergy = cmsE;
+    // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
+    fMCMCDelta = delta / std::sqrt(fgMCMCDim);
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -70,8 +61,10 @@ auto MetropolisHastingsGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -
     }
     // burining in
     constexpr auto delta0{0.1};
-    constexpr auto epsilon{std::numeric_limits<double>::epsilon()};
-    constexpr auto nBurnIn{100000.};
+    // E(distance in d-dim space) ~ sqrt(d), if eps = tol / sqrt(d) => final step size ~ tol
+    constexpr auto epsilon{muc::default_tolerance<double> / std::sqrt(fgMCMCDim)};
+    // E(distance in d-dim space) ~ sqrt(d), E(random walk distance) ~ sqrt(n) => n ~ d
+    constexpr auto nBurnIn{10000. * fgMCMCDim};
     const auto factor{std::pow(epsilon / delta0, 1 / nBurnIn)};
     for (auto delta{delta0}; delta > epsilon; delta *= factor) {
         NextEvent(delta, rng);
@@ -92,6 +85,94 @@ auto MetropolisHastingsGenerator<M, N, A>::operator()(InitialStateMomenta pI, CL
 
     this->BoostToOriginalFrame(beta, fEvent.p);
     return fEvent;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor {
+    auto originalBias{std::move(fBias)};
+    auto originalBurntIn{std::move(fBurntIn)};
+    auto originalMarkovChain{std::move(fMarkovChain)};
+    auto originalEvent{std::move(fEvent)};
+    auto _{gsl::finally([&] {
+        fBias = std::move(originalBias);
+        fBurntIn = std::move(originalBurntIn);
+        fMarkovChain = std::move(originalMarkovChain);
+        fEvent = std::move(originalEvent);
+    })};
+
+    WeightNormalizationFactor result{.factor = std::numeric_limits<double>::quiet_NaN(),
+                                     .error = std::numeric_limits<double>::quiet_NaN(),
+                                     .nEff = 0};
+    if (n == 0) {
+        return result;
+    }
+
+    Bias([](auto&&) { return 1; }); // to evaluate the weight normalization factor of user-defined bias, temporarily switch to unbiased function
+    BurnIn();
+
+    using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
+    muc::array2ld sum{};
+    const auto nProc{mplr::comm_world()};
+    { // Monte Carlo integration here
+        const auto rng{CLHEP::HepRandom::getTheEngine()};
+        Parallel::ReseedRandomEngine(rng);
+        Executor<unsigned long long> executor{"Estimation", "Sample"};
+        muc::array2ld partialSum{}; // improve numeric stability
+        const auto partialSumThreshold{muc::llround(std::sqrt(n / executor.NProcess()))};
+        executor.Execute(n, [&](auto i) {
+            (*this)(*rng);
+            const auto bias{originalBias(fEvent.p)};
+            partialSum += muc::array2ld{bias, muc::pow<2>(bias)};
+            if ((i + 1) % partialSumThreshold == 0) {
+                sum += partialSum;
+                partialSum = {};
+            }
+        });
+        sum += partialSum;
+    }
+    if (mplr::available()) {
+        mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
+    }
+    result.factor = gsl::narrow_cast<double>(sum[0] / n);
+    result.error = gsl::narrow_cast<double>(std::sqrt(sum[1]) / n);
+    result.nEff = muc::pow<2>(result.factor / result.error);
+
+    return result;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool {
+    const auto [result, error, nEff]{wnf};
+    const auto ok{nEff >= 10000};
+    MasterPrintLn("Weight normalization factor of user-defined bias:\n"
+                  "  {} +/- {}\n"
+                  "    rel. err. = {:.2}% ,  N_eff = {:.2f} {}\n",
+                  result, error, error / result * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
+    if (not ok) {
+        MasterPrintWarning("N_eff TOO LOW. "
+                           "This generally means there are a few highly weighted events "
+                           "and THEY CAN BIAS THE ESTIMATIONS. "
+                           "The estimation should be considered inaccurate. "
+                           "Try increasing statistics.");
+    }
+    return ok;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::CMSEnergy(double cmsE) -> void {
+    if (not muc::isclose(cmsE, fCMSEnergy)) {
+        BurnInRequired();
+    }
+    fCMSEnergy = cmsE;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::Mass(const std::array<double, N>& mass) -> void {
+    if (not std::ranges::equal(mass, fGENBOD.Mass(),
+                               [](auto a, auto b) { return muc::isclose(a, b); })) {
+        BurnInRequired();
+    }
+    fGENBOD.Mass(mass);
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -171,86 +252,6 @@ auto MetropolisHastingsGenerator<M, N, A>::ValidBiasedPDF(const Event& event, do
         Throw<std::runtime_error>(fmt::format("Negative biased PDF found (got {} at {})", value, Where()));
     }
     return value;
-}
-
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MetropolisHastingsGenerator<M, N, A>::EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor {
-    auto originalBias{std::move(fBias)};
-    auto originalBurntIn{std::move(fBurntIn)};
-    auto originalMarkovChain{std::move(fMarkovChain)};
-    auto originalEvent{std::move(fEvent)};
-    auto _{gsl::finally([&] {
-        fBias = std::move(originalBias);
-        fBurntIn = std::move(originalBurntIn);
-        fMarkovChain = std::move(originalMarkovChain);
-        fEvent = std::move(originalEvent);
-    })};
-
-    WeightNormalizationFactor result{.factor = std::numeric_limits<double>::quiet_NaN(),
-                                     .error = std::numeric_limits<double>::quiet_NaN(),
-                                     .nEff = 0};
-    if (n == 0) {
-        return result;
-    }
-
-    Bias([](auto&&) { return 1; }); // to evaluate the weight normalization factor of user-defined bias, temporarily switch to unbiased function
-    BurnIn();
-
-    using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
-    muc::array2ld sum{};
-    const auto nProc{mplr::comm_world()};
-    { // Monte Carlo integration here
-        const auto rng{CLHEP::HepRandom::getTheEngine()};
-        Parallel::ReseedRandomEngine(rng);
-        Executor<unsigned long long> executor{"Estimation", "Sample"};
-        muc::array2ld partialSum{}; // improve numeric stability
-        const auto partialSumThreshold{muc::llround(std::sqrt(n / executor.NProcess()))};
-        executor.Execute(n, [&](auto i) {
-            (*this)(*rng);
-            const auto bias{originalBias(fEvent.p)};
-            partialSum += muc::array2ld{bias, muc::pow<2>(bias)};
-            if ((i + 1) % partialSumThreshold == 0) {
-                sum += partialSum;
-                partialSum = {};
-            }
-        });
-        sum += partialSum;
-    }
-    if (mplr::available()) {
-        mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
-    }
-    result.factor = gsl::narrow_cast<double>(sum[0] / n);
-    result.error = gsl::narrow_cast<double>(std::sqrt(sum[1]) / n);
-    result.nEff = muc::pow<2>(result.factor / result.error);
-
-    return result;
-}
-
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MetropolisHastingsGenerator<M, N, A>::CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool {
-    const auto [result, error, nEff]{wnf};
-    const auto ok{nEff >= 10000};
-    MasterPrintLn("Weight normalization factor of user-defined bias:\n"
-                  "  {} +/- {}\n"
-                  "    rel. err. = {:.2}% ,  N_eff = {:.2f} {}\n",
-                  result, error, error / result * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
-    if (not ok) {
-        MasterPrintWarning("N_eff TOO LOW. "
-                           "This generally means there are a few highly weighted events "
-                           "and THEY CAN BIAS THE ESTIMATIONS. "
-                           "The estimation should be considered inaccurate. "
-                           "Try increasing statistics.");
-    }
-    return ok;
-}
-
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MetropolisHastingsGenerator<M, N, A>::Mass(const std::array<double, N>& mass) -> void {
-    if (not std::ranges::equal(mass, fGENBOD.Mass(),
-                               [](auto a, auto b) { return muc::isclose(a, b); })) {
-        BurnInRequired();
-    }
-    fGENBOD.Mass(mass);
 }
 
 } // namespace Mustard::inline Physics::inline Generator

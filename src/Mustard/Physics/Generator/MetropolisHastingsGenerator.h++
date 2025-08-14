@@ -181,7 +181,7 @@ private:
     MarkovChain fMarkovChain; ///< Current Markov chain state
     Event fEvent;             ///< Current event in chain
 
-    static constexpr double fgMCStateSpaceDimension{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
+    static constexpr int fgMCMCDim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
 };
 
 } // namespace Mustard::inline Physics::inline Generator
