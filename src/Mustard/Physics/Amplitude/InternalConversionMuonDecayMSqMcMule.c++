@@ -33,7 +33,7 @@ using namespace MathConstant;
 
 auto InternalConversionMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
     const auto& q1{pI};
-    const auto& [q2, q3, q4, q5, q6]{pF};
+    const auto& [q2, q3, q4, q6, q5]{pF}; // should 5 <-> 6 for this version
     const CLHEP::HepLorentzVector pol1{InitialStatePolarization()};
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_pm2ennee.f95, FUNCTION PM2ENNEE
