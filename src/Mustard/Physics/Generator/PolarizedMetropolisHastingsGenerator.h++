@@ -59,10 +59,20 @@ public:
                                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                          double delta, int discard);
 
+    /// @brief Get polarization vector for single initial particle
+    /// @param i Particle index (0 ≤ i < M)
     auto InitialStatePolarization(int i) const -> auto { return this->fSquaredAmplitude.InitialStatePolarization(i); }
+    /// @brief Get all polarization vectors
     auto InitialStatePolarization() const -> const auto& { return this->fSquaredAmplitude.InitialStatePolarization(); }
 
+    /// @brief Set polarization for single initial particle
+    /// @param i Particle index (0 ≤ i < M)
+    /// @param polarization Polarization vector (|p| ≤ 1)
+    /// @note Triggers Markov chain reset (requires new burn-in)
     auto InitialStatePolarization(int i, CLHEP::Hep3Vector p) -> void;
+    /// @brief Set all polarization vectors
+    /// @param polarization Array of polarization vectors for each initial particle (all |p| ≤ 1)
+    /// @note Triggers Markov chain reset (requires new burn-in)
     auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void;
 };
 
@@ -85,7 +95,11 @@ public:
                                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                          double delta, int discard);
 
+    /// @brief Get polarization vector
     auto InitialStatePolarization() const -> auto { return this->fSquaredAmplitude.InitialStatePolarization(); }
+    /// @brief Set polarization vector
+    /// @param p Polarization vector (|p| ≤ 1)
+    /// @note Triggers Markov chain reset (requires new burn-in)
     auto InitialStatePolarization(CLHEP::Hep3Vector p) -> void;
 };
 
