@@ -46,9 +46,10 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-/// @class MetropolisHastingsGenerator
-/// @brief Metropolis-Hastings MCMC sampler for event generation,
-/// possibly with user-defined bias.
+/// @class MTMGenerator
+/// @brief Multiple-try Metropolis (MTM) MCMC sampler for event generation,
+/// possibly with user-defined bias. MTM sampler can help resolve the
+/// curse of dimensionality.
 ///
 /// Generates events distributed according to |M|² × bias, and
 /// weight = 1 / bias.
@@ -61,7 +62,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// @tparam N Number of final-state particles
 /// @tparam A Squared amplitude of the process to be generated
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-class MetropolisHastingsGenerator : public EventGenerator<M, N> {
+class MTMGenerator : public EventGenerator<M, N> {
 public:
     /// @brief Initial-state 4-momentum
     using typename EventGenerator<M, N>::InitialStateMomenta;
@@ -79,8 +80,8 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
-    MetropolisHastingsGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                double delta, int discard);
+    MTMGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                 double delta, int discard);
 
     /// @brief Set MCMC step size
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
@@ -186,4 +187,4 @@ private:
 
 } // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/Generator/MetropolisHastingsGenerator.inl"
+#include "Mustard/Physics/Generator/MTMGenerator.inl"

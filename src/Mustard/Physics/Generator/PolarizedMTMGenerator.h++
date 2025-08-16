@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Physics/Amplitude/PolarizedSquaredAmplitude.h++"
-#include "Mustard/Physics/Generator/MetropolisHastingsGenerator.h++"
+#include "Mustard/Physics/Generator/MTMGenerator.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -31,7 +31,7 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-/// @class PolarizedMetropolisHastingsGenerator
+/// @class PolarizedMTMGenerator
 /// @brief Metropolis-Hastings MCMC sampler for event generation
 /// from polarized initial state, possibly with user-defined bias.
 ///
@@ -46,7 +46,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// @tparam N Number of final-state particles
 /// @tparam A Squared amplitude of the process to be generated
 template<int M, int N, std::derived_from<PolarizedSquaredAmplitude<M, N>> A>
-class PolarizedMetropolisHastingsGenerator : public MetropolisHastingsGenerator<M, N, A> {
+class PolarizedMTMGenerator : public MTMGenerator<M, N, A> {
 public:
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
@@ -55,9 +55,9 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
-    PolarizedMetropolisHastingsGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
-                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                         double delta, int discard);
+    PolarizedMTMGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
+                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                          double delta, int discard);
 
     /// @brief Get polarization vector for single initial particle
     /// @param i Particle index (0 ≤ i < M)
@@ -76,13 +76,13 @@ public:
     auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void;
 };
 
-/// @class PolarizedMetropolisHastingsGenerator<1, N, A>
+/// @class PolarizedMTMGenerator<1, N, A>
 /// @brief Specialization for 1-body initial state
 ///
 /// @tparam N Number of final-state particles
 /// @tparam A Squared amplitude of the process to be generated
 template<int N, std::derived_from<PolarizedSquaredAmplitude<1, N>> A>
-class PolarizedMetropolisHastingsGenerator<1, N, A> : public MetropolisHastingsGenerator<1, N, A> {
+class PolarizedMTMGenerator<1, N, A> : public MTMGenerator<1, N, A> {
 public:
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
@@ -91,9 +91,9 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
-    PolarizedMetropolisHastingsGenerator(double cmsE, CLHEP::Hep3Vector polarization,
-                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                         double delta, int discard);
+    PolarizedMTMGenerator(double cmsE, CLHEP::Hep3Vector polarization,
+                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                          double delta, int discard);
 
     /// @brief Get polarization vector
     auto InitialStatePolarization() const -> auto { return this->fSquaredAmplitude.InitialStatePolarization(); }
@@ -105,4 +105,4 @@ public:
 
 } // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/Generator/PolarizedMetropolisHastingsGenerator.inl"
+#include "Mustard/Physics/Generator/PolarizedMTMGenerator.inl"

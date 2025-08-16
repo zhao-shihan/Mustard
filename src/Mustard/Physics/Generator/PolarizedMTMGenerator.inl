@@ -19,15 +19,15 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<PolarizedSquaredAmplitude<M, N>> A>
-PolarizedMetropolisHastingsGenerator<M, N, A>::PolarizedMetropolisHastingsGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
-                                                                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                                    double delta, int discard) :
-    MetropolisHastingsGenerator<M, N, A>{cmsE, pdgID, mass, delta, discard} {
+PolarizedMTMGenerator<M, N, A>::PolarizedMTMGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
+                                                      const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                      double delta, int discard) :
+    MTMGenerator<M, N, A>{cmsE, pdgID, mass, delta, discard} {
     this->fSquaredAmplitude.InitialStatePolarization(polarization);
 }
 
 template<int M, int N, std::derived_from<PolarizedSquaredAmplitude<M, N>> A>
-auto PolarizedMetropolisHastingsGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector p) -> void {
+auto PolarizedMTMGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector p) -> void {
     if (not p.isNear(InitialStatePolarization(i), muc::default_tolerance<double>)) {
         this->BurnInRequired();
     }
@@ -35,7 +35,7 @@ auto PolarizedMetropolisHastingsGenerator<M, N, A>::InitialStatePolarization(int
 }
 
 template<int M, int N, std::derived_from<PolarizedSquaredAmplitude<M, N>> A>
-auto PolarizedMetropolisHastingsGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void {
+auto PolarizedMTMGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void {
     if (not std::ranges::equal(p, InitialStatePolarization(),
                                [](auto&& a, auto&& b) { return a.isNear(b, muc::default_tolerance<double>); })) {
         this->BurnInRequired();
@@ -44,15 +44,15 @@ auto PolarizedMetropolisHastingsGenerator<M, N, A>::InitialStatePolarization(con
 }
 
 template<int N, std::derived_from<PolarizedSquaredAmplitude<1, N>> A>
-PolarizedMetropolisHastingsGenerator<1, N, A>::PolarizedMetropolisHastingsGenerator(double cmsE, CLHEP::Hep3Vector polarization,
-                                                                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                                    double delta, int discard) :
-    MetropolisHastingsGenerator<1, N, A>{cmsE, pdgID, mass, delta, discard} {
+PolarizedMTMGenerator<1, N, A>::PolarizedMTMGenerator(double cmsE, CLHEP::Hep3Vector polarization,
+                                                      const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                      double delta, int discard) :
+    MTMGenerator<1, N, A>{cmsE, pdgID, mass, delta, discard} {
     this->fSquaredAmplitude.InitialStatePolarization(polarization);
 }
 
 template<int N, std::derived_from<PolarizedSquaredAmplitude<1, N>> A>
-auto PolarizedMetropolisHastingsGenerator<1, N, A>::InitialStatePolarization(CLHEP::Hep3Vector p) -> void {
+auto PolarizedMTMGenerator<1, N, A>::InitialStatePolarization(CLHEP::Hep3Vector p) -> void {
     if (not p.isNear(InitialStatePolarization(), muc::default_tolerance<double>)) {
         this->BurnInRequired();
     }
