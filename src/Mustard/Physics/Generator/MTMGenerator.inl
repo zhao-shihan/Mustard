@@ -22,10 +22,10 @@ template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 MTMGenerator<M, N, A>::MTMGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                     double delta, int discard) :
     EventGenerator<M, N>{},
-    fSquaredAmplitude{},
     fCMSEnergy{cmsE},
-    fGENBOD{pdgID, mass},
+    fSquaredAmplitude{},
     fBias{[](auto&&) { return 1; }},
+    fGENBOD{pdgID, mass},
     fMCMCDelta{},
     fMCMCDiscard{},
     fBurntIn{},
@@ -33,6 +33,76 @@ MTMGenerator<M, N, A>::MTMGenerator(double cmsE, const std::array<int, N>& pdgID
     fEvent{} {
     MCMCDelta(delta);
     MCMCDiscard(discard);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+MTMGenerator<M, N, A>::MTMGenerator(double cmsE, CLHEP::Hep3Vector polarization,
+                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                    double delta, int discard) // clang-format off
+    requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>> : // clang-format on
+    MTMGenerator{cmsE, pdgID, mass, delta, discard} {
+    fSquaredAmplitude.InitialStatePolarization(polarization);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+MTMGenerator<M, N, A>::MTMGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
+                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                    double delta, int discard) // clang-format off
+    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) : // clang-format on
+    MTMGenerator{cmsE, pdgID, mass, delta, discard} {
+    fSquaredAmplitude.InitialStatePolarization(polarization);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MTMGenerator<M, N, A>::InitialStatePolarization() const -> CLHEP::Hep3Vector
+    requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>> {
+    return this->fSquaredAmplitude.InitialStatePolarization();
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MTMGenerator<M, N, A>::InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
+    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
+    return this->fSquaredAmplitude.InitialStatePolarization(i);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MTMGenerator<M, N, A>::InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
+    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
+    return this->fSquaredAmplitude.InitialStatePolarization();
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MTMGenerator<M, N, A>::InitialStatePolarization(CLHEP::Hep3Vector p) -> void
+    requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>> {
+    if (not p.isNear(InitialStatePolarization(), muc::default_tolerance<double>)) {
+        this->BurnInRequired();
+    }
+    this->fSquaredAmplitude.InitialStatePolarization(p);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MTMGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector p) -> void
+    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
+    if (not p.isNear(InitialStatePolarization(i), muc::default_tolerance<double>)) {
+        this->BurnInRequired();
+    }
+    this->fSquaredAmplitude.InitialStatePolarization(i, p);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MTMGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void
+    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
+    if (not std::ranges::equal(p, InitialStatePolarization(),
+                               [](auto&& a, auto&& b) { return a.isNear(b, muc::default_tolerance<double>); })) {
+        this->BurnInRequired();
+    }
+    this->fSquaredAmplitude.InitialStatePolarization(p);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MTMGenerator<M, N, A>::Bias(BiasFunction B) -> void {
+    fBias = std::move(B);
+    BurnInRequired();
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -49,12 +119,6 @@ auto MTMGenerator<M, N, A>::MCMCDiscard(int n) -> void {
         PrintWarning(fmt::format("Negative discarded MCMC samples (got {})", n));
     }
     fMCMCDiscard = n;
-}
-
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MTMGenerator<M, N, A>::Bias(BiasFunction B) -> void {
-    fBias = std::move(B);
-    BurnInRequired();
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>

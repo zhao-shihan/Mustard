@@ -30,7 +30,7 @@ using namespace PhysicalConstant;
 
 DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, BiasFunction B,
                                                    double delta, int discard) :
-    PolarizedMTMGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
+    MTMGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, 0, 0});
     Bias(std::move(B));

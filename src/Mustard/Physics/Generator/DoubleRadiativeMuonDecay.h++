@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Physics/Amplitude/DoubleRadiativeMuonDecayMSqMcMule.h++"
-#include "Mustard/Physics/Generator/PolarizedMTMGenerator.h++"
+#include "Mustard/Physics/Generator/MTMGenerator.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -34,7 +34,7 @@ namespace Mustard::inline Physics::inline Generator {
 ///             mu+ -> e+ nu nu gamma gamma
 /// @warning IR safety is not automatically guaranteed.
 /// Always set bias function to ensure IR-safe generation.
-class DoubleRadiativeMuonDecay : public PolarizedMTMGenerator<1, 5, DoubleRadiativeMuonDecayMSqMcMule> {
+class DoubleRadiativeMuonDecay : public MTMGenerator<1, 5, DoubleRadiativeMuonDecayMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)

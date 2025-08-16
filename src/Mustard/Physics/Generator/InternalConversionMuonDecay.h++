@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Physics/Amplitude/InternalConversionMuonDecayMSqMcMule.h++"
-#include "Mustard/Physics/Generator/PolarizedMTMGenerator.h++"
+#include "Mustard/Physics/Generator/MTMGenerator.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -31,7 +31,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// @brief MCMC generator for mu->ennee decays
 /// Kinematics: mu- -> e- nu nu e+ e-
 ///             mu+ -> e+ nu nu e- e+
-class InternalConversionMuonDecay : public PolarizedMTMGenerator<1, 5, InternalConversionMuonDecayMSqMcMule> {
+class InternalConversionMuonDecay : public MTMGenerator<1, 5, InternalConversionMuonDecayMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)

@@ -21,6 +21,7 @@
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
+#include "Mustard/Physics/Amplitude/PolarizedSquaredAmplitude.h++"
 #include "Mustard/Physics/Amplitude/SquaredAmplitude.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
@@ -82,6 +83,68 @@ public:
     /// @param discard Samples discarded between two events generated in the Markov chain
     MTMGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                  double delta, int discard);
+    /// @brief Construct event generator
+    /// @param cmsE Center-of-mass energy
+    /// @param polarization Initial-state polarization vector
+    /// @param pdgID Array of particle PDG IDs (index order preserved)
+    /// @param mass Array of particle masses (index order preserved)
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
+    /// @param discard Samples discarded between two events generated in the Markov chain
+    /// @note This overload is only enabled for polarized decay
+    MTMGenerator(double cmsE, CLHEP::Hep3Vector polarization,
+                 const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                 double delta, int discard)
+        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
+    /// @brief Construct event generator
+    /// @param cmsE Center-of-mass energy
+    /// @param polarization Initial-state polarization vectors
+    /// @param pdgID Array of particle PDG IDs (index order preserved)
+    /// @param mass Array of particle masses (index order preserved)
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
+    /// @param discard Samples discarded between two events generated in the Markov chain
+    /// @note This overload is only enabled for polarized scattering
+    MTMGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
+                 const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                 double delta, int discard)
+        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+
+    /// @brief Get polarization vector
+    /// @note This overload is only enabled for polarized decay
+    auto InitialStatePolarization() const -> CLHEP::Hep3Vector
+        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
+    /// @brief Get polarization vector
+    /// @param i Particle index (0 ≤ i < M)
+    /// @note This overload is only enabled for polarized scattering
+    auto InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
+        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+    /// @brief Get all polarization vectors
+    /// @note This overload is only enabled for polarized scattering
+    auto InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
+        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+
+    /// @brief Set polarization vector
+    /// @param p Polarization vector (|p| ≤ 1)
+    /// @note Triggers Markov chain reset (requires new burn-in)
+    /// This overload is only enabled for polarized decay
+    auto InitialStatePolarization(CLHEP::Hep3Vector p) -> void
+        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
+    /// @brief Set polarization for single initial particle
+    /// @param i Particle index (0 ≤ i < M)
+    /// @param polarization Polarization vector (|p| ≤ 1)
+    /// @note Triggers Markov chain reset (requires new burn-in).
+    /// This overload is only enabled for polarized scattering
+    auto InitialStatePolarization(int i, CLHEP::Hep3Vector p) -> void
+        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+    /// @brief Set all polarization vectors
+    /// @param polarization Array of polarization vectors for each initial particle (all |p| ≤ 1)
+    /// @note Triggers Markov chain reset (requires new burn-in)
+    /// This overload is only enabled for polarized scattering
+    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void
+        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+
+    /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
+    /// @param B User-defined bias
+    auto Bias(BiasFunction B) -> void;
 
     /// @brief Set MCMC step size
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
@@ -89,9 +152,6 @@ public:
     /// @brief Set discard count between samples
     /// @param discard Samples discarded between two events generated in the Markov chain
     auto MCMCDiscard(int n) -> void;
-    /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
-    /// @param B User-defined bias
-    auto Bias(BiasFunction B) -> void;
 
     /// @brief Initialize Markov chain
     /// @param rng Reference to CLHEP random engine
@@ -167,20 +227,18 @@ private:
         GENBOD<M, N>::RandomState state; ///< State of the chain
     };
 
-protected:
-    [[no_unique_address]] A fSquaredAmplitude; ///< Squared amplitude
-
 private:
-    double fCMSEnergy;        ///< Currently set CM energy
-    GENBOD<M, N> fGENBOD;     ///< Phase space generator
-    BiasFunction fBias;       ///< User bias function
-                              //
-    double fMCMCDelta;        ///< MCMC max step size along one dimension
-    int fMCMCDiscard;         ///< Events discarded between 2 samples
-                              //
-    bool fBurntIn;            ///< Burn-in completed flag
-    MarkovChain fMarkovChain; ///< Current Markov chain state
-    Event fEvent;             ///< Current event in chain
+    double fCMSEnergy;                         ///< Currently set CM energy
+    [[no_unique_address]] A fSquaredAmplitude; ///< Squared amplitude
+    BiasFunction fBias;                        ///< User bias function
+    GENBOD<M, N> fGENBOD;                      ///< Phase space generator
+                                               //
+    double fMCMCDelta;                         ///< MCMC max step size along one dimension
+    int fMCMCDiscard;                          ///< Events discarded between 2 samples
+                                               //
+    bool fBurntIn;                             ///< Burn-in completed flag
+    MarkovChain fMarkovChain;                  ///< Current Markov chain state
+    Event fEvent;                              ///< Current event in chain
 
     static constexpr int fgMCMCDim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
 };
