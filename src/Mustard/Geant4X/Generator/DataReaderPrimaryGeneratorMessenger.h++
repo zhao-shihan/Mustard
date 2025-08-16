@@ -33,7 +33,7 @@ namespace Mustard::Geant4X::inline Generator {
 class DataReaderPrimaryGenerator;
 
 class DataReaderPrimaryGeneratorMessenger final : public Geant4X::SingletonMessenger<DataReaderPrimaryGeneratorMessenger,
-                                                                                   DataReaderPrimaryGenerator> {
+                                                                                     DataReaderPrimaryGenerator> {
     friend Env::Memory::SingletonInstantiator;
 
 private:
