@@ -129,7 +129,7 @@ auto ParallelExecutorImpl<T>::PostTaskReport(T iEnded) const -> void {
     const auto elapsed{this->fStopwatch.read()};
     const auto speed{static_cast<double>(nExecutedTask) / elapsed.count()};
     const std::chrono::duration<double, typename StopwatchDuration::period> printInterval{this->fPrintProgressInterval};
-    if ((iEnded + 1) % std::max(1ll, std::llround(speed * printInterval.count())) != 0) {
+    if ((iEnded + 1) % std::max(1ll, muc::llround(speed * printInterval.count())) != 0) {
         return;
     }
     const auto worldComm{mplr::comm_world()};
@@ -141,7 +141,7 @@ auto ParallelExecutorImpl<T>::PostTaskReport(T iEnded) const -> void {
           worldComm.rank(), this->ToDayHrMinSecMs(elapsed),
           [&, good{goodEstimation}, nExecuted{nExecutedTask}] {
               if (good) {
-                  const StopwatchDuration eta{std::llround((this->NTask() - nExecuted) / speed)};
+                  const StopwatchDuration eta{muc::llround((this->NTask() - nExecuted) / speed)};
                   const auto progress{100. * nExecuted / this->NTask()};
                   return fmt::format("est. rem. {} ({:.3}/s), prog.: {} | {}/{} | {:.3}%",
                                      this->ToDayHrMinSecMs(eta), perSecondSpeed, this->NLocalExecutedTask(), nExecuted, this->NTask(), progress);

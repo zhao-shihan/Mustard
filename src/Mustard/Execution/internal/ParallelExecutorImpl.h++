@@ -21,9 +21,9 @@
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Execution/Scheduler.h++"
 #include "Mustard/Execution/internal/ExecutorImplBase.h++"
-#include "Mustard/Utility/FormatToLocalTime.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
+#include "Mustard/Utility/FormatToLocalTime.h++"
 
 #include "mplr/mplr.hpp"
 
@@ -63,8 +63,8 @@ private:
     auto PostTaskReport(T iEnded) const -> void;
 
 private:
-    using StopwatchDuration = typename ExecutorImplBase<T>::StopwatchDuration;
-    using ExecutionInfo = typename ExecutorImplBase<T>::ExecutionInfo;
+    using typename ExecutorImplBase<T>::StopwatchDuration;
+    using typename ExecutorImplBase<T>::ExecutionInfo;
 
 private:
     std::vector<ExecutionInfo> fExecutionInfoList;
