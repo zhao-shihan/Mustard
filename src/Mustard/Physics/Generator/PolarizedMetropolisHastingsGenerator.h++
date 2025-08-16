@@ -53,7 +53,7 @@ public:
     /// @param polarization Initial-state polarization vectors
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     PolarizedMetropolisHastingsGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
@@ -89,7 +89,7 @@ public:
     /// @param polarization Initial-state polarization vector
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     PolarizedMetropolisHastingsGenerator(double cmsE, CLHEP::Hep3Vector polarization,
                                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,

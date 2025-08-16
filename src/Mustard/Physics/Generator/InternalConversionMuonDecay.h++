@@ -36,7 +36,7 @@ public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param polarization Muon polarization vector
-    /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     explicit InternalConversionMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization,
                                          double delta, int discard);

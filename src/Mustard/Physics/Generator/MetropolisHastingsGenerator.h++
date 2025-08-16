@@ -25,7 +25,7 @@
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
-#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -77,17 +77,17 @@ public:
     /// @param cmsE Center-of-mass energy
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     MetropolisHastingsGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                 double delta, int discard);
 
     /// @brief Set MCMC step size
-    /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     auto MCMCDelta(double delta) -> void;
     /// @brief Set discard count between samples
     /// @param discard Samples discarded between two events generated in the Markov chain
-    auto MCMCDiscard(int n) -> void { fMCMCDiscard = n; }
+    auto MCMCDiscard(int n) -> void;
     /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
     /// @param B User-defined bias
     auto Bias(BiasFunction B) -> void;
@@ -145,7 +145,7 @@ private:
     /// @param pI Initial-state 4-momenta passed to generator
     auto CheckCMSEnergyUnchanged(const InitialStateMomenta& pI) const -> void;
     /// @brief Advance Markov chain by one event
-    /// @param delta Maximun step along one direction in random state space
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param rng Reference to CLHEP random engine
     auto NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void;
     /// @brief Get bias with range check
@@ -162,8 +162,8 @@ private:
 
 private:
     struct MarkovChain {
-        GENBOD<M, N>::RandomState state; ///< State of the chain
         double acceptance;               ///< Acceptance of a sample
+        GENBOD<M, N>::RandomState state; ///< State of the chain
     };
 
 protected:

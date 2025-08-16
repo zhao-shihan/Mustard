@@ -26,16 +26,29 @@ MetropolisHastingsGenerator<M, N, A>::MetropolisHastingsGenerator(double cmsE, c
     fCMSEnergy{cmsE},
     fGENBOD{pdgID, mass},
     fBias{[](auto&&) { return 1; }},
-    fMCMCDelta{delta},
-    fMCMCDiscard{discard},
+    fMCMCDelta{},
+    fMCMCDiscard{},
     fBurntIn{},
     fMarkovChain{},
-    fEvent{} {}
+    fEvent{} {
+    MCMCDelta(delta);
+    MCMCDiscard(discard);
+}
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MetropolisHastingsGenerator<M, N, A>::MCMCDelta(double delta) -> void {
-    // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
-    fMCMCDelta = delta / std::sqrt(fgMCMCDim);
+    if (delta <= 0 or 0.5 <= delta) [[unlikely]] {
+        PrintError(fmt::format("Erroneous MCMC delta (got {}, expects 0 < delta < 0.5)", delta));
+    }
+    fMCMCDelta = delta;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::MCMCDiscard(int n) -> void {
+    if (n < 0) [[unlikely]] {
+        PrintWarning(fmt::format("Negative discarded MCMC samples (got {})", n));
+    }
+    fMCMCDiscard = n;
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -59,12 +72,10 @@ auto MetropolisHastingsGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -
             break;
         }
     }
-    // burining in
+    // burning in
     constexpr auto delta0{0.1};
-    // E(distance in d-dim space) ~ sqrt(d), if eps = tol / sqrt(d) => final step size ~ tol
-    constexpr auto epsilon{muc::default_tolerance<double> / std::sqrt(fgMCMCDim)};
-    // E(distance in d-dim space) ~ sqrt(d), E(random walk distance) ~ sqrt(n) => n ~ d
-    constexpr auto nBurnIn{10000. * fgMCMCDim};
+    constexpr auto epsilon{muc::default_tolerance<double>};
+    constexpr auto nBurnIn{10000. * fgMCMCDim}; // E(distance in d-dim space) ~ sqrt(d), E(random walk distance) ~ sqrt(n) => n ~ d
     const auto factor{std::pow(epsilon / delta0, 1 / nBurnIn)};
     for (auto delta{delta0}; delta > epsilon; delta *= factor) {
         NextEvent(delta, rng);
@@ -108,19 +119,19 @@ auto MetropolisHastingsGenerator<M, N, A>::EstimateWeightNormalizationFactor(uns
     }
 
     Bias([](auto&&) { return 1; }); // to evaluate the weight normalization factor of user-defined bias, temporarily switch to unbiased function
-    BurnIn();
+    auto& rng{*CLHEP::HepRandom::getTheEngine()};
+    BurnIn(rng);
 
     using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
     muc::array2ld sum{};
     const auto nProc{mplr::comm_world()};
     { // Monte Carlo integration here
-        const auto rng{CLHEP::HepRandom::getTheEngine()};
-        Parallel::ReseedRandomEngine(rng);
+        Parallel::ReseedRandomEngine(&rng);
         Executor<unsigned long long> executor{"Estimation", "Sample"};
         muc::array2ld partialSum{}; // improve numeric stability
         const auto partialSumThreshold{muc::llround(std::sqrt(n / executor.NProcess()))};
         executor.Execute(n, [&](auto i) {
-            (*this)(*rng);
+            (*this)(rng);
             const auto bias{originalBias(fEvent.p)};
             partialSum += muc::array2ld{bias, muc::pow<2>(bias)};
             if ((i + 1) % partialSumThreshold == 0) {
@@ -181,35 +192,104 @@ auto MetropolisHastingsGenerator<M, N, A>::CheckCMSEnergyUnchanged(const Initial
         return;
     }
     const auto cmsE{this->CalculateCMSEnergy(pI)};
-    if (not muc::isclose(cmsE, fCMSEnergy)) {
+    if (not muc::isclose(cmsE, fCMSEnergy)) [[unlikely]] {
         PrintWarning(fmt::format("Initial state 4-momenta does not match currently set CMS energy (got {}, expect {})", cmsE, fCMSEnergy));
     }
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+/* template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MetropolisHastingsGenerator<M, N, A>::NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void {
-    typename GENBOD<M, N>::RandomState proposedRandomState;
-    Event proposedEvent;
+    typename GENBOD<M, N>::RandomState stateProposal;
+    Event eventProposal;
     while (true) {
-        std::ranges::transform(std::as_const(fMarkovChain.state), proposedRandomState.begin(),
-                               [&](auto u) {
-                                   const auto low{std::clamp(u - delta, 0., 1.)};
-                                   const auto up{std::clamp(u + delta, 0., 1.)};
-                                   return CLHEP::RandFlat::shoot(&rng, low, up);
-                               });
-        proposedEvent = fGENBOD({fCMSEnergy, {}}, proposedRandomState);
-        const auto proposedBias{ValidBias(proposedEvent.p)};
-        if (proposedBias <= std::numeric_limits<double>::min()) {
+        std::ranges::transform(std::as_const(fMarkovChain.state), stateProposal.begin(), [&](auto u0) {
+            auto u{CLHEP::RandGaussQ::shoot(&rng, u0, delta)};
+            u = std::abs(muc::fmod(u, 2.)); // Reflection-
+            return u > 1 ? 2 - u : u;       // boundary
+        });
+        eventProposal = fGENBOD({fCMSEnergy, {}}, stateProposal);
+
+        const auto biasProposal{ValidBias(eventProposal.p)};
+        if (biasProposal <= std::numeric_limits<double>::min()) {
             continue;
         }
 
-        const auto proposedAcceptance{ValidBiasedPDF(proposedEvent, proposedBias)};
-        if (proposedAcceptance >= fMarkovChain.acceptance or
-            proposedAcceptance >= fMarkovChain.acceptance * rng.flat()) {
-            fMarkovChain.state = proposedRandomState;
-            fEvent = proposedEvent;
-            fEvent.weight = 1 / proposedBias;
-            fMarkovChain.acceptance = proposedAcceptance;
+        const auto acceptanceProposal{ValidBiasedPDF(eventProposal, biasProposal)};
+        if (acceptanceProposal >= fMarkovChain.acceptance or
+            acceptanceProposal >= fMarkovChain.acceptance * rng.flat()) {
+            fMarkovChain.state = stateProposal;
+            fEvent = eventProposal;
+            fEvent.weight = 1 / biasProposal;
+            fMarkovChain.acceptance = acceptanceProposal;
+            return;
+        }
+    }
+} */
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MetropolisHastingsGenerator<M, N, A>::NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void {
+    // Rescale delta first
+    // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
+    delta /= std::sqrt(fgMCMCDim);
+    // Multiple-try Metropolis sampler (Ref: Jun S. Liu et al (2000), https://doi.org/10.2307/2669532)
+    using State = typename GENBOD<M, N>::RandomState;
+    constexpr auto kMTM{fgMCMCDim};                                   // k
+    std::array<State, kMTM> stateY;                                   // y_1, ..., y_k
+    std::array<double, kMTM> piY;                                     // pi(y_1), ..., pi(y_k)
+    State stateX;                                                     // x_1, ..., x_k-1
+    std::array<double, kMTM - 1> piX;                                 // pi(x_1), ..., pi(x_k-1)
+    std::array<double, kMTM> biasY;                                   // Bias function value at y_1, ..., y_k
+    std::array<Event, kMTM> eventY;                                   // Event at y_1, ..., y_k
+    Event eventX;                                                     // Event at x_1, ..., x_k-1
+    const auto StateProposal{[&](const State& state0, State& state) { // T(x, y) (symmetric)
+        std::ranges::transform(state0, state.begin(), [&](auto u0) {
+            auto u{CLHEP::RandGaussQ::shoot(&rng, u0, delta)};
+            u = std::abs(muc::fmod(u, 2.)); // Reflection-
+            return u > 1 ? 2 - u : u;       // boundary
+        });
+    }};
+    const auto MultinomialSample{[&rng](const std::array<double, kMTM>& pi, double piSum) {
+        const auto u{piSum * rng.flat()};
+        double c{};
+        for (int i{}; i < kMTM; ++i) {
+            c += pi[i];
+            if (u < c) {
+                return i;
+            }
+        }
+        return kMTM - 1;
+    }};
+    while (true) {
+        for (int i{}; i < kMTM; ++i) {
+            StateProposal(fMarkovChain.state, stateY[i]);     // Draw y_i from T(x, *)
+            eventY[i] = fGENBOD({fCMSEnergy, {}}, stateY[i]); // y_i -> event(y_i) = g(y_i)
+            biasY[i] = ValidBias(eventY[i].p);                // g(y_i) -> B(g(y_i))
+            if (biasY[i] > std::numeric_limits<double>::min()) {
+                piY[i] = ValidBiasedPDF(eventY[i], biasY[i]); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) B(g(y_i))
+            } else {
+                piY[i] = biasY[i];
+            }
+        }
+        const auto sumPiY{muc::ranges::reduce(piY)};         // pi(y_1) + ... + pi(y_k)
+        const auto selected{MultinomialSample(piY, sumPiY)}; // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
+        for (int i{}; i < kMTM - 1; ++i) {
+            StateProposal(stateY[selected], stateX);    // Draw x_i from T(Y, *)
+            eventX = fGENBOD({fCMSEnergy, {}}, stateX); // x_i -> event(x_i) = g(x_i)
+            const auto biasX{ValidBias(eventX.p)};      // g(x_i) -> B(g(x_i))
+            if (biasX > std::numeric_limits<double>::min()) {
+                piX[i] = ValidBiasedPDF(eventX, biasX); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) B(g(x_i))
+            } else {
+                piX[i] = biasX;
+            }
+        }
+        const auto sumPiX{muc::ranges::reduce(piX, fMarkovChain.acceptance)}; // pi(x_1) + ... + pi(x_k)
+        // accept/reject Y
+        if (sumPiY >= sumPiX or
+            sumPiY >= sumPiX * rng.flat()) {
+            fMarkovChain.state = stateY[selected];
+            fEvent = eventY[selected];
+            fEvent.weight = 1 / biasY[selected];
+            fMarkovChain.acceptance = piY[selected];
             return;
         }
     }
@@ -221,7 +301,7 @@ auto MetropolisHastingsGenerator<M, N, A>::ValidBias(const FinalStateMomenta& mo
     constexpr auto Format{[](const FinalStateMomenta& momenta) {
         std::string where;
         for (auto&& p : momenta) {
-            where += fmt::format("[{}, {}, {}; {}]", p.x(), p.y(), p.z(), p.e());
+            where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
         }
         return where;
     }};
@@ -240,7 +320,7 @@ auto MetropolisHastingsGenerator<M, N, A>::ValidBiasedPDF(const Event& event, do
     const auto Where{[&] {
         auto where{fmt::format("({})", event.weight)};
         for (auto&& p : event.p) {
-            where += fmt::format("[{}, {}, {}; {}]", p.x(), p.y(), p.z(), p.e());
+            where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
         }
         where += fmt::format(" Bias={}", bias);
         return where;

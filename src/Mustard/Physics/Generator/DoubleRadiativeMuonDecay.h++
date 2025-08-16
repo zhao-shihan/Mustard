@@ -40,7 +40,7 @@ public:
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param polarization Muon polarization vector
     /// @param B User-defined bias (should always include IR cut)
-    /// @param delta Maximun step along one direction in random state space (0--0.5, should be small)
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, BiasFunction B,
                              double delta, int discard);
