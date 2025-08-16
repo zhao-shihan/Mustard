@@ -155,7 +155,7 @@ template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MTMGenerator<M, N, A>::CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool {
     const auto [result, error, nEff]{wnf};
     const auto ok{nEff >= 10000};
-    MasterPrintLn("Weight normalization factor of user-defined bias:\n"
+    MasterPrintLn("Weight normalization factor from user-defined bias:\n"
                   "  {} +/- {}\n"
                   "    rel. err. = {:.2}% ,  N_eff = {:.2f} {}\n",
                   result, error, error / result * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
