@@ -107,7 +107,11 @@ auto ReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> v
         if (clhepRng) {
             std::array<unsigned, sizeof(std::uint64_t) / sizeof(unsigned)> xsr256Seed;
             std::ranges::generate(xsr256Seed, [clhepRng] {
-                return std::llround(CLHEP::RandFlat::shoot(clhepRng, 1, std::numeric_limits<unsigned>::max() - 1));
+                unsigned seed;
+                do {
+                    seed = clhepRng->operator unsigned int();
+                } while (seed == 0 or seed == std::numeric_limits<unsigned>::max());
+                return seed;
             });
             const auto uniqueSeed{internal::MasterMakeUniqueSeedSeries<unsigned long>(xsr256Seed)};
             Ensures(uniqueSeed.size() == seedSend.size());
