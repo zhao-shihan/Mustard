@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Generator/FromDataPrimaryGeneratorMessenger.h++"
+#include "Mustard/Geant4X/Generator/DataReaderPrimaryGeneratorMessenger.h++"
 
 #include "TTreeReader.h"
 #include "TTreeReaderValue.h"
@@ -48,17 +48,17 @@ namespace Mustard::Geant4X::inline Generator {
 ///        px,py,pz (vector<float>):  Particle momentum [MeV]
 ///        w (float):                 Event weight
 ///
-class FromDataPrimaryGenerator : public G4VPrimaryGenerator {
+class DataReaderPrimaryGenerator : public G4VPrimaryGenerator {
 public:
     /// @brief Default constructor (requires later EventData() and NVertex() call)
-    FromDataPrimaryGenerator();
+    DataReaderPrimaryGenerator();
     /// @brief Construct with data file and tree name
     /// @param file ROOT file path containing event data
     /// @param data TTree name within file
     /// @param nVertex Number of vertices per Geant4 event
-    FromDataPrimaryGenerator(const std::filesystem::path& file, const std::string& data, int nVertex = 1);
+    DataReaderPrimaryGenerator(const std::filesystem::path& file, const std::string& data, int nVertex = 1);
 
-    virtual ~FromDataPrimaryGenerator();
+    virtual ~DataReaderPrimaryGenerator();
 
     /// @brief Load new event data source
     /// @param file ROOT file path
@@ -84,17 +84,18 @@ protected:
 
 protected:
     /// @brief Event data reader structure
+    /// @see `Mustard::Data::GeneratedEvent` for a data model
     struct EventData {
         TTreeReader reader;                                        ///< ROOT tree reader
+        TTreeReaderValue<float> w{reader, "w"};                    ///< Vertex weight
         TTreeReaderValue<double> t{reader, "t"};                   ///< Vertex time
         TTreeReaderValue<float> x{reader, "x"};                    ///< Vertex X position
         TTreeReaderValue<float> y{reader, "y"};                    ///< Vertex Y position
         TTreeReaderValue<float> z{reader, "z"};                    ///< Vertex Z position
-        TTreeReaderValue<std::vector<int>> pdgID{reader, "pdgID"}; ///< Particle PDG codes
+        TTreeReaderValue<std::vector<int>> pdgID{reader, "pdgID"}; ///< Particle PDG IDs
         TTreeReaderValue<std::vector<float>> px{reader, "px"};     ///< Momentum X components
         TTreeReaderValue<std::vector<float>> py{reader, "py"};     ///< Momentum Y components
         TTreeReaderValue<std::vector<float>> pz{reader, "pz"};     ///< Momentum Z components
-        TTreeReaderValue<float> w{reader, "w"};                    ///< Vertex weight
     };
 
 protected:
@@ -107,7 +108,7 @@ protected:
     long long fEndEntryForCurrentRun;         ///< Entry index management
 
 private:
-    FromDataPrimaryGeneratorMessenger::Register<FromDataPrimaryGenerator> fFromDataPrimaryGeneratorMessengerRegister;
+    DataReaderPrimaryGeneratorMessenger::Register<DataReaderPrimaryGenerator> fDataReaderPrimaryGeneratorMessengerRegister;
 };
 
 } // namespace Mustard::Geant4X::inline Generator

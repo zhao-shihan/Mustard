@@ -30,15 +30,15 @@ class G4UIdirectory;
 
 namespace Mustard::Geant4X::inline Generator {
 
-class FromDataPrimaryGenerator;
+class DataReaderPrimaryGenerator;
 
-class FromDataPrimaryGeneratorMessenger final : public Geant4X::SingletonMessenger<FromDataPrimaryGeneratorMessenger,
-                                                                                   FromDataPrimaryGenerator> {
+class DataReaderPrimaryGeneratorMessenger final : public Geant4X::SingletonMessenger<DataReaderPrimaryGeneratorMessenger,
+                                                                                   DataReaderPrimaryGenerator> {
     friend Env::Memory::SingletonInstantiator;
 
 private:
-    FromDataPrimaryGeneratorMessenger();
-    ~FromDataPrimaryGeneratorMessenger();
+    DataReaderPrimaryGeneratorMessenger();
+    ~DataReaderPrimaryGeneratorMessenger();
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

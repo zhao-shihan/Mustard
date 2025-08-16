@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/Generator/FromDataPrimaryGenerator.h++"
+#include "Mustard/Geant4X/Generator/DataReaderPrimaryGenerator.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
@@ -44,23 +44,23 @@
 
 namespace Mustard::Geant4X::inline Generator {
 
-FromDataPrimaryGenerator::FromDataPrimaryGenerator() :
+DataReaderPrimaryGenerator::DataReaderPrimaryGenerator() :
     fChain{},
     fEventData{},
     fNVertex{},
     fCurrentRun{},
     fEndEntryForCurrentRun{},
-    fFromDataPrimaryGeneratorMessengerRegister{this} {}
+    fDataReaderPrimaryGeneratorMessengerRegister{this} {}
 
-FromDataPrimaryGenerator::FromDataPrimaryGenerator(const std::filesystem::path& file, const std::string& data, int nVertex) :
-    FromDataPrimaryGenerator{} {
+DataReaderPrimaryGenerator::DataReaderPrimaryGenerator(const std::filesystem::path& file, const std::string& data, int nVertex) :
+    DataReaderPrimaryGenerator{} {
     EventData(file, data);
     NVertex(nVertex);
 }
 
-FromDataPrimaryGenerator::~FromDataPrimaryGenerator() = default;
+DataReaderPrimaryGenerator::~DataReaderPrimaryGenerator() = default;
 
-auto FromDataPrimaryGenerator::EventData(const std::filesystem::path& file, const std::string& data) -> void {
+auto DataReaderPrimaryGenerator::EventData(const std::filesystem::path& file, const std::string& data) -> void {
     CheckG4Status();
     fChain = std::make_unique<TChain>(data.c_str());
     fChain->Add(file.generic_string().c_str());
@@ -69,21 +69,21 @@ auto FromDataPrimaryGenerator::EventData(const std::filesystem::path& file, cons
     fEndEntryForCurrentRun = 0;
 }
 
-auto FromDataPrimaryGenerator::NVertex(int n) -> void {
+auto DataReaderPrimaryGenerator::NVertex(int n) -> void {
     CheckG4Status();
     fNVertex = std::max(0, n);
 }
 
-auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
+auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
     const auto run{G4RunManager::GetRunManager()->GetCurrentRun()};
     if (fCurrentRun != std::pair{run, run->GetRunID()}) {
         fCurrentRun = {run, run->GetRunID()};
         fEndEntryForCurrentRun += run->GetNumberOfEventToBeProcessed();
     }
-    // use 'last entry' as reference index looks not good but G4Run may be destructed so I have to do so
+    // use 'last entry' as reference index looks not perfect but G4Run may be destructed so I have to do so
     const auto iBegin{fEndEntryForCurrentRun - run->GetNumberOfEventToBeProcessed() + event->GetEventID()};
 
-    auto& [reader, t, x, y, z, pID, pX, pY, pZ, weight]{fEventData};
+    auto& [reader, weight, t, x, y, z, pID, pX, pY, pZ]{fEventData};
     if (reader.IsInvalid()) [[unlikely]] {
         Mustard::PrintError("TTreeReader is invalid");
         return;
@@ -123,7 +123,7 @@ auto FromDataPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
     }
 }
 
-auto FromDataPrimaryGenerator::CheckG4Status() -> void {
+auto DataReaderPrimaryGenerator::CheckG4Status() -> void {
     switch (G4StateManager::GetStateManager()->GetCurrentState()) {
     case G4State_PreInit:
     case G4State_Init:
