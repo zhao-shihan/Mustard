@@ -108,7 +108,7 @@ auto MTMGenerator<M, N, A>::Bias(BiasFunction B) -> void {
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MTMGenerator<M, N, A>::MCMCDelta(double delta) -> void {
     if (delta <= 0 or 0.5 <= delta) [[unlikely]] {
-        PrintError(fmt::format("Erroneous MCMC delta (got {}, expects 0 < delta < 0.5)", delta));
+        PrintWarning(fmt::format("Suspicious MCMC delta (got {}, expects 0 < delta < 0.5)", delta));
     }
     fMCMCDelta = delta;
 }
