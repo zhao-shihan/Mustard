@@ -1,7 +1,7 @@
 #include "Mustard/Env/CLI/MonteCarloCLI.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Execution/Executor.h++"
-#include "Mustard/Parallel/ProcessSpecificPath.h++"
+#include "Mustard/IO/File.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Physics/Generator/RAMBO.h++"
@@ -9,7 +9,6 @@
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/UseXoshiro.h++"
 
-#include "TFile.h"
 #include "TH2D.h"
 
 #include "muc/math"
@@ -26,11 +25,7 @@ auto main(int argc, char* argv[]) -> int {
     Mustard::UseXoshiro<256> random;
     cli.SeedRandomIfFlagged();
 
-    const auto filePath{Mustard::Parallel::ProcessSpecificPath(cli->get("-o"))};
-    const TFile file{filePath.generic_string().c_str(), cli->get("--output-mode").c_str()};
-    if (not file.IsOpen()) {
-        return EXIT_FAILURE;
-    }
+    Mustard::File<TFile> file{cli->get("--output"), cli->get("--output-mode")};
 
     const auto nEvent{cli->get<unsigned long long>("n")};
     const auto nBin{gsl::narrow<int>(muc::llround(std::sqrt(nEvent / 100000)))};
