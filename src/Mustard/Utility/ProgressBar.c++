@@ -84,7 +84,7 @@ auto ProgressBar::operator=(ProgressBar&& other) noexcept -> ProgressBar& {
 auto ProgressBar::Start(std::size_t nTotal) -> void {
     fImpl = std::make_unique<Impl>(nTotal);
     fImpl->asyncPrint = std::async([this, progress{fImpl->progress}] {
-        indicators::show_console_cursor(false);
+        // indicators::show_console_cursor(false);
         fImpl->progressBar.set_option(indicators::option::PostfixText{
             fmt::format("{}/{}", progress, fImpl->total)});
         fImpl->progressBar.set_progress(progress);
@@ -112,7 +112,7 @@ auto ProgressBar::Stop() -> void {
     fImpl->asyncPrint.get();
     Print(fImpl->progress);
     fImpl->progressBar.mark_as_completed();
-    indicators::show_console_cursor(true);
+    // indicators::show_console_cursor(true);
     fImpl.reset();
 }
 
