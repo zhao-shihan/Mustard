@@ -41,12 +41,16 @@ constexpr Statistic<1>::Statistic(const S& sample, const W& weight) :
 }
 
 constexpr auto Statistic<1>::Fill(double sample, double weight) -> void {
-    fSumWX += weight * sample;
-    fSumWX2 += weight * muc::pow<2>(sample);
-    fSumWX3 += weight * muc::pow<3>(sample);
-    fSumWX4 += weight * muc::pow<4>(sample);
+    const auto wx{weight * sample};
+    fSumWX += wx;
+    wx *= sample;
+    fSumWX2 += wx;
+    wx *= sample;
+    fSumWX3 += wx;
+    wx *= sample;
+    fSumWX4 += wx;
     fSumW += weight;
-    fSumW2 += muc::pow<2>(weight);
+    fSumW2 += muc::pow(weight, 2);
 }
 
 template<std::ranges::input_range S>
@@ -101,7 +105,7 @@ constexpr auto Statistic<1>::CentralMoment() const -> double {
         return 0;
     }
     if constexpr (K == 2) {
-        return Moment<2>() - muc::pow<2>(Moment<1>());
+        return Moment<2>() - muc::pow(Moment<1>(), 2);
     }
     if constexpr (K == 3) {
         return muc::polynomial({Moment<3>(), -3 * Moment<2>(), 0, 2}, Moment<1>());
@@ -152,7 +156,7 @@ auto Statistic<N>::Fill(const T& sample, double weight) -> void {
     wx = wx.cwiseProduct(x).eval();
     fSumWX4 += wx;
     fSumW += weight;
-    fSumW2 += muc::pow<2>(weight);
+    fSumW2 += muc::pow(weight, 2);
 }
 
 template<int N>
@@ -237,7 +241,7 @@ auto Statistic<N>::CentralMoment(int i) const -> double {
         return 0;
     }
     if constexpr (K == 2) {
-        return Moment<2>(i) - muc::pow<2>(Moment<1>(i));
+        return Moment<2>(i) - muc::pow(Moment<1>(i), 2);
     }
     if constexpr (K == 3) {
         return muc::polynomial({Moment<3>(i), -3 * Moment<2>(i), 0, 2}, Moment<1>(i));

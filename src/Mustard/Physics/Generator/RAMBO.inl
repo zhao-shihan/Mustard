@@ -32,7 +32,7 @@ auto RAMBO<M, N>::operator()(InitialStateMomenta pI, const RandomState& u) -> Ev
 
         for (int i = 0; i < N; i++) {
             const auto c{2 * u[4 * i] - 1};
-            const auto s{std::sqrt(1 - muc::pow<2>(c))};
+            const auto s{std::sqrt(1 - muc::pow(c, 2))};
             const auto f{CLHEP::twopi * u[4 * i + 1]};
             const auto r12{u[4 * i + 2] * u[4 * i + 3]};
             const auto En{-std::log(std::max(std::numeric_limits<double>::min(), r12))};
@@ -44,7 +44,7 @@ auto RAMBO<M, N>::operator()(InitialStateMomenta pI, const RandomState& u) -> Ev
                 R[j] += p[i][j];
             }
         }
-        const auto Rmass{std::sqrt(muc::pow<2>(R[0]) - muc::hypot_sq(R[1], R[2], R[3]))};
+        const auto Rmass{std::sqrt(muc::pow(R[0], 2) - muc::hypot_sq(R[1], R[2], R[3]))};
         for (auto j{0}; j < 4; j++) {
             R[j] /= -Rmass;
         }
@@ -73,7 +73,7 @@ auto RAMBO<M, N>::operator()(InitialStateMomenta pI, const RandomState& u) -> Ev
 
     // if none of the reduced masses is > tolerance, return
     if (std::ranges::all_of(this->fMass, [&](auto m) {
-            return muc::pow<2>(m / cmsE) < muc::default_tolerance<double>;
+            return muc::pow(m / cmsE, 2) < muc::default_tolerance<double>;
         })) {
         return {weight, this->fPDGID, Momenta()};
     }
@@ -110,7 +110,7 @@ auto RAMBO<M, N>::operator()(InitialStateMomenta pI, const RandomState& u) -> Ev
     }
     // There's a typo in eq. 4.11 of the Rambo paper by Kleiss,
     // Stirling and Ellis, the Ecm below is not present there
-    weight *= muc::pow<2 * N - 3>(sumpnorm / cmsE) * prodpnormdivE * cmsE / sumpnormsquadivE;
+    weight *= muc::pow(sumpnorm / cmsE, 2 * N - 3) * prodpnormdivE * cmsE / sumpnormsquadivE;
 
     return {weight, this->fPDGID, Momenta()};
 }

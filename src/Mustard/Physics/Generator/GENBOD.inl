@@ -65,7 +65,7 @@ auto GENBOD<M, N>::operator()(InitialStateMomenta pI, const RandomState& u) -> E
         event.p[i] = {{0, -pRel[i - 1], 0}, muc::hypot(pRel[i - 1], this->fMass[i])}; // clang-format on
 
         const auto cZ{2 * (*random++) - 1};
-        const auto sZ{std::sqrt(1 - muc::pow<2>(cZ))};
+        const auto sZ{std::sqrt(1 - muc::pow(cZ, 2))};
         const auto phiY{CLHEP::twopi * (*random++)};
         const auto cY{std::cos(phiY)};
         const auto sY{std::sin(phiY)};

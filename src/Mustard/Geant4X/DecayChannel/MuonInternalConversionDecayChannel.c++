@@ -165,7 +165,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
             .Execute(n, [&, partialSumThreshold = muc::llround(std::sqrt(n / worldComm.size()))](auto i) {
                 MainSamplingLoop();
                 const auto bias{originalBias(fEvent.p)};
-                partialSum += muc::array2ld{bias, muc::pow<2>(bias)};
+                partialSum += muc::array2ld{bias, muc::pow(bias, 2)};
                 if ((i + 1) % partialSumThreshold == 0) {
                     sum += partialSum;
                     partialSum = {};
@@ -176,7 +176,7 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
     worldComm.allreduce([](auto a, auto b) { return a + b; }, sum);
     const auto result{gsl::narrow_cast<double>(sum[0] / n)};
     const auto error{gsl::narrow_cast<double>(std::sqrt(sum[1]) / n)};
-    const auto nEff{muc::pow<2>(result / error)};
+    const auto nEff{muc::pow(result / error, 2)};
 
     // --- below is protected ---
 
@@ -316,129 +316,129 @@ auto MuonInternalConversionDecayChannel::MSqMcMule2020(const GENBOD<1, 5>::Final
     using muc::pow;
 
     const auto if11 =
-        -4 * pow<4>(M2) * s13 * s24 - 4 * pow<2>(M1) * pow<2>(M2) * s13 * s24 -
-        2 * pow<2>(M2) * s13 * s15 * s24 - 2 * pow<2>(M2) * s13 * s16 * s24 +
-        2 * s13 * s15 * s16 * s24 + 4 * pow<2>(M1) * pow<2>(M2) * s24 * s35 +
-        4 * pow<2>(M2) * s15 * s24 * s35 + 2 * pow<2>(M2) * s16 * s24 * s35 -
-        s15 * s16 * s24 * s35 + pow<2>(s16) * s24 * s35 +
-        4 * pow<2>(M1) * pow<2>(M2) * s24 * s36 + 2 * pow<2>(M2) * s15 * s24 * s36 +
-        pow<2>(s15) * s24 * s36 + 4 * pow<2>(M2) * s16 * s24 * s36 -
-        s15 * s16 * s24 * s36 + 4 * M1 * pow<4>(M2) * s24 * s3n +
-        4 * pow<3>(M1) * pow<2>(M2) * s24 * s3n - 2 * M1 * s15 * s16 * s24 * s3n -
-        2 * pow<2>(M1) * s13 * s24 * s56 - 2 * pow<2>(M2) * s13 * s24 * s56 -
+        -4 * pow(M2, 4) * s13 * s24 - 4 * pow(M1, 2) * pow(M2, 2) * s13 * s24 -
+        2 * pow(M2, 2) * s13 * s15 * s24 - 2 * pow(M2, 2) * s13 * s16 * s24 +
+        2 * s13 * s15 * s16 * s24 + 4 * pow(M1, 2) * pow(M2, 2) * s24 * s35 +
+        4 * pow(M2, 2) * s15 * s24 * s35 + 2 * pow(M2, 2) * s16 * s24 * s35 -
+        s15 * s16 * s24 * s35 + pow(s16, 2) * s24 * s35 +
+        4 * pow(M1, 2) * pow(M2, 2) * s24 * s36 + 2 * pow(M2, 2) * s15 * s24 * s36 +
+        pow(s15, 2) * s24 * s36 + 4 * pow(M2, 2) * s16 * s24 * s36 -
+        s15 * s16 * s24 * s36 + 4 * M1 * pow(M2, 4) * s24 * s3n +
+        4 * pow(M1, 3) * pow(M2, 2) * s24 * s3n - 2 * M1 * s15 * s16 * s24 * s3n -
+        2 * pow(M1, 2) * s13 * s24 * s56 - 2 * pow(M2, 2) * s13 * s24 * s56 -
         s13 * s15 * s24 * s56 - s13 * s16 * s24 * s56 +
-        2 * pow<2>(M1) * s24 * s35 * s56 + s15 * s24 * s35 * s56 +
-        2 * pow<2>(M1) * s24 * s36 * s56 + s16 * s24 * s36 * s56 +
-        2 * pow<3>(M1) * s24 * s3n * s56 + 2 * M1 * pow<2>(M2) * s24 * s3n * s56 +
-        2 * M1 * pow<2>(M2) * s13 * s24 * s5n -
-        4 * M1 * pow<2>(M2) * s24 * s35 * s5n -
-        2 * M1 * pow<2>(M2) * s24 * s36 * s5n - M1 * s15 * s24 * s36 * s5n +
+        2 * pow(M1, 2) * s24 * s35 * s56 + s15 * s24 * s35 * s56 +
+        2 * pow(M1, 2) * s24 * s36 * s56 + s16 * s24 * s36 * s56 +
+        2 * pow(M1, 3) * s24 * s3n * s56 + 2 * M1 * pow(M2, 2) * s24 * s3n * s56 +
+        2 * M1 * pow(M2, 2) * s13 * s24 * s5n -
+        4 * M1 * pow(M2, 2) * s24 * s35 * s5n -
+        2 * M1 * pow(M2, 2) * s24 * s36 * s5n - M1 * s15 * s24 * s36 * s5n +
         M1 * s16 * s24 * s36 * s5n + M1 * s13 * s24 * s56 * s5n -
-        M1 * s24 * s35 * s56 * s5n + 2 * M1 * pow<2>(M2) * s13 * s24 * s6n -
-        2 * M1 * pow<2>(M2) * s24 * s35 * s6n + M1 * s15 * s24 * s35 * s6n -
-        M1 * s16 * s24 * s35 * s6n - 4 * M1 * pow<2>(M2) * s24 * s36 * s6n +
+        M1 * s24 * s35 * s56 * s5n + 2 * M1 * pow(M2, 2) * s13 * s24 * s6n -
+        2 * M1 * pow(M2, 2) * s24 * s35 * s6n + M1 * s15 * s24 * s35 * s6n -
+        M1 * s16 * s24 * s35 * s6n - 4 * M1 * pow(M2, 2) * s24 * s36 * s6n +
         M1 * s13 * s24 * s56 * s6n - M1 * s24 * s36 * s56 * s6n;
     const auto if22 =
-        -8 * pow<4>(M2) * s13 * s24 + 2 * pow<2>(M2) * s13 * s24 * s25 +
-        2 * pow<2>(M2) * s13 * s24 * s26 + 2 * s13 * s24 * s25 * s26 +
-        8 * M1 * pow<4>(M2) * s24 * s3n - 2 * M1 * pow<2>(M2) * s24 * s25 * s3n -
-        2 * M1 * pow<2>(M2) * s24 * s26 * s3n - 2 * M1 * s24 * s25 * s26 * s3n -
-        4 * pow<4>(M2) * s13 * s45 + 4 * pow<2>(M2) * s13 * s25 * s45 +
-        2 * pow<2>(M2) * s13 * s26 * s45 + s13 * s25 * s26 * s45 -
-        s13 * pow<2>(s26) * s45 + 4 * M1 * pow<4>(M2) * s3n * s45 -
-        4 * M1 * pow<2>(M2) * s25 * s3n * s45 -
-        2 * M1 * pow<2>(M2) * s26 * s3n * s45 - M1 * s25 * s26 * s3n * s45 +
-        M1 * pow<2>(s26) * s3n * s45 - 4 * pow<4>(M2) * s13 * s46 +
-        2 * pow<2>(M2) * s13 * s25 * s46 - s13 * pow<2>(s25) * s46 +
-        4 * pow<2>(M2) * s13 * s26 * s46 + s13 * s25 * s26 * s46 +
-        4 * M1 * pow<4>(M2) * s3n * s46 - 2 * M1 * pow<2>(M2) * s25 * s3n * s46 +
-        M1 * pow<2>(s25) * s3n * s46 - 4 * M1 * pow<2>(M2) * s26 * s3n * s46 -
-        M1 * s25 * s26 * s3n * s46 - 4 * pow<2>(M2) * s13 * s24 * s56 +
+        -8 * pow(M2, 4) * s13 * s24 + 2 * pow(M2, 2) * s13 * s24 * s25 +
+        2 * pow(M2, 2) * s13 * s24 * s26 + 2 * s13 * s24 * s25 * s26 +
+        8 * M1 * pow(M2, 4) * s24 * s3n - 2 * M1 * pow(M2, 2) * s24 * s25 * s3n -
+        2 * M1 * pow(M2, 2) * s24 * s26 * s3n - 2 * M1 * s24 * s25 * s26 * s3n -
+        4 * pow(M2, 4) * s13 * s45 + 4 * pow(M2, 2) * s13 * s25 * s45 +
+        2 * pow(M2, 2) * s13 * s26 * s45 + s13 * s25 * s26 * s45 -
+        s13 * pow(s26, 2) * s45 + 4 * M1 * pow(M2, 4) * s3n * s45 -
+        4 * M1 * pow(M2, 2) * s25 * s3n * s45 -
+        2 * M1 * pow(M2, 2) * s26 * s3n * s45 - M1 * s25 * s26 * s3n * s45 +
+        M1 * pow(s26, 2) * s3n * s45 - 4 * pow(M2, 4) * s13 * s46 +
+        2 * pow(M2, 2) * s13 * s25 * s46 - s13 * pow(s25, 2) * s46 +
+        4 * pow(M2, 2) * s13 * s26 * s46 + s13 * s25 * s26 * s46 +
+        4 * M1 * pow(M2, 4) * s3n * s46 - 2 * M1 * pow(M2, 2) * s25 * s3n * s46 +
+        M1 * pow(s25, 2) * s3n * s46 - 4 * M1 * pow(M2, 2) * s26 * s3n * s46 -
+        M1 * s25 * s26 * s3n * s46 - 4 * pow(M2, 2) * s13 * s24 * s56 +
         s13 * s24 * s25 * s56 + s13 * s24 * s26 * s56 +
-        4 * M1 * pow<2>(M2) * s24 * s3n * s56 - M1 * s24 * s25 * s3n * s56 -
-        M1 * s24 * s26 * s3n * s56 - 2 * pow<2>(M2) * s13 * s45 * s56 +
-        s13 * s25 * s45 * s56 + 2 * M1 * pow<2>(M2) * s3n * s45 * s56 -
-        M1 * s25 * s3n * s45 * s56 - 2 * pow<2>(M2) * s13 * s46 * s56 +
-        s13 * s26 * s46 * s56 + 2 * M1 * pow<2>(M2) * s3n * s46 * s56 -
+        4 * M1 * pow(M2, 2) * s24 * s3n * s56 - M1 * s24 * s25 * s3n * s56 -
+        M1 * s24 * s26 * s3n * s56 - 2 * pow(M2, 2) * s13 * s45 * s56 +
+        s13 * s25 * s45 * s56 + 2 * M1 * pow(M2, 2) * s3n * s45 * s56 -
+        M1 * s25 * s3n * s45 * s56 - 2 * pow(M2, 2) * s13 * s46 * s56 +
+        s13 * s26 * s46 * s56 + 2 * M1 * pow(M2, 2) * s3n * s46 * s56 -
         M1 * s26 * s3n * s46 * s56;
     const auto if33 =
-        -4 * pow<4>(M2) * s13 * s45 - 4 * pow<2>(M1) * pow<2>(M2) * s13 * s45 -
-        2 * pow<2>(M2) * s12 * s13 * s45 - 2 * pow<2>(M2) * s13 * s16 * s45 +
-        2 * s12 * s13 * s16 * s45 + 4 * pow<2>(M1) * pow<2>(M2) * s23 * s45 +
-        4 * pow<2>(M2) * s12 * s23 * s45 + 2 * pow<2>(M2) * s16 * s23 * s45 -
-        s12 * s16 * s23 * s45 + pow<2>(s16) * s23 * s45 -
-        2 * pow<2>(M1) * s13 * s26 * s45 - 2 * pow<2>(M2) * s13 * s26 * s45 -
+        -4 * pow(M2, 4) * s13 * s45 - 4 * pow(M1, 2) * pow(M2, 2) * s13 * s45 -
+        2 * pow(M2, 2) * s12 * s13 * s45 - 2 * pow(M2, 2) * s13 * s16 * s45 +
+        2 * s12 * s13 * s16 * s45 + 4 * pow(M1, 2) * pow(M2, 2) * s23 * s45 +
+        4 * pow(M2, 2) * s12 * s23 * s45 + 2 * pow(M2, 2) * s16 * s23 * s45 -
+        s12 * s16 * s23 * s45 + pow(s16, 2) * s23 * s45 -
+        2 * pow(M1, 2) * s13 * s26 * s45 - 2 * pow(M2, 2) * s13 * s26 * s45 -
         s12 * s13 * s26 * s45 - s13 * s16 * s26 * s45 +
-        2 * pow<2>(M1) * s23 * s26 * s45 + s12 * s23 * s26 * s45 +
-        2 * M1 * pow<2>(M2) * s13 * s2n * s45 -
-        4 * M1 * pow<2>(M2) * s23 * s2n * s45 + M1 * s13 * s26 * s2n * s45 -
-        M1 * s23 * s26 * s2n * s45 + 4 * pow<2>(M1) * pow<2>(M2) * s36 * s45 +
-        2 * pow<2>(M2) * s12 * s36 * s45 + pow<2>(s12) * s36 * s45 +
-        4 * pow<2>(M2) * s16 * s36 * s45 - s12 * s16 * s36 * s45 +
-        2 * pow<2>(M1) * s26 * s36 * s45 + s16 * s26 * s36 * s45 -
-        2 * M1 * pow<2>(M2) * s2n * s36 * s45 - M1 * s12 * s2n * s36 * s45 +
-        M1 * s16 * s2n * s36 * s45 + 4 * M1 * pow<4>(M2) * s3n * s45 +
-        4 * pow<3>(M1) * pow<2>(M2) * s3n * s45 - 2 * M1 * s12 * s16 * s3n * s45 +
-        2 * pow<3>(M1) * s26 * s3n * s45 + 2 * M1 * pow<2>(M2) * s26 * s3n * s45 +
-        2 * M1 * pow<2>(M2) * s13 * s45 * s6n -
-        2 * M1 * pow<2>(M2) * s23 * s45 * s6n + M1 * s12 * s23 * s45 * s6n -
+        2 * pow(M1, 2) * s23 * s26 * s45 + s12 * s23 * s26 * s45 +
+        2 * M1 * pow(M2, 2) * s13 * s2n * s45 -
+        4 * M1 * pow(M2, 2) * s23 * s2n * s45 + M1 * s13 * s26 * s2n * s45 -
+        M1 * s23 * s26 * s2n * s45 + 4 * pow(M1, 2) * pow(M2, 2) * s36 * s45 +
+        2 * pow(M2, 2) * s12 * s36 * s45 + pow(s12, 2) * s36 * s45 +
+        4 * pow(M2, 2) * s16 * s36 * s45 - s12 * s16 * s36 * s45 +
+        2 * pow(M1, 2) * s26 * s36 * s45 + s16 * s26 * s36 * s45 -
+        2 * M1 * pow(M2, 2) * s2n * s36 * s45 - M1 * s12 * s2n * s36 * s45 +
+        M1 * s16 * s2n * s36 * s45 + 4 * M1 * pow(M2, 4) * s3n * s45 +
+        4 * pow(M1, 3) * pow(M2, 2) * s3n * s45 - 2 * M1 * s12 * s16 * s3n * s45 +
+        2 * pow(M1, 3) * s26 * s3n * s45 + 2 * M1 * pow(M2, 2) * s26 * s3n * s45 +
+        2 * M1 * pow(M2, 2) * s13 * s45 * s6n -
+        2 * M1 * pow(M2, 2) * s23 * s45 * s6n + M1 * s12 * s23 * s45 * s6n -
         M1 * s16 * s23 * s45 * s6n + M1 * s13 * s26 * s45 * s6n -
-        4 * M1 * pow<2>(M2) * s36 * s45 * s6n - M1 * s26 * s36 * s45 * s6n;
+        4 * M1 * pow(M2, 2) * s36 * s45 * s6n - M1 * s26 * s36 * s45 * s6n;
     const auto if44 =
-        -4 * pow<4>(M2) * s13 * s24 + 4 * pow<2>(M2) * s13 * s24 * s25 -
-        2 * pow<2>(M2) * s13 * s24 * s26 + s13 * s24 * s25 * s26 +
-        4 * M1 * pow<4>(M2) * s24 * s3n - 4 * M1 * pow<2>(M2) * s24 * s25 * s3n +
-        2 * M1 * pow<2>(M2) * s24 * s26 * s3n - M1 * s24 * s25 * s26 * s3n -
-        8 * pow<4>(M2) * s13 * s45 + 2 * pow<2>(M2) * s13 * s25 * s45 -
-        4 * pow<2>(M2) * s13 * s26 * s45 + s13 * s25 * s26 * s45 +
-        8 * M1 * pow<4>(M2) * s3n * s45 - 2 * M1 * pow<2>(M2) * s25 * s3n * s45 +
-        4 * M1 * pow<2>(M2) * s26 * s3n * s45 - M1 * s25 * s26 * s3n * s45 -
-        4 * pow<4>(M2) * s13 * s46 + 2 * pow<2>(M2) * s13 * s25 * s46 -
-        s13 * pow<2>(s25) * s46 - 2 * pow<2>(M2) * s13 * s26 * s46 +
-        4 * M1 * pow<4>(M2) * s3n * s46 - 2 * M1 * pow<2>(M2) * s25 * s3n * s46 +
-        M1 * pow<2>(s25) * s3n * s46 + 2 * M1 * pow<2>(M2) * s26 * s3n * s46 +
-        2 * pow<2>(M2) * s13 * s24 * s56 + s13 * s24 * s25 * s56 -
-        2 * M1 * pow<2>(M2) * s24 * s3n * s56 - M1 * s24 * s25 * s3n * s56 +
-        2 * pow<2>(M2) * s13 * s45 * s56 + 2 * s13 * s25 * s45 * s56 +
-        s13 * s26 * s45 * s56 - 2 * M1 * pow<2>(M2) * s3n * s45 * s56 -
+        -4 * pow(M2, 4) * s13 * s24 + 4 * pow(M2, 2) * s13 * s24 * s25 -
+        2 * pow(M2, 2) * s13 * s24 * s26 + s13 * s24 * s25 * s26 +
+        4 * M1 * pow(M2, 4) * s24 * s3n - 4 * M1 * pow(M2, 2) * s24 * s25 * s3n +
+        2 * M1 * pow(M2, 2) * s24 * s26 * s3n - M1 * s24 * s25 * s26 * s3n -
+        8 * pow(M2, 4) * s13 * s45 + 2 * pow(M2, 2) * s13 * s25 * s45 -
+        4 * pow(M2, 2) * s13 * s26 * s45 + s13 * s25 * s26 * s45 +
+        8 * M1 * pow(M2, 4) * s3n * s45 - 2 * M1 * pow(M2, 2) * s25 * s3n * s45 +
+        4 * M1 * pow(M2, 2) * s26 * s3n * s45 - M1 * s25 * s26 * s3n * s45 -
+        4 * pow(M2, 4) * s13 * s46 + 2 * pow(M2, 2) * s13 * s25 * s46 -
+        s13 * pow(s25, 2) * s46 - 2 * pow(M2, 2) * s13 * s26 * s46 +
+        4 * M1 * pow(M2, 4) * s3n * s46 - 2 * M1 * pow(M2, 2) * s25 * s3n * s46 +
+        M1 * pow(s25, 2) * s3n * s46 + 2 * M1 * pow(M2, 2) * s26 * s3n * s46 +
+        2 * pow(M2, 2) * s13 * s24 * s56 + s13 * s24 * s25 * s56 -
+        2 * M1 * pow(M2, 2) * s24 * s3n * s56 - M1 * s24 * s25 * s3n * s56 +
+        2 * pow(M2, 2) * s13 * s45 * s56 + 2 * s13 * s25 * s45 * s56 +
+        s13 * s26 * s45 * s56 - 2 * M1 * pow(M2, 2) * s3n * s45 * s56 -
         2 * M1 * s25 * s3n * s45 * s56 - M1 * s26 * s3n * s45 * s56 +
-        4 * pow<2>(M2) * s13 * s46 * s56 + s13 * s25 * s46 * s56 +
-        s13 * s26 * s46 * s56 - 4 * M1 * pow<2>(M2) * s3n * s46 * s56 -
+        4 * pow(M2, 2) * s13 * s46 * s56 + s13 * s25 * s46 * s56 +
+        s13 * s26 * s46 * s56 - 4 * M1 * pow(M2, 2) * s3n * s46 * s56 -
         M1 * s25 * s3n * s46 * s56 - M1 * s26 * s3n * s46 * s56 -
-        s13 * s24 * pow<2>(s56) + M1 * s24 * s3n * pow<2>(s56);
+        s13 * s24 * pow(s56, 2) + M1 * s24 * s3n * pow(s56, 2);
     const auto if12 =
-        -8 * pow<4>(M2) * s14 * s23 - 4 * pow<2>(M2) * s12 * s13 * s24 -
-        2 * pow<2>(M2) * s15 * s23 * s24 - 2 * pow<2>(M2) * s16 * s23 * s24 +
-        2 * pow<2>(M2) * s13 * s14 * s25 + 2 * s13 * s16 * s24 * s25 +
-        2 * pow<2>(M2) * s13 * s14 * s26 + 2 * s13 * s15 * s24 * s26 +
-        8 * pow<4>(M2) * s12 * s34 - 2 * pow<2>(M2) * s15 * s25 * s34 -
-        2 * pow<2>(M2) * s16 * s26 * s34 - 8 * M1 * pow<4>(M2) * s2n * s34 +
-        2 * pow<2>(M2) * s12 * s24 * s35 + 2 * pow<2>(M2) * s14 * s25 * s35 -
+        -8 * pow(M2, 4) * s14 * s23 - 4 * pow(M2, 2) * s12 * s13 * s24 -
+        2 * pow(M2, 2) * s15 * s23 * s24 - 2 * pow(M2, 2) * s16 * s23 * s24 +
+        2 * pow(M2, 2) * s13 * s14 * s25 + 2 * s13 * s16 * s24 * s25 +
+        2 * pow(M2, 2) * s13 * s14 * s26 + 2 * s13 * s15 * s24 * s26 +
+        8 * pow(M2, 4) * s12 * s34 - 2 * pow(M2, 2) * s15 * s25 * s34 -
+        2 * pow(M2, 2) * s16 * s26 * s34 - 8 * M1 * pow(M2, 4) * s2n * s34 +
+        2 * pow(M2, 2) * s12 * s24 * s35 + 2 * pow(M2, 2) * s14 * s25 * s35 -
         s16 * s24 * s25 * s35 + s16 * s24 * s26 * s35 -
-        2 * M1 * pow<2>(M2) * s24 * s2n * s35 + 2 * pow<2>(M2) * s12 * s24 * s36 +
-        s15 * s24 * s25 * s36 + 2 * pow<2>(M2) * s14 * s26 * s36 -
-        s15 * s24 * s26 * s36 - 2 * M1 * pow<2>(M2) * s24 * s2n * s36 +
-        4 * M1 * pow<2>(M2) * s12 * s24 * s3n -
-        2 * M1 * pow<2>(M2) * s14 * s25 * s3n - 2 * M1 * s16 * s24 * s25 * s3n -
-        2 * M1 * pow<2>(M2) * s14 * s26 * s3n - 2 * M1 * s15 * s24 * s26 * s3n -
-        2 * pow<2>(M2) * s12 * s13 * s45 + 2 * pow<2>(M2) * s15 * s23 * s45 +
+        2 * M1 * pow(M2, 2) * s24 * s2n * s35 + 2 * pow(M2, 2) * s12 * s24 * s36 +
+        s15 * s24 * s25 * s36 + 2 * pow(M2, 2) * s14 * s26 * s36 -
+        s15 * s24 * s26 * s36 - 2 * M1 * pow(M2, 2) * s24 * s2n * s36 +
+        4 * M1 * pow(M2, 2) * s12 * s24 * s3n -
+        2 * M1 * pow(M2, 2) * s14 * s25 * s3n - 2 * M1 * s16 * s24 * s25 * s3n -
+        2 * M1 * pow(M2, 2) * s14 * s26 * s3n - 2 * M1 * s15 * s24 * s26 * s3n -
+        2 * pow(M2, 2) * s12 * s13 * s45 + 2 * pow(M2, 2) * s15 * s23 * s45 +
         s13 * s15 * s26 * s45 - s13 * s16 * s26 * s45 -
-        2 * pow<2>(M2) * s12 * s35 * s45 + 2 * s16 * s26 * s35 * s45 +
-        2 * M1 * pow<2>(M2) * s2n * s35 * s45 - 2 * s15 * s26 * s36 * s45 +
-        2 * M1 * pow<2>(M2) * s12 * s3n * s45 - M1 * s15 * s26 * s3n * s45 +
-        M1 * s16 * s26 * s3n * s45 - 2 * pow<2>(M2) * s12 * s13 * s46 +
-        2 * pow<2>(M2) * s16 * s23 * s46 - s13 * s15 * s25 * s46 +
+        2 * pow(M2, 2) * s12 * s35 * s45 + 2 * s16 * s26 * s35 * s45 +
+        2 * M1 * pow(M2, 2) * s2n * s35 * s45 - 2 * s15 * s26 * s36 * s45 +
+        2 * M1 * pow(M2, 2) * s12 * s3n * s45 - M1 * s15 * s26 * s3n * s45 +
+        M1 * s16 * s26 * s3n * s45 - 2 * pow(M2, 2) * s12 * s13 * s46 +
+        2 * pow(M2, 2) * s16 * s23 * s46 - s13 * s15 * s25 * s46 +
         s13 * s16 * s25 * s46 - 2 * s16 * s25 * s35 * s46 -
-        2 * pow<2>(M2) * s12 * s36 * s46 + 2 * s15 * s25 * s36 * s46 +
-        2 * M1 * pow<2>(M2) * s2n * s36 * s46 +
-        2 * M1 * pow<2>(M2) * s12 * s3n * s46 + M1 * s15 * s25 * s3n * s46 -
-        M1 * s16 * s25 * s3n * s46 + 8 * M1 * pow<4>(M2) * s23 * s4n -
-        2 * M1 * pow<2>(M2) * s25 * s35 * s4n -
-        2 * M1 * pow<2>(M2) * s26 * s36 * s4n - 4 * pow<2>(M2) * s14 * s23 * s56 -
+        2 * pow(M2, 2) * s12 * s36 * s46 + 2 * s15 * s25 * s36 * s46 +
+        2 * M1 * pow(M2, 2) * s2n * s36 * s46 +
+        2 * M1 * pow(M2, 2) * s12 * s3n * s46 + M1 * s15 * s25 * s3n * s46 -
+        M1 * s16 * s25 * s3n * s46 + 8 * M1 * pow(M2, 4) * s23 * s4n -
+        2 * M1 * pow(M2, 2) * s25 * s35 * s4n -
+        2 * M1 * pow(M2, 2) * s26 * s36 * s4n - 4 * pow(M2, 2) * s14 * s23 * s56 -
         2 * s12 * s13 * s24 * s56 - s15 * s23 * s24 * s56 - s16 * s23 * s24 * s56 +
         s13 * s14 * s25 * s56 + s13 * s14 * s26 * s56 +
-        4 * pow<2>(M2) * s12 * s34 * s56 + s16 * s25 * s34 * s56 +
-        s15 * s26 * s34 * s56 - 4 * M1 * pow<2>(M2) * s2n * s34 * s56 +
+        4 * pow(M2, 2) * s12 * s34 * s56 + s16 * s25 * s34 * s56 +
+        s15 * s26 * s34 * s56 - 4 * M1 * pow(M2, 2) * s2n * s34 * s56 +
         s12 * s24 * s35 * s56 - s14 * s26 * s35 * s56 - M1 * s24 * s2n * s35 * s56 +
         s12 * s24 * s36 * s56 - s14 * s25 * s36 * s56 - M1 * s24 * s2n * s36 * s56 +
         2 * M1 * s12 * s24 * s3n * s56 - M1 * s14 * s25 * s3n * s56 -
@@ -446,304 +446,304 @@ auto MuonInternalConversionDecayChannel::MSqMcMule2020(const GENBOD<1, 5>::Final
         s12 * s36 * s45 * s56 - M1 * s2n * s36 * s45 * s56 +
         M1 * s12 * s3n * s45 * s56 - s12 * s13 * s46 * s56 - s15 * s23 * s46 * s56 +
         s12 * s35 * s46 * s56 - M1 * s2n * s35 * s46 * s56 +
-        M1 * s12 * s3n * s46 * s56 + 4 * M1 * pow<2>(M2) * s23 * s4n * s56 +
+        M1 * s12 * s3n * s46 * s56 + 4 * M1 * pow(M2, 2) * s23 * s4n * s56 +
         M1 * s26 * s35 * s4n * s56 + M1 * s25 * s36 * s4n * s56 +
-        2 * M1 * pow<2>(M2) * s23 * s24 * s5n +
-        2 * M1 * pow<2>(M2) * s25 * s34 * s5n - M1 * s24 * s25 * s36 * s5n +
-        M1 * s24 * s26 * s36 * s5n - 2 * M1 * pow<2>(M2) * s23 * s45 * s5n +
+        2 * M1 * pow(M2, 2) * s23 * s24 * s5n +
+        2 * M1 * pow(M2, 2) * s25 * s34 * s5n - M1 * s24 * s25 * s36 * s5n +
+        M1 * s24 * s26 * s36 * s5n - 2 * M1 * pow(M2, 2) * s23 * s45 * s5n +
         2 * M1 * s26 * s36 * s45 * s5n - 2 * M1 * s25 * s36 * s46 * s5n +
         M1 * s23 * s24 * s56 * s5n - M1 * s26 * s34 * s56 * s5n +
-        M1 * s23 * s46 * s56 * s5n + 2 * M1 * pow<2>(M2) * s23 * s24 * s6n +
-        2 * M1 * pow<2>(M2) * s26 * s34 * s6n + M1 * s24 * s25 * s35 * s6n -
+        M1 * s23 * s46 * s56 * s5n + 2 * M1 * pow(M2, 2) * s23 * s24 * s6n +
+        2 * M1 * pow(M2, 2) * s26 * s34 * s6n + M1 * s24 * s25 * s35 * s6n -
         M1 * s24 * s26 * s35 * s6n - 2 * M1 * s26 * s35 * s45 * s6n -
-        2 * M1 * pow<2>(M2) * s23 * s46 * s6n + 2 * M1 * s25 * s35 * s46 * s6n +
+        2 * M1 * pow(M2, 2) * s23 * s46 * s6n + 2 * M1 * s25 * s35 * s46 * s6n +
         M1 * s23 * s24 * s56 * s6n - M1 * s25 * s34 * s56 * s6n +
         M1 * s23 * s45 * s56 * s6n;
     const auto if13 =
-        4 * pow<4>(M2) * s13 * s14 - 2 * pow<2>(M2) * s13 * s14 * s16 -
-        2 * pow<4>(M2) * s14 * s23 - pow<2>(M2) * s14 * s15 * s23 -
-        pow<2>(M2) * s14 * s16 * s23 + 2 * pow<4>(M2) * s13 * s24 +
-        2 * pow<2>(M1) * pow<2>(M2) * s13 * s24 - pow<2>(M2) * s13 * s15 * s24 +
-        pow<2>(M2) * s13 * s16 * s24 - s13 * s15 * s16 * s24 +
-        2 * pow<2>(M2) * s13 * s14 * s25 + s13 * s14 * s16 * s25 +
-        2 * pow<2>(M2) * s13 * s14 * s26 - 8 * pow<2>(M1) * pow<4>(M2) * s34 -
-        2 * pow<4>(M2) * s12 * s34 - 2 * pow<4>(M2) * s15 * s34 +
-        2 * pow<2>(M2) * s12 * s15 * s34 - 4 * pow<4>(M2) * s16 * s34 +
-        2 * pow<2>(M2) * s12 * s16 * s34 + 2 * pow<2>(M2) * s15 * s16 * s34 -
-        4 * pow<2>(M1) * pow<2>(M2) * s25 * s34 + pow<2>(s16) * s25 * s34 -
-        4 * pow<2>(M1) * pow<2>(M2) * s26 * s34 - pow<2>(M2) * s15 * s26 * s34 -
-        pow<2>(M2) * s16 * s26 * s34 + 2 * M1 * pow<4>(M2) * s2n * s34 -
-        M1 * pow<2>(M2) * s15 * s2n * s34 - M1 * pow<2>(M2) * s16 * s2n * s34 -
-        2 * pow<4>(M2) * s14 * s35 - pow<2>(M2) * s12 * s14 * s35 -
-        pow<2>(M2) * s14 * s16 * s35 + 2 * pow<2>(M1) * pow<2>(M2) * s24 * s35 -
-        pow<2>(s16) * s24 * s35 - pow<2>(M2) * s14 * s26 * s35 -
-        4 * pow<4>(M2) * s14 * s36 - pow<2>(M2) * s12 * s14 * s36 -
-        pow<2>(M2) * s14 * s15 * s36 - 2 * pow<2>(M1) * pow<2>(M2) * s24 * s36 -
-        2 * pow<2>(M2) * s16 * s24 * s36 + s15 * s16 * s24 * s36 -
-        s14 * s16 * s25 * s36 - pow<2>(M2) * s14 * s26 * s36 +
-        2 * M1 * pow<2>(M2) * s14 * s16 * s3n - 2 * M1 * pow<4>(M2) * s24 * s3n -
-        2 * pow<3>(M1) * pow<2>(M2) * s24 * s3n + M1 * s15 * s16 * s24 * s3n -
-        M1 * s14 * s16 * s25 * s3n + 2 * pow<4>(M2) * s13 * s45 +
-        2 * pow<2>(M1) * pow<2>(M2) * s13 * s45 - pow<2>(M2) * s12 * s13 * s45 +
-        pow<2>(M2) * s13 * s16 * s45 - s12 * s13 * s16 * s45 +
-        2 * pow<2>(M1) * pow<2>(M2) * s23 * s45 - pow<2>(s16) * s23 * s45 +
-        pow<2>(M1) * s13 * s26 * s45 + pow<2>(M2) * s13 * s26 * s45 +
-        s13 * s16 * s26 * s45 + M1 * pow<2>(M2) * s13 * s2n * s45 -
-        2 * pow<2>(M1) * pow<2>(M2) * s36 * s45 - 2 * pow<2>(M2) * s16 * s36 * s45 +
-        s12 * s16 * s36 * s45 - 2 * pow<2>(M1) * s26 * s36 * s45 -
+        4 * pow(M2, 4) * s13 * s14 - 2 * pow(M2, 2) * s13 * s14 * s16 -
+        2 * pow(M2, 4) * s14 * s23 - pow(M2, 2) * s14 * s15 * s23 -
+        pow(M2, 2) * s14 * s16 * s23 + 2 * pow(M2, 4) * s13 * s24 +
+        2 * pow(M1, 2) * pow(M2, 2) * s13 * s24 - pow(M2, 2) * s13 * s15 * s24 +
+        pow(M2, 2) * s13 * s16 * s24 - s13 * s15 * s16 * s24 +
+        2 * pow(M2, 2) * s13 * s14 * s25 + s13 * s14 * s16 * s25 +
+        2 * pow(M2, 2) * s13 * s14 * s26 - 8 * pow(M1, 2) * pow(M2, 4) * s34 -
+        2 * pow(M2, 4) * s12 * s34 - 2 * pow(M2, 4) * s15 * s34 +
+        2 * pow(M2, 2) * s12 * s15 * s34 - 4 * pow(M2, 4) * s16 * s34 +
+        2 * pow(M2, 2) * s12 * s16 * s34 + 2 * pow(M2, 2) * s15 * s16 * s34 -
+        4 * pow(M1, 2) * pow(M2, 2) * s25 * s34 + pow(s16, 2) * s25 * s34 -
+        4 * pow(M1, 2) * pow(M2, 2) * s26 * s34 - pow(M2, 2) * s15 * s26 * s34 -
+        pow(M2, 2) * s16 * s26 * s34 + 2 * M1 * pow(M2, 4) * s2n * s34 -
+        M1 * pow(M2, 2) * s15 * s2n * s34 - M1 * pow(M2, 2) * s16 * s2n * s34 -
+        2 * pow(M2, 4) * s14 * s35 - pow(M2, 2) * s12 * s14 * s35 -
+        pow(M2, 2) * s14 * s16 * s35 + 2 * pow(M1, 2) * pow(M2, 2) * s24 * s35 -
+        pow(s16, 2) * s24 * s35 - pow(M2, 2) * s14 * s26 * s35 -
+        4 * pow(M2, 4) * s14 * s36 - pow(M2, 2) * s12 * s14 * s36 -
+        pow(M2, 2) * s14 * s15 * s36 - 2 * pow(M1, 2) * pow(M2, 2) * s24 * s36 -
+        2 * pow(M2, 2) * s16 * s24 * s36 + s15 * s16 * s24 * s36 -
+        s14 * s16 * s25 * s36 - pow(M2, 2) * s14 * s26 * s36 +
+        2 * M1 * pow(M2, 2) * s14 * s16 * s3n - 2 * M1 * pow(M2, 4) * s24 * s3n -
+        2 * pow(M1, 3) * pow(M2, 2) * s24 * s3n + M1 * s15 * s16 * s24 * s3n -
+        M1 * s14 * s16 * s25 * s3n + 2 * pow(M2, 4) * s13 * s45 +
+        2 * pow(M1, 2) * pow(M2, 2) * s13 * s45 - pow(M2, 2) * s12 * s13 * s45 +
+        pow(M2, 2) * s13 * s16 * s45 - s12 * s13 * s16 * s45 +
+        2 * pow(M1, 2) * pow(M2, 2) * s23 * s45 - pow(s16, 2) * s23 * s45 +
+        pow(M1, 2) * s13 * s26 * s45 + pow(M2, 2) * s13 * s26 * s45 +
+        s13 * s16 * s26 * s45 + M1 * pow(M2, 2) * s13 * s2n * s45 -
+        2 * pow(M1, 2) * pow(M2, 2) * s36 * s45 - 2 * pow(M2, 2) * s16 * s36 * s45 +
+        s12 * s16 * s36 * s45 - 2 * pow(M1, 2) * s26 * s36 * s45 -
         s16 * s26 * s36 * s45 - M1 * s16 * s2n * s36 * s45 -
-        2 * M1 * pow<4>(M2) * s3n * s45 - 2 * pow<3>(M1) * pow<2>(M2) * s3n * s45 +
-        M1 * s12 * s16 * s3n * s45 - pow<3>(M1) * s26 * s3n * s45 -
-        M1 * pow<2>(M2) * s26 * s3n * s45 + 2 * pow<4>(M2) * s13 * s46 +
-        2 * pow<2>(M1) * pow<2>(M2) * s13 * s46 - pow<2>(M2) * s12 * s13 * s46 -
-        pow<2>(M2) * s13 * s15 * s46 + 2 * pow<2>(M1) * pow<2>(M2) * s23 * s46 +
-        pow<2>(M2) * s15 * s23 * s46 + pow<2>(M2) * s16 * s23 * s46 -
-        pow<2>(M1) * s13 * s25 * s46 - pow<2>(M2) * s13 * s25 * s46 -
-        s13 * s16 * s25 * s46 + M1 * pow<2>(M2) * s13 * s2n * s46 +
-        2 * pow<2>(M1) * pow<2>(M2) * s35 * s46 + pow<2>(M2) * s12 * s35 * s46 +
-        pow<2>(M2) * s16 * s35 * s46 - M1 * pow<2>(M2) * s2n * s35 * s46 +
-        pow<2>(M2) * s12 * s36 * s46 + pow<2>(M2) * s15 * s36 * s46 +
-        2 * pow<2>(M1) * s25 * s36 * s46 + s16 * s25 * s36 * s46 -
-        M1 * pow<2>(M2) * s2n * s36 * s46 - 2 * M1 * pow<4>(M2) * s3n * s46 -
-        2 * pow<3>(M1) * pow<2>(M2) * s3n * s46 + pow<3>(M1) * s25 * s3n * s46 +
-        M1 * pow<2>(M2) * s25 * s3n * s46 - 4 * M1 * pow<4>(M2) * s13 * s4n +
-        2 * M1 * pow<4>(M2) * s23 * s4n + M1 * pow<2>(M2) * s15 * s23 * s4n +
-        M1 * pow<2>(M2) * s16 * s23 * s4n - 2 * M1 * pow<2>(M2) * s13 * s25 * s4n -
-        2 * M1 * pow<2>(M2) * s13 * s26 * s4n + 2 * M1 * pow<4>(M2) * s35 * s4n +
-        M1 * pow<2>(M2) * s12 * s35 * s4n + M1 * pow<2>(M2) * s16 * s35 * s4n +
-        M1 * pow<2>(M2) * s26 * s35 * s4n + 4 * M1 * pow<4>(M2) * s36 * s4n +
-        M1 * pow<2>(M2) * s12 * s36 * s4n + M1 * pow<2>(M2) * s15 * s36 * s4n +
-        M1 * s16 * s25 * s36 * s4n + M1 * pow<2>(M2) * s26 * s36 * s4n +
-        2 * pow<2>(M2) * s13 * s14 * s56 - pow<2>(M2) * s14 * s23 * s56 +
-        pow<2>(M1) * s13 * s24 * s56 + pow<2>(M2) * s13 * s24 * s56 +
-        s13 * s16 * s24 * s56 - 4 * pow<2>(M1) * pow<2>(M2) * s34 * s56 -
-        pow<2>(M2) * s12 * s34 * s56 - pow<2>(M2) * s16 * s34 * s56 +
-        M1 * pow<2>(M2) * s2n * s34 * s56 - pow<2>(M2) * s14 * s36 * s56 -
-        2 * pow<2>(M1) * s24 * s36 * s56 - s16 * s24 * s36 * s56 -
-        pow<3>(M1) * s24 * s3n * s56 - M1 * pow<2>(M2) * s24 * s3n * s56 -
-        2 * M1 * pow<2>(M2) * s13 * s4n * s56 + M1 * pow<2>(M2) * s23 * s4n * s56 +
-        M1 * pow<2>(M2) * s36 * s4n * s56 + M1 * pow<2>(M2) * s13 * s24 * s5n +
-        2 * M1 * pow<4>(M2) * s34 * s5n - M1 * pow<2>(M2) * s12 * s34 * s5n -
-        M1 * pow<2>(M2) * s16 * s34 * s5n + M1 * pow<2>(M2) * s26 * s34 * s5n -
-        M1 * s16 * s24 * s36 * s5n + M1 * pow<2>(M2) * s13 * s46 * s5n -
-        M1 * pow<2>(M2) * s23 * s46 * s5n - M1 * pow<2>(M2) * s36 * s46 * s5n -
-        M1 * pow<2>(M2) * s13 * s24 * s6n + 4 * M1 * pow<4>(M2) * s34 * s6n -
-        M1 * pow<2>(M2) * s12 * s34 * s6n - M1 * pow<2>(M2) * s15 * s34 * s6n -
-        M1 * s16 * s25 * s34 * s6n + M1 * pow<2>(M2) * s26 * s34 * s6n +
-        M1 * s16 * s24 * s35 * s6n + 2 * M1 * pow<2>(M2) * s24 * s36 * s6n -
-        M1 * pow<2>(M2) * s13 * s45 * s6n + M1 * s16 * s23 * s45 * s6n -
-        M1 * s13 * s26 * s45 * s6n + 2 * M1 * pow<2>(M2) * s36 * s45 * s6n +
-        M1 * s26 * s36 * s45 * s6n - M1 * pow<2>(M2) * s23 * s46 * s6n +
-        M1 * s13 * s25 * s46 * s6n - M1 * pow<2>(M2) * s35 * s46 * s6n -
+        2 * M1 * pow(M2, 4) * s3n * s45 - 2 * pow(M1, 3) * pow(M2, 2) * s3n * s45 +
+        M1 * s12 * s16 * s3n * s45 - pow(M1, 3) * s26 * s3n * s45 -
+        M1 * pow(M2, 2) * s26 * s3n * s45 + 2 * pow(M2, 4) * s13 * s46 +
+        2 * pow(M1, 2) * pow(M2, 2) * s13 * s46 - pow(M2, 2) * s12 * s13 * s46 -
+        pow(M2, 2) * s13 * s15 * s46 + 2 * pow(M1, 2) * pow(M2, 2) * s23 * s46 +
+        pow(M2, 2) * s15 * s23 * s46 + pow(M2, 2) * s16 * s23 * s46 -
+        pow(M1, 2) * s13 * s25 * s46 - pow(M2, 2) * s13 * s25 * s46 -
+        s13 * s16 * s25 * s46 + M1 * pow(M2, 2) * s13 * s2n * s46 +
+        2 * pow(M1, 2) * pow(M2, 2) * s35 * s46 + pow(M2, 2) * s12 * s35 * s46 +
+        pow(M2, 2) * s16 * s35 * s46 - M1 * pow(M2, 2) * s2n * s35 * s46 +
+        pow(M2, 2) * s12 * s36 * s46 + pow(M2, 2) * s15 * s36 * s46 +
+        2 * pow(M1, 2) * s25 * s36 * s46 + s16 * s25 * s36 * s46 -
+        M1 * pow(M2, 2) * s2n * s36 * s46 - 2 * M1 * pow(M2, 4) * s3n * s46 -
+        2 * pow(M1, 3) * pow(M2, 2) * s3n * s46 + pow(M1, 3) * s25 * s3n * s46 +
+        M1 * pow(M2, 2) * s25 * s3n * s46 - 4 * M1 * pow(M2, 4) * s13 * s4n +
+        2 * M1 * pow(M2, 4) * s23 * s4n + M1 * pow(M2, 2) * s15 * s23 * s4n +
+        M1 * pow(M2, 2) * s16 * s23 * s4n - 2 * M1 * pow(M2, 2) * s13 * s25 * s4n -
+        2 * M1 * pow(M2, 2) * s13 * s26 * s4n + 2 * M1 * pow(M2, 4) * s35 * s4n +
+        M1 * pow(M2, 2) * s12 * s35 * s4n + M1 * pow(M2, 2) * s16 * s35 * s4n +
+        M1 * pow(M2, 2) * s26 * s35 * s4n + 4 * M1 * pow(M2, 4) * s36 * s4n +
+        M1 * pow(M2, 2) * s12 * s36 * s4n + M1 * pow(M2, 2) * s15 * s36 * s4n +
+        M1 * s16 * s25 * s36 * s4n + M1 * pow(M2, 2) * s26 * s36 * s4n +
+        2 * pow(M2, 2) * s13 * s14 * s56 - pow(M2, 2) * s14 * s23 * s56 +
+        pow(M1, 2) * s13 * s24 * s56 + pow(M2, 2) * s13 * s24 * s56 +
+        s13 * s16 * s24 * s56 - 4 * pow(M1, 2) * pow(M2, 2) * s34 * s56 -
+        pow(M2, 2) * s12 * s34 * s56 - pow(M2, 2) * s16 * s34 * s56 +
+        M1 * pow(M2, 2) * s2n * s34 * s56 - pow(M2, 2) * s14 * s36 * s56 -
+        2 * pow(M1, 2) * s24 * s36 * s56 - s16 * s24 * s36 * s56 -
+        pow(M1, 3) * s24 * s3n * s56 - M1 * pow(M2, 2) * s24 * s3n * s56 -
+        2 * M1 * pow(M2, 2) * s13 * s4n * s56 + M1 * pow(M2, 2) * s23 * s4n * s56 +
+        M1 * pow(M2, 2) * s36 * s4n * s56 + M1 * pow(M2, 2) * s13 * s24 * s5n +
+        2 * M1 * pow(M2, 4) * s34 * s5n - M1 * pow(M2, 2) * s12 * s34 * s5n -
+        M1 * pow(M2, 2) * s16 * s34 * s5n + M1 * pow(M2, 2) * s26 * s34 * s5n -
+        M1 * s16 * s24 * s36 * s5n + M1 * pow(M2, 2) * s13 * s46 * s5n -
+        M1 * pow(M2, 2) * s23 * s46 * s5n - M1 * pow(M2, 2) * s36 * s46 * s5n -
+        M1 * pow(M2, 2) * s13 * s24 * s6n + 4 * M1 * pow(M2, 4) * s34 * s6n -
+        M1 * pow(M2, 2) * s12 * s34 * s6n - M1 * pow(M2, 2) * s15 * s34 * s6n -
+        M1 * s16 * s25 * s34 * s6n + M1 * pow(M2, 2) * s26 * s34 * s6n +
+        M1 * s16 * s24 * s35 * s6n + 2 * M1 * pow(M2, 2) * s24 * s36 * s6n -
+        M1 * pow(M2, 2) * s13 * s45 * s6n + M1 * s16 * s23 * s45 * s6n -
+        M1 * s13 * s26 * s45 * s6n + 2 * M1 * pow(M2, 2) * s36 * s45 * s6n +
+        M1 * s26 * s36 * s45 * s6n - M1 * pow(M2, 2) * s23 * s46 * s6n +
+        M1 * s13 * s25 * s46 * s6n - M1 * pow(M2, 2) * s35 * s46 * s6n -
         M1 * s25 * s36 * s46 * s6n - M1 * s13 * s24 * s56 * s6n +
-        M1 * pow<2>(M2) * s34 * s56 * s6n + M1 * s24 * s36 * s56 * s6n;
+        M1 * pow(M2, 2) * s34 * s56 * s6n + M1 * s24 * s36 * s56 * s6n;
     const auto if14 =
-        -4 * pow<4>(M2) * s14 * s23 - 2 * pow<2>(M2) * s12 * s13 * s24 +
-        4 * pow<2>(M2) * s13 * s15 * s24 - 4 * pow<2>(M2) * s13 * s16 * s24 -
-        2 * pow<2>(M2) * s16 * s23 * s24 + 2 * pow<2>(M2) * s13 * s14 * s25 +
-        s13 * s16 * s24 * s25 + s13 * s15 * s24 * s26 + 4 * pow<4>(M2) * s12 * s34 -
-        2 * pow<4>(M2) * s15 * s34 + 2 * pow<4>(M2) * s16 * s34 -
-        pow<2>(M2) * s15 * s25 * s34 + pow<2>(M2) * s16 * s25 * s34 -
-        pow<2>(M2) * s15 * s26 * s34 - pow<2>(M2) * s16 * s26 * s34 -
-        4 * M1 * pow<4>(M2) * s2n * s34 + 2 * pow<4>(M2) * s14 * s35 +
-        4 * pow<2>(M2) * s16 * s24 * s35 + pow<2>(M2) * s14 * s25 * s35 +
-        pow<2>(M2) * s14 * s26 * s35 + s16 * s24 * s26 * s35 -
-        2 * pow<4>(M2) * s14 * s36 + 2 * pow<2>(M2) * s12 * s24 * s36 -
-        4 * pow<2>(M2) * s15 * s24 * s36 - pow<2>(M2) * s14 * s25 * s36 +
-        pow<2>(M2) * s14 * s26 * s36 - s15 * s24 * s26 * s36 -
-        2 * M1 * pow<2>(M2) * s24 * s2n * s36 +
-        2 * M1 * pow<2>(M2) * s12 * s24 * s3n -
-        4 * M1 * pow<2>(M2) * s15 * s24 * s3n +
-        4 * M1 * pow<2>(M2) * s16 * s24 * s3n -
-        2 * M1 * pow<2>(M2) * s14 * s25 * s3n - M1 * s16 * s24 * s25 * s3n -
-        M1 * s15 * s24 * s26 * s3n - 2 * pow<2>(M2) * s12 * s13 * s45 +
-        2 * pow<2>(M2) * s13 * s15 * s45 - 2 * pow<2>(M2) * s13 * s16 * s45 +
-        pow<2>(M2) * s15 * s23 * s45 - pow<2>(M2) * s16 * s23 * s45 +
-        s13 * s15 * s26 * s45 - pow<2>(M2) * s12 * s35 * s45 +
-        pow<2>(M2) * s16 * s35 * s45 + s16 * s26 * s35 * s45 +
-        M1 * pow<2>(M2) * s2n * s35 * s45 + pow<2>(M2) * s12 * s36 * s45 -
-        pow<2>(M2) * s15 * s36 * s45 - s15 * s26 * s36 * s45 -
-        M1 * pow<2>(M2) * s2n * s36 * s45 + 2 * M1 * pow<2>(M2) * s12 * s3n * s45 -
-        2 * M1 * pow<2>(M2) * s15 * s3n * s45 +
-        2 * M1 * pow<2>(M2) * s16 * s3n * s45 - M1 * s15 * s26 * s3n * s45 +
-        2 * pow<2>(M2) * s13 * s15 * s46 - 2 * pow<2>(M2) * s13 * s16 * s46 +
-        pow<2>(M2) * s15 * s23 * s46 + pow<2>(M2) * s16 * s23 * s46 -
-        s13 * s15 * s25 * s46 - pow<2>(M2) * s12 * s35 * s46 +
-        pow<2>(M2) * s16 * s35 * s46 - s16 * s25 * s35 * s46 +
-        M1 * pow<2>(M2) * s2n * s35 * s46 - pow<2>(M2) * s12 * s36 * s46 -
-        pow<2>(M2) * s15 * s36 * s46 + s15 * s25 * s36 * s46 +
-        M1 * pow<2>(M2) * s2n * s36 * s46 - 2 * M1 * pow<2>(M2) * s15 * s3n * s46 +
-        2 * M1 * pow<2>(M2) * s16 * s3n * s46 + M1 * s15 * s25 * s3n * s46 +
-        4 * M1 * pow<4>(M2) * s23 * s4n - 2 * M1 * pow<4>(M2) * s35 * s4n -
-        M1 * pow<2>(M2) * s25 * s35 * s4n - M1 * pow<2>(M2) * s26 * s35 * s4n +
-        2 * M1 * pow<4>(M2) * s36 * s4n + M1 * pow<2>(M2) * s25 * s36 * s4n -
-        M1 * pow<2>(M2) * s26 * s36 * s4n - 2 * pow<2>(M2) * s14 * s23 * s56 -
+        -4 * pow(M2, 4) * s14 * s23 - 2 * pow(M2, 2) * s12 * s13 * s24 +
+        4 * pow(M2, 2) * s13 * s15 * s24 - 4 * pow(M2, 2) * s13 * s16 * s24 -
+        2 * pow(M2, 2) * s16 * s23 * s24 + 2 * pow(M2, 2) * s13 * s14 * s25 +
+        s13 * s16 * s24 * s25 + s13 * s15 * s24 * s26 + 4 * pow(M2, 4) * s12 * s34 -
+        2 * pow(M2, 4) * s15 * s34 + 2 * pow(M2, 4) * s16 * s34 -
+        pow(M2, 2) * s15 * s25 * s34 + pow(M2, 2) * s16 * s25 * s34 -
+        pow(M2, 2) * s15 * s26 * s34 - pow(M2, 2) * s16 * s26 * s34 -
+        4 * M1 * pow(M2, 4) * s2n * s34 + 2 * pow(M2, 4) * s14 * s35 +
+        4 * pow(M2, 2) * s16 * s24 * s35 + pow(M2, 2) * s14 * s25 * s35 +
+        pow(M2, 2) * s14 * s26 * s35 + s16 * s24 * s26 * s35 -
+        2 * pow(M2, 4) * s14 * s36 + 2 * pow(M2, 2) * s12 * s24 * s36 -
+        4 * pow(M2, 2) * s15 * s24 * s36 - pow(M2, 2) * s14 * s25 * s36 +
+        pow(M2, 2) * s14 * s26 * s36 - s15 * s24 * s26 * s36 -
+        2 * M1 * pow(M2, 2) * s24 * s2n * s36 +
+        2 * M1 * pow(M2, 2) * s12 * s24 * s3n -
+        4 * M1 * pow(M2, 2) * s15 * s24 * s3n +
+        4 * M1 * pow(M2, 2) * s16 * s24 * s3n -
+        2 * M1 * pow(M2, 2) * s14 * s25 * s3n - M1 * s16 * s24 * s25 * s3n -
+        M1 * s15 * s24 * s26 * s3n - 2 * pow(M2, 2) * s12 * s13 * s45 +
+        2 * pow(M2, 2) * s13 * s15 * s45 - 2 * pow(M2, 2) * s13 * s16 * s45 +
+        pow(M2, 2) * s15 * s23 * s45 - pow(M2, 2) * s16 * s23 * s45 +
+        s13 * s15 * s26 * s45 - pow(M2, 2) * s12 * s35 * s45 +
+        pow(M2, 2) * s16 * s35 * s45 + s16 * s26 * s35 * s45 +
+        M1 * pow(M2, 2) * s2n * s35 * s45 + pow(M2, 2) * s12 * s36 * s45 -
+        pow(M2, 2) * s15 * s36 * s45 - s15 * s26 * s36 * s45 -
+        M1 * pow(M2, 2) * s2n * s36 * s45 + 2 * M1 * pow(M2, 2) * s12 * s3n * s45 -
+        2 * M1 * pow(M2, 2) * s15 * s3n * s45 +
+        2 * M1 * pow(M2, 2) * s16 * s3n * s45 - M1 * s15 * s26 * s3n * s45 +
+        2 * pow(M2, 2) * s13 * s15 * s46 - 2 * pow(M2, 2) * s13 * s16 * s46 +
+        pow(M2, 2) * s15 * s23 * s46 + pow(M2, 2) * s16 * s23 * s46 -
+        s13 * s15 * s25 * s46 - pow(M2, 2) * s12 * s35 * s46 +
+        pow(M2, 2) * s16 * s35 * s46 - s16 * s25 * s35 * s46 +
+        M1 * pow(M2, 2) * s2n * s35 * s46 - pow(M2, 2) * s12 * s36 * s46 -
+        pow(M2, 2) * s15 * s36 * s46 + s15 * s25 * s36 * s46 +
+        M1 * pow(M2, 2) * s2n * s36 * s46 - 2 * M1 * pow(M2, 2) * s15 * s3n * s46 +
+        2 * M1 * pow(M2, 2) * s16 * s3n * s46 + M1 * s15 * s25 * s3n * s46 +
+        4 * M1 * pow(M2, 4) * s23 * s4n - 2 * M1 * pow(M2, 4) * s35 * s4n -
+        M1 * pow(M2, 2) * s25 * s35 * s4n - M1 * pow(M2, 2) * s26 * s35 * s4n +
+        2 * M1 * pow(M2, 4) * s36 * s4n + M1 * pow(M2, 2) * s25 * s36 * s4n -
+        M1 * pow(M2, 2) * s26 * s36 * s4n - 2 * pow(M2, 2) * s14 * s23 * s56 -
         s12 * s13 * s24 * s56 - s16 * s23 * s24 * s56 + s13 * s14 * s25 * s56 +
-        2 * pow<2>(M2) * s12 * s34 * s56 - pow<2>(M2) * s15 * s34 * s56 +
-        pow<2>(M2) * s16 * s34 * s56 + s16 * s25 * s34 * s56 -
-        2 * M1 * pow<2>(M2) * s2n * s34 * s56 + pow<2>(M2) * s14 * s35 * s56 -
-        pow<2>(M2) * s14 * s36 * s56 + s12 * s24 * s36 * s56 -
+        2 * pow(M2, 2) * s12 * s34 * s56 - pow(M2, 2) * s15 * s34 * s56 +
+        pow(M2, 2) * s16 * s34 * s56 + s16 * s25 * s34 * s56 -
+        2 * M1 * pow(M2, 2) * s2n * s34 * s56 + pow(M2, 2) * s14 * s35 * s56 -
+        pow(M2, 2) * s14 * s36 * s56 + s12 * s24 * s36 * s56 -
         s14 * s25 * s36 * s56 - M1 * s24 * s2n * s36 * s56 +
         M1 * s12 * s24 * s3n * s56 - M1 * s14 * s25 * s3n * s56 -
         s12 * s13 * s45 * s56 - s16 * s23 * s45 * s56 + s12 * s36 * s45 * s56 -
         M1 * s2n * s36 * s45 * s56 + M1 * s12 * s3n * s45 * s56 +
-        2 * M1 * pow<2>(M2) * s23 * s4n * s56 - M1 * pow<2>(M2) * s35 * s4n * s56 +
-        M1 * pow<2>(M2) * s36 * s4n * s56 + M1 * s25 * s36 * s4n * s56 +
-        2 * M1 * pow<4>(M2) * s34 * s5n + M1 * pow<2>(M2) * s25 * s34 * s5n +
-        M1 * pow<2>(M2) * s26 * s34 * s5n + 4 * M1 * pow<2>(M2) * s24 * s36 * s5n +
-        M1 * s24 * s26 * s36 * s5n - M1 * pow<2>(M2) * s23 * s45 * s5n +
-        M1 * pow<2>(M2) * s36 * s45 * s5n + M1 * s26 * s36 * s45 * s5n -
-        M1 * pow<2>(M2) * s23 * s46 * s5n + M1 * pow<2>(M2) * s36 * s46 * s5n -
-        M1 * s25 * s36 * s46 * s5n + M1 * pow<2>(M2) * s34 * s56 * s5n +
-        2 * M1 * pow<2>(M2) * s23 * s24 * s6n - 2 * M1 * pow<4>(M2) * s34 * s6n -
-        M1 * pow<2>(M2) * s25 * s34 * s6n + M1 * pow<2>(M2) * s26 * s34 * s6n -
-        4 * M1 * pow<2>(M2) * s24 * s35 * s6n - M1 * s24 * s26 * s35 * s6n +
-        M1 * pow<2>(M2) * s23 * s45 * s6n - M1 * pow<2>(M2) * s35 * s45 * s6n -
-        M1 * s26 * s35 * s45 * s6n - M1 * pow<2>(M2) * s23 * s46 * s6n -
-        M1 * pow<2>(M2) * s35 * s46 * s6n + M1 * s25 * s35 * s46 * s6n +
-        M1 * s23 * s24 * s56 * s6n - M1 * pow<2>(M2) * s34 * s56 * s6n -
+        2 * M1 * pow(M2, 2) * s23 * s4n * s56 - M1 * pow(M2, 2) * s35 * s4n * s56 +
+        M1 * pow(M2, 2) * s36 * s4n * s56 + M1 * s25 * s36 * s4n * s56 +
+        2 * M1 * pow(M2, 4) * s34 * s5n + M1 * pow(M2, 2) * s25 * s34 * s5n +
+        M1 * pow(M2, 2) * s26 * s34 * s5n + 4 * M1 * pow(M2, 2) * s24 * s36 * s5n +
+        M1 * s24 * s26 * s36 * s5n - M1 * pow(M2, 2) * s23 * s45 * s5n +
+        M1 * pow(M2, 2) * s36 * s45 * s5n + M1 * s26 * s36 * s45 * s5n -
+        M1 * pow(M2, 2) * s23 * s46 * s5n + M1 * pow(M2, 2) * s36 * s46 * s5n -
+        M1 * s25 * s36 * s46 * s5n + M1 * pow(M2, 2) * s34 * s56 * s5n +
+        2 * M1 * pow(M2, 2) * s23 * s24 * s6n - 2 * M1 * pow(M2, 4) * s34 * s6n -
+        M1 * pow(M2, 2) * s25 * s34 * s6n + M1 * pow(M2, 2) * s26 * s34 * s6n -
+        4 * M1 * pow(M2, 2) * s24 * s35 * s6n - M1 * s24 * s26 * s35 * s6n +
+        M1 * pow(M2, 2) * s23 * s45 * s6n - M1 * pow(M2, 2) * s35 * s45 * s6n -
+        M1 * s26 * s35 * s45 * s6n - M1 * pow(M2, 2) * s23 * s46 * s6n -
+        M1 * pow(M2, 2) * s35 * s46 * s6n + M1 * s25 * s35 * s46 * s6n +
+        M1 * s23 * s24 * s56 * s6n - M1 * pow(M2, 2) * s34 * s56 * s6n -
         M1 * s25 * s34 * s56 * s6n + M1 * s23 * s45 * s56 * s6n;
     const auto if23 =
-        2 * pow<4>(M2) * s14 * s23 + 2 * pow<2>(M2) * s12 * s13 * s24 -
-        2 * pow<2>(M2) * s13 * s15 * s24 - 2 * pow<2>(M2) * s13 * s16 * s24 -
-        pow<2>(M2) * s15 * s23 * s24 + pow<2>(M2) * s16 * s23 * s24 +
-        2 * pow<2>(M2) * s13 * s14 * s25 + pow<2>(M2) * s14 * s23 * s25 +
-        pow<2>(M2) * s14 * s23 * s26 - s13 * s15 * s24 * s26 +
-        s13 * s14 * s25 * s26 - 2 * pow<4>(M2) * s12 * s34 +
-        4 * pow<4>(M2) * s15 * s34 + 2 * pow<4>(M2) * s16 * s34 -
-        pow<2>(M2) * s12 * s25 * s34 + pow<2>(M2) * s16 * s25 * s34 -
-        pow<2>(M2) * s12 * s26 * s34 + 2 * pow<2>(M2) * s15 * s26 * s34 +
-        pow<2>(M2) * s16 * s26 * s34 + s16 * s25 * s26 * s34 +
-        2 * M1 * pow<4>(M2) * s2n * s34 + M1 * pow<2>(M2) * s25 * s2n * s34 +
-        M1 * pow<2>(M2) * s26 * s2n * s34 - 4 * pow<4>(M2) * s14 * s35 +
-        pow<2>(M2) * s12 * s24 * s35 - pow<2>(M2) * s16 * s24 * s35 -
-        2 * pow<2>(M2) * s14 * s26 * s35 - s16 * s24 * s26 * s35 -
-        M1 * pow<2>(M2) * s24 * s2n * s35 - 2 * pow<4>(M2) * s14 * s36 -
-        pow<2>(M2) * s12 * s24 * s36 + pow<2>(M2) * s15 * s24 * s36 -
-        pow<2>(M2) * s14 * s25 * s36 - pow<2>(M2) * s14 * s26 * s36 +
+        2 * pow(M2, 4) * s14 * s23 + 2 * pow(M2, 2) * s12 * s13 * s24 -
+        2 * pow(M2, 2) * s13 * s15 * s24 - 2 * pow(M2, 2) * s13 * s16 * s24 -
+        pow(M2, 2) * s15 * s23 * s24 + pow(M2, 2) * s16 * s23 * s24 +
+        2 * pow(M2, 2) * s13 * s14 * s25 + pow(M2, 2) * s14 * s23 * s25 +
+        pow(M2, 2) * s14 * s23 * s26 - s13 * s15 * s24 * s26 +
+        s13 * s14 * s25 * s26 - 2 * pow(M2, 4) * s12 * s34 +
+        4 * pow(M2, 4) * s15 * s34 + 2 * pow(M2, 4) * s16 * s34 -
+        pow(M2, 2) * s12 * s25 * s34 + pow(M2, 2) * s16 * s25 * s34 -
+        pow(M2, 2) * s12 * s26 * s34 + 2 * pow(M2, 2) * s15 * s26 * s34 +
+        pow(M2, 2) * s16 * s26 * s34 + s16 * s25 * s26 * s34 +
+        2 * M1 * pow(M2, 4) * s2n * s34 + M1 * pow(M2, 2) * s25 * s2n * s34 +
+        M1 * pow(M2, 2) * s26 * s2n * s34 - 4 * pow(M2, 4) * s14 * s35 +
+        pow(M2, 2) * s12 * s24 * s35 - pow(M2, 2) * s16 * s24 * s35 -
+        2 * pow(M2, 2) * s14 * s26 * s35 - s16 * s24 * s26 * s35 -
+        M1 * pow(M2, 2) * s24 * s2n * s35 - 2 * pow(M2, 4) * s14 * s36 -
+        pow(M2, 2) * s12 * s24 * s36 + pow(M2, 2) * s15 * s24 * s36 -
+        pow(M2, 2) * s14 * s25 * s36 - pow(M2, 2) * s14 * s26 * s36 +
         s15 * s24 * s26 * s36 - s14 * s25 * s26 * s36 +
-        M1 * pow<2>(M2) * s24 * s2n * s36 - 2 * M1 * pow<2>(M2) * s12 * s24 * s3n +
-        2 * M1 * pow<2>(M2) * s15 * s24 * s3n +
-        2 * M1 * pow<2>(M2) * s16 * s24 * s3n -
-        2 * M1 * pow<2>(M2) * s14 * s25 * s3n + M1 * s15 * s24 * s26 * s3n -
-        M1 * s14 * s25 * s26 * s3n + 4 * pow<2>(M2) * s12 * s13 * s45 -
-        2 * pow<2>(M2) * s13 * s15 * s45 - 4 * pow<2>(M2) * s13 * s16 * s45 +
-        4 * pow<2>(M2) * s16 * s23 * s45 + s13 * s16 * s25 * s45 -
-        s13 * s15 * s26 * s45 - 2 * pow<2>(M2) * s16 * s35 * s45 -
-        s16 * s26 * s35 * s45 - 4 * pow<2>(M2) * s12 * s36 * s45 +
-        2 * pow<2>(M2) * s15 * s36 * s45 + s15 * s26 * s36 * s45 +
-        4 * M1 * pow<2>(M2) * s2n * s36 * s45 -
-        4 * M1 * pow<2>(M2) * s12 * s3n * s45 +
-        2 * M1 * pow<2>(M2) * s15 * s3n * s45 +
-        4 * M1 * pow<2>(M2) * s16 * s3n * s45 - M1 * s16 * s25 * s3n * s45 +
-        M1 * s15 * s26 * s3n * s45 + 2 * pow<2>(M2) * s12 * s13 * s46 -
-        2 * pow<2>(M2) * s13 * s16 * s46 - pow<2>(M2) * s15 * s23 * s46 +
-        pow<2>(M2) * s16 * s23 * s46 - s12 * s13 * s25 * s46 -
-        s16 * s23 * s25 * s46 + pow<2>(M2) * s12 * s35 * s46 +
-        pow<2>(M2) * s16 * s35 * s46 - M1 * pow<2>(M2) * s2n * s35 * s46 -
-        pow<2>(M2) * s12 * s36 * s46 - pow<2>(M2) * s15 * s36 * s46 +
-        s12 * s25 * s36 * s46 + M1 * pow<2>(M2) * s2n * s36 * s46 -
-        M1 * s25 * s2n * s36 * s46 - 2 * M1 * pow<2>(M2) * s12 * s3n * s46 +
-        2 * M1 * pow<2>(M2) * s16 * s3n * s46 + M1 * s12 * s25 * s3n * s46 -
-        2 * M1 * pow<4>(M2) * s23 * s4n - M1 * pow<2>(M2) * s23 * s25 * s4n -
-        M1 * pow<2>(M2) * s23 * s26 * s4n + 4 * M1 * pow<4>(M2) * s35 * s4n +
-        2 * M1 * pow<2>(M2) * s26 * s35 * s4n + 2 * M1 * pow<4>(M2) * s36 * s4n +
-        M1 * pow<2>(M2) * s25 * s36 * s4n + M1 * pow<2>(M2) * s26 * s36 * s4n +
-        M1 * s25 * s26 * s36 * s4n + pow<2>(M2) * s14 * s23 * s56 +
+        M1 * pow(M2, 2) * s24 * s2n * s36 - 2 * M1 * pow(M2, 2) * s12 * s24 * s3n +
+        2 * M1 * pow(M2, 2) * s15 * s24 * s3n +
+        2 * M1 * pow(M2, 2) * s16 * s24 * s3n -
+        2 * M1 * pow(M2, 2) * s14 * s25 * s3n + M1 * s15 * s24 * s26 * s3n -
+        M1 * s14 * s25 * s26 * s3n + 4 * pow(M2, 2) * s12 * s13 * s45 -
+        2 * pow(M2, 2) * s13 * s15 * s45 - 4 * pow(M2, 2) * s13 * s16 * s45 +
+        4 * pow(M2, 2) * s16 * s23 * s45 + s13 * s16 * s25 * s45 -
+        s13 * s15 * s26 * s45 - 2 * pow(M2, 2) * s16 * s35 * s45 -
+        s16 * s26 * s35 * s45 - 4 * pow(M2, 2) * s12 * s36 * s45 +
+        2 * pow(M2, 2) * s15 * s36 * s45 + s15 * s26 * s36 * s45 +
+        4 * M1 * pow(M2, 2) * s2n * s36 * s45 -
+        4 * M1 * pow(M2, 2) * s12 * s3n * s45 +
+        2 * M1 * pow(M2, 2) * s15 * s3n * s45 +
+        4 * M1 * pow(M2, 2) * s16 * s3n * s45 - M1 * s16 * s25 * s3n * s45 +
+        M1 * s15 * s26 * s3n * s45 + 2 * pow(M2, 2) * s12 * s13 * s46 -
+        2 * pow(M2, 2) * s13 * s16 * s46 - pow(M2, 2) * s15 * s23 * s46 +
+        pow(M2, 2) * s16 * s23 * s46 - s12 * s13 * s25 * s46 -
+        s16 * s23 * s25 * s46 + pow(M2, 2) * s12 * s35 * s46 +
+        pow(M2, 2) * s16 * s35 * s46 - M1 * pow(M2, 2) * s2n * s35 * s46 -
+        pow(M2, 2) * s12 * s36 * s46 - pow(M2, 2) * s15 * s36 * s46 +
+        s12 * s25 * s36 * s46 + M1 * pow(M2, 2) * s2n * s36 * s46 -
+        M1 * s25 * s2n * s36 * s46 - 2 * M1 * pow(M2, 2) * s12 * s3n * s46 +
+        2 * M1 * pow(M2, 2) * s16 * s3n * s46 + M1 * s12 * s25 * s3n * s46 -
+        2 * M1 * pow(M2, 4) * s23 * s4n - M1 * pow(M2, 2) * s23 * s25 * s4n -
+        M1 * pow(M2, 2) * s23 * s26 * s4n + 4 * M1 * pow(M2, 4) * s35 * s4n +
+        2 * M1 * pow(M2, 2) * s26 * s35 * s4n + 2 * M1 * pow(M2, 4) * s36 * s4n +
+        M1 * pow(M2, 2) * s25 * s36 * s4n + M1 * pow(M2, 2) * s26 * s36 * s4n +
+        M1 * s25 * s26 * s36 * s4n + pow(M2, 2) * s14 * s23 * s56 +
         s12 * s13 * s24 * s56 + s16 * s23 * s24 * s56 -
-        pow<2>(M2) * s12 * s34 * s56 - pow<2>(M2) * s16 * s34 * s56 +
-        M1 * pow<2>(M2) * s2n * s34 * s56 + pow<2>(M2) * s14 * s36 * s56 -
+        pow(M2, 2) * s12 * s34 * s56 - pow(M2, 2) * s16 * s34 * s56 +
+        M1 * pow(M2, 2) * s2n * s34 * s56 + pow(M2, 2) * s14 * s36 * s56 -
         s12 * s24 * s36 * s56 + M1 * s24 * s2n * s36 * s56 -
         M1 * s12 * s24 * s3n * s56 + s12 * s13 * s45 * s56 + s16 * s23 * s45 * s56 -
         s12 * s36 * s45 * s56 + M1 * s2n * s36 * s45 * s56 -
-        M1 * s12 * s3n * s45 * s56 - M1 * pow<2>(M2) * s23 * s4n * s56 -
-        M1 * pow<2>(M2) * s36 * s4n * s56 + M1 * pow<2>(M2) * s23 * s24 * s5n -
-        4 * M1 * pow<4>(M2) * s34 * s5n - 2 * M1 * pow<2>(M2) * s26 * s34 * s5n -
-        M1 * pow<2>(M2) * s24 * s36 * s5n - M1 * s24 * s26 * s36 * s5n -
-        2 * M1 * pow<2>(M2) * s36 * s45 * s5n - M1 * s26 * s36 * s45 * s5n +
-        M1 * pow<2>(M2) * s23 * s46 * s5n + M1 * pow<2>(M2) * s36 * s46 * s5n -
-        M1 * pow<2>(M2) * s23 * s24 * s6n - 2 * M1 * pow<4>(M2) * s34 * s6n -
-        M1 * pow<2>(M2) * s25 * s34 * s6n - M1 * pow<2>(M2) * s26 * s34 * s6n -
-        M1 * s25 * s26 * s34 * s6n + M1 * pow<2>(M2) * s24 * s35 * s6n +
-        M1 * s24 * s26 * s35 * s6n - 4 * M1 * pow<2>(M2) * s23 * s45 * s6n +
-        2 * M1 * pow<2>(M2) * s35 * s45 * s6n + M1 * s26 * s35 * s45 * s6n -
-        M1 * pow<2>(M2) * s23 * s46 * s6n + M1 * s23 * s25 * s46 * s6n -
-        M1 * pow<2>(M2) * s35 * s46 * s6n - M1 * s23 * s24 * s56 * s6n +
-        M1 * pow<2>(M2) * s34 * s56 * s6n - M1 * s23 * s45 * s56 * s6n;
+        M1 * s12 * s3n * s45 * s56 - M1 * pow(M2, 2) * s23 * s4n * s56 -
+        M1 * pow(M2, 2) * s36 * s4n * s56 + M1 * pow(M2, 2) * s23 * s24 * s5n -
+        4 * M1 * pow(M2, 4) * s34 * s5n - 2 * M1 * pow(M2, 2) * s26 * s34 * s5n -
+        M1 * pow(M2, 2) * s24 * s36 * s5n - M1 * s24 * s26 * s36 * s5n -
+        2 * M1 * pow(M2, 2) * s36 * s45 * s5n - M1 * s26 * s36 * s45 * s5n +
+        M1 * pow(M2, 2) * s23 * s46 * s5n + M1 * pow(M2, 2) * s36 * s46 * s5n -
+        M1 * pow(M2, 2) * s23 * s24 * s6n - 2 * M1 * pow(M2, 4) * s34 * s6n -
+        M1 * pow(M2, 2) * s25 * s34 * s6n - M1 * pow(M2, 2) * s26 * s34 * s6n -
+        M1 * s25 * s26 * s34 * s6n + M1 * pow(M2, 2) * s24 * s35 * s6n +
+        M1 * s24 * s26 * s35 * s6n - 4 * M1 * pow(M2, 2) * s23 * s45 * s6n +
+        2 * M1 * pow(M2, 2) * s35 * s45 * s6n + M1 * s26 * s35 * s45 * s6n -
+        M1 * pow(M2, 2) * s23 * s46 * s6n + M1 * s23 * s25 * s46 * s6n -
+        M1 * pow(M2, 2) * s35 * s46 * s6n - M1 * s23 * s24 * s56 * s6n +
+        M1 * pow(M2, 2) * s34 * s56 * s6n - M1 * s23 * s45 * s56 * s6n;
     const auto if24 =
-        -8 * pow<4>(M2) * s13 * s24 + 8 * pow<2>(M2) * s13 * s24 * s25 -
-        4 * pow<2>(M2) * s13 * s24 * s26 + 2 * s13 * s24 * s25 * s26 +
-        8 * M1 * pow<4>(M2) * s24 * s3n - 8 * M1 * pow<2>(M2) * s24 * s25 * s3n +
-        4 * M1 * pow<2>(M2) * s24 * s26 * s3n - 2 * M1 * s24 * s25 * s26 * s3n -
-        8 * pow<4>(M2) * s13 * s45 + 8 * pow<2>(M2) * s13 * s25 * s45 -
-        4 * pow<2>(M2) * s13 * s26 * s45 + 2 * s13 * s25 * s26 * s45 +
-        8 * M1 * pow<4>(M2) * s3n * s45 - 8 * M1 * pow<2>(M2) * s25 * s3n * s45 +
-        4 * M1 * pow<2>(M2) * s26 * s3n * s45 - 2 * M1 * s25 * s26 * s3n * s45 +
-        8 * pow<2>(M2) * s13 * s25 * s46 - 2 * s13 * pow<2>(s25) * s46 -
-        8 * M1 * pow<2>(M2) * s25 * s3n * s46 + 2 * M1 * pow<2>(s25) * s3n * s46 -
-        4 * pow<2>(M2) * s13 * s24 * s56 + 2 * s13 * s24 * s25 * s56 +
-        4 * M1 * pow<2>(M2) * s24 * s3n * s56 - 2 * M1 * s24 * s25 * s3n * s56 -
-        4 * pow<2>(M2) * s13 * s45 * s56 + 2 * s13 * s25 * s45 * s56 +
-        4 * M1 * pow<2>(M2) * s3n * s45 * s56 - 2 * M1 * s25 * s3n * s45 * s56;
+        -8 * pow(M2, 4) * s13 * s24 + 8 * pow(M2, 2) * s13 * s24 * s25 -
+        4 * pow(M2, 2) * s13 * s24 * s26 + 2 * s13 * s24 * s25 * s26 +
+        8 * M1 * pow(M2, 4) * s24 * s3n - 8 * M1 * pow(M2, 2) * s24 * s25 * s3n +
+        4 * M1 * pow(M2, 2) * s24 * s26 * s3n - 2 * M1 * s24 * s25 * s26 * s3n -
+        8 * pow(M2, 4) * s13 * s45 + 8 * pow(M2, 2) * s13 * s25 * s45 -
+        4 * pow(M2, 2) * s13 * s26 * s45 + 2 * s13 * s25 * s26 * s45 +
+        8 * M1 * pow(M2, 4) * s3n * s45 - 8 * M1 * pow(M2, 2) * s25 * s3n * s45 +
+        4 * M1 * pow(M2, 2) * s26 * s3n * s45 - 2 * M1 * s25 * s26 * s3n * s45 +
+        8 * pow(M2, 2) * s13 * s25 * s46 - 2 * s13 * pow(s25, 2) * s46 -
+        8 * M1 * pow(M2, 2) * s25 * s3n * s46 + 2 * M1 * pow(s25, 2) * s3n * s46 -
+        4 * pow(M2, 2) * s13 * s24 * s56 + 2 * s13 * s24 * s25 * s56 +
+        4 * M1 * pow(M2, 2) * s24 * s3n * s56 - 2 * M1 * s24 * s25 * s3n * s56 -
+        4 * pow(M2, 2) * s13 * s45 * s56 + 2 * s13 * s25 * s45 * s56 +
+        4 * M1 * pow(M2, 2) * s3n * s45 * s56 - 2 * M1 * s25 * s3n * s45 * s56;
     const auto if34 =
-        -2 * pow<2>(M2) * s13 * s15 * s24 - 2 * pow<2>(M2) * s15 * s23 * s24 +
-        2 * pow<2>(M2) * s13 * s14 * s25 + 2 * pow<2>(M2) * s14 * s23 * s25 -
-        s13 * s15 * s24 * s26 + s13 * s14 * s25 * s26 + 8 * pow<4>(M2) * s15 * s34 -
-        2 * pow<2>(M2) * s12 * s25 * s34 + 4 * pow<2>(M2) * s15 * s26 * s34 +
-        s16 * s25 * s26 * s34 + 2 * M1 * pow<2>(M2) * s25 * s2n * s34 -
-        8 * pow<4>(M2) * s14 * s35 + 2 * pow<2>(M2) * s12 * s24 * s35 -
-        4 * pow<2>(M2) * s14 * s26 * s35 - s16 * s24 * s26 * s35 -
-        2 * M1 * pow<2>(M2) * s24 * s2n * s35 + s15 * s24 * s26 * s36 -
-        s14 * s25 * s26 * s36 + 2 * M1 * pow<2>(M2) * s15 * s24 * s3n -
-        2 * M1 * pow<2>(M2) * s14 * s25 * s3n + M1 * s15 * s24 * s26 * s3n -
-        M1 * s14 * s25 * s26 * s3n - 4 * pow<2>(M2) * s13 * s15 * s45 +
-        2 * pow<2>(M2) * s15 * s23 * s45 + 2 * s13 * s16 * s25 * s45 -
+        -2 * pow(M2, 2) * s13 * s15 * s24 - 2 * pow(M2, 2) * s15 * s23 * s24 +
+        2 * pow(M2, 2) * s13 * s14 * s25 + 2 * pow(M2, 2) * s14 * s23 * s25 -
+        s13 * s15 * s24 * s26 + s13 * s14 * s25 * s26 + 8 * pow(M2, 4) * s15 * s34 -
+        2 * pow(M2, 2) * s12 * s25 * s34 + 4 * pow(M2, 2) * s15 * s26 * s34 +
+        s16 * s25 * s26 * s34 + 2 * M1 * pow(M2, 2) * s25 * s2n * s34 -
+        8 * pow(M2, 4) * s14 * s35 + 2 * pow(M2, 2) * s12 * s24 * s35 -
+        4 * pow(M2, 2) * s14 * s26 * s35 - s16 * s24 * s26 * s35 -
+        2 * M1 * pow(M2, 2) * s24 * s2n * s35 + s15 * s24 * s26 * s36 -
+        s14 * s25 * s26 * s36 + 2 * M1 * pow(M2, 2) * s15 * s24 * s3n -
+        2 * M1 * pow(M2, 2) * s14 * s25 * s3n + M1 * s15 * s24 * s26 * s3n -
+        M1 * s14 * s25 * s26 * s3n - 4 * pow(M2, 2) * s13 * s15 * s45 +
+        2 * pow(M2, 2) * s15 * s23 * s45 + 2 * s13 * s16 * s25 * s45 -
         s16 * s23 * s25 * s45 - 2 * s13 * s15 * s26 * s45 + s15 * s23 * s26 * s45 -
-        2 * pow<2>(M2) * s12 * s35 * s45 - 2 * pow<2>(M2) * s16 * s35 * s45 -
+        2 * pow(M2, 2) * s12 * s35 * s45 - 2 * pow(M2, 2) * s16 * s35 * s45 -
         s12 * s26 * s35 * s45 - s16 * s26 * s35 * s45 +
-        2 * M1 * pow<2>(M2) * s2n * s35 * s45 + M1 * s26 * s2n * s35 * s45 +
-        2 * pow<2>(M2) * s15 * s36 * s45 + s12 * s25 * s36 * s45 +
+        2 * M1 * pow(M2, 2) * s2n * s35 * s45 + M1 * s26 * s2n * s35 * s45 +
+        2 * pow(M2, 2) * s15 * s36 * s45 + s12 * s25 * s36 * s45 +
         s15 * s26 * s36 * s45 - M1 * s25 * s2n * s36 * s45 +
-        4 * M1 * pow<2>(M2) * s15 * s3n * s45 - 2 * M1 * s16 * s25 * s3n * s45 +
-        2 * M1 * s15 * s26 * s3n * s45 - 2 * pow<2>(M2) * s13 * s15 * s46 -
+        4 * M1 * pow(M2, 2) * s15 * s3n * s45 - 2 * M1 * s16 * s25 * s3n * s45 +
+        2 * M1 * s15 * s26 * s3n * s45 - 2 * pow(M2, 2) * s13 * s15 * s46 -
         s12 * s13 * s25 * s46 + s13 * s16 * s25 * s46 - 2 * s16 * s23 * s25 * s46 -
         s13 * s15 * s26 * s46 + s15 * s23 * s26 * s46 +
-        2 * pow<2>(M2) * s16 * s35 * s46 - s12 * s26 * s35 * s46 +
-        M1 * s26 * s2n * s35 * s46 - 2 * pow<2>(M2) * s15 * s36 * s46 +
+        2 * pow(M2, 2) * s16 * s35 * s46 - s12 * s26 * s35 * s46 +
+        M1 * s26 * s2n * s35 * s46 - 2 * pow(M2, 2) * s15 * s36 * s46 +
         2 * s12 * s25 * s36 * s46 - 2 * M1 * s25 * s2n * s36 * s46 +
-        2 * M1 * pow<2>(M2) * s15 * s3n * s46 + M1 * s12 * s25 * s3n * s46 -
+        2 * M1 * pow(M2, 2) * s15 * s3n * s46 + M1 * s12 * s25 * s3n * s46 -
         M1 * s16 * s25 * s3n * s46 + M1 * s15 * s26 * s3n * s46 -
-        2 * M1 * pow<2>(M2) * s23 * s25 * s4n + 8 * M1 * pow<4>(M2) * s35 * s4n +
-        4 * M1 * pow<2>(M2) * s26 * s35 * s4n + M1 * s25 * s26 * s36 * s4n +
-        2 * pow<2>(M2) * s13 * s14 * s56 + s12 * s13 * s24 * s56 -
+        2 * M1 * pow(M2, 2) * s23 * s25 * s4n + 8 * M1 * pow(M2, 4) * s35 * s4n +
+        4 * M1 * pow(M2, 2) * s26 * s35 * s4n + M1 * s25 * s26 * s36 * s4n +
+        2 * pow(M2, 2) * s13 * s14 * s56 + s12 * s13 * s24 * s56 -
         s13 * s16 * s24 * s56 + 2 * s16 * s23 * s24 * s56 + s13 * s14 * s26 * s56 -
-        s14 * s23 * s26 * s56 - 2 * pow<2>(M2) * s16 * s34 * s56 +
+        s14 * s23 * s26 * s56 - 2 * pow(M2, 2) * s16 * s34 * s56 +
         s12 * s26 * s34 * s56 - M1 * s26 * s2n * s34 * s56 +
-        2 * pow<2>(M2) * s14 * s36 * s56 - 2 * s12 * s24 * s36 * s56 +
-        2 * M1 * s24 * s2n * s36 * s56 - 2 * M1 * pow<2>(M2) * s14 * s3n * s56 -
+        2 * pow(M2, 2) * s14 * s36 * s56 - 2 * s12 * s24 * s36 * s56 +
+        2 * M1 * s24 * s2n * s36 * s56 - 2 * M1 * pow(M2, 2) * s14 * s3n * s56 -
         M1 * s12 * s24 * s3n * s56 + M1 * s16 * s24 * s3n * s56 -
         M1 * s14 * s26 * s3n * s56 + 2 * s12 * s13 * s45 * s56 +
         s16 * s23 * s45 * s56 - s12 * s36 * s45 * s56 + M1 * s2n * s36 * s45 * s56 -
         2 * M1 * s12 * s3n * s45 * s56 + M1 * s23 * s26 * s4n * s56 -
-        2 * M1 * pow<2>(M2) * s36 * s4n * s56 +
-        2 * M1 * pow<2>(M2) * s23 * s24 * s5n - 8 * M1 * pow<4>(M2) * s34 * s5n -
-        4 * M1 * pow<2>(M2) * s26 * s34 * s5n - M1 * s24 * s26 * s36 * s5n -
-        2 * M1 * pow<2>(M2) * s23 * s45 * s5n - M1 * s23 * s26 * s45 * s5n -
-        2 * M1 * pow<2>(M2) * s36 * s45 * s5n - M1 * s26 * s36 * s45 * s5n -
-        M1 * s23 * s26 * s46 * s5n + 2 * M1 * pow<2>(M2) * s36 * s46 * s5n -
+        2 * M1 * pow(M2, 2) * s36 * s4n * s56 +
+        2 * M1 * pow(M2, 2) * s23 * s24 * s5n - 8 * M1 * pow(M2, 4) * s34 * s5n -
+        4 * M1 * pow(M2, 2) * s26 * s34 * s5n - M1 * s24 * s26 * s36 * s5n -
+        2 * M1 * pow(M2, 2) * s23 * s45 * s5n - M1 * s23 * s26 * s45 * s5n -
+        2 * M1 * pow(M2, 2) * s36 * s45 * s5n - M1 * s26 * s36 * s45 * s5n -
+        M1 * s23 * s26 * s46 * s5n + 2 * M1 * pow(M2, 2) * s36 * s46 * s5n -
         M1 * s25 * s26 * s34 * s6n + M1 * s24 * s26 * s35 * s6n +
-        M1 * s23 * s25 * s45 * s6n + 2 * M1 * pow<2>(M2) * s35 * s45 * s6n +
+        M1 * s23 * s25 * s45 * s6n + 2 * M1 * pow(M2, 2) * s35 * s45 * s6n +
         M1 * s26 * s35 * s45 * s6n + 2 * M1 * s23 * s25 * s46 * s6n -
-        2 * M1 * pow<2>(M2) * s35 * s46 * s6n - 2 * M1 * s23 * s24 * s56 * s6n +
-        2 * M1 * pow<2>(M2) * s34 * s56 * s6n - M1 * s23 * s45 * s56 * s6n;
+        2 * M1 * pow(M2, 2) * s35 * s46 * s6n - 2 * M1 * s23 * s24 * s56 * s6n +
+        2 * M1 * pow(M2, 2) * s34 * s56 * s6n - M1 * s23 * s45 * s56 * s6n;
 
-    const auto den1 = (2 * pow<2>(M2) + s56) * (2 * pow<2>(M2) - s15 - s16 + s56);
-    const auto den2 = (2 * pow<2>(M2) + s56) * (2 * pow<2>(M2) + s25 + s26 + s56);
-    const auto den3 = (2 * pow<2>(M2) + s26) * (2 * pow<2>(M2) - s12 - s16 + s26);
-    const auto den4 = (2 * pow<2>(M2) + s26) * (2 * pow<2>(M2) + s25 + s26 + s56);
+    const auto den1 = (2 * pow(M2, 2) + s56) * (2 * pow(M2, 2) - s15 - s16 + s56);
+    const auto den2 = (2 * pow(M2, 2) + s56) * (2 * pow(M2, 2) + s25 + s26 + s56);
+    const auto den3 = (2 * pow(M2, 2) + s26) * (2 * pow(M2, 2) - s12 - s16 + s26);
+    const auto den4 = (2 * pow(M2, 2) + s26) * (2 * pow(M2, 2) + s25 + s26 + s56);
 
-    return if11 / pow<2>(den1) + if22 / pow<2>(den2) + if33 / pow<2>(den3) +
-           if44 / pow<2>(den4) + if12 / (den1 * den2) + if13 / (den1 * den3) +
+    return if11 / pow(den1, 2) + if22 / pow(den2, 2) + if33 / pow(den3, 2) +
+           if44 / pow(den4, 2) + if12 / (den1 * den2) + if13 / (den1 * den3) +
            if14 / (den1 * den4) + if23 / (den2 * den3) +
            if24 / (den2 * den4) + if34 / (den3 * den4);
 }

@@ -76,7 +76,7 @@ auto DoubleRadiativeMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI
                                  den1, den2, den3, den4, den5, den6);
     pm2ennggav *= -4. / 3;
 
-    constexpr auto constant{4 * muc::pow<2>(fermi_constant) * muc::pow<2>(4 * pi * fine_structure_const)};
+    constexpr auto constant{4 * muc::pow(fermi_constant, 2) * muc::pow(4 * pi * fine_structure_const, 2)};
     return constant * pm2ennggav;
 }
 
@@ -90,1378 +90,1378 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqUnpolarized(double mm2, double me2, d
     //
 
     const auto if11{
-        32 * pow<3>(me2) * mm2 - 24 * pow<3>(me2) * s12 -
-        24 * pow<2>(me2) * mm2 * s12 + 16 * pow<2>(me2) * pow<2>(s12) -
-        24 * pow<3>(me2) * s15 - 24 * pow<2>(me2) * mm2 * s15 +
-        32 * pow<2>(me2) * s12 * s15 + 16 * pow<2>(me2) * pow<2>(s15) -
-        24 * pow<3>(me2) * s16 - 24 * pow<2>(me2) * mm2 * s16 +
-        32 * pow<2>(me2) * s12 * s16 + 32 * pow<2>(me2) * s15 * s16 +
-        16 * pow<2>(me2) * pow<2>(s16) + 48 * pow<2>(me2) * mm2 * s25 -
-        36 * pow<2>(me2) * s12 * s25 - 12 * me2 * mm2 * s12 * s25 +
-        8 * me2 * pow<2>(s12) * s25 - 36 * pow<2>(me2) * s15 * s25 -
+        32 * pow(me2, 3) * mm2 - 24 * pow(me2, 3) * s12 -
+        24 * pow(me2, 2) * mm2 * s12 + 16 * pow(me2, 2) * pow(s12, 2) -
+        24 * pow(me2, 3) * s15 - 24 * pow(me2, 2) * mm2 * s15 +
+        32 * pow(me2, 2) * s12 * s15 + 16 * pow(me2, 2) * pow(s15, 2) -
+        24 * pow(me2, 3) * s16 - 24 * pow(me2, 2) * mm2 * s16 +
+        32 * pow(me2, 2) * s12 * s16 + 32 * pow(me2, 2) * s15 * s16 +
+        16 * pow(me2, 2) * pow(s16, 2) + 48 * pow(me2, 2) * mm2 * s25 -
+        36 * pow(me2, 2) * s12 * s25 - 12 * me2 * mm2 * s12 * s25 +
+        8 * me2 * pow(s12, 2) * s25 - 36 * pow(me2, 2) * s15 * s25 -
         12 * me2 * mm2 * s15 * s25 + 16 * me2 * s12 * s15 * s25 +
-        8 * me2 * pow<2>(s15) * s25 - 32 * pow<2>(me2) * s16 * s25 +
+        8 * me2 * pow(s15, 2) * s25 - 32 * pow(me2, 2) * s16 * s25 +
         8 * me2 * s12 * s16 * s25 + 8 * me2 * s15 * s16 * s25 +
-        24 * me2 * mm2 * pow<2>(s25) - 18 * me2 * s12 * pow<2>(s25) -
-        6 * mm2 * s12 * pow<2>(s25) + 4 * pow<2>(s12) * pow<2>(s25) -
-        16 * me2 * s15 * pow<2>(s25) + 4 * s12 * s15 * pow<2>(s25) -
-        14 * me2 * s16 * pow<2>(s25) - 6 * mm2 * s16 * pow<2>(s25) +
-        8 * s12 * s16 * pow<2>(s25) + 4 * s15 * s16 * pow<2>(s25) +
-        4 * pow<2>(s16) * pow<2>(s25) + 4 * mm2 * pow<3>(s25) -
-        4 * s12 * pow<3>(s25) - 2 * s15 * pow<3>(s25) - 4 * s16 * pow<3>(s25) +
-        32 * pow<2>(me2) * mm2 * s26 - 24 * pow<2>(me2) * s12 * s26 -
-        24 * pow<2>(me2) * s15 * s26 - 20 * pow<2>(me2) * s16 * s26 +
+        24 * me2 * mm2 * pow(s25, 2) - 18 * me2 * s12 * pow(s25, 2) -
+        6 * mm2 * s12 * pow(s25, 2) + 4 * pow(s12, 2) * pow(s25, 2) -
+        16 * me2 * s15 * pow(s25, 2) + 4 * s12 * s15 * pow(s25, 2) -
+        14 * me2 * s16 * pow(s25, 2) - 6 * mm2 * s16 * pow(s25, 2) +
+        8 * s12 * s16 * pow(s25, 2) + 4 * s15 * s16 * pow(s25, 2) +
+        4 * pow(s16, 2) * pow(s25, 2) + 4 * mm2 * pow(s25, 3) -
+        4 * s12 * pow(s25, 3) - 2 * s15 * pow(s25, 3) - 4 * s16 * pow(s25, 3) +
+        32 * pow(me2, 2) * mm2 * s26 - 24 * pow(me2, 2) * s12 * s26 -
+        24 * pow(me2, 2) * s15 * s26 - 20 * pow(me2, 2) * s16 * s26 +
         12 * me2 * mm2 * s16 * s26 - 8 * me2 * s12 * s16 * s26 -
-        8 * me2 * s15 * s16 * s26 - 8 * me2 * pow<2>(s16) * s26 +
+        8 * me2 * s15 * s16 * s26 - 8 * me2 * pow(s16, 2) * s26 +
         8 * me2 * mm2 * s25 * s26 - 8 * me2 * s12 * s25 * s26 -
         6 * me2 * s15 * s25 * s26 + 6 * mm2 * s15 * s25 * s26 -
-        4 * s12 * s15 * s25 * s26 - 4 * pow<2>(s15) * s25 * s26 -
-        4 * s15 * s16 * s25 * s26 + 4 * mm2 * pow<2>(s25) * s26 -
-        4 * s12 * pow<2>(s25) * s26 - 4 * s16 * pow<2>(s25) * s26 -
-        8 * me2 * mm2 * pow<2>(s26) + 4 * me2 * s12 * pow<2>(s26) +
-        4 * me2 * s15 * pow<2>(s26) + 8 * me2 * s16 * pow<2>(s26) +
-        2 * s15 * s25 * pow<2>(s26) + 32 * pow<2>(me2) * mm2 * s56 -
-        24 * pow<2>(me2) * s12 * s56 - 24 * pow<2>(me2) * s15 * s56 -
-        20 * pow<2>(me2) * s16 * s56 + 12 * me2 * mm2 * s16 * s56 -
+        4 * s12 * s15 * s25 * s26 - 4 * pow(s15, 2) * s25 * s26 -
+        4 * s15 * s16 * s25 * s26 + 4 * mm2 * pow(s25, 2) * s26 -
+        4 * s12 * pow(s25, 2) * s26 - 4 * s16 * pow(s25, 2) * s26 -
+        8 * me2 * mm2 * pow(s26, 2) + 4 * me2 * s12 * pow(s26, 2) +
+        4 * me2 * s15 * pow(s26, 2) + 8 * me2 * s16 * pow(s26, 2) +
+        2 * s15 * s25 * pow(s26, 2) + 32 * pow(me2, 2) * mm2 * s56 -
+        24 * pow(me2, 2) * s12 * s56 - 24 * pow(me2, 2) * s15 * s56 -
+        20 * pow(me2, 2) * s16 * s56 + 12 * me2 * mm2 * s16 * s56 -
         8 * me2 * s12 * s16 * s56 - 8 * me2 * s15 * s16 * s56 -
-        8 * me2 * pow<2>(s16) * s56 + 16 * me2 * mm2 * s25 * s56 -
+        8 * me2 * pow(s16, 2) * s56 + 16 * me2 * mm2 * s25 * s56 -
         14 * me2 * s12 * s25 * s56 - 6 * mm2 * s12 * s25 * s56 +
-        4 * pow<2>(s12) * s25 * s56 - 12 * me2 * s15 * s25 * s56 +
+        4 * pow(s12, 2) * s25 * s56 - 12 * me2 * s15 * s25 * s56 +
         4 * s12 * s15 * s25 * s56 - 6 * me2 * s16 * s25 * s56 -
         6 * mm2 * s16 * s25 * s56 + 8 * s12 * s16 * s25 * s56 +
-        4 * s15 * s16 * s25 * s56 + 4 * pow<2>(s16) * s25 * s56 +
-        8 * mm2 * pow<2>(s25) * s56 - 8 * s12 * pow<2>(s25) * s56 -
-        4 * s15 * pow<2>(s25) * s56 - 8 * s16 * pow<2>(s25) * s56 -
+        4 * s15 * s16 * s25 * s56 + 4 * pow(s16, 2) * s25 * s56 +
+        8 * mm2 * pow(s25, 2) * s56 - 8 * s12 * pow(s25, 2) * s56 -
+        4 * s15 * pow(s25, 2) * s56 - 8 * s16 * pow(s25, 2) * s56 -
         16 * me2 * mm2 * s26 * s56 + 8 * me2 * s12 * s26 * s56 +
         8 * me2 * s15 * s26 * s56 + 16 * me2 * s16 * s26 * s56 +
         4 * mm2 * s25 * s26 * s56 - 4 * s12 * s25 * s26 * s56 -
-        4 * s16 * s25 * s26 * s56 - 8 * me2 * mm2 * pow<2>(s56) +
-        4 * me2 * s12 * pow<2>(s56) + 4 * me2 * s15 * pow<2>(s56) +
-        8 * me2 * s16 * pow<2>(s56) + 4 * mm2 * s25 * pow<2>(s56) -
-        4 * s12 * s25 * pow<2>(s56) - 2 * s15 * s25 * pow<2>(s56) -
-        4 * s16 * s25 * pow<2>(s56)};
+        4 * s16 * s25 * s26 * s56 - 8 * me2 * mm2 * pow(s56, 2) +
+        4 * me2 * s12 * pow(s56, 2) + 4 * me2 * s15 * pow(s56, 2) +
+        8 * me2 * s16 * pow(s56, 2) + 4 * mm2 * s25 * pow(s56, 2) -
+        4 * s12 * s25 * pow(s56, 2) - 2 * s15 * s25 * pow(s56, 2) -
+        4 * s16 * s25 * pow(s56, 2)};
     const auto if12{
-        32 * pow<3>(me2) * mm2 - 24 * pow<3>(me2) * s12 -
-        24 * pow<2>(me2) * mm2 * s12 + 16 * pow<2>(me2) * pow<2>(s12) -
-        24 * pow<3>(me2) * s15 - 24 * pow<2>(me2) * mm2 * s15 +
-        32 * pow<2>(me2) * s12 * s15 + 16 * pow<2>(me2) * pow<2>(s15) -
-        24 * pow<3>(me2) * s16 - 24 * pow<2>(me2) * mm2 * s16 +
-        32 * pow<2>(me2) * s12 * s16 + 32 * pow<2>(me2) * s15 * s16 +
-        16 * pow<2>(me2) * pow<2>(s16) + 40 * pow<2>(me2) * mm2 * s25 -
-        30 * pow<2>(me2) * s12 * s25 - 6 * me2 * mm2 * s12 * s25 +
-        4 * me2 * pow<2>(s12) * s25 - 30 * pow<2>(me2) * s15 * s25 -
+        32 * pow(me2, 3) * mm2 - 24 * pow(me2, 3) * s12 -
+        24 * pow(me2, 2) * mm2 * s12 + 16 * pow(me2, 2) * pow(s12, 2) -
+        24 * pow(me2, 3) * s15 - 24 * pow(me2, 2) * mm2 * s15 +
+        32 * pow(me2, 2) * s12 * s15 + 16 * pow(me2, 2) * pow(s15, 2) -
+        24 * pow(me2, 3) * s16 - 24 * pow(me2, 2) * mm2 * s16 +
+        32 * pow(me2, 2) * s12 * s16 + 32 * pow(me2, 2) * s15 * s16 +
+        16 * pow(me2, 2) * pow(s16, 2) + 40 * pow(me2, 2) * mm2 * s25 -
+        30 * pow(me2, 2) * s12 * s25 - 6 * me2 * mm2 * s12 * s25 +
+        4 * me2 * pow(s12, 2) * s25 - 30 * pow(me2, 2) * s15 * s25 -
         6 * me2 * mm2 * s15 * s25 + 8 * me2 * s12 * s15 * s25 +
-        4 * me2 * pow<2>(s15) * s25 - 30 * pow<2>(me2) * s16 * s25 -
+        4 * me2 * pow(s15, 2) * s25 - 30 * pow(me2, 2) * s16 * s25 -
         6 * me2 * mm2 * s16 * s25 + 8 * me2 * s12 * s16 * s25 +
-        8 * me2 * s15 * s16 * s25 + 4 * me2 * pow<2>(s16) * s25 +
-        8 * me2 * mm2 * pow<2>(s25) - 6 * me2 * s12 * pow<2>(s25) -
-        4 * me2 * s15 * pow<2>(s25) + 6 * mm2 * s15 * pow<2>(s25) -
-        4 * s12 * s15 * pow<2>(s25) - 4 * pow<2>(s15) * pow<2>(s25) -
-        4 * me2 * s16 * pow<2>(s25) + 6 * mm2 * s16 * pow<2>(s25) -
-        4 * s12 * s16 * pow<2>(s25) - 8 * s15 * s16 * pow<2>(s25) -
-        4 * pow<2>(s16) * pow<2>(s25) - 4 * mm2 * pow<3>(s25) +
-        2 * s12 * pow<3>(s25) + 4 * s15 * pow<3>(s25) + 4 * s16 * pow<3>(s25) +
-        40 * pow<2>(me2) * mm2 * s26 - 30 * pow<2>(me2) * s12 * s26 -
-        6 * me2 * mm2 * s12 * s26 + 4 * me2 * pow<2>(s12) * s26 -
-        30 * pow<2>(me2) * s15 * s26 - 6 * me2 * mm2 * s15 * s26 +
-        8 * me2 * s12 * s15 * s26 + 4 * me2 * pow<2>(s15) * s26 -
-        30 * pow<2>(me2) * s16 * s26 - 6 * me2 * mm2 * s16 * s26 +
+        8 * me2 * s15 * s16 * s25 + 4 * me2 * pow(s16, 2) * s25 +
+        8 * me2 * mm2 * pow(s25, 2) - 6 * me2 * s12 * pow(s25, 2) -
+        4 * me2 * s15 * pow(s25, 2) + 6 * mm2 * s15 * pow(s25, 2) -
+        4 * s12 * s15 * pow(s25, 2) - 4 * pow(s15, 2) * pow(s25, 2) -
+        4 * me2 * s16 * pow(s25, 2) + 6 * mm2 * s16 * pow(s25, 2) -
+        4 * s12 * s16 * pow(s25, 2) - 8 * s15 * s16 * pow(s25, 2) -
+        4 * pow(s16, 2) * pow(s25, 2) - 4 * mm2 * pow(s25, 3) +
+        2 * s12 * pow(s25, 3) + 4 * s15 * pow(s25, 3) + 4 * s16 * pow(s25, 3) +
+        40 * pow(me2, 2) * mm2 * s26 - 30 * pow(me2, 2) * s12 * s26 -
+        6 * me2 * mm2 * s12 * s26 + 4 * me2 * pow(s12, 2) * s26 -
+        30 * pow(me2, 2) * s15 * s26 - 6 * me2 * mm2 * s15 * s26 +
+        8 * me2 * s12 * s15 * s26 + 4 * me2 * pow(s15, 2) * s26 -
+        30 * pow(me2, 2) * s16 * s26 - 6 * me2 * mm2 * s16 * s26 +
         8 * me2 * s12 * s16 * s26 + 8 * me2 * s15 * s16 * s26 +
-        4 * me2 * pow<2>(s16) * s26 + 16 * me2 * mm2 * s25 * s26 -
+        4 * me2 * pow(s16, 2) * s26 + 16 * me2 * mm2 * s25 * s26 -
         12 * me2 * s12 * s25 * s26 - 8 * me2 * s15 * s25 * s26 +
         12 * mm2 * s15 * s25 * s26 - 8 * s12 * s15 * s25 * s26 -
-        8 * pow<2>(s15) * s25 * s26 - 8 * me2 * s16 * s25 * s26 +
+        8 * pow(s15, 2) * s25 * s26 - 8 * me2 * s16 * s25 * s26 +
         12 * mm2 * s16 * s25 * s26 - 8 * s12 * s16 * s25 * s26 -
-        16 * s15 * s16 * s25 * s26 - 8 * pow<2>(s16) * s25 * s26 -
-        12 * mm2 * pow<2>(s25) * s26 + 6 * s12 * pow<2>(s25) * s26 +
-        12 * s15 * pow<2>(s25) * s26 + 12 * s16 * pow<2>(s25) * s26 +
-        8 * me2 * mm2 * pow<2>(s26) - 6 * me2 * s12 * pow<2>(s26) -
-        4 * me2 * s15 * pow<2>(s26) + 6 * mm2 * s15 * pow<2>(s26) -
-        4 * s12 * s15 * pow<2>(s26) - 4 * pow<2>(s15) * pow<2>(s26) -
-        4 * me2 * s16 * pow<2>(s26) + 6 * mm2 * s16 * pow<2>(s26) -
-        4 * s12 * s16 * pow<2>(s26) - 8 * s15 * s16 * pow<2>(s26) -
-        4 * pow<2>(s16) * pow<2>(s26) - 12 * mm2 * s25 * pow<2>(s26) +
-        6 * s12 * s25 * pow<2>(s26) + 12 * s15 * s25 * pow<2>(s26) +
-        12 * s16 * s25 * pow<2>(s26) - 4 * mm2 * pow<3>(s26) +
-        2 * s12 * pow<3>(s26) + 4 * s15 * pow<3>(s26) + 4 * s16 * pow<3>(s26) +
-        32 * pow<2>(me2) * mm2 * s56 - 24 * pow<2>(me2) * s12 * s56 -
-        24 * pow<2>(me2) * s15 * s56 - 24 * pow<2>(me2) * s16 * s56 +
+        16 * s15 * s16 * s25 * s26 - 8 * pow(s16, 2) * s25 * s26 -
+        12 * mm2 * pow(s25, 2) * s26 + 6 * s12 * pow(s25, 2) * s26 +
+        12 * s15 * pow(s25, 2) * s26 + 12 * s16 * pow(s25, 2) * s26 +
+        8 * me2 * mm2 * pow(s26, 2) - 6 * me2 * s12 * pow(s26, 2) -
+        4 * me2 * s15 * pow(s26, 2) + 6 * mm2 * s15 * pow(s26, 2) -
+        4 * s12 * s15 * pow(s26, 2) - 4 * pow(s15, 2) * pow(s26, 2) -
+        4 * me2 * s16 * pow(s26, 2) + 6 * mm2 * s16 * pow(s26, 2) -
+        4 * s12 * s16 * pow(s26, 2) - 8 * s15 * s16 * pow(s26, 2) -
+        4 * pow(s16, 2) * pow(s26, 2) - 12 * mm2 * s25 * pow(s26, 2) +
+        6 * s12 * s25 * pow(s26, 2) + 12 * s15 * s25 * pow(s26, 2) +
+        12 * s16 * s25 * pow(s26, 2) - 4 * mm2 * pow(s26, 3) +
+        2 * s12 * pow(s26, 3) + 4 * s15 * pow(s26, 3) + 4 * s16 * pow(s26, 3) +
+        32 * pow(me2, 2) * mm2 * s56 - 24 * pow(me2, 2) * s12 * s56 -
+        24 * pow(me2, 2) * s15 * s56 - 24 * pow(me2, 2) * s16 * s56 +
         16 * me2 * mm2 * s25 * s56 - 12 * me2 * s12 * s25 * s56 -
-        6 * mm2 * s12 * s25 * s56 + 4 * pow<2>(s12) * s25 * s56 -
+        6 * mm2 * s12 * s25 * s56 + 4 * pow(s12, 2) * s25 * s56 -
         8 * me2 * s15 * s25 * s56 + 6 * mm2 * s15 * s25 * s56 -
-        4 * pow<2>(s15) * s25 * s56 - 8 * me2 * s16 * s25 * s56 +
+        4 * pow(s15, 2) * s25 * s56 - 8 * me2 * s16 * s25 * s56 +
         6 * mm2 * s16 * s25 * s56 - 8 * s15 * s16 * s25 * s56 -
-        4 * pow<2>(s16) * s25 * s56 - 8 * mm2 * pow<2>(s25) * s56 +
-        2 * s12 * pow<2>(s25) * s56 + 8 * s15 * pow<2>(s25) * s56 +
-        8 * s16 * pow<2>(s25) * s56 + 16 * me2 * mm2 * s26 * s56 -
+        4 * pow(s16, 2) * s25 * s56 - 8 * mm2 * pow(s25, 2) * s56 +
+        2 * s12 * pow(s25, 2) * s56 + 8 * s15 * pow(s25, 2) * s56 +
+        8 * s16 * pow(s25, 2) * s56 + 16 * me2 * mm2 * s26 * s56 -
         12 * me2 * s12 * s26 * s56 - 6 * mm2 * s12 * s26 * s56 +
-        4 * pow<2>(s12) * s26 * s56 - 8 * me2 * s15 * s26 * s56 +
-        6 * mm2 * s15 * s26 * s56 - 4 * pow<2>(s15) * s26 * s56 -
+        4 * pow(s12, 2) * s26 * s56 - 8 * me2 * s15 * s26 * s56 +
+        6 * mm2 * s15 * s26 * s56 - 4 * pow(s15, 2) * s26 * s56 -
         8 * me2 * s16 * s26 * s56 + 6 * mm2 * s16 * s26 * s56 -
-        8 * s15 * s16 * s26 * s56 - 4 * pow<2>(s16) * s26 * s56 -
+        8 * s15 * s16 * s26 * s56 - 4 * pow(s16, 2) * s26 * s56 -
         16 * mm2 * s25 * s26 * s56 + 4 * s12 * s25 * s26 * s56 +
         16 * s15 * s25 * s26 * s56 + 16 * s16 * s25 * s26 * s56 -
-        8 * mm2 * pow<2>(s26) * s56 + 2 * s12 * pow<2>(s26) * s56 +
-        8 * s15 * pow<2>(s26) * s56 + 8 * s16 * pow<2>(s26) * s56 +
-        8 * me2 * mm2 * pow<2>(s56) - 6 * me2 * s12 * pow<2>(s56) -
-        6 * mm2 * s12 * pow<2>(s56) + 4 * pow<2>(s12) * pow<2>(s56) -
-        4 * me2 * s15 * pow<2>(s56) + 4 * s12 * s15 * pow<2>(s56) -
-        4 * me2 * s16 * pow<2>(s56) + 4 * s12 * s16 * pow<2>(s56) -
-        4 * mm2 * s25 * pow<2>(s56) - 2 * s12 * s25 * pow<2>(s56) +
-        4 * s15 * s25 * pow<2>(s56) + 4 * s16 * s25 * pow<2>(s56) -
-        4 * mm2 * s26 * pow<2>(s56) - 2 * s12 * s26 * pow<2>(s56) +
-        4 * s15 * s26 * pow<2>(s56) + 4 * s16 * s26 * pow<2>(s56) -
-        2 * s12 * pow<3>(s56)};
+        8 * mm2 * pow(s26, 2) * s56 + 2 * s12 * pow(s26, 2) * s56 +
+        8 * s15 * pow(s26, 2) * s56 + 8 * s16 * pow(s26, 2) * s56 +
+        8 * me2 * mm2 * pow(s56, 2) - 6 * me2 * s12 * pow(s56, 2) -
+        6 * mm2 * s12 * pow(s56, 2) + 4 * pow(s12, 2) * pow(s56, 2) -
+        4 * me2 * s15 * pow(s56, 2) + 4 * s12 * s15 * pow(s56, 2) -
+        4 * me2 * s16 * pow(s56, 2) + 4 * s12 * s16 * pow(s56, 2) -
+        4 * mm2 * s25 * pow(s56, 2) - 2 * s12 * s25 * pow(s56, 2) +
+        4 * s15 * s25 * pow(s56, 2) + 4 * s16 * s25 * pow(s56, 2) -
+        4 * mm2 * s26 * pow(s56, 2) - 2 * s12 * s26 * pow(s56, 2) +
+        4 * s15 * s26 * pow(s56, 2) + 4 * s16 * s26 * pow(s56, 2) -
+        2 * s12 * pow(s56, 3)};
     const auto if22{
-        32 * pow<3>(me2) * mm2 - 24 * pow<3>(me2) * s12 -
-        24 * pow<2>(me2) * mm2 * s12 + 16 * pow<2>(me2) * pow<2>(s12) -
-        24 * pow<3>(me2) * s15 - 24 * pow<2>(me2) * mm2 * s15 +
-        32 * pow<2>(me2) * s12 * s15 + 16 * pow<2>(me2) * pow<2>(s15) -
-        24 * pow<3>(me2) * s16 - 24 * pow<2>(me2) * mm2 * s16 +
-        32 * pow<2>(me2) * s12 * s16 + 32 * pow<2>(me2) * s15 * s16 +
-        16 * pow<2>(me2) * pow<2>(s16) + 32 * pow<2>(me2) * mm2 * s25 -
-        24 * pow<2>(me2) * s12 * s25 - 20 * pow<2>(me2) * s15 * s25 +
+        32 * pow(me2, 3) * mm2 - 24 * pow(me2, 3) * s12 -
+        24 * pow(me2, 2) * mm2 * s12 + 16 * pow(me2, 2) * pow(s12, 2) -
+        24 * pow(me2, 3) * s15 - 24 * pow(me2, 2) * mm2 * s15 +
+        32 * pow(me2, 2) * s12 * s15 + 16 * pow(me2, 2) * pow(s15, 2) -
+        24 * pow(me2, 3) * s16 - 24 * pow(me2, 2) * mm2 * s16 +
+        32 * pow(me2, 2) * s12 * s16 + 32 * pow(me2, 2) * s15 * s16 +
+        16 * pow(me2, 2) * pow(s16, 2) + 32 * pow(me2, 2) * mm2 * s25 -
+        24 * pow(me2, 2) * s12 * s25 - 20 * pow(me2, 2) * s15 * s25 +
         12 * me2 * mm2 * s15 * s25 - 8 * me2 * s12 * s15 * s25 -
-        8 * me2 * pow<2>(s15) * s25 - 24 * pow<2>(me2) * s16 * s25 -
-        8 * me2 * s15 * s16 * s25 - 8 * me2 * mm2 * pow<2>(s25) +
-        4 * me2 * s12 * pow<2>(s25) + 8 * me2 * s15 * pow<2>(s25) +
-        4 * me2 * s16 * pow<2>(s25) + 48 * pow<2>(me2) * mm2 * s26 -
-        36 * pow<2>(me2) * s12 * s26 - 12 * me2 * mm2 * s12 * s26 +
-        8 * me2 * pow<2>(s12) * s26 - 32 * pow<2>(me2) * s15 * s26 +
-        8 * me2 * s12 * s15 * s26 - 36 * pow<2>(me2) * s16 * s26 -
+        8 * me2 * pow(s15, 2) * s25 - 24 * pow(me2, 2) * s16 * s25 -
+        8 * me2 * s15 * s16 * s25 - 8 * me2 * mm2 * pow(s25, 2) +
+        4 * me2 * s12 * pow(s25, 2) + 8 * me2 * s15 * pow(s25, 2) +
+        4 * me2 * s16 * pow(s25, 2) + 48 * pow(me2, 2) * mm2 * s26 -
+        36 * pow(me2, 2) * s12 * s26 - 12 * me2 * mm2 * s12 * s26 +
+        8 * me2 * pow(s12, 2) * s26 - 32 * pow(me2, 2) * s15 * s26 +
+        8 * me2 * s12 * s15 * s26 - 36 * pow(me2, 2) * s16 * s26 -
         12 * me2 * mm2 * s16 * s26 + 16 * me2 * s12 * s16 * s26 +
-        8 * me2 * s15 * s16 * s26 + 8 * me2 * pow<2>(s16) * s26 +
+        8 * me2 * s15 * s16 * s26 + 8 * me2 * pow(s16, 2) * s26 +
         8 * me2 * mm2 * s25 * s26 - 8 * me2 * s12 * s25 * s26 -
         6 * me2 * s16 * s25 * s26 + 6 * mm2 * s16 * s25 * s26 -
         4 * s12 * s16 * s25 * s26 - 4 * s15 * s16 * s25 * s26 -
-        4 * pow<2>(s16) * s25 * s26 + 2 * s16 * pow<2>(s25) * s26 +
-        24 * me2 * mm2 * pow<2>(s26) - 18 * me2 * s12 * pow<2>(s26) -
-        6 * mm2 * s12 * pow<2>(s26) + 4 * pow<2>(s12) * pow<2>(s26) -
-        14 * me2 * s15 * pow<2>(s26) - 6 * mm2 * s15 * pow<2>(s26) +
-        8 * s12 * s15 * pow<2>(s26) + 4 * pow<2>(s15) * pow<2>(s26) -
-        16 * me2 * s16 * pow<2>(s26) + 4 * s12 * s16 * pow<2>(s26) +
-        4 * s15 * s16 * pow<2>(s26) + 4 * mm2 * s25 * pow<2>(s26) -
-        4 * s12 * s25 * pow<2>(s26) - 4 * s15 * s25 * pow<2>(s26) +
-        4 * mm2 * pow<3>(s26) - 4 * s12 * pow<3>(s26) - 4 * s15 * pow<3>(s26) -
-        2 * s16 * pow<3>(s26) + 32 * pow<2>(me2) * mm2 * s56 -
-        24 * pow<2>(me2) * s12 * s56 - 20 * pow<2>(me2) * s15 * s56 +
+        4 * pow(s16, 2) * s25 * s26 + 2 * s16 * pow(s25, 2) * s26 +
+        24 * me2 * mm2 * pow(s26, 2) - 18 * me2 * s12 * pow(s26, 2) -
+        6 * mm2 * s12 * pow(s26, 2) + 4 * pow(s12, 2) * pow(s26, 2) -
+        14 * me2 * s15 * pow(s26, 2) - 6 * mm2 * s15 * pow(s26, 2) +
+        8 * s12 * s15 * pow(s26, 2) + 4 * pow(s15, 2) * pow(s26, 2) -
+        16 * me2 * s16 * pow(s26, 2) + 4 * s12 * s16 * pow(s26, 2) +
+        4 * s15 * s16 * pow(s26, 2) + 4 * mm2 * s25 * pow(s26, 2) -
+        4 * s12 * s25 * pow(s26, 2) - 4 * s15 * s25 * pow(s26, 2) +
+        4 * mm2 * pow(s26, 3) - 4 * s12 * pow(s26, 3) - 4 * s15 * pow(s26, 3) -
+        2 * s16 * pow(s26, 3) + 32 * pow(me2, 2) * mm2 * s56 -
+        24 * pow(me2, 2) * s12 * s56 - 20 * pow(me2, 2) * s15 * s56 +
         12 * me2 * mm2 * s15 * s56 - 8 * me2 * s12 * s15 * s56 -
-        8 * me2 * pow<2>(s15) * s56 - 24 * pow<2>(me2) * s16 * s56 -
+        8 * me2 * pow(s15, 2) * s56 - 24 * pow(me2, 2) * s16 * s56 -
         8 * me2 * s15 * s16 * s56 - 16 * me2 * mm2 * s25 * s56 +
         8 * me2 * s12 * s25 * s56 + 16 * me2 * s15 * s25 * s56 +
         8 * me2 * s16 * s25 * s56 + 16 * me2 * mm2 * s26 * s56 -
         14 * me2 * s12 * s26 * s56 - 6 * mm2 * s12 * s26 * s56 +
-        4 * pow<2>(s12) * s26 * s56 - 6 * me2 * s15 * s26 * s56 -
+        4 * pow(s12, 2) * s26 * s56 - 6 * me2 * s15 * s26 * s56 -
         6 * mm2 * s15 * s26 * s56 + 8 * s12 * s15 * s26 * s56 +
-        4 * pow<2>(s15) * s26 * s56 - 12 * me2 * s16 * s26 * s56 +
+        4 * pow(s15, 2) * s26 * s56 - 12 * me2 * s16 * s26 * s56 +
         4 * s12 * s16 * s26 * s56 + 4 * s15 * s16 * s26 * s56 +
         4 * mm2 * s25 * s26 * s56 - 4 * s12 * s25 * s26 * s56 -
-        4 * s15 * s25 * s26 * s56 + 8 * mm2 * pow<2>(s26) * s56 -
-        8 * s12 * pow<2>(s26) * s56 - 8 * s15 * pow<2>(s26) * s56 -
-        4 * s16 * pow<2>(s26) * s56 - 8 * me2 * mm2 * pow<2>(s56) +
-        4 * me2 * s12 * pow<2>(s56) + 8 * me2 * s15 * pow<2>(s56) +
-        4 * me2 * s16 * pow<2>(s56) + 4 * mm2 * s26 * pow<2>(s56) -
-        4 * s12 * s26 * pow<2>(s56) - 4 * s15 * s26 * pow<2>(s56) -
-        2 * s16 * s26 * pow<2>(s56)};
+        4 * s15 * s25 * s26 * s56 + 8 * mm2 * pow(s26, 2) * s56 -
+        8 * s12 * pow(s26, 2) * s56 - 8 * s15 * pow(s26, 2) * s56 -
+        4 * s16 * pow(s26, 2) * s56 - 8 * me2 * mm2 * pow(s56, 2) +
+        4 * me2 * s12 * pow(s56, 2) + 8 * me2 * s15 * pow(s56, 2) +
+        4 * me2 * s16 * pow(s56, 2) + 4 * mm2 * s26 * pow(s56, 2) -
+        4 * s12 * s26 * pow(s56, 2) - 4 * s15 * s26 * pow(s56, 2) -
+        2 * s16 * s26 * pow(s56, 2)};
     const auto if13{
-        -8 * me2 * mm2 * pow<2>(s12) + 6 * me2 * pow<3>(s12) +
-        6 * mm2 * pow<3>(s12) - 4 * pow<4>(s12) - 8 * pow<2>(me2) * mm2 * s15 +
-        12 * pow<2>(me2) * s12 * s15 - 4 * me2 * mm2 * s12 * s15 +
-        6 * me2 * pow<2>(s12) * s15 + 12 * mm2 * pow<2>(s12) * s15 -
-        12 * pow<3>(s12) * s15 + 6 * pow<2>(me2) * pow<2>(s15) -
-        2 * me2 * mm2 * pow<2>(s15) + 2 * me2 * s12 * pow<2>(s15) +
-        6 * mm2 * s12 * pow<2>(s15) - 12 * pow<2>(s12) * pow<2>(s15) +
-        2 * me2 * pow<3>(s15) - 4 * s12 * pow<3>(s15) +
-        6 * pow<2>(me2) * s12 * s16 - 2 * me2 * mm2 * s12 * s16 +
-        4 * me2 * pow<2>(s12) * s16 + 6 * mm2 * pow<2>(s12) * s16 -
-        8 * pow<3>(s12) * s16 + 8 * pow<2>(me2) * s15 * s16 -
+        -8 * me2 * mm2 * pow(s12, 2) + 6 * me2 * pow(s12, 3) +
+        6 * mm2 * pow(s12, 3) - 4 * pow(s12, 4) - 8 * pow(me2, 2) * mm2 * s15 +
+        12 * pow(me2, 2) * s12 * s15 - 4 * me2 * mm2 * s12 * s15 +
+        6 * me2 * pow(s12, 2) * s15 + 12 * mm2 * pow(s12, 2) * s15 -
+        12 * pow(s12, 3) * s15 + 6 * pow(me2, 2) * pow(s15, 2) -
+        2 * me2 * mm2 * pow(s15, 2) + 2 * me2 * s12 * pow(s15, 2) +
+        6 * mm2 * s12 * pow(s15, 2) - 12 * pow(s12, 2) * pow(s15, 2) +
+        2 * me2 * pow(s15, 3) - 4 * s12 * pow(s15, 3) +
+        6 * pow(me2, 2) * s12 * s16 - 2 * me2 * mm2 * s12 * s16 +
+        4 * me2 * pow(s12, 2) * s16 + 6 * mm2 * pow(s12, 2) * s16 -
+        8 * pow(s12, 3) * s16 + 8 * pow(me2, 2) * s15 * s16 -
         2 * me2 * s12 * s15 * s16 + 6 * mm2 * s12 * s15 * s16 -
-        16 * pow<2>(s12) * s15 * s16 - 8 * s12 * pow<2>(s15) * s16 -
-        4 * pow<2>(s12) * pow<2>(s16) - 2 * me2 * s15 * pow<2>(s16) -
-        4 * s12 * s15 * pow<2>(s16) + 8 * me2 * pow<2>(mm2) * s25 +
-        4 * me2 * mm2 * s12 * s25 - 12 * pow<2>(mm2) * s12 * s25 -
-        12 * me2 * pow<2>(s12) * s25 - 6 * mm2 * pow<2>(s12) * s25 +
-        12 * pow<3>(s12) * s25 - 6 * pow<2>(me2) * s15 * s25 -
-        12 * me2 * mm2 * s15 * s25 - 6 * pow<2>(mm2) * s15 * s25 +
-        22 * pow<2>(s12) * s15 * s25 + 4 * me2 * pow<2>(s15) * s25 +
-        4 * mm2 * pow<2>(s15) * s25 + 10 * s12 * pow<2>(s15) * s25 -
-        3 * pow<2>(me2) * s16 * s25 - 6 * me2 * mm2 * s16 * s25 -
-        3 * pow<2>(mm2) * s16 * s25 + 6 * mm2 * s12 * s16 * s25 +
-        14 * pow<2>(s12) * s16 * s25 + 8 * me2 * s15 * s16 * s25 +
+        16 * pow(s12, 2) * s15 * s16 - 8 * s12 * pow(s15, 2) * s16 -
+        4 * pow(s12, 2) * pow(s16, 2) - 2 * me2 * s15 * pow(s16, 2) -
+        4 * s12 * s15 * pow(s16, 2) + 8 * me2 * pow(mm2, 2) * s25 +
+        4 * me2 * mm2 * s12 * s25 - 12 * pow(mm2, 2) * s12 * s25 -
+        12 * me2 * pow(s12, 2) * s25 - 6 * mm2 * pow(s12, 2) * s25 +
+        12 * pow(s12, 3) * s25 - 6 * pow(me2, 2) * s15 * s25 -
+        12 * me2 * mm2 * s15 * s25 - 6 * pow(mm2, 2) * s15 * s25 +
+        22 * pow(s12, 2) * s15 * s25 + 4 * me2 * pow(s15, 2) * s25 +
+        4 * mm2 * pow(s15, 2) * s25 + 10 * s12 * pow(s15, 2) * s25 -
+        3 * pow(me2, 2) * s16 * s25 - 6 * me2 * mm2 * s16 * s25 -
+        3 * pow(mm2, 2) * s16 * s25 + 6 * mm2 * s12 * s16 * s25 +
+        14 * pow(s12, 2) * s16 * s25 + 8 * me2 * s15 * s16 * s25 +
         5 * mm2 * s15 * s16 * s25 + 14 * s12 * s15 * s16 * s25 +
-        me2 * pow<2>(s16) * s25 + 2 * mm2 * pow<2>(s16) * s25 +
-        4 * s12 * pow<2>(s16) * s25 - 2 * me2 * mm2 * pow<2>(s25) +
-        6 * pow<2>(mm2) * pow<2>(s25) + 6 * me2 * s12 * pow<2>(s25) +
-        2 * mm2 * s12 * pow<2>(s25) - 12 * pow<2>(s12) * pow<2>(s25) -
-        4 * me2 * s15 * pow<2>(s25) - 4 * mm2 * s15 * pow<2>(s25) -
-        10 * s12 * s15 * pow<2>(s25) - 3 * me2 * s16 * pow<2>(s25) -
-        4 * mm2 * s16 * pow<2>(s25) - 6 * s12 * s16 * pow<2>(s25) -
-        2 * mm2 * pow<3>(s25) + 4 * s12 * pow<3>(s25) +
-        2 * me2 * mm2 * s12 * s26 - 6 * pow<2>(mm2) * s12 * s26 -
-        6 * me2 * pow<2>(s12) * s26 - 4 * mm2 * pow<2>(s12) * s26 +
-        8 * pow<3>(s12) * s26 - 3 * pow<2>(me2) * s15 * s26 -
-        6 * me2 * mm2 * s15 * s26 - 3 * pow<2>(mm2) * s15 * s26 +
-        6 * me2 * s12 * s15 * s26 + 14 * pow<2>(s12) * s15 * s26 +
-        4 * me2 * pow<2>(s15) * s26 + 3 * mm2 * pow<2>(s15) * s26 +
-        6 * s12 * pow<2>(s15) * s26 + 4 * me2 * s12 * s16 * s26 +
-        4 * mm2 * s12 * s16 * s26 + 6 * pow<2>(s12) * s16 * s26 +
+        me2 * pow(s16, 2) * s25 + 2 * mm2 * pow(s16, 2) * s25 +
+        4 * s12 * pow(s16, 2) * s25 - 2 * me2 * mm2 * pow(s25, 2) +
+        6 * pow(mm2, 2) * pow(s25, 2) + 6 * me2 * s12 * pow(s25, 2) +
+        2 * mm2 * s12 * pow(s25, 2) - 12 * pow(s12, 2) * pow(s25, 2) -
+        4 * me2 * s15 * pow(s25, 2) - 4 * mm2 * s15 * pow(s25, 2) -
+        10 * s12 * s15 * pow(s25, 2) - 3 * me2 * s16 * pow(s25, 2) -
+        4 * mm2 * s16 * pow(s25, 2) - 6 * s12 * s16 * pow(s25, 2) -
+        2 * mm2 * pow(s25, 3) + 4 * s12 * pow(s25, 3) +
+        2 * me2 * mm2 * s12 * s26 - 6 * pow(mm2, 2) * s12 * s26 -
+        6 * me2 * pow(s12, 2) * s26 - 4 * mm2 * pow(s12, 2) * s26 +
+        8 * pow(s12, 3) * s26 - 3 * pow(me2, 2) * s15 * s26 -
+        6 * me2 * mm2 * s15 * s26 - 3 * pow(mm2, 2) * s15 * s26 +
+        6 * me2 * s12 * s15 * s26 + 14 * pow(s12, 2) * s15 * s26 +
+        4 * me2 * pow(s15, 2) * s26 + 3 * mm2 * pow(s15, 2) * s26 +
+        6 * s12 * pow(s15, 2) * s26 + 4 * me2 * s12 * s16 * s26 +
+        4 * mm2 * s12 * s16 * s26 + 6 * pow(s12, 2) * s16 * s26 +
         7 * me2 * s15 * s16 * s26 + 2 * mm2 * s15 * s16 * s26 +
-        6 * s12 * s15 * s16 * s26 + 8 * pow<2>(mm2) * s25 * s26 +
+        6 * s12 * s15 * s16 * s26 + 8 * pow(mm2, 2) * s25 * s26 +
         6 * me2 * s12 * s25 * s26 - 2 * mm2 * s12 * s25 * s26 -
-        16 * pow<2>(s12) * s25 * s26 - 5 * me2 * s15 * s25 * s26 -
+        16 * pow(s12, 2) * s25 * s26 - 5 * me2 * s15 * s25 * s26 -
         8 * mm2 * s15 * s25 * s26 - 14 * s12 * s15 * s25 * s26 -
         2 * me2 * s16 * s25 * s26 - 7 * mm2 * s16 * s25 * s26 -
-        6 * s12 * s16 * s25 * s26 + 8 * s12 * pow<2>(s25) * s26 -
-        4 * pow<2>(s12) * pow<2>(s26) - 2 * me2 * s15 * pow<2>(s26) -
-        mm2 * s15 * pow<2>(s26) - 4 * s12 * s15 * pow<2>(s26) +
-        2 * mm2 * s25 * pow<2>(s26) + 4 * s12 * s25 * pow<2>(s26) +
-        8 * pow<2>(me2) * mm2 * s56 + 8 * me2 * pow<2>(mm2) * s56 -
-        3 * pow<2>(me2) * s12 * s56 - 2 * me2 * mm2 * s12 * s56 -
-        3 * pow<2>(mm2) * s12 * s56 - 10 * me2 * pow<2>(s12) * s56 -
-        10 * mm2 * pow<2>(s12) * s56 + 12 * pow<3>(s12) * s56 -
-        8 * pow<2>(me2) * s15 * s56 - 10 * me2 * mm2 * s15 * s56 -
-        9 * mm2 * s12 * s15 * s56 + 22 * pow<2>(s12) * s15 * s56 +
-        2 * me2 * pow<2>(s15) * s56 + 10 * s12 * pow<2>(s15) * s56 -
+        6 * s12 * s16 * s25 * s26 + 8 * s12 * pow(s25, 2) * s26 -
+        4 * pow(s12, 2) * pow(s26, 2) - 2 * me2 * s15 * pow(s26, 2) -
+        mm2 * s15 * pow(s26, 2) - 4 * s12 * s15 * pow(s26, 2) +
+        2 * mm2 * s25 * pow(s26, 2) + 4 * s12 * s25 * pow(s26, 2) +
+        8 * pow(me2, 2) * mm2 * s56 + 8 * me2 * pow(mm2, 2) * s56 -
+        3 * pow(me2, 2) * s12 * s56 - 2 * me2 * mm2 * s12 * s56 -
+        3 * pow(mm2, 2) * s12 * s56 - 10 * me2 * pow(s12, 2) * s56 -
+        10 * mm2 * pow(s12, 2) * s56 + 12 * pow(s12, 3) * s56 -
+        8 * pow(me2, 2) * s15 * s56 - 10 * me2 * mm2 * s15 * s56 -
+        9 * mm2 * s12 * s15 * s56 + 22 * pow(s12, 2) * s15 * s56 +
+        2 * me2 * pow(s15, 2) * s56 + 10 * s12 * pow(s15, 2) * s56 -
         6 * me2 * mm2 * s16 * s56 + me2 * s12 * s16 * s56 +
-        2 * mm2 * s12 * s16 * s56 + 10 * pow<2>(s12) * s16 * s56 +
+        2 * mm2 * s12 * s16 * s56 + 10 * pow(s12, 2) * s16 * s56 +
         6 * me2 * s15 * s16 * s56 + 10 * s12 * s15 * s16 * s56 +
-        10 * me2 * mm2 * s25 * s56 + 8 * pow<2>(mm2) * s25 * s56 +
-        9 * me2 * s12 * s25 * s56 - 22 * pow<2>(s12) * s25 * s56 -
+        10 * me2 * mm2 * s25 * s56 + 8 * pow(mm2, 2) * s25 * s56 +
+        9 * me2 * s12 * s25 * s56 - 22 * pow(s12, 2) * s25 * s56 -
         6 * me2 * s15 * s25 * s56 - 6 * mm2 * s15 * s25 * s56 -
         20 * s12 * s15 * s25 * s56 - 2 * me2 * s16 * s25 * s56 -
         6 * mm2 * s16 * s25 * s56 - 10 * s12 * s16 * s25 * s56 +
-        2 * mm2 * pow<2>(s25) * s56 + 10 * s12 * pow<2>(s25) * s56 +
+        2 * mm2 * pow(s25, 2) * s56 + 10 * s12 * pow(s25, 2) * s56 +
         6 * me2 * mm2 * s26 * s56 - 2 * me2 * s12 * s26 * s56 -
-        mm2 * s12 * s26 * s56 - 10 * pow<2>(s12) * s26 * s56 -
+        mm2 * s12 * s26 * s56 - 10 * pow(s12, 2) * s26 * s56 -
         6 * me2 * s15 * s26 * s56 - 2 * mm2 * s15 * s26 * s56 -
         10 * s12 * s15 * s26 * s56 + 6 * mm2 * s25 * s26 * s56 +
-        10 * s12 * s25 * s26 * s56 + 4 * me2 * mm2 * pow<2>(s56) -
-        6 * pow<2>(s12) * pow<2>(s56) - 2 * me2 * s15 * pow<2>(s56) -
-        6 * s12 * s15 * pow<2>(s56) + 2 * mm2 * s25 * pow<2>(s56) +
-        6 * s12 * s25 * pow<2>(s56)};
+        10 * s12 * s25 * s26 * s56 + 4 * me2 * mm2 * pow(s56, 2) -
+        6 * pow(s12, 2) * pow(s56, 2) - 2 * me2 * s15 * pow(s56, 2) -
+        6 * s12 * s15 * pow(s56, 2) + 2 * mm2 * s25 * pow(s56, 2) +
+        6 * s12 * s25 * pow(s56, 2)};
     const auto if23{
-        -8 * me2 * mm2 * pow<2>(s12) + 6 * me2 * pow<3>(s12) +
-        6 * mm2 * pow<3>(s12) - 4 * pow<4>(s12) - 8 * pow<2>(me2) * mm2 * s15 +
-        12 * pow<2>(me2) * s12 * s15 + 4 * me2 * mm2 * s12 * s15 +
-        6 * mm2 * pow<2>(s12) * s15 - 8 * pow<3>(s12) * s15 +
-        6 * pow<2>(me2) * pow<2>(s15) + 2 * me2 * mm2 * pow<2>(s15) -
-        6 * me2 * s12 * pow<2>(s15) - 4 * pow<2>(s12) * pow<2>(s15) +
-        6 * pow<2>(me2) * s12 * s16 - 10 * me2 * mm2 * s12 * s16 +
-        10 * me2 * pow<2>(s12) * s16 + 12 * mm2 * pow<2>(s12) * s16 -
-        12 * pow<3>(s12) * s16 + 14 * pow<2>(me2) * s15 * s16 +
+        -8 * me2 * mm2 * pow(s12, 2) + 6 * me2 * pow(s12, 3) +
+        6 * mm2 * pow(s12, 3) - 4 * pow(s12, 4) - 8 * pow(me2, 2) * mm2 * s15 +
+        12 * pow(me2, 2) * s12 * s15 + 4 * me2 * mm2 * s12 * s15 +
+        6 * mm2 * pow(s12, 2) * s15 - 8 * pow(s12, 3) * s15 +
+        6 * pow(me2, 2) * pow(s15, 2) + 2 * me2 * mm2 * pow(s15, 2) -
+        6 * me2 * s12 * pow(s15, 2) - 4 * pow(s12, 2) * pow(s15, 2) +
+        6 * pow(me2, 2) * s12 * s16 - 10 * me2 * mm2 * s12 * s16 +
+        10 * me2 * pow(s12, 2) * s16 + 12 * mm2 * pow(s12, 2) * s16 -
+        12 * pow(s12, 3) * s16 + 14 * pow(me2, 2) * s15 * s16 +
         2 * me2 * mm2 * s15 * s16 - 6 * me2 * s12 * s15 * s16 +
-        6 * mm2 * s12 * s15 * s16 - 16 * pow<2>(s12) * s15 * s16 -
-        4 * me2 * pow<2>(s15) * s16 - 4 * s12 * pow<2>(s15) * s16 +
-        6 * pow<2>(me2) * pow<2>(s16) - 2 * me2 * mm2 * pow<2>(s16) +
-        4 * me2 * s12 * pow<2>(s16) + 6 * mm2 * s12 * pow<2>(s16) -
-        12 * pow<2>(s12) * pow<2>(s16) - 4 * me2 * s15 * pow<2>(s16) -
-        8 * s12 * s15 * pow<2>(s16) - 4 * s12 * pow<3>(s16) +
-        10 * me2 * mm2 * s12 * s25 - 6 * pow<2>(mm2) * s12 * s25 -
-        12 * me2 * pow<2>(s12) * s25 - 10 * mm2 * pow<2>(s12) * s25 +
-        12 * pow<3>(s12) * s25 - 6 * pow<2>(me2) * s15 * s25 -
+        6 * mm2 * s12 * s15 * s16 - 16 * pow(s12, 2) * s15 * s16 -
+        4 * me2 * pow(s15, 2) * s16 - 4 * s12 * pow(s15, 2) * s16 +
+        6 * pow(me2, 2) * pow(s16, 2) - 2 * me2 * mm2 * pow(s16, 2) +
+        4 * me2 * s12 * pow(s16, 2) + 6 * mm2 * s12 * pow(s16, 2) -
+        12 * pow(s12, 2) * pow(s16, 2) - 4 * me2 * s15 * pow(s16, 2) -
+        8 * s12 * s15 * pow(s16, 2) - 4 * s12 * pow(s16, 3) +
+        10 * me2 * mm2 * s12 * s25 - 6 * pow(mm2, 2) * s12 * s25 -
+        12 * me2 * pow(s12, 2) * s25 - 10 * mm2 * pow(s12, 2) * s25 +
+        12 * pow(s12, 3) * s25 - 6 * pow(me2, 2) * s15 * s25 -
         2 * me2 * mm2 * s15 * s25 + 6 * me2 * s12 * s15 * s25 +
-        12 * pow<2>(s12) * s15 * s25 + 4 * me2 * pow<2>(s15) * s25 -
-        3 * pow<2>(me2) * s16 * s25 + 10 * me2 * mm2 * s16 * s25 -
-        3 * pow<2>(mm2) * s16 * s25 - 10 * me2 * s12 * s16 * s25 -
-        10 * mm2 * s12 * s16 * s25 + 24 * pow<2>(s12) * s16 * s25 +
+        12 * pow(s12, 2) * s15 * s25 + 4 * me2 * pow(s15, 2) * s25 -
+        3 * pow(me2, 2) * s16 * s25 + 10 * me2 * mm2 * s16 * s25 -
+        3 * pow(mm2, 2) * s16 * s25 - 10 * me2 * s12 * s16 * s25 -
+        10 * mm2 * s12 * s16 * s25 + 24 * pow(s12, 2) * s16 * s25 +
         7 * me2 * s15 * s16 * s25 + mm2 * s15 * s16 * s25 +
-        12 * s12 * s15 * s16 * s25 - me2 * pow<2>(s16) * s25 -
-        mm2 * pow<2>(s16) * s25 + 14 * s12 * pow<2>(s16) * s25 +
-        2 * s15 * pow<2>(s16) * s25 + 2 * pow<3>(s16) * s25 -
-        2 * me2 * mm2 * pow<2>(s25) + 6 * pow<2>(mm2) * pow<2>(s25) +
-        6 * me2 * s12 * pow<2>(s25) + 4 * mm2 * s12 * pow<2>(s25) -
-        12 * pow<2>(s12) * pow<2>(s25) - 4 * me2 * s15 * pow<2>(s25) -
-        2 * mm2 * s15 * pow<2>(s25) - 4 * s12 * s15 * pow<2>(s25) +
-        me2 * s16 * pow<2>(s25) + mm2 * s16 * pow<2>(s25) -
-        14 * s12 * s16 * pow<2>(s25) - 3 * s15 * s16 * pow<2>(s25) -
-        5 * pow<2>(s16) * pow<2>(s25) + 4 * s12 * pow<3>(s25) +
-        2 * s16 * pow<3>(s25) + 8 * me2 * pow<2>(mm2) * s26 -
-        4 * me2 * mm2 * s12 * s26 - 12 * pow<2>(mm2) * s12 * s26 -
-        6 * me2 * pow<2>(s12) * s26 + 8 * pow<3>(s12) * s26 -
-        3 * pow<2>(me2) * s15 * s26 - 6 * me2 * mm2 * s15 * s26 -
-        3 * pow<2>(mm2) * s15 * s26 + 12 * me2 * s12 * s15 * s26 +
-        12 * mm2 * s12 * s15 * s26 + 4 * pow<2>(s12) * s15 * s26 +
-        3 * me2 * pow<2>(s15) * s26 + 3 * mm2 * pow<2>(s15) * s26 -
-        4 * s12 * pow<2>(s15) * s26 - 2 * me2 * mm2 * s16 * s26 -
-        6 * pow<2>(mm2) * s16 * s26 + 6 * mm2 * s12 * s16 * s26 +
-        12 * pow<2>(s12) * s16 * s26 + 9 * me2 * s15 * s16 * s26 +
+        12 * s12 * s15 * s16 * s25 - me2 * pow(s16, 2) * s25 -
+        mm2 * pow(s16, 2) * s25 + 14 * s12 * pow(s16, 2) * s25 +
+        2 * s15 * pow(s16, 2) * s25 + 2 * pow(s16, 3) * s25 -
+        2 * me2 * mm2 * pow(s25, 2) + 6 * pow(mm2, 2) * pow(s25, 2) +
+        6 * me2 * s12 * pow(s25, 2) + 4 * mm2 * s12 * pow(s25, 2) -
+        12 * pow(s12, 2) * pow(s25, 2) - 4 * me2 * s15 * pow(s25, 2) -
+        2 * mm2 * s15 * pow(s25, 2) - 4 * s12 * s15 * pow(s25, 2) +
+        me2 * s16 * pow(s25, 2) + mm2 * s16 * pow(s25, 2) -
+        14 * s12 * s16 * pow(s25, 2) - 3 * s15 * s16 * pow(s25, 2) -
+        5 * pow(s16, 2) * pow(s25, 2) + 4 * s12 * pow(s25, 3) +
+        2 * s16 * pow(s25, 3) + 8 * me2 * pow(mm2, 2) * s26 -
+        4 * me2 * mm2 * s12 * s26 - 12 * pow(mm2, 2) * s12 * s26 -
+        6 * me2 * pow(s12, 2) * s26 + 8 * pow(s12, 3) * s26 -
+        3 * pow(me2, 2) * s15 * s26 - 6 * me2 * mm2 * s15 * s26 -
+        3 * pow(mm2, 2) * s15 * s26 + 12 * me2 * s12 * s15 * s26 +
+        12 * mm2 * s12 * s15 * s26 + 4 * pow(s12, 2) * s15 * s26 +
+        3 * me2 * pow(s15, 2) * s26 + 3 * mm2 * pow(s15, 2) * s26 -
+        4 * s12 * pow(s15, 2) * s26 - 2 * me2 * mm2 * s16 * s26 -
+        6 * pow(mm2, 2) * s16 * s26 + 6 * mm2 * s12 * s16 * s26 +
+        12 * pow(s12, 2) * s16 * s26 + 9 * me2 * s15 * s16 * s26 +
         9 * mm2 * s15 * s16 * s26 - 2 * s12 * s15 * s16 * s26 -
-        2 * pow<2>(s15) * s16 * s26 + 2 * me2 * pow<2>(s16) * s26 +
-        4 * mm2 * pow<2>(s16) * s26 + 4 * s12 * pow<2>(s16) * s26 -
-        2 * s15 * pow<2>(s16) * s26 + 2 * me2 * mm2 * s25 * s26 +
-        14 * pow<2>(mm2) * s25 * s26 + 6 * me2 * s12 * s25 * s26 -
-        6 * mm2 * s12 * s25 * s26 - 16 * pow<2>(s12) * s25 * s26 -
+        2 * pow(s15, 2) * s16 * s26 + 2 * me2 * pow(s16, 2) * s26 +
+        4 * mm2 * pow(s16, 2) * s26 + 4 * s12 * pow(s16, 2) * s26 -
+        2 * s15 * pow(s16, 2) * s26 + 2 * me2 * mm2 * s25 * s26 +
+        14 * pow(mm2, 2) * s25 * s26 + 6 * me2 * s12 * s25 * s26 -
+        6 * mm2 * s12 * s25 * s26 - 16 * pow(s12, 2) * s25 * s26 -
         9 * me2 * s15 * s25 * s26 - 9 * mm2 * s15 * s25 * s26 +
-        2 * s12 * s15 * s25 * s26 + pow<2>(s15) * s25 * s26 -
+        2 * s12 * s15 * s25 * s26 + pow(s15, 2) * s25 * s26 -
         me2 * s16 * s25 * s26 - 7 * mm2 * s16 * s25 * s26 -
         12 * s12 * s16 * s25 * s26 + 2 * s15 * s16 * s25 * s26 -
-        3 * pow<2>(s16) * s25 * s26 + 4 * mm2 * pow<2>(s25) * s26 +
-        8 * s12 * pow<2>(s25) * s26 - 2 * s15 * pow<2>(s25) * s26 +
-        2 * s16 * pow<2>(s25) * s26 + 2 * me2 * mm2 * pow<2>(s26) +
-        6 * pow<2>(mm2) * pow<2>(s26) - 6 * mm2 * s12 * pow<2>(s26) -
-        4 * pow<2>(s12) * pow<2>(s26) - 3 * me2 * s15 * pow<2>(s26) -
-        3 * mm2 * s15 * pow<2>(s26) + 4 * s12 * s15 * pow<2>(s26) -
-        pow<2>(s15) * pow<2>(s26) - 4 * mm2 * s16 * pow<2>(s26) +
-        s15 * s16 * pow<2>(s26) + 4 * mm2 * s25 * pow<2>(s26) +
-        4 * s12 * s25 * pow<2>(s26) - 2 * s15 * s25 * pow<2>(s26) +
-        8 * pow<2>(me2) * mm2 * s56 + 8 * me2 * pow<2>(mm2) * s56 -
-        3 * pow<2>(me2) * s12 * s56 - 2 * me2 * mm2 * s12 * s56 -
-        3 * pow<2>(mm2) * s12 * s56 - 10 * me2 * pow<2>(s12) * s56 -
-        10 * mm2 * pow<2>(s12) * s56 + 12 * pow<3>(s12) * s56 -
-        8 * pow<2>(me2) * s15 * s56 - 8 * me2 * mm2 * s15 * s56 +
+        3 * pow(s16, 2) * s25 * s26 + 4 * mm2 * pow(s25, 2) * s26 +
+        8 * s12 * pow(s25, 2) * s26 - 2 * s15 * pow(s25, 2) * s26 +
+        2 * s16 * pow(s25, 2) * s26 + 2 * me2 * mm2 * pow(s26, 2) +
+        6 * pow(mm2, 2) * pow(s26, 2) - 6 * mm2 * s12 * pow(s26, 2) -
+        4 * pow(s12, 2) * pow(s26, 2) - 3 * me2 * s15 * pow(s26, 2) -
+        3 * mm2 * s15 * pow(s26, 2) + 4 * s12 * s15 * pow(s26, 2) -
+        pow(s15, 2) * pow(s26, 2) - 4 * mm2 * s16 * pow(s26, 2) +
+        s15 * s16 * pow(s26, 2) + 4 * mm2 * s25 * pow(s26, 2) +
+        4 * s12 * s25 * pow(s26, 2) - 2 * s15 * s25 * pow(s26, 2) +
+        8 * pow(me2, 2) * mm2 * s56 + 8 * me2 * pow(mm2, 2) * s56 -
+        3 * pow(me2, 2) * s12 * s56 - 2 * me2 * mm2 * s12 * s56 -
+        3 * pow(mm2, 2) * s12 * s56 - 10 * me2 * pow(s12, 2) * s56 -
+        10 * mm2 * pow(s12, 2) * s56 + 12 * pow(s12, 3) * s56 -
+        8 * pow(me2, 2) * s15 * s56 - 8 * me2 * mm2 * s15 * s56 +
         7 * me2 * s12 * s15 * s56 - mm2 * s12 * s15 * s56 +
-        12 * pow<2>(s12) * s15 * s56 + 2 * me2 * pow<2>(s15) * s56 -
-        6 * pow<2>(me2) * s16 * s56 - 2 * me2 * mm2 * s16 * s56 -
+        12 * pow(s12, 2) * s15 * s56 + 2 * me2 * pow(s15, 2) * s56 -
+        6 * pow(me2, 2) * s16 * s56 - 2 * me2 * mm2 * s16 * s56 -
         7 * me2 * s12 * s16 * s56 - 9 * mm2 * s12 * s16 * s56 +
-        22 * pow<2>(s12) * s16 * s56 + 4 * me2 * s15 * s16 * s56 +
-        10 * s12 * s15 * s16 * s56 + 10 * s12 * pow<2>(s16) * s56 +
-        2 * me2 * mm2 * s25 * s56 + 6 * pow<2>(mm2) * s25 * s56 +
+        22 * pow(s12, 2) * s16 * s56 + 4 * me2 * s15 * s16 * s56 +
+        10 * s12 * s15 * s16 * s56 + 10 * s12 * pow(s16, 2) * s56 +
+        2 * me2 * mm2 * s25 * s56 + 6 * pow(mm2, 2) * s25 * s56 +
         9 * me2 * s12 * s25 * s56 + 7 * mm2 * s12 * s25 * s56 -
-        22 * pow<2>(s12) * s25 * s56 - 8 * me2 * s15 * s25 * s56 -
+        22 * pow(s12, 2) * s25 * s56 - 8 * me2 * s15 * s25 * s56 -
         2 * mm2 * s15 * s25 * s56 - 5 * s12 * s15 * s25 * s56 -
         21 * s12 * s16 * s25 * s56 - 3 * s15 * s16 * s25 * s56 -
-        5 * pow<2>(s16) * s25 * s56 + 10 * s12 * pow<2>(s25) * s56 +
-        5 * s16 * pow<2>(s25) * s56 + 8 * me2 * mm2 * s26 * s56 +
-        8 * pow<2>(mm2) * s26 * s56 + me2 * s12 * s26 * s56 -
-        7 * mm2 * s12 * s26 * s56 - 12 * pow<2>(s12) * s26 * s56 -
+        5 * pow(s16, 2) * s25 * s56 + 10 * s12 * pow(s25, 2) * s56 +
+        5 * s16 * pow(s25, 2) * s56 + 8 * me2 * mm2 * s26 * s56 +
+        8 * pow(mm2, 2) * s26 * s56 + me2 * s12 * s26 * s56 -
+        7 * mm2 * s12 * s26 * s56 - 12 * pow(s12, 2) * s26 * s56 -
         8 * me2 * s15 * s26 * s56 - 8 * mm2 * s15 * s26 * s56 +
-        7 * s12 * s15 * s26 * s56 + pow<2>(s15) * s26 * s56 -
+        7 * s12 * s15 * s26 * s56 + pow(s15, 2) * s26 * s56 -
         2 * me2 * s16 * s26 * s56 - 8 * mm2 * s16 * s26 * s56 -
         5 * s12 * s16 * s26 * s56 + 3 * s15 * s16 * s26 * s56 +
         4 * mm2 * s25 * s26 * s56 + 10 * s12 * s25 * s26 * s56 -
         3 * s15 * s25 * s26 * s56 + 3 * s16 * s25 * s26 * s56 +
-        2 * mm2 * pow<2>(s26) * s56 - s15 * pow<2>(s26) * s56 +
-        4 * me2 * mm2 * pow<2>(s56) + 4 * me2 * s12 * pow<2>(s56) +
-        4 * mm2 * s12 * pow<2>(s56) - 10 * pow<2>(s12) * pow<2>(s56) -
-        2 * me2 * s15 * pow<2>(s56) - s12 * s15 * pow<2>(s56) -
-        7 * s12 * s16 * pow<2>(s56) + 7 * s12 * s25 * pow<2>(s56) +
-        3 * s16 * s25 * pow<2>(s56) + 2 * mm2 * s26 * pow<2>(s56) +
-        s12 * s26 * pow<2>(s56) - s15 * s26 * pow<2>(s56) + s12 * pow<3>(s56)};
+        2 * mm2 * pow(s26, 2) * s56 - s15 * pow(s26, 2) * s56 +
+        4 * me2 * mm2 * pow(s56, 2) + 4 * me2 * s12 * pow(s56, 2) +
+        4 * mm2 * s12 * pow(s56, 2) - 10 * pow(s12, 2) * pow(s56, 2) -
+        2 * me2 * s15 * pow(s56, 2) - s12 * s15 * pow(s56, 2) -
+        7 * s12 * s16 * pow(s56, 2) + 7 * s12 * s25 * pow(s56, 2) +
+        3 * s16 * s25 * pow(s56, 2) + 2 * mm2 * s26 * pow(s56, 2) +
+        s12 * s26 * pow(s56, 2) - s15 * s26 * pow(s56, 2) + s12 * pow(s56, 3)};
     const auto if33{
-        32 * me2 * pow<3>(mm2) - 24 * me2 * pow<2>(mm2) * s12 -
-        24 * pow<3>(mm2) * s12 + 16 * pow<2>(mm2) * pow<2>(s12) -
-        48 * me2 * pow<2>(mm2) * s15 + 12 * me2 * mm2 * s12 * s15 +
-        36 * pow<2>(mm2) * s12 * s15 - 8 * mm2 * pow<2>(s12) * s15 +
-        24 * me2 * mm2 * pow<2>(s15) - 6 * me2 * s12 * pow<2>(s15) -
-        18 * mm2 * s12 * pow<2>(s15) + 4 * pow<2>(s12) * pow<2>(s15) -
-        4 * me2 * pow<3>(s15) + 4 * s12 * pow<3>(s15) -
-        32 * me2 * pow<2>(mm2) * s16 + 24 * pow<2>(mm2) * s12 * s16 +
+        32 * me2 * pow(mm2, 3) - 24 * me2 * pow(mm2, 2) * s12 -
+        24 * pow(mm2, 3) * s12 + 16 * pow(mm2, 2) * pow(s12, 2) -
+        48 * me2 * pow(mm2, 2) * s15 + 12 * me2 * mm2 * s12 * s15 +
+        36 * pow(mm2, 2) * s12 * s15 - 8 * mm2 * pow(s12, 2) * s15 +
+        24 * me2 * mm2 * pow(s15, 2) - 6 * me2 * s12 * pow(s15, 2) -
+        18 * mm2 * s12 * pow(s15, 2) + 4 * pow(s12, 2) * pow(s15, 2) -
+        4 * me2 * pow(s15, 3) + 4 * s12 * pow(s15, 3) -
+        32 * me2 * pow(mm2, 2) * s16 + 24 * pow(mm2, 2) * s12 * s16 +
         8 * me2 * mm2 * s15 * s16 - 8 * mm2 * s12 * s15 * s16 -
-        4 * me2 * pow<2>(s15) * s16 + 4 * s12 * pow<2>(s15) * s16 -
-        8 * me2 * mm2 * pow<2>(s16) + 4 * mm2 * s12 * pow<2>(s16) +
-        24 * me2 * pow<2>(mm2) * s25 + 24 * pow<3>(mm2) * s25 -
-        32 * pow<2>(mm2) * s12 * s25 - 12 * me2 * mm2 * s15 * s25 -
-        36 * pow<2>(mm2) * s15 * s25 + 16 * mm2 * s12 * s15 * s25 +
-        16 * mm2 * pow<2>(s15) * s25 - 4 * s12 * pow<2>(s15) * s25 -
-        2 * pow<3>(s15) * s25 - 24 * pow<2>(mm2) * s16 * s25 -
+        4 * me2 * pow(s15, 2) * s16 + 4 * s12 * pow(s15, 2) * s16 -
+        8 * me2 * mm2 * pow(s16, 2) + 4 * mm2 * s12 * pow(s16, 2) +
+        24 * me2 * pow(mm2, 2) * s25 + 24 * pow(mm2, 3) * s25 -
+        32 * pow(mm2, 2) * s12 * s25 - 12 * me2 * mm2 * s15 * s25 -
+        36 * pow(mm2, 2) * s15 * s25 + 16 * mm2 * s12 * s15 * s25 +
+        16 * mm2 * pow(s15, 2) * s25 - 4 * s12 * pow(s15, 2) * s25 -
+        2 * pow(s15, 3) * s25 - 24 * pow(mm2, 2) * s16 * s25 -
         6 * me2 * s15 * s16 * s25 + 6 * mm2 * s15 * s16 * s25 +
-        4 * s12 * s15 * s16 * s25 - 4 * mm2 * pow<2>(s16) * s25 +
-        2 * s15 * pow<2>(s16) * s25 + 16 * pow<2>(mm2) * pow<2>(s25) -
-        8 * mm2 * s15 * pow<2>(s25) - 4 * s15 * s16 * pow<2>(s25) +
-        24 * me2 * pow<2>(mm2) * s26 + 24 * pow<3>(mm2) * s26 -
-        32 * pow<2>(mm2) * s12 * s26 - 32 * pow<2>(mm2) * s15 * s26 +
-        8 * mm2 * s12 * s15 * s26 + 6 * me2 * pow<2>(s15) * s26 +
-        14 * mm2 * pow<2>(s15) * s26 - 8 * s12 * pow<2>(s15) * s26 -
-        4 * pow<3>(s15) * s26 + 12 * me2 * mm2 * s16 * s26 -
-        20 * pow<2>(mm2) * s16 * s26 - 8 * mm2 * s12 * s16 * s26 -
-        4 * pow<2>(s15) * s16 * s26 - 8 * mm2 * pow<2>(s16) * s26 +
-        32 * pow<2>(mm2) * s25 * s26 - 8 * mm2 * s15 * s25 * s26 +
-        4 * pow<2>(s15) * s25 * s26 + 8 * mm2 * s16 * s25 * s26 -
-        4 * s15 * s16 * s25 * s26 + 16 * pow<2>(mm2) * pow<2>(s26) +
-        4 * pow<2>(s15) * pow<2>(s26) + 8 * mm2 * s16 * pow<2>(s26) +
-        32 * me2 * pow<2>(mm2) * s56 - 24 * pow<2>(mm2) * s12 * s56 -
+        4 * s12 * s15 * s16 * s25 - 4 * mm2 * pow(s16, 2) * s25 +
+        2 * s15 * pow(s16, 2) * s25 + 16 * pow(mm2, 2) * pow(s25, 2) -
+        8 * mm2 * s15 * pow(s25, 2) - 4 * s15 * s16 * pow(s25, 2) +
+        24 * me2 * pow(mm2, 2) * s26 + 24 * pow(mm2, 3) * s26 -
+        32 * pow(mm2, 2) * s12 * s26 - 32 * pow(mm2, 2) * s15 * s26 +
+        8 * mm2 * s12 * s15 * s26 + 6 * me2 * pow(s15, 2) * s26 +
+        14 * mm2 * pow(s15, 2) * s26 - 8 * s12 * pow(s15, 2) * s26 -
+        4 * pow(s15, 3) * s26 + 12 * me2 * mm2 * s16 * s26 -
+        20 * pow(mm2, 2) * s16 * s26 - 8 * mm2 * s12 * s16 * s26 -
+        4 * pow(s15, 2) * s16 * s26 - 8 * mm2 * pow(s16, 2) * s26 +
+        32 * pow(mm2, 2) * s25 * s26 - 8 * mm2 * s15 * s25 * s26 +
+        4 * pow(s15, 2) * s25 * s26 + 8 * mm2 * s16 * s25 * s26 -
+        4 * s15 * s16 * s25 * s26 + 16 * pow(mm2, 2) * pow(s26, 2) +
+        4 * pow(s15, 2) * pow(s26, 2) + 8 * mm2 * s16 * pow(s26, 2) +
+        32 * me2 * pow(mm2, 2) * s56 - 24 * pow(mm2, 2) * s12 * s56 -
         16 * me2 * mm2 * s15 * s56 + 6 * me2 * s12 * s15 * s56 +
-        14 * mm2 * s12 * s15 * s56 - 4 * pow<2>(s12) * s15 * s56 +
-        8 * me2 * pow<2>(s15) * s56 - 8 * s12 * pow<2>(s15) * s56 +
+        14 * mm2 * s12 * s15 * s56 - 4 * pow(s12, 2) * s15 * s56 +
+        8 * me2 * pow(s15, 2) * s56 - 8 * s12 * pow(s15, 2) * s56 +
         16 * me2 * mm2 * s16 * s56 - 8 * mm2 * s12 * s16 * s56 +
         4 * me2 * s15 * s16 * s56 - 4 * s12 * s15 * s16 * s56 +
-        24 * pow<2>(mm2) * s25 * s56 - 12 * mm2 * s15 * s25 * s56 +
-        4 * s12 * s15 * s25 * s56 + 4 * pow<2>(s15) * s25 * s56 +
+        24 * pow(mm2, 2) * s25 * s56 - 12 * mm2 * s15 * s25 * s56 +
+        4 * s12 * s15 * s25 * s56 + 4 * pow(s15, 2) * s25 * s56 +
         8 * mm2 * s16 * s25 * s56 - 12 * me2 * mm2 * s26 * s56 +
-        20 * pow<2>(mm2) * s26 * s56 + 8 * mm2 * s12 * s26 * s56 -
+        20 * pow(mm2, 2) * s26 * s56 + 8 * mm2 * s12 * s26 * s56 -
         6 * me2 * s15 * s26 * s56 - 6 * mm2 * s15 * s26 * s56 +
-        8 * s12 * s15 * s26 * s56 + 8 * pow<2>(s15) * s26 * s56 +
+        8 * s12 * s15 * s26 * s56 + 8 * pow(s15, 2) * s26 * s56 +
         16 * mm2 * s16 * s26 * s56 + 4 * s15 * s16 * s26 * s56 -
         8 * mm2 * s25 * s26 * s56 - 4 * s15 * s25 * s26 * s56 -
-        8 * mm2 * pow<2>(s26) * s56 - 4 * s15 * pow<2>(s26) * s56 -
-        8 * me2 * mm2 * pow<2>(s56) + 4 * mm2 * s12 * pow<2>(s56) -
-        4 * me2 * s15 * pow<2>(s56) + 4 * s12 * s15 * pow<2>(s56) -
-        4 * mm2 * s25 * pow<2>(s56) - 2 * s15 * s25 * pow<2>(s56) -
-        8 * mm2 * s26 * pow<2>(s56) - 4 * s15 * s26 * pow<2>(s56)};
+        8 * mm2 * pow(s26, 2) * s56 - 4 * s15 * pow(s26, 2) * s56 -
+        8 * me2 * mm2 * pow(s56, 2) + 4 * mm2 * s12 * pow(s56, 2) -
+        4 * me2 * s15 * pow(s56, 2) + 4 * s12 * s15 * pow(s56, 2) -
+        4 * mm2 * s25 * pow(s56, 2) - 2 * s15 * s25 * pow(s56, 2) -
+        8 * mm2 * s26 * pow(s56, 2) - 4 * s15 * s26 * pow(s56, 2)};
     const auto if14{
-        -16 * pow<2>(me2) * mm2 * s12 + 12 * pow<2>(me2) * pow<2>(s12) +
-        12 * me2 * mm2 * pow<2>(s12) - 8 * me2 * pow<3>(s12) +
-        12 * pow<3>(me2) * s15 - 4 * pow<2>(me2) * mm2 * s15 +
-        8 * pow<2>(me2) * s12 * s15 + 12 * me2 * mm2 * s12 * s15 -
-        16 * me2 * pow<2>(s12) * s15 - 8 * me2 * s12 * pow<2>(s15) +
-        12 * pow<2>(me2) * s12 * s16 + 12 * me2 * mm2 * s12 * s16 -
-        16 * me2 * pow<2>(s12) * s16 - 2 * pow<2>(me2) * s15 * s16 +
+        -16 * pow(me2, 2) * mm2 * s12 + 12 * pow(me2, 2) * pow(s12, 2) +
+        12 * me2 * mm2 * pow(s12, 2) - 8 * me2 * pow(s12, 3) +
+        12 * pow(me2, 3) * s15 - 4 * pow(me2, 2) * mm2 * s15 +
+        8 * pow(me2, 2) * s12 * s15 + 12 * me2 * mm2 * s12 * s15 -
+        16 * me2 * pow(s12, 2) * s15 - 8 * me2 * s12 * pow(s15, 2) +
+        12 * pow(me2, 2) * s12 * s16 + 12 * me2 * mm2 * s12 * s16 -
+        16 * me2 * pow(s12, 2) * s16 - 2 * pow(me2, 2) * s15 * s16 +
         6 * me2 * mm2 * s15 * s16 - 20 * me2 * s12 * s15 * s16 -
-        4 * me2 * pow<2>(s15) * s16 - 8 * me2 * s12 * pow<2>(s16) -
-        4 * me2 * s15 * pow<2>(s16) + 8 * pow<2>(me2) * mm2 * s25 -
-        12 * pow<2>(me2) * s12 * s25 - 20 * me2 * mm2 * s12 * s25 +
-        18 * me2 * pow<2>(s12) * s25 + 12 * pow<2>(me2) * s15 * s25 -
+        4 * me2 * pow(s15, 2) * s16 - 8 * me2 * s12 * pow(s16, 2) -
+        4 * me2 * s15 * pow(s16, 2) + 8 * pow(me2, 2) * mm2 * s25 -
+        12 * pow(me2, 2) * s12 * s25 - 20 * me2 * mm2 * s12 * s25 +
+        18 * me2 * pow(s12, 2) * s25 + 12 * pow(me2, 2) * s15 * s25 -
         8 * me2 * mm2 * s15 * s25 + 18 * me2 * s12 * s15 * s25 +
-        6 * mm2 * s12 * s15 * s25 - 4 * pow<2>(s12) * s15 * s25 +
-        2 * me2 * pow<2>(s15) * s25 - 4 * s12 * pow<2>(s15) * s25 -
-        6 * pow<2>(me2) * s16 * s25 - 10 * me2 * mm2 * s16 * s25 +
+        6 * mm2 * s12 * s15 * s25 - 4 * pow(s12, 2) * s15 * s25 +
+        2 * me2 * pow(s15, 2) * s25 - 4 * s12 * pow(s15, 2) * s25 -
+        6 * pow(me2, 2) * s16 * s25 - 10 * me2 * mm2 * s16 * s25 +
         24 * me2 * s12 * s16 * s25 + 10 * me2 * s15 * s16 * s25 +
         3 * mm2 * s15 * s16 * s25 - 6 * s12 * s15 * s16 * s25 -
-        2 * pow<2>(s15) * s16 * s25 + 7 * me2 * pow<2>(s16) * s25 +
-        3 * mm2 * pow<2>(s16) * s25 - 2 * s12 * pow<2>(s16) * s25 -
-        4 * s15 * pow<2>(s16) * s25 - 2 * pow<3>(s16) * s25 +
-        6 * me2 * mm2 * pow<2>(s25) - 6 * pow<2>(mm2) * pow<2>(s25) -
-        10 * me2 * s12 * pow<2>(s25) + 4 * mm2 * s12 * pow<2>(s25) +
-        2 * me2 * s15 * pow<2>(s25) + 4 * mm2 * s15 * pow<2>(s25) +
-        2 * s12 * s15 * pow<2>(s25) - 6 * me2 * s16 * pow<2>(s25) +
-        3 * mm2 * s16 * pow<2>(s25) + 2 * s15 * s16 * pow<2>(s25) +
-        2 * pow<2>(s16) * pow<2>(s25) - 2 * mm2 * pow<3>(s25) -
-        16 * me2 * mm2 * s12 * s26 + 12 * me2 * pow<2>(s12) * s26 +
-        18 * pow<2>(me2) * s15 * s26 - 6 * me2 * mm2 * s15 * s26 +
-        12 * me2 * s12 * s15 * s26 + 2 * me2 * pow<2>(s15) * s26 -
-        3 * mm2 * pow<2>(s15) * s26 + 2 * s12 * pow<2>(s15) * s26 +
-        2 * pow<3>(s15) * s26 + 10 * me2 * s12 * s16 * s26 -
-        6 * mm2 * s12 * s16 * s26 + 4 * pow<2>(s12) * s16 * s26 +
+        2 * pow(s15, 2) * s16 * s25 + 7 * me2 * pow(s16, 2) * s25 +
+        3 * mm2 * pow(s16, 2) * s25 - 2 * s12 * pow(s16, 2) * s25 -
+        4 * s15 * pow(s16, 2) * s25 - 2 * pow(s16, 3) * s25 +
+        6 * me2 * mm2 * pow(s25, 2) - 6 * pow(mm2, 2) * pow(s25, 2) -
+        10 * me2 * s12 * pow(s25, 2) + 4 * mm2 * s12 * pow(s25, 2) +
+        2 * me2 * s15 * pow(s25, 2) + 4 * mm2 * s15 * pow(s25, 2) +
+        2 * s12 * s15 * pow(s25, 2) - 6 * me2 * s16 * pow(s25, 2) +
+        3 * mm2 * s16 * pow(s25, 2) + 2 * s15 * s16 * pow(s25, 2) +
+        2 * pow(s16, 2) * pow(s25, 2) - 2 * mm2 * pow(s25, 3) -
+        16 * me2 * mm2 * s12 * s26 + 12 * me2 * pow(s12, 2) * s26 +
+        18 * pow(me2, 2) * s15 * s26 - 6 * me2 * mm2 * s15 * s26 +
+        12 * me2 * s12 * s15 * s26 + 2 * me2 * pow(s15, 2) * s26 -
+        3 * mm2 * pow(s15, 2) * s26 + 2 * s12 * pow(s15, 2) * s26 +
+        2 * pow(s15, 3) * s26 + 10 * me2 * s12 * s16 * s26 -
+        6 * mm2 * s12 * s16 * s26 + 4 * pow(s12, 2) * s16 * s26 +
         3 * me2 * s15 * s16 * s26 - 3 * mm2 * s15 * s16 * s26 +
-        6 * s12 * s15 * s16 * s26 + 4 * pow<2>(s15) * s16 * s26 +
-        4 * s12 * pow<2>(s16) * s26 + 2 * s15 * pow<2>(s16) * s26 +
-        6 * me2 * mm2 * s25 * s26 - 6 * pow<2>(mm2) * s25 * s26 -
+        6 * s12 * s15 * s16 * s26 + 4 * pow(s15, 2) * s16 * s26 +
+        4 * s12 * pow(s16, 2) * s26 + 2 * s15 * pow(s16, 2) * s26 +
+        6 * me2 * mm2 * s25 * s26 - 6 * pow(mm2, 2) * s25 * s26 -
         12 * me2 * s12 * s25 * s26 + 8 * mm2 * s12 * s25 * s26 -
-        2 * pow<2>(s12) * s25 * s26 + 6 * me2 * s15 * s25 * s26 +
+        2 * pow(s12, 2) * s25 * s26 + 6 * me2 * s15 * s25 * s26 +
         7 * mm2 * s15 * s25 * s26 - 2 * s12 * s15 * s25 * s26 -
-        2 * pow<2>(s15) * s25 * s26 - 5 * me2 * s16 * s25 * s26 +
+        2 * pow(s15, 2) * s25 * s26 - 5 * me2 * s16 * s25 * s26 +
         5 * mm2 * s16 * s25 * s26 - 6 * s12 * s16 * s25 * s26 -
-        2 * s15 * s16 * s25 * s26 - 6 * mm2 * pow<2>(s25) * s26 +
-        2 * s12 * pow<2>(s25) * s26 + 2 * s16 * pow<2>(s25) * s26 +
-        4 * mm2 * s12 * pow<2>(s26) - 2 * pow<2>(s12) * pow<2>(s26) +
-        3 * me2 * s15 * pow<2>(s26) + mm2 * s15 * pow<2>(s26) -
-        2 * s12 * s15 * pow<2>(s26) - 4 * s12 * s16 * pow<2>(s26) -
-        4 * mm2 * s25 * pow<2>(s26) + 2 * s12 * s25 * pow<2>(s26) -
-        2 * s15 * s25 * pow<2>(s26) + 2 * s16 * s25 * pow<2>(s26) -
-        2 * s15 * pow<3>(s26) - 6 * pow<2>(me2) * s12 * s56 -
-        14 * me2 * mm2 * s12 * s56 + 14 * me2 * pow<2>(s12) * s56 +
-        10 * pow<2>(me2) * s15 * s56 - 8 * me2 * mm2 * s15 * s56 +
+        2 * s15 * s16 * s25 * s26 - 6 * mm2 * pow(s25, 2) * s26 +
+        2 * s12 * pow(s25, 2) * s26 + 2 * s16 * pow(s25, 2) * s26 +
+        4 * mm2 * s12 * pow(s26, 2) - 2 * pow(s12, 2) * pow(s26, 2) +
+        3 * me2 * s15 * pow(s26, 2) + mm2 * s15 * pow(s26, 2) -
+        2 * s12 * s15 * pow(s26, 2) - 4 * s12 * s16 * pow(s26, 2) -
+        4 * mm2 * s25 * pow(s26, 2) + 2 * s12 * s25 * pow(s26, 2) -
+        2 * s15 * s25 * pow(s26, 2) + 2 * s16 * s25 * pow(s26, 2) -
+        2 * s15 * pow(s26, 3) - 6 * pow(me2, 2) * s12 * s56 -
+        14 * me2 * mm2 * s12 * s56 + 14 * me2 * pow(s12, 2) * s56 +
+        10 * pow(me2, 2) * s15 * s56 - 8 * me2 * mm2 * s15 * s56 +
         16 * me2 * s12 * s15 * s56 + 3 * mm2 * s12 * s15 * s56 -
-        2 * pow<2>(s12) * s15 * s56 + 4 * me2 * pow<2>(s15) * s56 -
-        2 * s12 * pow<2>(s15) * s56 + 13 * me2 * s12 * s16 * s56 -
-        3 * mm2 * s12 * s16 * s56 + 2 * pow<2>(s12) * s16 * s56 +
-        8 * me2 * s15 * s16 * s56 + 2 * s12 * pow<2>(s16) * s56 +
-        8 * me2 * mm2 * s25 * s56 - 6 * pow<2>(mm2) * s25 * s56 -
+        2 * pow(s12, 2) * s15 * s56 + 4 * me2 * pow(s15, 2) * s56 -
+        2 * s12 * pow(s15, 2) * s56 + 13 * me2 * s12 * s16 * s56 -
+        3 * mm2 * s12 * s16 * s56 + 2 * pow(s12, 2) * s16 * s56 +
+        8 * me2 * s15 * s16 * s56 + 2 * s12 * pow(s16, 2) * s56 +
+        8 * me2 * mm2 * s25 * s56 - 6 * pow(mm2, 2) * s25 * s56 -
         16 * me2 * s12 * s25 * s56 + 5 * mm2 * s12 * s25 * s56 +
         2 * me2 * s15 * s25 * s56 + 4 * mm2 * s15 * s25 * s56 +
         2 * s12 * s15 * s25 * s56 - 7 * me2 * s16 * s25 * s56 +
         2 * mm2 * s16 * s25 * s56 - 2 * s12 * s16 * s25 * s56 +
-        2 * s15 * s16 * s25 * s56 + 2 * pow<2>(s16) * s25 * s56 -
-        4 * mm2 * pow<2>(s25) * s56 - 5 * me2 * s12 * s26 * s56 +
-        7 * mm2 * s12 * s26 * s56 - 4 * pow<2>(s12) * s26 * s56 +
+        2 * s15 * s16 * s25 * s56 + 2 * pow(s16, 2) * s25 * s56 -
+        4 * mm2 * pow(s25, 2) * s56 - 5 * me2 * s12 * s26 * s56 +
+        7 * mm2 * s12 * s26 * s56 - 4 * pow(s12, 2) * s26 * s56 +
         3 * me2 * s15 * s26 * s56 + 2 * mm2 * s15 * s26 * s56 -
-        6 * s12 * s15 * s26 * s56 - 2 * pow<2>(s15) * s26 * s56 -
+        6 * s12 * s15 * s26 * s56 - 2 * pow(s15, 2) * s26 * s56 -
         8 * s12 * s16 * s26 * s56 - 2 * s15 * s16 * s26 * s56 -
         4 * mm2 * s25 * s26 * s56 + 4 * s12 * s25 * s26 * s56 +
-        2 * s16 * s25 * s26 * s56 + 2 * s12 * pow<2>(s26) * s56 -
-        2 * s15 * pow<2>(s26) * s56 - 2 * me2 * mm2 * pow<2>(s56) -
-        5 * me2 * s12 * pow<2>(s56) + 2 * mm2 * s12 * pow<2>(s56) -
-        2 * s12 * s16 * pow<2>(s56) - 2 * mm2 * s25 * pow<2>(s56) +
-        2 * s12 * s26 * pow<2>(s56)};
+        2 * s16 * s25 * s26 * s56 + 2 * s12 * pow(s26, 2) * s56 -
+        2 * s15 * pow(s26, 2) * s56 - 2 * me2 * mm2 * pow(s56, 2) -
+        5 * me2 * s12 * pow(s56, 2) + 2 * mm2 * s12 * pow(s56, 2) -
+        2 * s12 * s16 * pow(s56, 2) - 2 * mm2 * s25 * pow(s56, 2) +
+        2 * s12 * s26 * pow(s56, 2)};
     const auto if24{
-        -16 * pow<2>(me2) * mm2 * s12 + 12 * pow<2>(me2) * pow<2>(s12) +
-        12 * me2 * mm2 * pow<2>(s12) - 8 * me2 * pow<3>(s12) +
-        12 * pow<3>(me2) * s15 - 4 * pow<2>(me2) * mm2 * s15 +
-        8 * pow<2>(me2) * s12 * s15 + 12 * me2 * mm2 * s12 * s15 -
-        16 * me2 * pow<2>(s12) * s15 - 8 * me2 * s12 * pow<2>(s15) -
-        16 * pow<2>(me2) * mm2 * s16 + 24 * pow<2>(me2) * s12 * s16 +
-        24 * me2 * mm2 * s12 * s16 - 24 * me2 * pow<2>(s12) * s16 +
-        8 * pow<2>(me2) * s15 * s16 + 12 * me2 * mm2 * s15 * s16 -
-        32 * me2 * s12 * s15 * s16 - 8 * me2 * pow<2>(s15) * s16 +
-        12 * pow<2>(me2) * pow<2>(s16) + 12 * me2 * mm2 * pow<2>(s16) -
-        24 * me2 * s12 * pow<2>(s16) - 16 * me2 * s15 * pow<2>(s16) -
-        8 * me2 * pow<3>(s16) + 4 * pow<2>(me2) * mm2 * s25 -
-        12 * me2 * pow<2>(mm2) * s25 - 12 * pow<2>(me2) * s12 * s25 -
-        8 * me2 * mm2 * s12 * s25 + 16 * me2 * pow<2>(s12) * s25 +
-        8 * pow<2>(me2) * s15 * s25 + 8 * me2 * mm2 * s15 * s25 +
-        12 * me2 * s12 * s15 * s25 - 12 * pow<2>(me2) * s16 * s25 -
+        -16 * pow(me2, 2) * mm2 * s12 + 12 * pow(me2, 2) * pow(s12, 2) +
+        12 * me2 * mm2 * pow(s12, 2) - 8 * me2 * pow(s12, 3) +
+        12 * pow(me2, 3) * s15 - 4 * pow(me2, 2) * mm2 * s15 +
+        8 * pow(me2, 2) * s12 * s15 + 12 * me2 * mm2 * s12 * s15 -
+        16 * me2 * pow(s12, 2) * s15 - 8 * me2 * s12 * pow(s15, 2) -
+        16 * pow(me2, 2) * mm2 * s16 + 24 * pow(me2, 2) * s12 * s16 +
+        24 * me2 * mm2 * s12 * s16 - 24 * me2 * pow(s12, 2) * s16 +
+        8 * pow(me2, 2) * s15 * s16 + 12 * me2 * mm2 * s15 * s16 -
+        32 * me2 * s12 * s15 * s16 - 8 * me2 * pow(s15, 2) * s16 +
+        12 * pow(me2, 2) * pow(s16, 2) + 12 * me2 * mm2 * pow(s16, 2) -
+        24 * me2 * s12 * pow(s16, 2) - 16 * me2 * s15 * pow(s16, 2) -
+        8 * me2 * pow(s16, 3) + 4 * pow(me2, 2) * mm2 * s25 -
+        12 * me2 * pow(mm2, 2) * s25 - 12 * pow(me2, 2) * s12 * s25 -
+        8 * me2 * mm2 * s12 * s25 + 16 * me2 * pow(s12, 2) * s25 +
+        8 * pow(me2, 2) * s15 * s25 + 8 * me2 * mm2 * s15 * s25 +
+        12 * me2 * s12 * s15 * s25 - 12 * pow(me2, 2) * s16 * s25 -
         8 * me2 * mm2 * s16 * s25 + 32 * me2 * s12 * s16 * s25 +
-        12 * me2 * s15 * s16 * s25 + 16 * me2 * pow<2>(s16) * s25 -
-        8 * me2 * s12 * pow<2>(s25) - 8 * me2 * s16 * pow<2>(s25) -
-        4 * pow<2>(me2) * mm2 * s26 - 12 * me2 * pow<2>(mm2) * s26 -
-        4 * me2 * mm2 * s12 * s26 + 10 * me2 * pow<2>(s12) * s26 +
-        20 * pow<2>(me2) * s15 * s26 + 8 * me2 * mm2 * s15 * s26 +
+        12 * me2 * s15 * s16 * s25 + 16 * me2 * pow(s16, 2) * s25 -
+        8 * me2 * s12 * pow(s25, 2) - 8 * me2 * s16 * pow(s25, 2) -
+        4 * pow(me2, 2) * mm2 * s26 - 12 * me2 * pow(mm2, 2) * s26 -
+        4 * me2 * mm2 * s12 * s26 + 10 * me2 * pow(s12, 2) * s26 +
+        20 * pow(me2, 2) * s15 * s26 + 8 * me2 * mm2 * s15 * s26 +
         6 * me2 * s12 * s15 * s26 + 16 * me2 * s12 * s16 * s26 -
-        6 * mm2 * s12 * s16 * s26 + 4 * pow<2>(s12) * s16 * s26 +
+        6 * mm2 * s12 * s16 * s26 + 4 * pow(s12, 2) * s16 * s26 +
         4 * me2 * s15 * s16 * s26 - 6 * mm2 * s15 * s16 * s26 +
-        8 * s12 * s15 * s16 * s26 + 4 * pow<2>(s15) * s16 * s26 +
-        6 * me2 * pow<2>(s16) * s26 - 6 * mm2 * pow<2>(s16) * s26 +
-        8 * s12 * pow<2>(s16) * s26 + 8 * s15 * pow<2>(s16) * s26 +
-        4 * pow<3>(s16) * s26 - 4 * me2 * mm2 * s25 * s26 -
+        8 * s12 * s15 * s16 * s26 + 4 * pow(s15, 2) * s16 * s26 +
+        6 * me2 * pow(s16, 2) * s26 - 6 * mm2 * pow(s16, 2) * s26 +
+        8 * s12 * pow(s16, 2) * s26 + 8 * s15 * pow(s16, 2) * s26 +
+        4 * pow(s16, 3) * s26 - 4 * me2 * mm2 * s25 * s26 -
         10 * me2 * s12 * s25 * s26 + 6 * me2 * s15 * s25 * s26 -
         7 * me2 * s16 * s25 * s26 + 7 * mm2 * s16 * s25 * s26 -
         8 * s12 * s16 * s25 * s26 - 6 * s15 * s16 * s25 * s26 -
-        8 * pow<2>(s16) * s25 * s26 + 3 * s16 * pow<2>(s25) * s26 -
-        2 * me2 * mm2 * pow<2>(s26) + 6 * pow<2>(mm2) * pow<2>(s26) -
-        4 * mm2 * s12 * pow<2>(s26) + 7 * me2 * s15 * pow<2>(s26) -
-        5 * mm2 * s15 * pow<2>(s26) - 4 * s12 * s16 * pow<2>(s26) -
-        2 * s15 * s16 * pow<2>(s26) - 4 * pow<2>(s16) * pow<2>(s26) +
-        4 * mm2 * s25 * pow<2>(s26) - s15 * s25 * pow<2>(s26) +
-        3 * s16 * s25 * pow<2>(s26) + 2 * mm2 * pow<3>(s26) -
-        s15 * pow<3>(s26) + 4 * pow<2>(me2) * mm2 * s56 -
-        12 * me2 * pow<2>(mm2) * s56 - 12 * pow<2>(me2) * s12 * s56 -
-        8 * me2 * mm2 * s12 * s56 + 16 * me2 * pow<2>(s12) * s56 +
-        8 * pow<2>(me2) * s15 * s56 + 8 * me2 * mm2 * s15 * s56 +
-        12 * me2 * s12 * s15 * s56 - 12 * pow<2>(me2) * s16 * s56 -
+        8 * pow(s16, 2) * s25 * s26 + 3 * s16 * pow(s25, 2) * s26 -
+        2 * me2 * mm2 * pow(s26, 2) + 6 * pow(mm2, 2) * pow(s26, 2) -
+        4 * mm2 * s12 * pow(s26, 2) + 7 * me2 * s15 * pow(s26, 2) -
+        5 * mm2 * s15 * pow(s26, 2) - 4 * s12 * s16 * pow(s26, 2) -
+        2 * s15 * s16 * pow(s26, 2) - 4 * pow(s16, 2) * pow(s26, 2) +
+        4 * mm2 * s25 * pow(s26, 2) - s15 * s25 * pow(s26, 2) +
+        3 * s16 * s25 * pow(s26, 2) + 2 * mm2 * pow(s26, 3) -
+        s15 * pow(s26, 3) + 4 * pow(me2, 2) * mm2 * s56 -
+        12 * me2 * pow(mm2, 2) * s56 - 12 * pow(me2, 2) * s12 * s56 -
+        8 * me2 * mm2 * s12 * s56 + 16 * me2 * pow(s12, 2) * s56 +
+        8 * pow(me2, 2) * s15 * s56 + 8 * me2 * mm2 * s15 * s56 +
+        12 * me2 * s12 * s15 * s56 - 12 * pow(me2, 2) * s16 * s56 -
         8 * me2 * mm2 * s16 * s56 + 32 * me2 * s12 * s16 * s56 +
-        12 * me2 * s15 * s16 * s56 + 16 * me2 * pow<2>(s16) * s56 -
+        12 * me2 * s15 * s16 * s56 + 16 * me2 * pow(s16, 2) * s56 -
         16 * me2 * s12 * s25 * s56 - 16 * me2 * s16 * s25 * s56 -
-        6 * me2 * mm2 * s26 * s56 + 6 * pow<2>(mm2) * s26 * s56 -
+        6 * me2 * mm2 * s26 * s56 + 6 * pow(mm2, 2) * s26 * s56 -
         9 * me2 * s12 * s26 * s56 - 3 * mm2 * s12 * s26 * s56 +
         6 * me2 * s15 * s26 * s56 - 4 * mm2 * s15 * s26 * s56 -
         6 * me2 * s16 * s26 * s56 + 4 * mm2 * s16 * s26 * s56 -
         8 * s12 * s16 * s26 * s56 - 6 * s15 * s16 * s26 * s56 -
-        8 * pow<2>(s16) * s26 * s56 + s12 * s25 * s26 * s56 +
-        7 * s16 * s25 * s26 * s56 + 2 * mm2 * pow<2>(s26) * s56 +
-        s12 * pow<2>(s26) * s56 - s15 * pow<2>(s26) * s56 +
-        4 * s16 * pow<2>(s26) * s56 - 8 * me2 * s12 * pow<2>(s56) -
-        8 * me2 * s16 * pow<2>(s56) + s12 * s26 * pow<2>(s56) +
-        4 * s16 * s26 * pow<2>(s56)};
+        8 * pow(s16, 2) * s26 * s56 + s12 * s25 * s26 * s56 +
+        7 * s16 * s25 * s26 * s56 + 2 * mm2 * pow(s26, 2) * s56 +
+        s12 * pow(s26, 2) * s56 - s15 * pow(s26, 2) * s56 +
+        4 * s16 * pow(s26, 2) * s56 - 8 * me2 * s12 * pow(s56, 2) -
+        8 * me2 * s16 * pow(s56, 2) + s12 * s26 * pow(s56, 2) +
+        4 * s16 * s26 * pow(s56, 2)};
     const auto if34{
-        16 * me2 * pow<2>(mm2) * s12 - 12 * me2 * mm2 * pow<2>(s12) -
-        12 * pow<2>(mm2) * pow<2>(s12) + 8 * mm2 * pow<3>(s12) -
-        12 * pow<2>(me2) * mm2 * s15 - 4 * me2 * pow<2>(mm2) * s15 -
-        4 * me2 * mm2 * s12 * s15 + 10 * mm2 * pow<2>(s12) * s15 -
-        6 * pow<2>(me2) * pow<2>(s15) + 2 * me2 * mm2 * pow<2>(s15) +
-        4 * me2 * s12 * pow<2>(s15) + 2 * me2 * pow<3>(s15) -
-        12 * pow<2>(me2) * mm2 * s16 + 4 * me2 * pow<2>(mm2) * s16 -
-        8 * me2 * mm2 * s12 * s16 - 12 * pow<2>(mm2) * s12 * s16 +
-        16 * mm2 * pow<2>(s12) * s16 + 4 * me2 * mm2 * s15 * s16 +
-        10 * mm2 * s12 * s15 * s16 + 4 * me2 * pow<2>(s15) * s16 +
-        8 * mm2 * s12 * pow<2>(s16) - 16 * me2 * pow<2>(mm2) * s25 +
-        24 * me2 * mm2 * s12 * s25 + 24 * pow<2>(mm2) * s12 * s25 -
-        24 * mm2 * pow<2>(s12) * s25 + 6 * me2 * s12 * s15 * s25 -
-        16 * mm2 * s12 * s15 * s25 - 4 * pow<2>(s12) * s15 * s25 -
-        4 * s12 * pow<2>(s15) * s25 + 8 * me2 * mm2 * s16 * s25 +
-        12 * pow<2>(mm2) * s16 * s25 - 32 * mm2 * s12 * s16 * s25 +
+        16 * me2 * pow(mm2, 2) * s12 - 12 * me2 * mm2 * pow(s12, 2) -
+        12 * pow(mm2, 2) * pow(s12, 2) + 8 * mm2 * pow(s12, 3) -
+        12 * pow(me2, 2) * mm2 * s15 - 4 * me2 * pow(mm2, 2) * s15 -
+        4 * me2 * mm2 * s12 * s15 + 10 * mm2 * pow(s12, 2) * s15 -
+        6 * pow(me2, 2) * pow(s15, 2) + 2 * me2 * mm2 * pow(s15, 2) +
+        4 * me2 * s12 * pow(s15, 2) + 2 * me2 * pow(s15, 3) -
+        12 * pow(me2, 2) * mm2 * s16 + 4 * me2 * pow(mm2, 2) * s16 -
+        8 * me2 * mm2 * s12 * s16 - 12 * pow(mm2, 2) * s12 * s16 +
+        16 * mm2 * pow(s12, 2) * s16 + 4 * me2 * mm2 * s15 * s16 +
+        10 * mm2 * s12 * s15 * s16 + 4 * me2 * pow(s15, 2) * s16 +
+        8 * mm2 * s12 * pow(s16, 2) - 16 * me2 * pow(mm2, 2) * s25 +
+        24 * me2 * mm2 * s12 * s25 + 24 * pow(mm2, 2) * s12 * s25 -
+        24 * mm2 * pow(s12, 2) * s25 + 6 * me2 * s12 * s15 * s25 -
+        16 * mm2 * s12 * s15 * s25 - 4 * pow(s12, 2) * s15 * s25 -
+        4 * s12 * pow(s15, 2) * s25 + 8 * me2 * mm2 * s16 * s25 +
+        12 * pow(mm2, 2) * s16 * s25 - 32 * mm2 * s12 * s16 * s25 +
         7 * me2 * s15 * s16 * s25 - 7 * mm2 * s15 * s16 * s25 -
-        8 * s12 * s15 * s16 * s25 - 3 * pow<2>(s15) * s16 * s25 -
-        8 * mm2 * pow<2>(s16) * s25 - 3 * s15 * pow<2>(s16) * s25 -
-        12 * me2 * mm2 * pow<2>(s25) - 12 * pow<2>(mm2) * pow<2>(s25) +
-        24 * mm2 * s12 * pow<2>(s25) - 6 * me2 * s15 * pow<2>(s25) +
-        6 * mm2 * s15 * pow<2>(s25) + 8 * s12 * s15 * pow<2>(s25) +
-        4 * pow<2>(s15) * pow<2>(s25) + 16 * mm2 * s16 * pow<2>(s25) +
-        8 * s15 * s16 * pow<2>(s25) - 8 * mm2 * pow<3>(s25) -
-        4 * s15 * pow<3>(s25) - 4 * me2 * pow<2>(mm2) * s26 +
-        12 * pow<3>(mm2) * s26 + 12 * me2 * mm2 * s12 * s26 +
-        8 * pow<2>(mm2) * s12 * s26 - 16 * mm2 * pow<2>(s12) * s26 -
-        8 * me2 * mm2 * s15 * s26 - 20 * pow<2>(mm2) * s15 * s26 -
-        6 * mm2 * s12 * s15 * s26 - 5 * me2 * pow<2>(s15) * s26 +
-        7 * mm2 * pow<2>(s15) * s26 + pow<3>(s15) * s26 -
-        8 * me2 * mm2 * s16 * s26 - 8 * pow<2>(mm2) * s16 * s26 -
+        8 * s12 * s15 * s16 * s25 - 3 * pow(s15, 2) * s16 * s25 -
+        8 * mm2 * pow(s16, 2) * s25 - 3 * s15 * pow(s16, 2) * s25 -
+        12 * me2 * mm2 * pow(s25, 2) - 12 * pow(mm2, 2) * pow(s25, 2) +
+        24 * mm2 * s12 * pow(s25, 2) - 6 * me2 * s15 * pow(s25, 2) +
+        6 * mm2 * s15 * pow(s25, 2) + 8 * s12 * s15 * pow(s25, 2) +
+        4 * pow(s15, 2) * pow(s25, 2) + 16 * mm2 * s16 * pow(s25, 2) +
+        8 * s15 * s16 * pow(s25, 2) - 8 * mm2 * pow(s25, 3) -
+        4 * s15 * pow(s25, 3) - 4 * me2 * pow(mm2, 2) * s26 +
+        12 * pow(mm2, 3) * s26 + 12 * me2 * mm2 * s12 * s26 +
+        8 * pow(mm2, 2) * s12 * s26 - 16 * mm2 * pow(s12, 2) * s26 -
+        8 * me2 * mm2 * s15 * s26 - 20 * pow(mm2, 2) * s15 * s26 -
+        6 * mm2 * s12 * s15 * s26 - 5 * me2 * pow(s15, 2) * s26 +
+        7 * mm2 * pow(s15, 2) * s26 + pow(s15, 3) * s26 -
+        8 * me2 * mm2 * s16 * s26 - 8 * pow(mm2, 2) * s16 * s26 -
         12 * mm2 * s12 * s16 * s26 + 6 * mm2 * s15 * s16 * s26 +
-        pow<2>(s15) * s16 * s26 - 12 * me2 * mm2 * s25 * s26 -
-        8 * pow<2>(mm2) * s25 * s26 + 32 * mm2 * s12 * s25 * s26 -
+        pow(s15, 2) * s16 * s26 - 12 * me2 * mm2 * s25 * s26 -
+        8 * pow(mm2, 2) * s25 * s26 + 32 * mm2 * s12 * s25 * s26 -
         6 * me2 * s15 * s25 * s26 + 4 * mm2 * s15 * s25 * s26 +
-        8 * s12 * s15 * s25 * s26 + 2 * pow<2>(s15) * s25 * s26 +
+        8 * s12 * s15 * s25 * s26 + 2 * pow(s15, 2) * s25 * s26 +
         12 * mm2 * s16 * s25 * s26 + 6 * s15 * s16 * s25 * s26 -
-        16 * mm2 * pow<2>(s25) * s26 - 8 * s15 * pow<2>(s25) * s26 +
-        8 * mm2 * s12 * pow<2>(s26) - 8 * mm2 * s25 * pow<2>(s26) -
-        4 * s15 * s25 * pow<2>(s26) + 12 * pow<2>(me2) * mm2 * s56 -
-        4 * me2 * pow<2>(mm2) * s56 + 8 * me2 * mm2 * s12 * s56 +
-        12 * pow<2>(mm2) * s12 * s56 - 16 * mm2 * pow<2>(s12) * s56 +
-        6 * pow<2>(me2) * s15 * s56 - 6 * me2 * mm2 * s15 * s56 -
+        16 * mm2 * pow(s25, 2) * s26 - 8 * s15 * pow(s25, 2) * s26 +
+        8 * mm2 * s12 * pow(s26, 2) - 8 * mm2 * s25 * pow(s26, 2) -
+        4 * s15 * s25 * pow(s26, 2) + 12 * pow(me2, 2) * mm2 * s56 -
+        4 * me2 * pow(mm2, 2) * s56 + 8 * me2 * mm2 * s12 * s56 +
+        12 * pow(mm2, 2) * s12 * s56 - 16 * mm2 * pow(s12, 2) * s56 +
+        6 * pow(me2, 2) * s15 * s56 - 6 * me2 * mm2 * s15 * s56 -
         3 * me2 * s12 * s15 * s56 - 9 * mm2 * s12 * s15 * s56 -
-        2 * me2 * pow<2>(s15) * s56 - s12 * pow<2>(s15) * s56 -
+        2 * me2 * pow(s15, 2) * s56 - s12 * pow(s15, 2) * s56 -
         16 * mm2 * s12 * s16 * s56 - s12 * s15 * s16 * s56 -
-        8 * me2 * mm2 * s25 * s56 - 12 * pow<2>(mm2) * s25 * s56 +
+        8 * me2 * mm2 * s25 * s56 - 12 * pow(mm2, 2) * s25 * s56 +
         32 * mm2 * s12 * s25 * s56 - 4 * me2 * s15 * s25 * s56 +
         6 * mm2 * s15 * s25 * s56 + 8 * s12 * s15 * s25 * s56 +
-        4 * pow<2>(s15) * s25 * s56 + 16 * mm2 * s16 * s25 * s56 +
-        7 * s15 * s16 * s25 * s56 - 16 * mm2 * pow<2>(s25) * s56 -
-        8 * s15 * pow<2>(s25) * s56 + 8 * me2 * mm2 * s26 * s56 +
-        8 * pow<2>(mm2) * s26 * s56 + 12 * mm2 * s12 * s26 * s56 +
+        4 * pow(s15, 2) * s25 * s56 + 16 * mm2 * s16 * s25 * s56 +
+        7 * s15 * s16 * s25 * s56 - 16 * mm2 * pow(s25, 2) * s56 -
+        8 * s15 * pow(s25, 2) * s56 + 8 * me2 * mm2 * s26 * s56 +
+        8 * pow(mm2, 2) * s26 * s56 + 12 * mm2 * s12 * s26 * s56 +
         4 * me2 * s15 * s26 * s56 - 6 * mm2 * s15 * s26 * s56 -
-        pow<2>(s15) * s26 * s56 - 12 * mm2 * s25 * s26 * s56 -
-        6 * s15 * s25 * s26 * s56 + 8 * mm2 * s12 * pow<2>(s56) +
-        s12 * s15 * pow<2>(s56) - 8 * mm2 * s25 * pow<2>(s56) -
-        4 * s15 * s25 * pow<2>(s56)};
+        pow(s15, 2) * s26 * s56 - 12 * mm2 * s25 * s26 * s56 -
+        6 * s15 * s25 * s26 * s56 + 8 * mm2 * s12 * pow(s56, 2) +
+        s12 * s15 * pow(s56, 2) - 8 * mm2 * s25 * pow(s56, 2) -
+        4 * s15 * s25 * pow(s56, 2)};
     const auto if44{
-        32 * pow<2>(me2) * pow<2>(mm2) - 24 * pow<2>(me2) * mm2 * s12 -
-        24 * me2 * pow<2>(mm2) * s12 + 16 * me2 * mm2 * pow<2>(s12) -
-        32 * pow<2>(me2) * mm2 * s15 + 24 * me2 * mm2 * s12 * s15 -
-        8 * pow<2>(me2) * pow<2>(s15) + 4 * me2 * s12 * pow<2>(s15) -
-        24 * pow<2>(me2) * mm2 * s16 - 24 * me2 * pow<2>(mm2) * s16 +
+        32 * pow(me2, 2) * pow(mm2, 2) - 24 * pow(me2, 2) * mm2 * s12 -
+        24 * me2 * pow(mm2, 2) * s12 + 16 * me2 * mm2 * pow(s12, 2) -
+        32 * pow(me2, 2) * mm2 * s15 + 24 * me2 * mm2 * s12 * s15 -
+        8 * pow(me2, 2) * pow(s15, 2) + 4 * me2 * s12 * pow(s15, 2) -
+        24 * pow(me2, 2) * mm2 * s16 - 24 * me2 * pow(mm2, 2) * s16 +
         32 * me2 * mm2 * s12 * s16 + 24 * me2 * mm2 * s15 * s16 +
-        4 * me2 * pow<2>(s15) * s16 + 16 * me2 * mm2 * pow<2>(s16) +
-        24 * pow<2>(me2) * mm2 * s25 + 24 * me2 * pow<2>(mm2) * s25 -
-        32 * me2 * mm2 * s12 * s25 + 12 * pow<2>(me2) * s15 * s25 -
+        4 * me2 * pow(s15, 2) * s16 + 16 * me2 * mm2 * pow(s16, 2) +
+        24 * pow(me2, 2) * mm2 * s25 + 24 * me2 * pow(mm2, 2) * s25 -
+        32 * me2 * mm2 * s12 * s25 + 12 * pow(me2, 2) * s15 * s25 -
         20 * me2 * mm2 * s15 * s25 - 8 * me2 * s12 * s15 * s25 -
-        8 * me2 * pow<2>(s15) * s25 - 32 * me2 * mm2 * s16 * s25 -
-        8 * me2 * s15 * s16 * s25 + 16 * me2 * mm2 * pow<2>(s25) +
-        8 * me2 * s15 * pow<2>(s25) + 32 * me2 * pow<2>(mm2) * s26 -
+        8 * me2 * pow(s15, 2) * s25 - 32 * me2 * mm2 * s16 * s25 -
+        8 * me2 * s15 * s16 * s25 + 16 * me2 * mm2 * pow(s25, 2) +
+        8 * me2 * s15 * pow(s25, 2) + 32 * me2 * pow(mm2, 2) * s26 -
         24 * me2 * mm2 * s12 * s26 - 32 * me2 * mm2 * s15 * s26 -
-        8 * me2 * pow<2>(s15) * s26 - 20 * me2 * mm2 * s16 * s26 +
-        12 * pow<2>(mm2) * s16 * s26 - 8 * mm2 * s12 * s16 * s26 -
-        12 * mm2 * s15 * s16 * s26 - 2 * pow<2>(s15) * s16 * s26 -
-        8 * mm2 * pow<2>(s16) * s26 + 24 * me2 * mm2 * s25 * s26 +
+        8 * me2 * pow(s15, 2) * s26 - 20 * me2 * mm2 * s16 * s26 +
+        12 * pow(mm2, 2) * s16 * s26 - 8 * mm2 * s12 * s16 * s26 -
+        12 * mm2 * s15 * s16 * s26 - 2 * pow(s15, 2) * s16 * s26 -
+        8 * mm2 * pow(s16, 2) * s26 + 24 * me2 * mm2 * s25 * s26 +
         12 * me2 * s15 * s25 * s26 + 8 * mm2 * s16 * s25 * s26 +
-        2 * s15 * s16 * s25 * s26 - 8 * pow<2>(mm2) * pow<2>(s26) +
-        4 * mm2 * s12 * pow<2>(s26) + 8 * mm2 * s15 * pow<2>(s26) +
-        2 * pow<2>(s15) * pow<2>(s26) + 8 * mm2 * s16 * pow<2>(s26) -
-        4 * mm2 * s25 * pow<2>(s26) - 2 * s15 * s25 * pow<2>(s26) +
-        24 * pow<2>(me2) * mm2 * s56 + 24 * me2 * pow<2>(mm2) * s56 -
-        32 * me2 * mm2 * s12 * s56 + 12 * pow<2>(me2) * s15 * s56 -
+        2 * s15 * s16 * s25 * s26 - 8 * pow(mm2, 2) * pow(s26, 2) +
+        4 * mm2 * s12 * pow(s26, 2) + 8 * mm2 * s15 * pow(s26, 2) +
+        2 * pow(s15, 2) * pow(s26, 2) + 8 * mm2 * s16 * pow(s26, 2) -
+        4 * mm2 * s25 * pow(s26, 2) - 2 * s15 * s25 * pow(s26, 2) +
+        24 * pow(me2, 2) * mm2 * s56 + 24 * me2 * pow(mm2, 2) * s56 -
+        32 * me2 * mm2 * s12 * s56 + 12 * pow(me2, 2) * s15 * s56 -
         20 * me2 * mm2 * s15 * s56 - 8 * me2 * s12 * s15 * s56 -
-        8 * me2 * pow<2>(s15) * s56 - 32 * me2 * mm2 * s16 * s56 -
+        8 * me2 * pow(s15, 2) * s56 - 32 * me2 * mm2 * s16 * s56 -
         8 * me2 * s15 * s16 * s56 + 32 * me2 * mm2 * s25 * s56 +
         16 * me2 * s15 * s25 * s56 + 20 * me2 * mm2 * s26 * s56 -
-        12 * pow<2>(mm2) * s26 * s56 + 8 * mm2 * s12 * s26 * s56 +
+        12 * pow(mm2, 2) * s26 * s56 + 8 * mm2 * s12 * s26 * s56 +
         10 * me2 * s15 * s26 * s56 + 10 * mm2 * s15 * s26 * s56 +
-        2 * s12 * s15 * s26 * s56 + 4 * pow<2>(s15) * s26 * s56 +
+        2 * s12 * s15 * s26 * s56 + 4 * pow(s15, 2) * s26 * s56 +
         16 * mm2 * s16 * s26 * s56 + 4 * s15 * s16 * s26 * s56 -
         8 * mm2 * s25 * s26 * s56 - 4 * s15 * s25 * s26 * s56 -
-        8 * mm2 * pow<2>(s26) * s56 - 4 * s15 * pow<2>(s26) * s56 +
-        16 * me2 * mm2 * pow<2>(s56) + 8 * me2 * s15 * pow<2>(s56) -
-        8 * mm2 * s26 * pow<2>(s56) - 4 * s15 * s26 * pow<2>(s56)};
+        8 * mm2 * pow(s26, 2) * s56 - 4 * s15 * pow(s26, 2) * s56 +
+        16 * me2 * mm2 * pow(s56, 2) + 8 * me2 * s15 * pow(s56, 2) -
+        8 * mm2 * s26 * pow(s56, 2) - 4 * s15 * s26 * pow(s56, 2)};
     const auto if15{
-        -8 * me2 * mm2 * pow<2>(s12) + 6 * me2 * pow<3>(s12) +
-        6 * mm2 * pow<3>(s12) - 4 * pow<4>(s12) + 6 * pow<2>(me2) * s12 * s15 -
-        10 * me2 * mm2 * s12 * s15 + 10 * me2 * pow<2>(s12) * s15 +
-        12 * mm2 * pow<2>(s12) * s15 - 12 * pow<3>(s12) * s15 +
-        6 * pow<2>(me2) * pow<2>(s15) - 2 * me2 * mm2 * pow<2>(s15) +
-        4 * me2 * s12 * pow<2>(s15) + 6 * mm2 * s12 * pow<2>(s15) -
-        12 * pow<2>(s12) * pow<2>(s15) - 4 * s12 * pow<3>(s15) -
-        8 * pow<2>(me2) * mm2 * s16 + 12 * pow<2>(me2) * s12 * s16 +
-        4 * me2 * mm2 * s12 * s16 + 6 * mm2 * pow<2>(s12) * s16 -
-        8 * pow<3>(s12) * s16 + 14 * pow<2>(me2) * s15 * s16 +
+        -8 * me2 * mm2 * pow(s12, 2) + 6 * me2 * pow(s12, 3) +
+        6 * mm2 * pow(s12, 3) - 4 * pow(s12, 4) + 6 * pow(me2, 2) * s12 * s15 -
+        10 * me2 * mm2 * s12 * s15 + 10 * me2 * pow(s12, 2) * s15 +
+        12 * mm2 * pow(s12, 2) * s15 - 12 * pow(s12, 3) * s15 +
+        6 * pow(me2, 2) * pow(s15, 2) - 2 * me2 * mm2 * pow(s15, 2) +
+        4 * me2 * s12 * pow(s15, 2) + 6 * mm2 * s12 * pow(s15, 2) -
+        12 * pow(s12, 2) * pow(s15, 2) - 4 * s12 * pow(s15, 3) -
+        8 * pow(me2, 2) * mm2 * s16 + 12 * pow(me2, 2) * s12 * s16 +
+        4 * me2 * mm2 * s12 * s16 + 6 * mm2 * pow(s12, 2) * s16 -
+        8 * pow(s12, 3) * s16 + 14 * pow(me2, 2) * s15 * s16 +
         2 * me2 * mm2 * s15 * s16 - 6 * me2 * s12 * s15 * s16 +
-        6 * mm2 * s12 * s15 * s16 - 16 * pow<2>(s12) * s15 * s16 -
-        4 * me2 * pow<2>(s15) * s16 - 8 * s12 * pow<2>(s15) * s16 +
-        6 * pow<2>(me2) * pow<2>(s16) + 2 * me2 * mm2 * pow<2>(s16) -
-        6 * me2 * s12 * pow<2>(s16) - 4 * pow<2>(s12) * pow<2>(s16) -
-        4 * me2 * s15 * pow<2>(s16) - 4 * s12 * s15 * pow<2>(s16) +
-        8 * me2 * pow<2>(mm2) * s25 - 4 * me2 * mm2 * s12 * s25 -
-        12 * pow<2>(mm2) * s12 * s25 - 6 * me2 * pow<2>(s12) * s25 +
-        8 * pow<3>(s12) * s25 - 2 * me2 * mm2 * s15 * s25 -
-        6 * pow<2>(mm2) * s15 * s25 + 6 * mm2 * s12 * s15 * s25 +
-        12 * pow<2>(s12) * s15 * s25 + 2 * me2 * pow<2>(s15) * s25 +
-        4 * mm2 * pow<2>(s15) * s25 + 4 * s12 * pow<2>(s15) * s25 -
-        3 * pow<2>(me2) * s16 * s25 - 6 * me2 * mm2 * s16 * s25 -
-        3 * pow<2>(mm2) * s16 * s25 + 12 * me2 * s12 * s16 * s25 +
-        12 * mm2 * s12 * s16 * s25 + 4 * pow<2>(s12) * s16 * s25 +
+        6 * mm2 * s12 * s15 * s16 - 16 * pow(s12, 2) * s15 * s16 -
+        4 * me2 * pow(s15, 2) * s16 - 8 * s12 * pow(s15, 2) * s16 +
+        6 * pow(me2, 2) * pow(s16, 2) + 2 * me2 * mm2 * pow(s16, 2) -
+        6 * me2 * s12 * pow(s16, 2) - 4 * pow(s12, 2) * pow(s16, 2) -
+        4 * me2 * s15 * pow(s16, 2) - 4 * s12 * s15 * pow(s16, 2) +
+        8 * me2 * pow(mm2, 2) * s25 - 4 * me2 * mm2 * s12 * s25 -
+        12 * pow(mm2, 2) * s12 * s25 - 6 * me2 * pow(s12, 2) * s25 +
+        8 * pow(s12, 3) * s25 - 2 * me2 * mm2 * s15 * s25 -
+        6 * pow(mm2, 2) * s15 * s25 + 6 * mm2 * s12 * s15 * s25 +
+        12 * pow(s12, 2) * s15 * s25 + 2 * me2 * pow(s15, 2) * s25 +
+        4 * mm2 * pow(s15, 2) * s25 + 4 * s12 * pow(s15, 2) * s25 -
+        3 * pow(me2, 2) * s16 * s25 - 6 * me2 * mm2 * s16 * s25 -
+        3 * pow(mm2, 2) * s16 * s25 + 12 * me2 * s12 * s16 * s25 +
+        12 * mm2 * s12 * s16 * s25 + 4 * pow(s12, 2) * s16 * s25 +
         9 * me2 * s15 * s16 * s25 + 9 * mm2 * s15 * s16 * s25 -
-        2 * s12 * s15 * s16 * s25 - 2 * pow<2>(s15) * s16 * s25 +
-        3 * me2 * pow<2>(s16) * s25 + 3 * mm2 * pow<2>(s16) * s25 -
-        4 * s12 * pow<2>(s16) * s25 - 2 * s15 * pow<2>(s16) * s25 +
-        2 * me2 * mm2 * pow<2>(s25) + 6 * pow<2>(mm2) * pow<2>(s25) -
-        6 * mm2 * s12 * pow<2>(s25) - 4 * pow<2>(s12) * pow<2>(s25) -
-        4 * mm2 * s15 * pow<2>(s25) - 3 * me2 * s16 * pow<2>(s25) -
-        3 * mm2 * s16 * pow<2>(s25) + 4 * s12 * s16 * pow<2>(s25) +
-        s15 * s16 * pow<2>(s25) - pow<2>(s16) * pow<2>(s25) +
-        10 * me2 * mm2 * s12 * s26 - 6 * pow<2>(mm2) * s12 * s26 -
-        12 * me2 * pow<2>(s12) * s26 - 10 * mm2 * pow<2>(s12) * s26 +
-        12 * pow<3>(s12) * s26 - 3 * pow<2>(me2) * s15 * s26 +
-        10 * me2 * mm2 * s15 * s26 - 3 * pow<2>(mm2) * s15 * s26 -
+        2 * s12 * s15 * s16 * s25 - 2 * pow(s15, 2) * s16 * s25 +
+        3 * me2 * pow(s16, 2) * s25 + 3 * mm2 * pow(s16, 2) * s25 -
+        4 * s12 * pow(s16, 2) * s25 - 2 * s15 * pow(s16, 2) * s25 +
+        2 * me2 * mm2 * pow(s25, 2) + 6 * pow(mm2, 2) * pow(s25, 2) -
+        6 * mm2 * s12 * pow(s25, 2) - 4 * pow(s12, 2) * pow(s25, 2) -
+        4 * mm2 * s15 * pow(s25, 2) - 3 * me2 * s16 * pow(s25, 2) -
+        3 * mm2 * s16 * pow(s25, 2) + 4 * s12 * s16 * pow(s25, 2) +
+        s15 * s16 * pow(s25, 2) - pow(s16, 2) * pow(s25, 2) +
+        10 * me2 * mm2 * s12 * s26 - 6 * pow(mm2, 2) * s12 * s26 -
+        12 * me2 * pow(s12, 2) * s26 - 10 * mm2 * pow(s12, 2) * s26 +
+        12 * pow(s12, 3) * s26 - 3 * pow(me2, 2) * s15 * s26 +
+        10 * me2 * mm2 * s15 * s26 - 3 * pow(mm2, 2) * s15 * s26 -
         10 * me2 * s12 * s15 * s26 - 10 * mm2 * s12 * s15 * s26 +
-        24 * pow<2>(s12) * s15 * s26 - me2 * pow<2>(s15) * s26 -
-        mm2 * pow<2>(s15) * s26 + 14 * s12 * pow<2>(s15) * s26 +
-        2 * pow<3>(s15) * s26 - 6 * pow<2>(me2) * s16 * s26 -
+        24 * pow(s12, 2) * s15 * s26 - me2 * pow(s15, 2) * s26 -
+        mm2 * pow(s15, 2) * s26 + 14 * s12 * pow(s15, 2) * s26 +
+        2 * pow(s15, 3) * s26 - 6 * pow(me2, 2) * s16 * s26 -
         2 * me2 * mm2 * s16 * s26 + 6 * me2 * s12 * s16 * s26 +
-        12 * pow<2>(s12) * s16 * s26 + 7 * me2 * s15 * s16 * s26 +
+        12 * pow(s12, 2) * s16 * s26 + 7 * me2 * s15 * s16 * s26 +
         mm2 * s15 * s16 * s26 + 12 * s12 * s15 * s16 * s26 +
-        2 * pow<2>(s15) * s16 * s26 + 4 * me2 * pow<2>(s16) * s26 +
-        2 * me2 * mm2 * s25 * s26 + 14 * pow<2>(mm2) * s25 * s26 +
+        2 * pow(s15, 2) * s16 * s26 + 4 * me2 * pow(s16, 2) * s26 +
+        2 * me2 * mm2 * s25 * s26 + 14 * pow(mm2, 2) * s25 * s26 +
         6 * me2 * s12 * s25 * s26 - 6 * mm2 * s12 * s25 * s26 -
-        16 * pow<2>(s12) * s25 * s26 - me2 * s15 * s25 * s26 -
+        16 * pow(s12, 2) * s25 * s26 - me2 * s15 * s25 * s26 -
         7 * mm2 * s15 * s25 * s26 - 12 * s12 * s15 * s25 * s26 -
-        3 * pow<2>(s15) * s25 * s26 - 9 * me2 * s16 * s25 * s26 -
+        3 * pow(s15, 2) * s25 * s26 - 9 * me2 * s16 * s25 * s26 -
         9 * mm2 * s16 * s25 * s26 + 2 * s12 * s16 * s25 * s26 +
-        2 * s15 * s16 * s25 * s26 + pow<2>(s16) * s25 * s26 +
-        4 * mm2 * pow<2>(s25) * s26 + 4 * s12 * pow<2>(s25) * s26 -
-        2 * s16 * pow<2>(s25) * s26 - 2 * me2 * mm2 * pow<2>(s26) +
-        6 * pow<2>(mm2) * pow<2>(s26) + 6 * me2 * s12 * pow<2>(s26) +
-        4 * mm2 * s12 * pow<2>(s26) - 12 * pow<2>(s12) * pow<2>(s26) +
-        me2 * s15 * pow<2>(s26) + mm2 * s15 * pow<2>(s26) -
-        14 * s12 * s15 * pow<2>(s26) - 5 * pow<2>(s15) * pow<2>(s26) -
-        4 * me2 * s16 * pow<2>(s26) - 2 * mm2 * s16 * pow<2>(s26) -
-        4 * s12 * s16 * pow<2>(s26) - 3 * s15 * s16 * pow<2>(s26) +
-        4 * mm2 * s25 * pow<2>(s26) + 8 * s12 * s25 * pow<2>(s26) +
-        2 * s15 * s25 * pow<2>(s26) - 2 * s16 * s25 * pow<2>(s26) +
-        4 * s12 * pow<3>(s26) + 2 * s15 * pow<3>(s26) +
-        8 * pow<2>(me2) * mm2 * s56 + 8 * me2 * pow<2>(mm2) * s56 -
-        3 * pow<2>(me2) * s12 * s56 - 2 * me2 * mm2 * s12 * s56 -
-        3 * pow<2>(mm2) * s12 * s56 - 10 * me2 * pow<2>(s12) * s56 -
-        10 * mm2 * pow<2>(s12) * s56 + 12 * pow<3>(s12) * s56 -
-        6 * pow<2>(me2) * s15 * s56 - 2 * me2 * mm2 * s15 * s56 -
+        2 * s15 * s16 * s25 * s26 + pow(s16, 2) * s25 * s26 +
+        4 * mm2 * pow(s25, 2) * s26 + 4 * s12 * pow(s25, 2) * s26 -
+        2 * s16 * pow(s25, 2) * s26 - 2 * me2 * mm2 * pow(s26, 2) +
+        6 * pow(mm2, 2) * pow(s26, 2) + 6 * me2 * s12 * pow(s26, 2) +
+        4 * mm2 * s12 * pow(s26, 2) - 12 * pow(s12, 2) * pow(s26, 2) +
+        me2 * s15 * pow(s26, 2) + mm2 * s15 * pow(s26, 2) -
+        14 * s12 * s15 * pow(s26, 2) - 5 * pow(s15, 2) * pow(s26, 2) -
+        4 * me2 * s16 * pow(s26, 2) - 2 * mm2 * s16 * pow(s26, 2) -
+        4 * s12 * s16 * pow(s26, 2) - 3 * s15 * s16 * pow(s26, 2) +
+        4 * mm2 * s25 * pow(s26, 2) + 8 * s12 * s25 * pow(s26, 2) +
+        2 * s15 * s25 * pow(s26, 2) - 2 * s16 * s25 * pow(s26, 2) +
+        4 * s12 * pow(s26, 3) + 2 * s15 * pow(s26, 3) +
+        8 * pow(me2, 2) * mm2 * s56 + 8 * me2 * pow(mm2, 2) * s56 -
+        3 * pow(me2, 2) * s12 * s56 - 2 * me2 * mm2 * s12 * s56 -
+        3 * pow(mm2, 2) * s12 * s56 - 10 * me2 * pow(s12, 2) * s56 -
+        10 * mm2 * pow(s12, 2) * s56 + 12 * pow(s12, 3) * s56 -
+        6 * pow(me2, 2) * s15 * s56 - 2 * me2 * mm2 * s15 * s56 -
         7 * me2 * s12 * s15 * s56 - 9 * mm2 * s12 * s15 * s56 +
-        22 * pow<2>(s12) * s15 * s56 + 10 * s12 * pow<2>(s15) * s56 -
-        8 * pow<2>(me2) * s16 * s56 - 8 * me2 * mm2 * s16 * s56 +
+        22 * pow(s12, 2) * s15 * s56 + 10 * s12 * pow(s15, 2) * s56 -
+        8 * pow(me2, 2) * s16 * s56 - 8 * me2 * mm2 * s16 * s56 +
         7 * me2 * s12 * s16 * s56 - mm2 * s12 * s16 * s56 +
-        12 * pow<2>(s12) * s16 * s56 + 4 * me2 * s15 * s16 * s56 +
-        10 * s12 * s15 * s16 * s56 + 2 * me2 * pow<2>(s16) * s56 +
-        8 * me2 * mm2 * s25 * s56 + 8 * pow<2>(mm2) * s25 * s56 +
+        12 * pow(s12, 2) * s16 * s56 + 4 * me2 * s15 * s16 * s56 +
+        10 * s12 * s15 * s16 * s56 + 2 * me2 * pow(s16, 2) * s56 +
+        8 * me2 * mm2 * s25 * s56 + 8 * pow(mm2, 2) * s25 * s56 +
         me2 * s12 * s25 * s56 - 7 * mm2 * s12 * s25 * s56 -
-        12 * pow<2>(s12) * s25 * s56 - 2 * me2 * s15 * s25 * s56 -
+        12 * pow(s12, 2) * s25 * s56 - 2 * me2 * s15 * s25 * s56 -
         8 * mm2 * s15 * s25 * s56 - 5 * s12 * s15 * s25 * s56 -
         8 * me2 * s16 * s25 * s56 - 8 * mm2 * s16 * s25 * s56 +
         7 * s12 * s16 * s25 * s56 + 3 * s15 * s16 * s25 * s56 +
-        pow<2>(s16) * s25 * s56 + 2 * mm2 * pow<2>(s25) * s56 -
-        s16 * pow<2>(s25) * s56 + 2 * me2 * mm2 * s26 * s56 +
-        6 * pow<2>(mm2) * s26 * s56 + 9 * me2 * s12 * s26 * s56 +
-        7 * mm2 * s12 * s26 * s56 - 22 * pow<2>(s12) * s26 * s56 -
-        21 * s12 * s15 * s26 * s56 - 5 * pow<2>(s15) * s26 * s56 -
+        pow(s16, 2) * s25 * s56 + 2 * mm2 * pow(s25, 2) * s56 -
+        s16 * pow(s25, 2) * s56 + 2 * me2 * mm2 * s26 * s56 +
+        6 * pow(mm2, 2) * s26 * s56 + 9 * me2 * s12 * s26 * s56 +
+        7 * mm2 * s12 * s26 * s56 - 22 * pow(s12, 2) * s26 * s56 -
+        21 * s12 * s15 * s26 * s56 - 5 * pow(s15, 2) * s26 * s56 -
         8 * me2 * s16 * s26 * s56 - 2 * mm2 * s16 * s26 * s56 -
         5 * s12 * s16 * s26 * s56 - 3 * s15 * s16 * s26 * s56 +
         4 * mm2 * s25 * s26 * s56 + 10 * s12 * s25 * s26 * s56 +
         3 * s15 * s25 * s26 * s56 - 3 * s16 * s25 * s26 * s56 +
-        10 * s12 * pow<2>(s26) * s56 + 5 * s15 * pow<2>(s26) * s56 +
-        4 * me2 * mm2 * pow<2>(s56) + 4 * me2 * s12 * pow<2>(s56) +
-        4 * mm2 * s12 * pow<2>(s56) - 10 * pow<2>(s12) * pow<2>(s56) -
-        7 * s12 * s15 * pow<2>(s56) - 2 * me2 * s16 * pow<2>(s56) -
-        s12 * s16 * pow<2>(s56) + 2 * mm2 * s25 * pow<2>(s56) +
-        s12 * s25 * pow<2>(s56) - s16 * s25 * pow<2>(s56) +
-        7 * s12 * s26 * pow<2>(s56) + 3 * s15 * s26 * pow<2>(s56) +
-        s12 * pow<3>(s56)};
+        10 * s12 * pow(s26, 2) * s56 + 5 * s15 * pow(s26, 2) * s56 +
+        4 * me2 * mm2 * pow(s56, 2) + 4 * me2 * s12 * pow(s56, 2) +
+        4 * mm2 * s12 * pow(s56, 2) - 10 * pow(s12, 2) * pow(s56, 2) -
+        7 * s12 * s15 * pow(s56, 2) - 2 * me2 * s16 * pow(s56, 2) -
+        s12 * s16 * pow(s56, 2) + 2 * mm2 * s25 * pow(s56, 2) +
+        s12 * s25 * pow(s56, 2) - s16 * s25 * pow(s56, 2) +
+        7 * s12 * s26 * pow(s56, 2) + 3 * s15 * s26 * pow(s56, 2) +
+        s12 * pow(s56, 3)};
     const auto if25{
-        -8 * me2 * mm2 * pow<2>(s12) + 6 * me2 * pow<3>(s12) +
-        6 * mm2 * pow<3>(s12) - 4 * pow<4>(s12) + 6 * pow<2>(me2) * s12 * s15 -
-        2 * me2 * mm2 * s12 * s15 + 4 * me2 * pow<2>(s12) * s15 +
-        6 * mm2 * pow<2>(s12) * s15 - 8 * pow<3>(s12) * s15 -
-        4 * pow<2>(s12) * pow<2>(s15) - 8 * pow<2>(me2) * mm2 * s16 +
-        12 * pow<2>(me2) * s12 * s16 - 4 * me2 * mm2 * s12 * s16 +
-        6 * me2 * pow<2>(s12) * s16 + 12 * mm2 * pow<2>(s12) * s16 -
-        12 * pow<3>(s12) * s16 + 8 * pow<2>(me2) * s15 * s16 -
+        -8 * me2 * mm2 * pow(s12, 2) + 6 * me2 * pow(s12, 3) +
+        6 * mm2 * pow(s12, 3) - 4 * pow(s12, 4) + 6 * pow(me2, 2) * s12 * s15 -
+        2 * me2 * mm2 * s12 * s15 + 4 * me2 * pow(s12, 2) * s15 +
+        6 * mm2 * pow(s12, 2) * s15 - 8 * pow(s12, 3) * s15 -
+        4 * pow(s12, 2) * pow(s15, 2) - 8 * pow(me2, 2) * mm2 * s16 +
+        12 * pow(me2, 2) * s12 * s16 - 4 * me2 * mm2 * s12 * s16 +
+        6 * me2 * pow(s12, 2) * s16 + 12 * mm2 * pow(s12, 2) * s16 -
+        12 * pow(s12, 3) * s16 + 8 * pow(me2, 2) * s15 * s16 -
         2 * me2 * s12 * s15 * s16 + 6 * mm2 * s12 * s15 * s16 -
-        16 * pow<2>(s12) * s15 * s16 - 2 * me2 * pow<2>(s15) * s16 -
-        4 * s12 * pow<2>(s15) * s16 + 6 * pow<2>(me2) * pow<2>(s16) -
-        2 * me2 * mm2 * pow<2>(s16) + 2 * me2 * s12 * pow<2>(s16) +
-        6 * mm2 * s12 * pow<2>(s16) - 12 * pow<2>(s12) * pow<2>(s16) -
-        8 * s12 * s15 * pow<2>(s16) + 2 * me2 * pow<3>(s16) -
-        4 * s12 * pow<3>(s16) + 2 * me2 * mm2 * s12 * s25 -
-        6 * pow<2>(mm2) * s12 * s25 - 6 * me2 * pow<2>(s12) * s25 -
-        4 * mm2 * pow<2>(s12) * s25 + 8 * pow<3>(s12) * s25 +
+        16 * pow(s12, 2) * s15 * s16 - 2 * me2 * pow(s15, 2) * s16 -
+        4 * s12 * pow(s15, 2) * s16 + 6 * pow(me2, 2) * pow(s16, 2) -
+        2 * me2 * mm2 * pow(s16, 2) + 2 * me2 * s12 * pow(s16, 2) +
+        6 * mm2 * s12 * pow(s16, 2) - 12 * pow(s12, 2) * pow(s16, 2) -
+        8 * s12 * s15 * pow(s16, 2) + 2 * me2 * pow(s16, 3) -
+        4 * s12 * pow(s16, 3) + 2 * me2 * mm2 * s12 * s25 -
+        6 * pow(mm2, 2) * s12 * s25 - 6 * me2 * pow(s12, 2) * s25 -
+        4 * mm2 * pow(s12, 2) * s25 + 8 * pow(s12, 3) * s25 +
         4 * me2 * s12 * s15 * s25 + 4 * mm2 * s12 * s15 * s25 +
-        6 * pow<2>(s12) * s15 * s25 - 3 * pow<2>(me2) * s16 * s25 -
-        6 * me2 * mm2 * s16 * s25 - 3 * pow<2>(mm2) * s16 * s25 +
-        6 * me2 * s12 * s16 * s25 + 14 * pow<2>(s12) * s16 * s25 +
+        6 * pow(s12, 2) * s15 * s25 - 3 * pow(me2, 2) * s16 * s25 -
+        6 * me2 * mm2 * s16 * s25 - 3 * pow(mm2, 2) * s16 * s25 +
+        6 * me2 * s12 * s16 * s25 + 14 * pow(s12, 2) * s16 * s25 +
         7 * me2 * s15 * s16 * s25 + 2 * mm2 * s15 * s16 * s25 +
-        6 * s12 * s15 * s16 * s25 + 4 * me2 * pow<2>(s16) * s25 +
-        3 * mm2 * pow<2>(s16) * s25 + 6 * s12 * pow<2>(s16) * s25 -
-        4 * pow<2>(s12) * pow<2>(s25) - 2 * me2 * s16 * pow<2>(s25) -
-        mm2 * s16 * pow<2>(s25) - 4 * s12 * s16 * pow<2>(s25) +
-        8 * me2 * pow<2>(mm2) * s26 + 4 * me2 * mm2 * s12 * s26 -
-        12 * pow<2>(mm2) * s12 * s26 - 12 * me2 * pow<2>(s12) * s26 -
-        6 * mm2 * pow<2>(s12) * s26 + 12 * pow<3>(s12) * s26 -
-        3 * pow<2>(me2) * s15 * s26 - 6 * me2 * mm2 * s15 * s26 -
-        3 * pow<2>(mm2) * s15 * s26 + 6 * mm2 * s12 * s15 * s26 +
-        14 * pow<2>(s12) * s15 * s26 + me2 * pow<2>(s15) * s26 +
-        2 * mm2 * pow<2>(s15) * s26 + 4 * s12 * pow<2>(s15) * s26 -
-        6 * pow<2>(me2) * s16 * s26 - 12 * me2 * mm2 * s16 * s26 -
-        6 * pow<2>(mm2) * s16 * s26 + 22 * pow<2>(s12) * s16 * s26 +
+        6 * s12 * s15 * s16 * s25 + 4 * me2 * pow(s16, 2) * s25 +
+        3 * mm2 * pow(s16, 2) * s25 + 6 * s12 * pow(s16, 2) * s25 -
+        4 * pow(s12, 2) * pow(s25, 2) - 2 * me2 * s16 * pow(s25, 2) -
+        mm2 * s16 * pow(s25, 2) - 4 * s12 * s16 * pow(s25, 2) +
+        8 * me2 * pow(mm2, 2) * s26 + 4 * me2 * mm2 * s12 * s26 -
+        12 * pow(mm2, 2) * s12 * s26 - 12 * me2 * pow(s12, 2) * s26 -
+        6 * mm2 * pow(s12, 2) * s26 + 12 * pow(s12, 3) * s26 -
+        3 * pow(me2, 2) * s15 * s26 - 6 * me2 * mm2 * s15 * s26 -
+        3 * pow(mm2, 2) * s15 * s26 + 6 * mm2 * s12 * s15 * s26 +
+        14 * pow(s12, 2) * s15 * s26 + me2 * pow(s15, 2) * s26 +
+        2 * mm2 * pow(s15, 2) * s26 + 4 * s12 * pow(s15, 2) * s26 -
+        6 * pow(me2, 2) * s16 * s26 - 12 * me2 * mm2 * s16 * s26 -
+        6 * pow(mm2, 2) * s16 * s26 + 22 * pow(s12, 2) * s16 * s26 +
         8 * me2 * s15 * s16 * s26 + 5 * mm2 * s15 * s16 * s26 +
-        14 * s12 * s15 * s16 * s26 + 4 * me2 * pow<2>(s16) * s26 +
-        4 * mm2 * pow<2>(s16) * s26 + 10 * s12 * pow<2>(s16) * s26 +
-        8 * pow<2>(mm2) * s25 * s26 + 6 * me2 * s12 * s25 * s26 -
-        2 * mm2 * s12 * s25 * s26 - 16 * pow<2>(s12) * s25 * s26 -
+        14 * s12 * s15 * s16 * s26 + 4 * me2 * pow(s16, 2) * s26 +
+        4 * mm2 * pow(s16, 2) * s26 + 10 * s12 * pow(s16, 2) * s26 +
+        8 * pow(mm2, 2) * s25 * s26 + 6 * me2 * s12 * s25 * s26 -
+        2 * mm2 * s12 * s25 * s26 - 16 * pow(s12, 2) * s25 * s26 -
         2 * me2 * s15 * s25 * s26 - 7 * mm2 * s15 * s25 * s26 -
         6 * s12 * s15 * s25 * s26 - 5 * me2 * s16 * s25 * s26 -
         8 * mm2 * s16 * s25 * s26 - 14 * s12 * s16 * s25 * s26 +
-        2 * mm2 * pow<2>(s25) * s26 + 4 * s12 * pow<2>(s25) * s26 -
-        2 * me2 * mm2 * pow<2>(s26) + 6 * pow<2>(mm2) * pow<2>(s26) +
-        6 * me2 * s12 * pow<2>(s26) + 2 * mm2 * s12 * pow<2>(s26) -
-        12 * pow<2>(s12) * pow<2>(s26) - 3 * me2 * s15 * pow<2>(s26) -
-        4 * mm2 * s15 * pow<2>(s26) - 6 * s12 * s15 * pow<2>(s26) -
-        4 * me2 * s16 * pow<2>(s26) - 4 * mm2 * s16 * pow<2>(s26) -
-        10 * s12 * s16 * pow<2>(s26) + 8 * s12 * s25 * pow<2>(s26) -
-        2 * mm2 * pow<3>(s26) + 4 * s12 * pow<3>(s26) +
-        8 * pow<2>(me2) * mm2 * s56 + 8 * me2 * pow<2>(mm2) * s56 -
-        3 * pow<2>(me2) * s12 * s56 - 2 * me2 * mm2 * s12 * s56 -
-        3 * pow<2>(mm2) * s12 * s56 - 10 * me2 * pow<2>(s12) * s56 -
-        10 * mm2 * pow<2>(s12) * s56 + 12 * pow<3>(s12) * s56 -
+        2 * mm2 * pow(s25, 2) * s26 + 4 * s12 * pow(s25, 2) * s26 -
+        2 * me2 * mm2 * pow(s26, 2) + 6 * pow(mm2, 2) * pow(s26, 2) +
+        6 * me2 * s12 * pow(s26, 2) + 2 * mm2 * s12 * pow(s26, 2) -
+        12 * pow(s12, 2) * pow(s26, 2) - 3 * me2 * s15 * pow(s26, 2) -
+        4 * mm2 * s15 * pow(s26, 2) - 6 * s12 * s15 * pow(s26, 2) -
+        4 * me2 * s16 * pow(s26, 2) - 4 * mm2 * s16 * pow(s26, 2) -
+        10 * s12 * s16 * pow(s26, 2) + 8 * s12 * s25 * pow(s26, 2) -
+        2 * mm2 * pow(s26, 3) + 4 * s12 * pow(s26, 3) +
+        8 * pow(me2, 2) * mm2 * s56 + 8 * me2 * pow(mm2, 2) * s56 -
+        3 * pow(me2, 2) * s12 * s56 - 2 * me2 * mm2 * s12 * s56 -
+        3 * pow(mm2, 2) * s12 * s56 - 10 * me2 * pow(s12, 2) * s56 -
+        10 * mm2 * pow(s12, 2) * s56 + 12 * pow(s12, 3) * s56 -
         6 * me2 * mm2 * s15 * s56 + me2 * s12 * s15 * s56 +
-        2 * mm2 * s12 * s15 * s56 + 10 * pow<2>(s12) * s15 * s56 -
-        8 * pow<2>(me2) * s16 * s56 - 10 * me2 * mm2 * s16 * s56 -
-        9 * mm2 * s12 * s16 * s56 + 22 * pow<2>(s12) * s16 * s56 +
+        2 * mm2 * s12 * s15 * s56 + 10 * pow(s12, 2) * s15 * s56 -
+        8 * pow(me2, 2) * s16 * s56 - 10 * me2 * mm2 * s16 * s56 -
+        9 * mm2 * s12 * s16 * s56 + 22 * pow(s12, 2) * s16 * s56 +
         6 * me2 * s15 * s16 * s56 + 10 * s12 * s15 * s16 * s56 +
-        2 * me2 * pow<2>(s16) * s56 + 10 * s12 * pow<2>(s16) * s56 +
+        2 * me2 * pow(s16, 2) * s56 + 10 * s12 * pow(s16, 2) * s56 +
         6 * me2 * mm2 * s25 * s56 - 2 * me2 * s12 * s25 * s56 -
-        mm2 * s12 * s25 * s56 - 10 * pow<2>(s12) * s25 * s56 -
+        mm2 * s12 * s25 * s56 - 10 * pow(s12, 2) * s25 * s56 -
         6 * me2 * s16 * s25 * s56 - 2 * mm2 * s16 * s25 * s56 -
         10 * s12 * s16 * s25 * s56 + 10 * me2 * mm2 * s26 * s56 +
-        8 * pow<2>(mm2) * s26 * s56 + 9 * me2 * s12 * s26 * s56 -
-        22 * pow<2>(s12) * s26 * s56 - 2 * me2 * s15 * s26 * s56 -
+        8 * pow(mm2, 2) * s26 * s56 + 9 * me2 * s12 * s26 * s56 -
+        22 * pow(s12, 2) * s26 * s56 - 2 * me2 * s15 * s26 * s56 -
         6 * mm2 * s15 * s26 * s56 - 10 * s12 * s15 * s26 * s56 -
         6 * me2 * s16 * s26 * s56 - 6 * mm2 * s16 * s26 * s56 -
         20 * s12 * s16 * s26 * s56 + 6 * mm2 * s25 * s26 * s56 +
-        10 * s12 * s25 * s26 * s56 + 2 * mm2 * pow<2>(s26) * s56 +
-        10 * s12 * pow<2>(s26) * s56 + 4 * me2 * mm2 * pow<2>(s56) -
-        6 * pow<2>(s12) * pow<2>(s56) - 2 * me2 * s16 * pow<2>(s56) -
-        6 * s12 * s16 * pow<2>(s56) + 2 * mm2 * s26 * pow<2>(s56) +
-        6 * s12 * s26 * pow<2>(s56)};
+        10 * s12 * s25 * s26 * s56 + 2 * mm2 * pow(s26, 2) * s56 +
+        10 * s12 * pow(s26, 2) * s56 + 4 * me2 * mm2 * pow(s56, 2) -
+        6 * pow(s12, 2) * pow(s56, 2) - 2 * me2 * s16 * pow(s56, 2) -
+        6 * s12 * s16 * pow(s56, 2) + 2 * mm2 * s26 * pow(s56, 2) +
+        6 * s12 * s26 * pow(s56, 2)};
     const auto if35{
-        32 * me2 * pow<3>(mm2) - 24 * me2 * pow<2>(mm2) * s12 -
-        24 * pow<3>(mm2) * s12 + 16 * pow<2>(mm2) * pow<2>(s12) -
-        40 * me2 * pow<2>(mm2) * s15 + 6 * me2 * mm2 * s12 * s15 +
-        30 * pow<2>(mm2) * s12 * s15 - 4 * mm2 * pow<2>(s12) * s15 +
-        8 * me2 * mm2 * pow<2>(s15) - 6 * mm2 * s12 * pow<2>(s15) +
-        4 * me2 * pow<3>(s15) - 2 * s12 * pow<3>(s15) -
-        40 * me2 * pow<2>(mm2) * s16 + 6 * me2 * mm2 * s12 * s16 +
-        30 * pow<2>(mm2) * s12 * s16 - 4 * mm2 * pow<2>(s12) * s16 +
+        32 * me2 * pow(mm2, 3) - 24 * me2 * pow(mm2, 2) * s12 -
+        24 * pow(mm2, 3) * s12 + 16 * pow(mm2, 2) * pow(s12, 2) -
+        40 * me2 * pow(mm2, 2) * s15 + 6 * me2 * mm2 * s12 * s15 +
+        30 * pow(mm2, 2) * s12 * s15 - 4 * mm2 * pow(s12, 2) * s15 +
+        8 * me2 * mm2 * pow(s15, 2) - 6 * mm2 * s12 * pow(s15, 2) +
+        4 * me2 * pow(s15, 3) - 2 * s12 * pow(s15, 3) -
+        40 * me2 * pow(mm2, 2) * s16 + 6 * me2 * mm2 * s12 * s16 +
+        30 * pow(mm2, 2) * s12 * s16 - 4 * mm2 * pow(s12, 2) * s16 +
         16 * me2 * mm2 * s15 * s16 - 12 * mm2 * s12 * s15 * s16 +
-        12 * me2 * pow<2>(s15) * s16 - 6 * s12 * pow<2>(s15) * s16 +
-        8 * me2 * mm2 * pow<2>(s16) - 6 * mm2 * s12 * pow<2>(s16) +
-        12 * me2 * s15 * pow<2>(s16) - 6 * s12 * s15 * pow<2>(s16) +
-        4 * me2 * pow<3>(s16) - 2 * s12 * pow<3>(s16) +
-        24 * me2 * pow<2>(mm2) * s25 + 24 * pow<3>(mm2) * s25 -
-        32 * pow<2>(mm2) * s12 * s25 - 6 * me2 * mm2 * s15 * s25 -
-        30 * pow<2>(mm2) * s15 * s25 + 8 * mm2 * s12 * s15 * s25 -
-        6 * me2 * pow<2>(s15) * s25 + 4 * mm2 * pow<2>(s15) * s25 +
-        4 * s12 * pow<2>(s15) * s25 + 4 * pow<3>(s15) * s25 -
-        6 * me2 * mm2 * s16 * s25 - 30 * pow<2>(mm2) * s16 * s25 +
+        12 * me2 * pow(s15, 2) * s16 - 6 * s12 * pow(s15, 2) * s16 +
+        8 * me2 * mm2 * pow(s16, 2) - 6 * mm2 * s12 * pow(s16, 2) +
+        12 * me2 * s15 * pow(s16, 2) - 6 * s12 * s15 * pow(s16, 2) +
+        4 * me2 * pow(s16, 3) - 2 * s12 * pow(s16, 3) +
+        24 * me2 * pow(mm2, 2) * s25 + 24 * pow(mm2, 3) * s25 -
+        32 * pow(mm2, 2) * s12 * s25 - 6 * me2 * mm2 * s15 * s25 -
+        30 * pow(mm2, 2) * s15 * s25 + 8 * mm2 * s12 * s15 * s25 -
+        6 * me2 * pow(s15, 2) * s25 + 4 * mm2 * pow(s15, 2) * s25 +
+        4 * s12 * pow(s15, 2) * s25 + 4 * pow(s15, 3) * s25 -
+        6 * me2 * mm2 * s16 * s25 - 30 * pow(mm2, 2) * s16 * s25 +
         8 * mm2 * s12 * s16 * s25 - 12 * me2 * s15 * s16 * s25 +
         8 * mm2 * s15 * s16 * s25 + 8 * s12 * s15 * s16 * s25 +
-        12 * pow<2>(s15) * s16 * s25 - 6 * me2 * pow<2>(s16) * s25 +
-        4 * mm2 * pow<2>(s16) * s25 + 4 * s12 * pow<2>(s16) * s25 +
-        12 * s15 * pow<2>(s16) * s25 + 4 * pow<3>(s16) * s25 +
-        16 * pow<2>(mm2) * pow<2>(s25) - 4 * mm2 * s15 * pow<2>(s25) -
-        4 * pow<2>(s15) * pow<2>(s25) - 4 * mm2 * s16 * pow<2>(s25) -
-        8 * s15 * s16 * pow<2>(s25) - 4 * pow<2>(s16) * pow<2>(s25) +
-        24 * me2 * pow<2>(mm2) * s26 + 24 * pow<3>(mm2) * s26 -
-        32 * pow<2>(mm2) * s12 * s26 - 6 * me2 * mm2 * s15 * s26 -
-        30 * pow<2>(mm2) * s15 * s26 + 8 * mm2 * s12 * s15 * s26 -
-        6 * me2 * pow<2>(s15) * s26 + 4 * mm2 * pow<2>(s15) * s26 +
-        4 * s12 * pow<2>(s15) * s26 + 4 * pow<3>(s15) * s26 -
-        6 * me2 * mm2 * s16 * s26 - 30 * pow<2>(mm2) * s16 * s26 +
+        12 * pow(s15, 2) * s16 * s25 - 6 * me2 * pow(s16, 2) * s25 +
+        4 * mm2 * pow(s16, 2) * s25 + 4 * s12 * pow(s16, 2) * s25 +
+        12 * s15 * pow(s16, 2) * s25 + 4 * pow(s16, 3) * s25 +
+        16 * pow(mm2, 2) * pow(s25, 2) - 4 * mm2 * s15 * pow(s25, 2) -
+        4 * pow(s15, 2) * pow(s25, 2) - 4 * mm2 * s16 * pow(s25, 2) -
+        8 * s15 * s16 * pow(s25, 2) - 4 * pow(s16, 2) * pow(s25, 2) +
+        24 * me2 * pow(mm2, 2) * s26 + 24 * pow(mm2, 3) * s26 -
+        32 * pow(mm2, 2) * s12 * s26 - 6 * me2 * mm2 * s15 * s26 -
+        30 * pow(mm2, 2) * s15 * s26 + 8 * mm2 * s12 * s15 * s26 -
+        6 * me2 * pow(s15, 2) * s26 + 4 * mm2 * pow(s15, 2) * s26 +
+        4 * s12 * pow(s15, 2) * s26 + 4 * pow(s15, 3) * s26 -
+        6 * me2 * mm2 * s16 * s26 - 30 * pow(mm2, 2) * s16 * s26 +
         8 * mm2 * s12 * s16 * s26 - 12 * me2 * s15 * s16 * s26 +
         8 * mm2 * s15 * s16 * s26 + 8 * s12 * s15 * s16 * s26 +
-        12 * pow<2>(s15) * s16 * s26 - 6 * me2 * pow<2>(s16) * s26 +
-        4 * mm2 * pow<2>(s16) * s26 + 4 * s12 * pow<2>(s16) * s26 +
-        12 * s15 * pow<2>(s16) * s26 + 4 * pow<3>(s16) * s26 +
-        32 * pow<2>(mm2) * s25 * s26 - 8 * mm2 * s15 * s25 * s26 -
-        8 * pow<2>(s15) * s25 * s26 - 8 * mm2 * s16 * s25 * s26 -
-        16 * s15 * s16 * s25 * s26 - 8 * pow<2>(s16) * s25 * s26 +
-        16 * pow<2>(mm2) * pow<2>(s26) - 4 * mm2 * s15 * pow<2>(s26) -
-        4 * pow<2>(s15) * pow<2>(s26) - 4 * mm2 * s16 * pow<2>(s26) -
-        8 * s15 * s16 * pow<2>(s26) - 4 * pow<2>(s16) * pow<2>(s26) +
-        32 * me2 * pow<2>(mm2) * s56 - 24 * pow<2>(mm2) * s12 * s56 -
+        12 * pow(s15, 2) * s16 * s26 - 6 * me2 * pow(s16, 2) * s26 +
+        4 * mm2 * pow(s16, 2) * s26 + 4 * s12 * pow(s16, 2) * s26 +
+        12 * s15 * pow(s16, 2) * s26 + 4 * pow(s16, 3) * s26 +
+        32 * pow(mm2, 2) * s25 * s26 - 8 * mm2 * s15 * s25 * s26 -
+        8 * pow(s15, 2) * s25 * s26 - 8 * mm2 * s16 * s25 * s26 -
+        16 * s15 * s16 * s25 * s26 - 8 * pow(s16, 2) * s25 * s26 +
+        16 * pow(mm2, 2) * pow(s26, 2) - 4 * mm2 * s15 * pow(s26, 2) -
+        4 * pow(s15, 2) * pow(s26, 2) - 4 * mm2 * s16 * pow(s26, 2) -
+        8 * s15 * s16 * pow(s26, 2) - 4 * pow(s16, 2) * pow(s26, 2) +
+        32 * me2 * pow(mm2, 2) * s56 - 24 * pow(mm2, 2) * s12 * s56 -
         16 * me2 * mm2 * s15 * s56 + 6 * me2 * s12 * s15 * s56 +
-        12 * mm2 * s12 * s15 * s56 - 4 * pow<2>(s12) * s15 * s56 -
-        8 * me2 * pow<2>(s15) * s56 + 2 * s12 * pow<2>(s15) * s56 -
+        12 * mm2 * s12 * s15 * s56 - 4 * pow(s12, 2) * s15 * s56 -
+        8 * me2 * pow(s15, 2) * s56 + 2 * s12 * pow(s15, 2) * s56 -
         16 * me2 * mm2 * s16 * s56 + 6 * me2 * s12 * s16 * s56 +
-        12 * mm2 * s12 * s16 * s56 - 4 * pow<2>(s12) * s16 * s56 -
+        12 * mm2 * s12 * s16 * s56 - 4 * pow(s12, 2) * s16 * s56 -
         16 * me2 * s15 * s16 * s56 + 4 * s12 * s15 * s16 * s56 -
-        8 * me2 * pow<2>(s16) * s56 + 2 * s12 * pow<2>(s16) * s56 +
-        24 * pow<2>(mm2) * s25 * s56 + 6 * me2 * s15 * s25 * s56 -
-        8 * mm2 * s15 * s25 * s56 - 8 * pow<2>(s15) * s25 * s56 +
+        8 * me2 * pow(s16, 2) * s56 + 2 * s12 * pow(s16, 2) * s56 +
+        24 * pow(mm2, 2) * s25 * s56 + 6 * me2 * s15 * s25 * s56 -
+        8 * mm2 * s15 * s25 * s56 - 8 * pow(s15, 2) * s25 * s56 +
         6 * me2 * s16 * s25 * s56 - 8 * mm2 * s16 * s25 * s56 -
-        16 * s15 * s16 * s25 * s56 - 8 * pow<2>(s16) * s25 * s56 +
-        4 * s15 * pow<2>(s25) * s56 + 4 * s16 * pow<2>(s25) * s56 +
-        24 * pow<2>(mm2) * s26 * s56 + 6 * me2 * s15 * s26 * s56 -
-        8 * mm2 * s15 * s26 * s56 - 8 * pow<2>(s15) * s26 * s56 +
+        16 * s15 * s16 * s25 * s56 - 8 * pow(s16, 2) * s25 * s56 +
+        4 * s15 * pow(s25, 2) * s56 + 4 * s16 * pow(s25, 2) * s56 +
+        24 * pow(mm2, 2) * s26 * s56 + 6 * me2 * s15 * s26 * s56 -
+        8 * mm2 * s15 * s26 * s56 - 8 * pow(s15, 2) * s26 * s56 +
         6 * me2 * s16 * s26 * s56 - 8 * mm2 * s16 * s26 * s56 -
-        16 * s15 * s16 * s26 * s56 - 8 * pow<2>(s16) * s26 * s56 +
+        16 * s15 * s16 * s26 * s56 - 8 * pow(s16, 2) * s26 * s56 +
         8 * s15 * s25 * s26 * s56 + 8 * s16 * s25 * s26 * s56 +
-        4 * s15 * pow<2>(s26) * s56 + 4 * s16 * pow<2>(s26) * s56 +
-        8 * me2 * mm2 * pow<2>(s56) - 6 * me2 * s12 * pow<2>(s56) -
-        6 * mm2 * s12 * pow<2>(s56) + 4 * pow<2>(s12) * pow<2>(s56) +
-        4 * me2 * s15 * pow<2>(s56) + 2 * s12 * s15 * pow<2>(s56) +
-        4 * me2 * s16 * pow<2>(s56) + 2 * s12 * s16 * pow<2>(s56) +
-        4 * mm2 * s25 * pow<2>(s56) - 4 * s12 * s25 * pow<2>(s56) +
-        4 * s15 * s25 * pow<2>(s56) + 4 * s16 * s25 * pow<2>(s56) +
-        4 * mm2 * s26 * pow<2>(s56) - 4 * s12 * s26 * pow<2>(s56) +
-        4 * s15 * s26 * pow<2>(s56) + 4 * s16 * s26 * pow<2>(s56) -
-        2 * s12 * pow<3>(s56)};
+        4 * s15 * pow(s26, 2) * s56 + 4 * s16 * pow(s26, 2) * s56 +
+        8 * me2 * mm2 * pow(s56, 2) - 6 * me2 * s12 * pow(s56, 2) -
+        6 * mm2 * s12 * pow(s56, 2) + 4 * pow(s12, 2) * pow(s56, 2) +
+        4 * me2 * s15 * pow(s56, 2) + 2 * s12 * s15 * pow(s56, 2) +
+        4 * me2 * s16 * pow(s56, 2) + 2 * s12 * s16 * pow(s56, 2) +
+        4 * mm2 * s25 * pow(s56, 2) - 4 * s12 * s25 * pow(s56, 2) +
+        4 * s15 * s25 * pow(s56, 2) + 4 * s16 * s25 * pow(s56, 2) +
+        4 * mm2 * s26 * pow(s56, 2) - 4 * s12 * s26 * pow(s56, 2) +
+        4 * s15 * s26 * pow(s56, 2) + 4 * s16 * s26 * pow(s56, 2) -
+        2 * s12 * pow(s56, 3)};
     const auto if45{
-        16 * me2 * pow<2>(mm2) * s12 - 12 * me2 * mm2 * pow<2>(s12) -
-        12 * pow<2>(mm2) * pow<2>(s12) + 8 * mm2 * pow<3>(s12) -
-        16 * me2 * mm2 * s12 * s15 + 12 * mm2 * pow<2>(s12) * s15 -
-        4 * me2 * s12 * pow<2>(s15) + 2 * pow<2>(s12) * pow<2>(s15) +
-        8 * me2 * pow<2>(mm2) * s16 - 20 * me2 * mm2 * s12 * s16 -
-        12 * pow<2>(mm2) * s12 * s16 + 18 * mm2 * pow<2>(s12) * s16 +
-        6 * pow<2>(me2) * s15 * s16 - 6 * me2 * mm2 * s15 * s16 -
+        16 * me2 * pow(mm2, 2) * s12 - 12 * me2 * mm2 * pow(s12, 2) -
+        12 * pow(mm2, 2) * pow(s12, 2) + 8 * mm2 * pow(s12, 3) -
+        16 * me2 * mm2 * s12 * s15 + 12 * mm2 * pow(s12, 2) * s15 -
+        4 * me2 * s12 * pow(s15, 2) + 2 * pow(s12, 2) * pow(s15, 2) +
+        8 * me2 * pow(mm2, 2) * s16 - 20 * me2 * mm2 * s12 * s16 -
+        12 * pow(mm2, 2) * s12 * s16 + 18 * mm2 * pow(s12, 2) * s16 +
+        6 * pow(me2, 2) * s15 * s16 - 6 * me2 * mm2 * s15 * s16 -
         8 * me2 * s12 * s15 * s16 + 12 * mm2 * s12 * s15 * s16 +
-        2 * pow<2>(s12) * s15 * s16 - 4 * me2 * pow<2>(s15) * s16 +
-        2 * s12 * pow<2>(s15) * s16 + 6 * pow<2>(me2) * pow<2>(s16) -
-        6 * me2 * mm2 * pow<2>(s16) - 4 * me2 * s12 * pow<2>(s16) +
-        10 * mm2 * s12 * pow<2>(s16) - 6 * me2 * s15 * pow<2>(s16) +
-        2 * s12 * s15 * pow<2>(s16) - 2 * me2 * pow<3>(s16) +
-        12 * me2 * mm2 * s12 * s25 + 12 * pow<2>(mm2) * s12 * s25 -
-        16 * mm2 * pow<2>(s12) * s25 + 6 * me2 * s12 * s15 * s25 -
-        10 * mm2 * s12 * s15 * s25 - 4 * pow<2>(s12) * s15 * s25 -
-        4 * s12 * pow<2>(s15) * s25 + 10 * me2 * mm2 * s16 * s25 +
-        6 * pow<2>(mm2) * s16 * s25 - 24 * mm2 * s12 * s16 * s25 +
+        2 * pow(s12, 2) * s15 * s16 - 4 * me2 * pow(s15, 2) * s16 +
+        2 * s12 * pow(s15, 2) * s16 + 6 * pow(me2, 2) * pow(s16, 2) -
+        6 * me2 * mm2 * pow(s16, 2) - 4 * me2 * s12 * pow(s16, 2) +
+        10 * mm2 * s12 * pow(s16, 2) - 6 * me2 * s15 * pow(s16, 2) +
+        2 * s12 * s15 * pow(s16, 2) - 2 * me2 * pow(s16, 3) +
+        12 * me2 * mm2 * s12 * s25 + 12 * pow(mm2, 2) * s12 * s25 -
+        16 * mm2 * pow(s12, 2) * s25 + 6 * me2 * s12 * s15 * s25 -
+        10 * mm2 * s12 * s15 * s25 - 4 * pow(s12, 2) * s15 * s25 -
+        4 * s12 * pow(s15, 2) * s25 + 10 * me2 * mm2 * s16 * s25 +
+        6 * pow(mm2, 2) * s16 * s25 - 24 * mm2 * s12 * s16 * s25 +
         5 * me2 * s15 * s16 * s25 - 5 * mm2 * s15 * s16 * s25 -
-        6 * s12 * s15 * s16 * s25 - 2 * pow<2>(s15) * s16 * s25 +
-        3 * me2 * pow<2>(s16) * s25 - 6 * mm2 * pow<2>(s16) * s25 -
-        2 * s15 * pow<2>(s16) * s25 + 8 * mm2 * s12 * pow<2>(s25) +
-        4 * s12 * s15 * pow<2>(s25) + 3 * me2 * s16 * pow<2>(s25) +
-        7 * mm2 * s16 * pow<2>(s25) - 2 * s12 * s16 * pow<2>(s25) -
-        2 * pow<2>(s16) * pow<2>(s25) + 2 * s16 * pow<3>(s25) -
-        4 * me2 * pow<2>(mm2) * s26 + 12 * pow<3>(mm2) * s26 +
-        12 * me2 * mm2 * s12 * s26 + 8 * pow<2>(mm2) * s12 * s26 -
-        16 * mm2 * pow<2>(s12) * s26 + 6 * me2 * mm2 * s15 * s26 -
-        18 * pow<2>(mm2) * s15 * s26 - 12 * mm2 * s12 * s15 * s26 +
-        me2 * pow<2>(s15) * s26 + 3 * mm2 * pow<2>(s15) * s26 -
-        2 * s12 * pow<2>(s15) * s26 + 2 * pow<3>(s15) * s26 +
-        8 * me2 * mm2 * s16 * s26 - 12 * pow<2>(mm2) * s16 * s26 -
+        6 * s12 * s15 * s16 * s25 - 2 * pow(s15, 2) * s16 * s25 +
+        3 * me2 * pow(s16, 2) * s25 - 6 * mm2 * pow(s16, 2) * s25 -
+        2 * s15 * pow(s16, 2) * s25 + 8 * mm2 * s12 * pow(s25, 2) +
+        4 * s12 * s15 * pow(s25, 2) + 3 * me2 * s16 * pow(s25, 2) +
+        7 * mm2 * s16 * pow(s25, 2) - 2 * s12 * s16 * pow(s25, 2) -
+        2 * pow(s16, 2) * pow(s25, 2) + 2 * s16 * pow(s25, 3) -
+        4 * me2 * pow(mm2, 2) * s26 + 12 * pow(mm2, 3) * s26 +
+        12 * me2 * mm2 * s12 * s26 + 8 * pow(mm2, 2) * s12 * s26 -
+        16 * mm2 * pow(s12, 2) * s26 + 6 * me2 * mm2 * s15 * s26 -
+        18 * pow(mm2, 2) * s15 * s26 - 12 * mm2 * s12 * s15 * s26 +
+        me2 * pow(s15, 2) * s26 + 3 * mm2 * pow(s15, 2) * s26 -
+        2 * s12 * pow(s15, 2) * s26 + 2 * pow(s15, 3) * s26 +
+        8 * me2 * mm2 * s16 * s26 - 12 * pow(mm2, 2) * s16 * s26 -
         6 * me2 * s12 * s16 * s26 - 18 * mm2 * s12 * s16 * s26 +
-        4 * pow<2>(s12) * s16 * s26 + 7 * me2 * s15 * s16 * s26 +
+        4 * pow(s12, 2) * s16 * s26 + 7 * me2 * s15 * s16 * s26 +
         6 * mm2 * s15 * s16 * s26 - 2 * s12 * s15 * s16 * s26 +
-        2 * pow<2>(s15) * s16 * s26 + 4 * me2 * pow<2>(s16) * s26 +
-        2 * mm2 * pow<2>(s16) * s26 + 2 * s12 * pow<2>(s16) * s26 -
-        6 * me2 * mm2 * s25 * s26 + 2 * pow<2>(mm2) * s25 * s26 +
+        2 * pow(s15, 2) * s16 * s26 + 4 * me2 * pow(s16, 2) * s26 +
+        2 * mm2 * pow(s16, 2) * s26 + 2 * s12 * pow(s16, 2) * s26 -
+        6 * me2 * mm2 * s25 * s26 + 2 * pow(mm2, 2) * s25 * s26 +
         20 * mm2 * s12 * s25 * s26 - 3 * me2 * s15 * s25 * s26 +
         3 * mm2 * s15 * s25 * s26 + 6 * s12 * s15 * s25 * s26 +
         3 * me2 * s16 * s25 * s26 + 10 * mm2 * s16 * s25 * s26 -
         6 * s12 * s16 * s25 * s26 + 2 * s15 * s16 * s25 * s26 -
-        2 * pow<2>(s16) * s25 * s26 - 4 * mm2 * pow<2>(s25) * s26 -
-        2 * s15 * pow<2>(s25) * s26 + 4 * s16 * pow<2>(s25) * s26 +
-        8 * mm2 * s12 * pow<2>(s26) - 3 * me2 * s15 * pow<2>(s26) +
-        2 * mm2 * s15 * pow<2>(s26) + 2 * s12 * s15 * pow<2>(s26) +
-        2 * mm2 * s16 * pow<2>(s26) - 4 * s12 * s16 * pow<2>(s26) +
-        2 * s15 * s16 * pow<2>(s26) - 4 * mm2 * s25 * pow<2>(s26) -
-        4 * s15 * s25 * pow<2>(s26) + 2 * s16 * s25 * pow<2>(s26) -
-        2 * s15 * pow<3>(s26) + 14 * me2 * mm2 * s12 * s56 +
-        6 * pow<2>(mm2) * s12 * s56 - 14 * mm2 * pow<2>(s12) * s56 +
+        2 * pow(s16, 2) * s25 * s26 - 4 * mm2 * pow(s25, 2) * s26 -
+        2 * s15 * pow(s25, 2) * s26 + 4 * s16 * pow(s25, 2) * s26 +
+        8 * mm2 * s12 * pow(s26, 2) - 3 * me2 * s15 * pow(s26, 2) +
+        2 * mm2 * s15 * pow(s26, 2) + 2 * s12 * s15 * pow(s26, 2) +
+        2 * mm2 * s16 * pow(s26, 2) - 4 * s12 * s16 * pow(s26, 2) +
+        2 * s15 * s16 * pow(s26, 2) - 4 * mm2 * s25 * pow(s26, 2) -
+        4 * s15 * s25 * pow(s26, 2) + 2 * s16 * s25 * pow(s26, 2) -
+        2 * s15 * pow(s26, 3) + 14 * me2 * mm2 * s12 * s56 +
+        6 * pow(mm2, 2) * s12 * s56 - 14 * mm2 * pow(s12, 2) * s56 +
         7 * me2 * s12 * s15 * s56 - 5 * mm2 * s12 * s15 * s56 -
-        4 * pow<2>(s12) * s15 * s56 - 2 * s12 * pow<2>(s15) * s56 -
-        6 * pow<2>(me2) * s16 * s56 + 8 * me2 * mm2 * s16 * s56 +
+        4 * pow(s12, 2) * s15 * s56 - 2 * s12 * pow(s15, 2) * s56 -
+        6 * pow(me2, 2) * s16 * s56 + 8 * me2 * mm2 * s16 * s56 +
         5 * me2 * s12 * s16 * s56 - 16 * mm2 * s12 * s16 * s56 +
         4 * me2 * s15 * s16 * s56 - 4 * s12 * s15 * s16 * s56 +
-        4 * me2 * pow<2>(s16) * s56 - 3 * me2 * s12 * s25 * s56 +
-        13 * mm2 * s12 * s25 * s56 + 2 * pow<2>(s12) * s25 * s56 +
+        4 * me2 * pow(s16, 2) * s56 - 3 * me2 * s12 * s25 * s56 +
+        13 * mm2 * s12 * s25 * s56 + 2 * pow(s12, 2) * s25 * s56 +
         8 * s12 * s15 * s25 * s56 - 2 * me2 * s16 * s25 * s56 +
         7 * mm2 * s16 * s25 * s56 + 2 * s12 * s16 * s25 * s56 +
-        2 * s15 * s16 * s25 * s56 - 2 * s12 * pow<2>(s25) * s56 +
-        2 * s16 * pow<2>(s25) * s56 - 8 * me2 * mm2 * s26 * s56 +
-        10 * pow<2>(mm2) * s26 * s56 + 3 * me2 * s12 * s26 * s56 +
-        16 * mm2 * s12 * s26 * s56 - 2 * pow<2>(s12) * s26 * s56 -
+        2 * s15 * s16 * s25 * s56 - 2 * s12 * pow(s25, 2) * s56 +
+        2 * s16 * pow(s25, 2) * s56 - 8 * me2 * mm2 * s26 * s56 +
+        10 * pow(mm2, 2) * s26 * s56 + 3 * me2 * s12 * s26 * s56 +
+        16 * mm2 * s12 * s26 * s56 - 2 * pow(s12, 2) * s26 * s56 -
         2 * me2 * s15 * s26 * s56 - 3 * mm2 * s15 * s26 * s56 +
-        6 * s12 * s15 * s26 * s56 - 2 * pow<2>(s15) * s26 * s56 -
+        6 * s12 * s15 * s26 * s56 - 2 * pow(s15, 2) * s26 * s56 -
         4 * me2 * s16 * s26 * s56 - 2 * mm2 * s16 * s26 * s56 -
         2 * s12 * s16 * s26 * s56 - 8 * mm2 * s25 * s26 * s56 -
         2 * s15 * s25 * s26 * s56 + 2 * s16 * s25 * s26 * s56 -
-        4 * mm2 * pow<2>(s26) * s56 + 2 * s12 * pow<2>(s26) * s56 -
-        2 * s15 * pow<2>(s26) * s56 + 2 * me2 * mm2 * pow<2>(s56) -
-        2 * me2 * s12 * pow<2>(s56) + 5 * mm2 * s12 * pow<2>(s56) +
-        2 * s12 * s15 * pow<2>(s56) - 2 * me2 * s16 * pow<2>(s56) -
-        2 * s12 * s25 * pow<2>(s56)};
+        4 * mm2 * pow(s26, 2) * s56 + 2 * s12 * pow(s26, 2) * s56 -
+        2 * s15 * pow(s26, 2) * s56 + 2 * me2 * mm2 * pow(s56, 2) -
+        2 * me2 * s12 * pow(s56, 2) + 5 * mm2 * s12 * pow(s56, 2) +
+        2 * s12 * s15 * pow(s56, 2) - 2 * me2 * s16 * pow(s56, 2) -
+        2 * s12 * s25 * pow(s56, 2)};
     const auto if55{
-        32 * me2 * pow<3>(mm2) - 24 * me2 * pow<2>(mm2) * s12 -
-        24 * pow<3>(mm2) * s12 + 16 * pow<2>(mm2) * pow<2>(s12) -
-        32 * me2 * pow<2>(mm2) * s15 + 24 * pow<2>(mm2) * s12 * s15 -
-        8 * me2 * mm2 * pow<2>(s15) + 4 * mm2 * s12 * pow<2>(s15) -
-        48 * me2 * pow<2>(mm2) * s16 + 12 * me2 * mm2 * s12 * s16 +
-        36 * pow<2>(mm2) * s12 * s16 - 8 * mm2 * pow<2>(s12) * s16 +
+        32 * me2 * pow(mm2, 3) - 24 * me2 * pow(mm2, 2) * s12 -
+        24 * pow(mm2, 3) * s12 + 16 * pow(mm2, 2) * pow(s12, 2) -
+        32 * me2 * pow(mm2, 2) * s15 + 24 * pow(mm2, 2) * s12 * s15 -
+        8 * me2 * mm2 * pow(s15, 2) + 4 * mm2 * s12 * pow(s15, 2) -
+        48 * me2 * pow(mm2, 2) * s16 + 12 * me2 * mm2 * s12 * s16 +
+        36 * pow(mm2, 2) * s12 * s16 - 8 * mm2 * pow(s12, 2) * s16 +
         8 * me2 * mm2 * s15 * s16 - 8 * mm2 * s12 * s15 * s16 +
-        24 * me2 * mm2 * pow<2>(s16) - 6 * me2 * s12 * pow<2>(s16) -
-        18 * mm2 * s12 * pow<2>(s16) + 4 * pow<2>(s12) * pow<2>(s16) -
-        4 * me2 * s15 * pow<2>(s16) + 4 * s12 * s15 * pow<2>(s16) -
-        4 * me2 * pow<3>(s16) + 4 * s12 * pow<3>(s16) +
-        24 * me2 * pow<2>(mm2) * s25 + 24 * pow<3>(mm2) * s25 -
-        32 * pow<2>(mm2) * s12 * s25 + 12 * me2 * mm2 * s15 * s25 -
-        20 * pow<2>(mm2) * s15 * s25 - 8 * mm2 * s12 * s15 * s25 -
-        8 * mm2 * pow<2>(s15) * s25 - 32 * pow<2>(mm2) * s16 * s25 +
-        8 * mm2 * s12 * s16 * s25 + 6 * me2 * pow<2>(s16) * s25 +
-        14 * mm2 * pow<2>(s16) * s25 - 8 * s12 * pow<2>(s16) * s25 -
-        4 * s15 * pow<2>(s16) * s25 - 4 * pow<3>(s16) * s25 +
-        16 * pow<2>(mm2) * pow<2>(s25) + 8 * mm2 * s15 * pow<2>(s25) +
-        4 * pow<2>(s16) * pow<2>(s25) + 24 * me2 * pow<2>(mm2) * s26 +
-        24 * pow<3>(mm2) * s26 - 32 * pow<2>(mm2) * s12 * s26 -
-        24 * pow<2>(mm2) * s15 * s26 - 4 * mm2 * pow<2>(s15) * s26 -
-        12 * me2 * mm2 * s16 * s26 - 36 * pow<2>(mm2) * s16 * s26 +
+        24 * me2 * mm2 * pow(s16, 2) - 6 * me2 * s12 * pow(s16, 2) -
+        18 * mm2 * s12 * pow(s16, 2) + 4 * pow(s12, 2) * pow(s16, 2) -
+        4 * me2 * s15 * pow(s16, 2) + 4 * s12 * s15 * pow(s16, 2) -
+        4 * me2 * pow(s16, 3) + 4 * s12 * pow(s16, 3) +
+        24 * me2 * pow(mm2, 2) * s25 + 24 * pow(mm2, 3) * s25 -
+        32 * pow(mm2, 2) * s12 * s25 + 12 * me2 * mm2 * s15 * s25 -
+        20 * pow(mm2, 2) * s15 * s25 - 8 * mm2 * s12 * s15 * s25 -
+        8 * mm2 * pow(s15, 2) * s25 - 32 * pow(mm2, 2) * s16 * s25 +
+        8 * mm2 * s12 * s16 * s25 + 6 * me2 * pow(s16, 2) * s25 +
+        14 * mm2 * pow(s16, 2) * s25 - 8 * s12 * pow(s16, 2) * s25 -
+        4 * s15 * pow(s16, 2) * s25 - 4 * pow(s16, 3) * s25 +
+        16 * pow(mm2, 2) * pow(s25, 2) + 8 * mm2 * s15 * pow(s25, 2) +
+        4 * pow(s16, 2) * pow(s25, 2) + 24 * me2 * pow(mm2, 2) * s26 +
+        24 * pow(mm2, 3) * s26 - 32 * pow(mm2, 2) * s12 * s26 -
+        24 * pow(mm2, 2) * s15 * s26 - 4 * mm2 * pow(s15, 2) * s26 -
+        12 * me2 * mm2 * s16 * s26 - 36 * pow(mm2, 2) * s16 * s26 +
         16 * mm2 * s12 * s16 * s26 - 6 * me2 * s15 * s16 * s26 +
         6 * mm2 * s15 * s16 * s26 + 4 * s12 * s15 * s16 * s26 +
-        2 * pow<2>(s15) * s16 * s26 + 16 * mm2 * pow<2>(s16) * s26 -
-        4 * s12 * pow<2>(s16) * s26 - 2 * pow<3>(s16) * s26 +
-        32 * pow<2>(mm2) * s25 * s26 + 8 * mm2 * s15 * s25 * s26 -
+        2 * pow(s15, 2) * s16 * s26 + 16 * mm2 * pow(s16, 2) * s26 -
+        4 * s12 * pow(s16, 2) * s26 - 2 * pow(s16, 3) * s26 +
+        32 * pow(mm2, 2) * s25 * s26 + 8 * mm2 * s15 * s25 * s26 -
         8 * mm2 * s16 * s25 * s26 - 4 * s15 * s16 * s25 * s26 +
-        4 * pow<2>(s16) * s25 * s26 + 16 * pow<2>(mm2) * pow<2>(s26) -
-        8 * mm2 * s16 * pow<2>(s26) - 4 * s15 * s16 * pow<2>(s26) +
-        32 * me2 * pow<2>(mm2) * s56 - 24 * pow<2>(mm2) * s12 * s56 +
+        4 * pow(s16, 2) * s25 * s26 + 16 * pow(mm2, 2) * pow(s26, 2) -
+        8 * mm2 * s16 * pow(s26, 2) - 4 * s15 * s16 * pow(s26, 2) +
+        32 * me2 * pow(mm2, 2) * s56 - 24 * pow(mm2, 2) * s12 * s56 +
         16 * me2 * mm2 * s15 * s56 - 8 * mm2 * s12 * s15 * s56 -
         16 * me2 * mm2 * s16 * s56 + 6 * me2 * s12 * s16 * s56 +
-        14 * mm2 * s12 * s16 * s56 - 4 * pow<2>(s12) * s16 * s56 +
+        14 * mm2 * s12 * s16 * s56 - 4 * pow(s12, 2) * s16 * s56 +
         4 * me2 * s15 * s16 * s56 - 4 * s12 * s15 * s16 * s56 +
-        8 * me2 * pow<2>(s16) * s56 - 8 * s12 * pow<2>(s16) * s56 -
-        12 * me2 * mm2 * s25 * s56 + 20 * pow<2>(mm2) * s25 * s56 +
+        8 * me2 * pow(s16, 2) * s56 - 8 * s12 * pow(s16, 2) * s56 -
+        12 * me2 * mm2 * s25 * s56 + 20 * pow(mm2, 2) * s25 * s56 +
         8 * mm2 * s12 * s25 * s56 + 16 * mm2 * s15 * s25 * s56 -
         6 * me2 * s16 * s25 * s56 - 6 * mm2 * s16 * s25 * s56 +
         8 * s12 * s16 * s25 * s56 + 4 * s15 * s16 * s25 * s56 +
-        8 * pow<2>(s16) * s25 * s56 - 8 * mm2 * pow<2>(s25) * s56 -
-        4 * s16 * pow<2>(s25) * s56 + 24 * pow<2>(mm2) * s26 * s56 +
+        8 * pow(s16, 2) * s25 * s56 - 8 * mm2 * pow(s25, 2) * s56 -
+        4 * s16 * pow(s25, 2) * s56 + 24 * pow(mm2, 2) * s26 * s56 +
         8 * mm2 * s15 * s26 * s56 - 12 * mm2 * s16 * s26 * s56 +
-        4 * s12 * s16 * s26 * s56 + 4 * pow<2>(s16) * s26 * s56 -
+        4 * s12 * s16 * s26 * s56 + 4 * pow(s16, 2) * s26 * s56 -
         8 * mm2 * s25 * s26 * s56 - 4 * s16 * s25 * s26 * s56 -
-        8 * me2 * mm2 * pow<2>(s56) + 4 * mm2 * s12 * pow<2>(s56) -
-        4 * me2 * s16 * pow<2>(s56) + 4 * s12 * s16 * pow<2>(s56) -
-        8 * mm2 * s25 * pow<2>(s56) - 4 * s16 * s25 * pow<2>(s56) -
-        4 * mm2 * s26 * pow<2>(s56) - 2 * s16 * s26 * pow<2>(s56)};
+        8 * me2 * mm2 * pow(s56, 2) + 4 * mm2 * s12 * pow(s56, 2) -
+        4 * me2 * s16 * pow(s56, 2) + 4 * s12 * s16 * pow(s56, 2) -
+        8 * mm2 * s25 * pow(s56, 2) - 4 * s16 * s25 * pow(s56, 2) -
+        4 * mm2 * s26 * pow(s56, 2) - 2 * s16 * s26 * pow(s56, 2)};
     const auto if16{
-        -16 * pow<2>(me2) * mm2 * s12 + 12 * pow<2>(me2) * pow<2>(s12) +
-        12 * me2 * mm2 * pow<2>(s12) - 8 * me2 * pow<3>(s12) -
-        16 * pow<2>(me2) * mm2 * s15 + 24 * pow<2>(me2) * s12 * s15 +
-        24 * me2 * mm2 * s12 * s15 - 24 * me2 * pow<2>(s12) * s15 +
-        12 * pow<2>(me2) * pow<2>(s15) + 12 * me2 * mm2 * pow<2>(s15) -
-        24 * me2 * s12 * pow<2>(s15) - 8 * me2 * pow<3>(s15) +
-        12 * pow<3>(me2) * s16 - 4 * pow<2>(me2) * mm2 * s16 +
-        8 * pow<2>(me2) * s12 * s16 + 12 * me2 * mm2 * s12 * s16 -
-        16 * me2 * pow<2>(s12) * s16 + 8 * pow<2>(me2) * s15 * s16 +
+        -16 * pow(me2, 2) * mm2 * s12 + 12 * pow(me2, 2) * pow(s12, 2) +
+        12 * me2 * mm2 * pow(s12, 2) - 8 * me2 * pow(s12, 3) -
+        16 * pow(me2, 2) * mm2 * s15 + 24 * pow(me2, 2) * s12 * s15 +
+        24 * me2 * mm2 * s12 * s15 - 24 * me2 * pow(s12, 2) * s15 +
+        12 * pow(me2, 2) * pow(s15, 2) + 12 * me2 * mm2 * pow(s15, 2) -
+        24 * me2 * s12 * pow(s15, 2) - 8 * me2 * pow(s15, 3) +
+        12 * pow(me2, 3) * s16 - 4 * pow(me2, 2) * mm2 * s16 +
+        8 * pow(me2, 2) * s12 * s16 + 12 * me2 * mm2 * s12 * s16 -
+        16 * me2 * pow(s12, 2) * s16 + 8 * pow(me2, 2) * s15 * s16 +
         12 * me2 * mm2 * s15 * s16 - 32 * me2 * s12 * s15 * s16 -
-        16 * me2 * pow<2>(s15) * s16 - 8 * me2 * s12 * pow<2>(s16) -
-        8 * me2 * s15 * pow<2>(s16) - 4 * pow<2>(me2) * mm2 * s25 -
-        12 * me2 * pow<2>(mm2) * s25 - 4 * me2 * mm2 * s12 * s25 +
-        10 * me2 * pow<2>(s12) * s25 + 16 * me2 * s12 * s15 * s25 -
-        6 * mm2 * s12 * s15 * s25 + 4 * pow<2>(s12) * s15 * s25 +
-        6 * me2 * pow<2>(s15) * s25 - 6 * mm2 * pow<2>(s15) * s25 +
-        8 * s12 * pow<2>(s15) * s25 + 4 * pow<3>(s15) * s25 +
-        20 * pow<2>(me2) * s16 * s25 + 8 * me2 * mm2 * s16 * s25 +
+        16 * me2 * pow(s15, 2) * s16 - 8 * me2 * s12 * pow(s16, 2) -
+        8 * me2 * s15 * pow(s16, 2) - 4 * pow(me2, 2) * mm2 * s25 -
+        12 * me2 * pow(mm2, 2) * s25 - 4 * me2 * mm2 * s12 * s25 +
+        10 * me2 * pow(s12, 2) * s25 + 16 * me2 * s12 * s15 * s25 -
+        6 * mm2 * s12 * s15 * s25 + 4 * pow(s12, 2) * s15 * s25 +
+        6 * me2 * pow(s15, 2) * s25 - 6 * mm2 * pow(s15, 2) * s25 +
+        8 * s12 * pow(s15, 2) * s25 + 4 * pow(s15, 3) * s25 +
+        20 * pow(me2, 2) * s16 * s25 + 8 * me2 * mm2 * s16 * s25 +
         6 * me2 * s12 * s16 * s25 + 4 * me2 * s15 * s16 * s25 -
         6 * mm2 * s15 * s16 * s25 + 8 * s12 * s15 * s16 * s25 +
-        8 * pow<2>(s15) * s16 * s25 + 4 * s15 * pow<2>(s16) * s25 -
-        2 * me2 * mm2 * pow<2>(s25) + 6 * pow<2>(mm2) * pow<2>(s25) -
-        4 * mm2 * s12 * pow<2>(s25) - 4 * s12 * s15 * pow<2>(s25) -
-        4 * pow<2>(s15) * pow<2>(s25) + 7 * me2 * s16 * pow<2>(s25) -
-        5 * mm2 * s16 * pow<2>(s25) - 2 * s15 * s16 * pow<2>(s25) +
-        2 * mm2 * pow<3>(s25) - s16 * pow<3>(s25) +
-        4 * pow<2>(me2) * mm2 * s26 - 12 * me2 * pow<2>(mm2) * s26 -
-        12 * pow<2>(me2) * s12 * s26 - 8 * me2 * mm2 * s12 * s26 +
-        16 * me2 * pow<2>(s12) * s26 - 12 * pow<2>(me2) * s15 * s26 -
+        8 * pow(s15, 2) * s16 * s25 + 4 * s15 * pow(s16, 2) * s25 -
+        2 * me2 * mm2 * pow(s25, 2) + 6 * pow(mm2, 2) * pow(s25, 2) -
+        4 * mm2 * s12 * pow(s25, 2) - 4 * s12 * s15 * pow(s25, 2) -
+        4 * pow(s15, 2) * pow(s25, 2) + 7 * me2 * s16 * pow(s25, 2) -
+        5 * mm2 * s16 * pow(s25, 2) - 2 * s15 * s16 * pow(s25, 2) +
+        2 * mm2 * pow(s25, 3) - s16 * pow(s25, 3) +
+        4 * pow(me2, 2) * mm2 * s26 - 12 * me2 * pow(mm2, 2) * s26 -
+        12 * pow(me2, 2) * s12 * s26 - 8 * me2 * mm2 * s12 * s26 +
+        16 * me2 * pow(s12, 2) * s26 - 12 * pow(me2, 2) * s15 * s26 -
         8 * me2 * mm2 * s15 * s26 + 32 * me2 * s12 * s15 * s26 +
-        16 * me2 * pow<2>(s15) * s26 + 8 * pow<2>(me2) * s16 * s26 +
+        16 * me2 * pow(s15, 2) * s26 + 8 * pow(me2, 2) * s16 * s26 +
         8 * me2 * mm2 * s16 * s26 + 12 * me2 * s12 * s16 * s26 +
         12 * me2 * s15 * s16 * s26 - 4 * me2 * mm2 * s25 * s26 -
         10 * me2 * s12 * s25 * s26 - 7 * me2 * s15 * s25 * s26 +
         7 * mm2 * s15 * s25 * s26 - 8 * s12 * s15 * s25 * s26 -
-        8 * pow<2>(s15) * s25 * s26 + 6 * me2 * s16 * s25 * s26 -
-        6 * s15 * s16 * s25 * s26 + 4 * mm2 * pow<2>(s25) * s26 +
-        3 * s15 * pow<2>(s25) * s26 - s16 * pow<2>(s25) * s26 -
-        8 * me2 * s12 * pow<2>(s26) - 8 * me2 * s15 * pow<2>(s26) +
-        3 * s15 * s25 * pow<2>(s26) + 4 * pow<2>(me2) * mm2 * s56 -
-        12 * me2 * pow<2>(mm2) * s56 - 12 * pow<2>(me2) * s12 * s56 -
-        8 * me2 * mm2 * s12 * s56 + 16 * me2 * pow<2>(s12) * s56 -
-        12 * pow<2>(me2) * s15 * s56 - 8 * me2 * mm2 * s15 * s56 +
-        32 * me2 * s12 * s15 * s56 + 16 * me2 * pow<2>(s15) * s56 +
-        8 * pow<2>(me2) * s16 * s56 + 8 * me2 * mm2 * s16 * s56 +
+        8 * pow(s15, 2) * s25 * s26 + 6 * me2 * s16 * s25 * s26 -
+        6 * s15 * s16 * s25 * s26 + 4 * mm2 * pow(s25, 2) * s26 +
+        3 * s15 * pow(s25, 2) * s26 - s16 * pow(s25, 2) * s26 -
+        8 * me2 * s12 * pow(s26, 2) - 8 * me2 * s15 * pow(s26, 2) +
+        3 * s15 * s25 * pow(s26, 2) + 4 * pow(me2, 2) * mm2 * s56 -
+        12 * me2 * pow(mm2, 2) * s56 - 12 * pow(me2, 2) * s12 * s56 -
+        8 * me2 * mm2 * s12 * s56 + 16 * me2 * pow(s12, 2) * s56 -
+        12 * pow(me2, 2) * s15 * s56 - 8 * me2 * mm2 * s15 * s56 +
+        32 * me2 * s12 * s15 * s56 + 16 * me2 * pow(s15, 2) * s56 +
+        8 * pow(me2, 2) * s16 * s56 + 8 * me2 * mm2 * s16 * s56 +
         12 * me2 * s12 * s16 * s56 + 12 * me2 * s15 * s16 * s56 -
-        6 * me2 * mm2 * s25 * s56 + 6 * pow<2>(mm2) * s25 * s56 -
+        6 * me2 * mm2 * s25 * s56 + 6 * pow(mm2, 2) * s25 * s56 -
         9 * me2 * s12 * s25 * s56 - 3 * mm2 * s12 * s25 * s56 -
         6 * me2 * s15 * s25 * s56 + 4 * mm2 * s15 * s25 * s56 -
-        8 * s12 * s15 * s25 * s56 - 8 * pow<2>(s15) * s25 * s56 +
+        8 * s12 * s15 * s25 * s56 - 8 * pow(s15, 2) * s25 * s56 +
         6 * me2 * s16 * s25 * s56 - 4 * mm2 * s16 * s25 * s56 -
-        6 * s15 * s16 * s25 * s56 + 2 * mm2 * pow<2>(s25) * s56 +
-        s12 * pow<2>(s25) * s56 + 4 * s15 * pow<2>(s25) * s56 -
-        s16 * pow<2>(s25) * s56 - 16 * me2 * s12 * s26 * s56 -
+        6 * s15 * s16 * s25 * s56 + 2 * mm2 * pow(s25, 2) * s56 +
+        s12 * pow(s25, 2) * s56 + 4 * s15 * pow(s25, 2) * s56 -
+        s16 * pow(s25, 2) * s56 - 16 * me2 * s12 * s26 * s56 -
         16 * me2 * s15 * s26 * s56 + s12 * s25 * s26 * s56 +
-        7 * s15 * s25 * s26 * s56 - 8 * me2 * s12 * pow<2>(s56) -
-        8 * me2 * s15 * pow<2>(s56) + s12 * s25 * pow<2>(s56) +
-        4 * s15 * s25 * pow<2>(s56)};
+        7 * s15 * s25 * s26 * s56 - 8 * me2 * s12 * pow(s56, 2) -
+        8 * me2 * s15 * pow(s56, 2) + s12 * s25 * pow(s56, 2) +
+        4 * s15 * s25 * pow(s56, 2)};
     const auto if26{
-        -16 * pow<2>(me2) * mm2 * s12 + 12 * pow<2>(me2) * pow<2>(s12) +
-        12 * me2 * mm2 * pow<2>(s12) - 8 * me2 * pow<3>(s12) +
-        12 * pow<2>(me2) * s12 * s15 + 12 * me2 * mm2 * s12 * s15 -
-        16 * me2 * pow<2>(s12) * s15 - 8 * me2 * s12 * pow<2>(s15) +
-        12 * pow<3>(me2) * s16 - 4 * pow<2>(me2) * mm2 * s16 +
-        8 * pow<2>(me2) * s12 * s16 + 12 * me2 * mm2 * s12 * s16 -
-        16 * me2 * pow<2>(s12) * s16 - 2 * pow<2>(me2) * s15 * s16 +
+        -16 * pow(me2, 2) * mm2 * s12 + 12 * pow(me2, 2) * pow(s12, 2) +
+        12 * me2 * mm2 * pow(s12, 2) - 8 * me2 * pow(s12, 3) +
+        12 * pow(me2, 2) * s12 * s15 + 12 * me2 * mm2 * s12 * s15 -
+        16 * me2 * pow(s12, 2) * s15 - 8 * me2 * s12 * pow(s15, 2) +
+        12 * pow(me2, 3) * s16 - 4 * pow(me2, 2) * mm2 * s16 +
+        8 * pow(me2, 2) * s12 * s16 + 12 * me2 * mm2 * s12 * s16 -
+        16 * me2 * pow(s12, 2) * s16 - 2 * pow(me2, 2) * s15 * s16 +
         6 * me2 * mm2 * s15 * s16 - 20 * me2 * s12 * s15 * s16 -
-        4 * me2 * pow<2>(s15) * s16 - 8 * me2 * s12 * pow<2>(s16) -
-        4 * me2 * s15 * pow<2>(s16) - 16 * me2 * mm2 * s12 * s25 +
-        12 * me2 * pow<2>(s12) * s25 + 10 * me2 * s12 * s15 * s25 -
-        6 * mm2 * s12 * s15 * s25 + 4 * pow<2>(s12) * s15 * s25 +
-        4 * s12 * pow<2>(s15) * s25 + 18 * pow<2>(me2) * s16 * s25 -
+        4 * me2 * pow(s15, 2) * s16 - 8 * me2 * s12 * pow(s16, 2) -
+        4 * me2 * s15 * pow(s16, 2) - 16 * me2 * mm2 * s12 * s25 +
+        12 * me2 * pow(s12, 2) * s25 + 10 * me2 * s12 * s15 * s25 -
+        6 * mm2 * s12 * s15 * s25 + 4 * pow(s12, 2) * s15 * s25 +
+        4 * s12 * pow(s15, 2) * s25 + 18 * pow(me2, 2) * s16 * s25 -
         6 * me2 * mm2 * s16 * s25 + 12 * me2 * s12 * s16 * s25 +
         3 * me2 * s15 * s16 * s25 - 3 * mm2 * s15 * s16 * s25 +
-        6 * s12 * s15 * s16 * s25 + 2 * pow<2>(s15) * s16 * s25 +
-        2 * me2 * pow<2>(s16) * s25 - 3 * mm2 * pow<2>(s16) * s25 +
-        2 * s12 * pow<2>(s16) * s25 + 4 * s15 * pow<2>(s16) * s25 +
-        2 * pow<3>(s16) * s25 + 4 * mm2 * s12 * pow<2>(s25) -
-        2 * pow<2>(s12) * pow<2>(s25) - 4 * s12 * s15 * pow<2>(s25) +
-        3 * me2 * s16 * pow<2>(s25) + mm2 * s16 * pow<2>(s25) -
-        2 * s12 * s16 * pow<2>(s25) - 2 * s16 * pow<3>(s25) +
-        8 * pow<2>(me2) * mm2 * s26 - 12 * pow<2>(me2) * s12 * s26 -
-        20 * me2 * mm2 * s12 * s26 + 18 * me2 * pow<2>(s12) * s26 -
-        6 * pow<2>(me2) * s15 * s26 - 10 * me2 * mm2 * s15 * s26 +
-        24 * me2 * s12 * s15 * s26 + 7 * me2 * pow<2>(s15) * s26 +
-        3 * mm2 * pow<2>(s15) * s26 - 2 * s12 * pow<2>(s15) * s26 -
-        2 * pow<3>(s15) * s26 + 12 * pow<2>(me2) * s16 * s26 -
+        6 * s12 * s15 * s16 * s25 + 2 * pow(s15, 2) * s16 * s25 +
+        2 * me2 * pow(s16, 2) * s25 - 3 * mm2 * pow(s16, 2) * s25 +
+        2 * s12 * pow(s16, 2) * s25 + 4 * s15 * pow(s16, 2) * s25 +
+        2 * pow(s16, 3) * s25 + 4 * mm2 * s12 * pow(s25, 2) -
+        2 * pow(s12, 2) * pow(s25, 2) - 4 * s12 * s15 * pow(s25, 2) +
+        3 * me2 * s16 * pow(s25, 2) + mm2 * s16 * pow(s25, 2) -
+        2 * s12 * s16 * pow(s25, 2) - 2 * s16 * pow(s25, 3) +
+        8 * pow(me2, 2) * mm2 * s26 - 12 * pow(me2, 2) * s12 * s26 -
+        20 * me2 * mm2 * s12 * s26 + 18 * me2 * pow(s12, 2) * s26 -
+        6 * pow(me2, 2) * s15 * s26 - 10 * me2 * mm2 * s15 * s26 +
+        24 * me2 * s12 * s15 * s26 + 7 * me2 * pow(s15, 2) * s26 +
+        3 * mm2 * pow(s15, 2) * s26 - 2 * s12 * pow(s15, 2) * s26 -
+        2 * pow(s15, 3) * s26 + 12 * pow(me2, 2) * s16 * s26 -
         8 * me2 * mm2 * s16 * s26 + 18 * me2 * s12 * s16 * s26 +
-        6 * mm2 * s12 * s16 * s26 - 4 * pow<2>(s12) * s16 * s26 +
+        6 * mm2 * s12 * s16 * s26 - 4 * pow(s12, 2) * s16 * s26 +
         10 * me2 * s15 * s16 * s26 + 3 * mm2 * s15 * s16 * s26 -
-        6 * s12 * s15 * s16 * s26 - 4 * pow<2>(s15) * s16 * s26 +
-        2 * me2 * pow<2>(s16) * s26 - 4 * s12 * pow<2>(s16) * s26 -
-        2 * s15 * pow<2>(s16) * s26 + 6 * me2 * mm2 * s25 * s26 -
-        6 * pow<2>(mm2) * s25 * s26 - 12 * me2 * s12 * s25 * s26 +
-        8 * mm2 * s12 * s25 * s26 - 2 * pow<2>(s12) * s25 * s26 -
+        6 * s12 * s15 * s16 * s26 - 4 * pow(s15, 2) * s16 * s26 +
+        2 * me2 * pow(s16, 2) * s26 - 4 * s12 * pow(s16, 2) * s26 -
+        2 * s15 * pow(s16, 2) * s26 + 6 * me2 * mm2 * s25 * s26 -
+        6 * pow(mm2, 2) * s25 * s26 - 12 * me2 * s12 * s25 * s26 +
+        8 * mm2 * s12 * s25 * s26 - 2 * pow(s12, 2) * s25 * s26 -
         5 * me2 * s15 * s25 * s26 + 5 * mm2 * s15 * s25 * s26 -
         6 * s12 * s15 * s25 * s26 + 6 * me2 * s16 * s25 * s26 +
         7 * mm2 * s16 * s25 * s26 - 2 * s12 * s16 * s25 * s26 -
-        2 * s15 * s16 * s25 * s26 - 2 * pow<2>(s16) * s25 * s26 -
-        4 * mm2 * pow<2>(s25) * s26 + 2 * s12 * pow<2>(s25) * s26 +
-        2 * s15 * pow<2>(s25) * s26 - 2 * s16 * pow<2>(s25) * s26 +
-        6 * me2 * mm2 * pow<2>(s26) - 6 * pow<2>(mm2) * pow<2>(s26) -
-        10 * me2 * s12 * pow<2>(s26) + 4 * mm2 * s12 * pow<2>(s26) -
-        6 * me2 * s15 * pow<2>(s26) + 3 * mm2 * s15 * pow<2>(s26) +
-        2 * pow<2>(s15) * pow<2>(s26) + 2 * me2 * s16 * pow<2>(s26) +
-        4 * mm2 * s16 * pow<2>(s26) + 2 * s12 * s16 * pow<2>(s26) +
-        2 * s15 * s16 * pow<2>(s26) - 6 * mm2 * s25 * pow<2>(s26) +
-        2 * s12 * s25 * pow<2>(s26) + 2 * s15 * s25 * pow<2>(s26) -
-        2 * mm2 * pow<3>(s26) - 6 * pow<2>(me2) * s12 * s56 -
-        14 * me2 * mm2 * s12 * s56 + 14 * me2 * pow<2>(s12) * s56 +
+        2 * s15 * s16 * s25 * s26 - 2 * pow(s16, 2) * s25 * s26 -
+        4 * mm2 * pow(s25, 2) * s26 + 2 * s12 * pow(s25, 2) * s26 +
+        2 * s15 * pow(s25, 2) * s26 - 2 * s16 * pow(s25, 2) * s26 +
+        6 * me2 * mm2 * pow(s26, 2) - 6 * pow(mm2, 2) * pow(s26, 2) -
+        10 * me2 * s12 * pow(s26, 2) + 4 * mm2 * s12 * pow(s26, 2) -
+        6 * me2 * s15 * pow(s26, 2) + 3 * mm2 * s15 * pow(s26, 2) +
+        2 * pow(s15, 2) * pow(s26, 2) + 2 * me2 * s16 * pow(s26, 2) +
+        4 * mm2 * s16 * pow(s26, 2) + 2 * s12 * s16 * pow(s26, 2) +
+        2 * s15 * s16 * pow(s26, 2) - 6 * mm2 * s25 * pow(s26, 2) +
+        2 * s12 * s25 * pow(s26, 2) + 2 * s15 * s25 * pow(s26, 2) -
+        2 * mm2 * pow(s26, 3) - 6 * pow(me2, 2) * s12 * s56 -
+        14 * me2 * mm2 * s12 * s56 + 14 * me2 * pow(s12, 2) * s56 +
         13 * me2 * s12 * s15 * s56 - 3 * mm2 * s12 * s15 * s56 +
-        2 * pow<2>(s12) * s15 * s56 + 2 * s12 * pow<2>(s15) * s56 +
-        10 * pow<2>(me2) * s16 * s56 - 8 * me2 * mm2 * s16 * s56 +
+        2 * pow(s12, 2) * s15 * s56 + 2 * s12 * pow(s15, 2) * s56 +
+        10 * pow(me2, 2) * s16 * s56 - 8 * me2 * mm2 * s16 * s56 +
         16 * me2 * s12 * s16 * s56 + 3 * mm2 * s12 * s16 * s56 -
-        2 * pow<2>(s12) * s16 * s56 + 8 * me2 * s15 * s16 * s56 +
-        4 * me2 * pow<2>(s16) * s56 - 2 * s12 * pow<2>(s16) * s56 -
+        2 * pow(s12, 2) * s16 * s56 + 8 * me2 * s15 * s16 * s56 +
+        4 * me2 * pow(s16, 2) * s56 - 2 * s12 * pow(s16, 2) * s56 -
         5 * me2 * s12 * s25 * s56 + 7 * mm2 * s12 * s25 * s56 -
-        4 * pow<2>(s12) * s25 * s56 - 8 * s12 * s15 * s25 * s56 +
+        4 * pow(s12, 2) * s25 * s56 - 8 * s12 * s15 * s25 * s56 +
         3 * me2 * s16 * s25 * s56 + 2 * mm2 * s16 * s25 * s56 -
         6 * s12 * s16 * s25 * s56 - 2 * s15 * s16 * s25 * s56 -
-        2 * pow<2>(s16) * s25 * s56 + 2 * s12 * pow<2>(s25) * s56 -
-        2 * s16 * pow<2>(s25) * s56 + 8 * me2 * mm2 * s26 * s56 -
-        6 * pow<2>(mm2) * s26 * s56 - 16 * me2 * s12 * s26 * s56 +
+        2 * pow(s16, 2) * s25 * s56 + 2 * s12 * pow(s25, 2) * s56 -
+        2 * s16 * pow(s25, 2) * s56 + 8 * me2 * mm2 * s26 * s56 -
+        6 * pow(mm2, 2) * s26 * s56 - 16 * me2 * s12 * s26 * s56 +
         5 * mm2 * s12 * s26 * s56 - 7 * me2 * s15 * s26 * s56 +
         2 * mm2 * s15 * s26 * s56 - 2 * s12 * s15 * s26 * s56 +
-        2 * pow<2>(s15) * s26 * s56 + 2 * me2 * s16 * s26 * s56 +
+        2 * pow(s15, 2) * s26 * s56 + 2 * me2 * s16 * s26 * s56 +
         4 * mm2 * s16 * s26 * s56 + 2 * s12 * s16 * s26 * s56 +
         2 * s15 * s16 * s26 * s56 - 4 * mm2 * s25 * s26 * s56 +
         4 * s12 * s25 * s26 * s56 + 2 * s15 * s25 * s26 * s56 -
-        4 * mm2 * pow<2>(s26) * s56 - 2 * me2 * mm2 * pow<2>(s56) -
-        5 * me2 * s12 * pow<2>(s56) + 2 * mm2 * s12 * pow<2>(s56) -
-        2 * s12 * s15 * pow<2>(s56) + 2 * s12 * s25 * pow<2>(s56) -
-        2 * mm2 * s26 * pow<2>(s56)};
+        4 * mm2 * pow(s26, 2) * s56 - 2 * me2 * mm2 * pow(s56, 2) -
+        5 * me2 * s12 * pow(s56, 2) + 2 * mm2 * s12 * pow(s56, 2) -
+        2 * s12 * s15 * pow(s56, 2) + 2 * s12 * s25 * pow(s56, 2) -
+        2 * mm2 * s26 * pow(s56, 2)};
     const auto if36{
-        16 * me2 * pow<2>(mm2) * s12 - 12 * me2 * mm2 * pow<2>(s12) -
-        12 * pow<2>(mm2) * pow<2>(s12) + 8 * mm2 * pow<3>(s12) +
-        8 * me2 * pow<2>(mm2) * s15 - 20 * me2 * mm2 * s12 * s15 -
-        12 * pow<2>(mm2) * s12 * s15 + 18 * mm2 * pow<2>(s12) * s15 +
-        6 * pow<2>(me2) * pow<2>(s15) - 6 * me2 * mm2 * pow<2>(s15) -
-        4 * me2 * s12 * pow<2>(s15) + 10 * mm2 * s12 * pow<2>(s15) -
-        2 * me2 * pow<3>(s15) - 16 * me2 * mm2 * s12 * s16 +
-        12 * mm2 * pow<2>(s12) * s16 + 6 * pow<2>(me2) * s15 * s16 -
+        16 * me2 * pow(mm2, 2) * s12 - 12 * me2 * mm2 * pow(s12, 2) -
+        12 * pow(mm2, 2) * pow(s12, 2) + 8 * mm2 * pow(s12, 3) +
+        8 * me2 * pow(mm2, 2) * s15 - 20 * me2 * mm2 * s12 * s15 -
+        12 * pow(mm2, 2) * s12 * s15 + 18 * mm2 * pow(s12, 2) * s15 +
+        6 * pow(me2, 2) * pow(s15, 2) - 6 * me2 * mm2 * pow(s15, 2) -
+        4 * me2 * s12 * pow(s15, 2) + 10 * mm2 * s12 * pow(s15, 2) -
+        2 * me2 * pow(s15, 3) - 16 * me2 * mm2 * s12 * s16 +
+        12 * mm2 * pow(s12, 2) * s16 + 6 * pow(me2, 2) * s15 * s16 -
         6 * me2 * mm2 * s15 * s16 - 8 * me2 * s12 * s15 * s16 +
-        12 * mm2 * s12 * s15 * s16 + 2 * pow<2>(s12) * s15 * s16 -
-        6 * me2 * pow<2>(s15) * s16 + 2 * s12 * pow<2>(s15) * s16 -
-        4 * me2 * s12 * pow<2>(s16) + 2 * pow<2>(s12) * pow<2>(s16) -
-        4 * me2 * s15 * pow<2>(s16) + 2 * s12 * s15 * pow<2>(s16) -
-        4 * me2 * pow<2>(mm2) * s25 + 12 * pow<3>(mm2) * s25 +
-        12 * me2 * mm2 * s12 * s25 + 8 * pow<2>(mm2) * s12 * s25 -
-        16 * mm2 * pow<2>(s12) * s25 + 8 * me2 * mm2 * s15 * s25 -
-        12 * pow<2>(mm2) * s15 * s25 - 6 * me2 * s12 * s15 * s25 -
-        18 * mm2 * s12 * s15 * s25 + 4 * pow<2>(s12) * s15 * s25 +
-        4 * me2 * pow<2>(s15) * s25 + 2 * mm2 * pow<2>(s15) * s25 +
-        2 * s12 * pow<2>(s15) * s25 + 6 * me2 * mm2 * s16 * s25 -
-        18 * pow<2>(mm2) * s16 * s25 - 12 * mm2 * s12 * s16 * s25 +
+        12 * mm2 * s12 * s15 * s16 + 2 * pow(s12, 2) * s15 * s16 -
+        6 * me2 * pow(s15, 2) * s16 + 2 * s12 * pow(s15, 2) * s16 -
+        4 * me2 * s12 * pow(s16, 2) + 2 * pow(s12, 2) * pow(s16, 2) -
+        4 * me2 * s15 * pow(s16, 2) + 2 * s12 * s15 * pow(s16, 2) -
+        4 * me2 * pow(mm2, 2) * s25 + 12 * pow(mm2, 3) * s25 +
+        12 * me2 * mm2 * s12 * s25 + 8 * pow(mm2, 2) * s12 * s25 -
+        16 * mm2 * pow(s12, 2) * s25 + 8 * me2 * mm2 * s15 * s25 -
+        12 * pow(mm2, 2) * s15 * s25 - 6 * me2 * s12 * s15 * s25 -
+        18 * mm2 * s12 * s15 * s25 + 4 * pow(s12, 2) * s15 * s25 +
+        4 * me2 * pow(s15, 2) * s25 + 2 * mm2 * pow(s15, 2) * s25 +
+        2 * s12 * pow(s15, 2) * s25 + 6 * me2 * mm2 * s16 * s25 -
+        18 * pow(mm2, 2) * s16 * s25 - 12 * mm2 * s12 * s16 * s25 +
         7 * me2 * s15 * s16 * s25 + 6 * mm2 * s15 * s16 * s25 -
-        2 * s12 * s15 * s16 * s25 + me2 * pow<2>(s16) * s25 +
-        3 * mm2 * pow<2>(s16) * s25 - 2 * s12 * pow<2>(s16) * s25 +
-        2 * s15 * pow<2>(s16) * s25 + 2 * pow<3>(s16) * s25 +
-        8 * mm2 * s12 * pow<2>(s25) + 2 * mm2 * s15 * pow<2>(s25) -
-        4 * s12 * s15 * pow<2>(s25) - 3 * me2 * s16 * pow<2>(s25) +
-        2 * mm2 * s16 * pow<2>(s25) + 2 * s12 * s16 * pow<2>(s25) +
-        2 * s15 * s16 * pow<2>(s25) - 2 * s16 * pow<3>(s25) +
-        12 * me2 * mm2 * s12 * s26 + 12 * pow<2>(mm2) * s12 * s26 -
-        16 * mm2 * pow<2>(s12) * s26 + 10 * me2 * mm2 * s15 * s26 +
-        6 * pow<2>(mm2) * s15 * s26 - 24 * mm2 * s12 * s15 * s26 +
-        3 * me2 * pow<2>(s15) * s26 - 6 * mm2 * pow<2>(s15) * s26 +
+        2 * s12 * s15 * s16 * s25 + me2 * pow(s16, 2) * s25 +
+        3 * mm2 * pow(s16, 2) * s25 - 2 * s12 * pow(s16, 2) * s25 +
+        2 * s15 * pow(s16, 2) * s25 + 2 * pow(s16, 3) * s25 +
+        8 * mm2 * s12 * pow(s25, 2) + 2 * mm2 * s15 * pow(s25, 2) -
+        4 * s12 * s15 * pow(s25, 2) - 3 * me2 * s16 * pow(s25, 2) +
+        2 * mm2 * s16 * pow(s25, 2) + 2 * s12 * s16 * pow(s25, 2) +
+        2 * s15 * s16 * pow(s25, 2) - 2 * s16 * pow(s25, 3) +
+        12 * me2 * mm2 * s12 * s26 + 12 * pow(mm2, 2) * s12 * s26 -
+        16 * mm2 * pow(s12, 2) * s26 + 10 * me2 * mm2 * s15 * s26 +
+        6 * pow(mm2, 2) * s15 * s26 - 24 * mm2 * s12 * s15 * s26 +
+        3 * me2 * pow(s15, 2) * s26 - 6 * mm2 * pow(s15, 2) * s26 +
         6 * me2 * s12 * s16 * s26 - 10 * mm2 * s12 * s16 * s26 -
-        4 * pow<2>(s12) * s16 * s26 + 5 * me2 * s15 * s16 * s26 -
+        4 * pow(s12, 2) * s16 * s26 + 5 * me2 * s15 * s16 * s26 -
         5 * mm2 * s15 * s16 * s26 - 6 * s12 * s15 * s16 * s26 -
-        2 * pow<2>(s15) * s16 * s26 - 4 * s12 * pow<2>(s16) * s26 -
-        2 * s15 * pow<2>(s16) * s26 - 6 * me2 * mm2 * s25 * s26 +
-        2 * pow<2>(mm2) * s25 * s26 + 20 * mm2 * s12 * s25 * s26 +
+        2 * pow(s15, 2) * s16 * s26 - 4 * s12 * pow(s16, 2) * s26 -
+        2 * s15 * pow(s16, 2) * s26 - 6 * me2 * mm2 * s25 * s26 +
+        2 * pow(mm2, 2) * s25 * s26 + 20 * mm2 * s12 * s25 * s26 +
         3 * me2 * s15 * s25 * s26 + 10 * mm2 * s15 * s25 * s26 -
-        6 * s12 * s15 * s25 * s26 - 2 * pow<2>(s15) * s25 * s26 -
+        6 * s12 * s15 * s25 * s26 - 2 * pow(s15, 2) * s25 * s26 -
         3 * me2 * s16 * s25 * s26 + 3 * mm2 * s16 * s25 * s26 +
         6 * s12 * s16 * s25 * s26 + 2 * s15 * s16 * s25 * s26 -
-        4 * mm2 * pow<2>(s25) * s26 + 2 * s15 * pow<2>(s25) * s26 -
-        4 * s16 * pow<2>(s25) * s26 + 8 * mm2 * s12 * pow<2>(s26) +
-        3 * me2 * s15 * pow<2>(s26) + 7 * mm2 * s15 * pow<2>(s26) -
-        2 * s12 * s15 * pow<2>(s26) - 2 * pow<2>(s15) * pow<2>(s26) +
-        4 * s12 * s16 * pow<2>(s26) - 4 * mm2 * s25 * pow<2>(s26) +
-        4 * s15 * s25 * pow<2>(s26) - 2 * s16 * s25 * pow<2>(s26) +
-        2 * s15 * pow<3>(s26) + 14 * me2 * mm2 * s12 * s56 +
-        6 * pow<2>(mm2) * s12 * s56 - 14 * mm2 * pow<2>(s12) * s56 -
-        6 * pow<2>(me2) * s15 * s56 + 8 * me2 * mm2 * s15 * s56 +
+        4 * mm2 * pow(s25, 2) * s26 + 2 * s15 * pow(s25, 2) * s26 -
+        4 * s16 * pow(s25, 2) * s26 + 8 * mm2 * s12 * pow(s26, 2) +
+        3 * me2 * s15 * pow(s26, 2) + 7 * mm2 * s15 * pow(s26, 2) -
+        2 * s12 * s15 * pow(s26, 2) - 2 * pow(s15, 2) * pow(s26, 2) +
+        4 * s12 * s16 * pow(s26, 2) - 4 * mm2 * s25 * pow(s26, 2) +
+        4 * s15 * s25 * pow(s26, 2) - 2 * s16 * s25 * pow(s26, 2) +
+        2 * s15 * pow(s26, 3) + 14 * me2 * mm2 * s12 * s56 +
+        6 * pow(mm2, 2) * s12 * s56 - 14 * mm2 * pow(s12, 2) * s56 -
+        6 * pow(me2, 2) * s15 * s56 + 8 * me2 * mm2 * s15 * s56 +
         5 * me2 * s12 * s15 * s56 - 16 * mm2 * s12 * s15 * s56 +
-        4 * me2 * pow<2>(s15) * s56 + 7 * me2 * s12 * s16 * s56 -
-        5 * mm2 * s12 * s16 * s56 - 4 * pow<2>(s12) * s16 * s56 +
+        4 * me2 * pow(s15, 2) * s56 + 7 * me2 * s12 * s16 * s56 -
+        5 * mm2 * s12 * s16 * s56 - 4 * pow(s12, 2) * s16 * s56 +
         4 * me2 * s15 * s16 * s56 - 4 * s12 * s15 * s16 * s56 -
-        2 * s12 * pow<2>(s16) * s56 - 8 * me2 * mm2 * s25 * s56 +
-        10 * pow<2>(mm2) * s25 * s56 + 3 * me2 * s12 * s25 * s56 +
-        16 * mm2 * s12 * s25 * s56 - 2 * pow<2>(s12) * s25 * s56 -
+        2 * s12 * pow(s16, 2) * s56 - 8 * me2 * mm2 * s25 * s56 +
+        10 * pow(mm2, 2) * s25 * s56 + 3 * me2 * s12 * s25 * s56 +
+        16 * mm2 * s12 * s25 * s56 - 2 * pow(s12, 2) * s25 * s56 -
         4 * me2 * s15 * s25 * s56 - 2 * mm2 * s15 * s25 * s56 -
         2 * s12 * s15 * s25 * s56 - 2 * me2 * s16 * s25 * s56 -
         3 * mm2 * s16 * s25 * s56 + 6 * s12 * s16 * s25 * s56 -
-        2 * pow<2>(s16) * s25 * s56 - 4 * mm2 * pow<2>(s25) * s56 +
-        2 * s12 * pow<2>(s25) * s56 - 2 * s16 * pow<2>(s25) * s56 -
+        2 * pow(s16, 2) * s25 * s56 - 4 * mm2 * pow(s25, 2) * s56 +
+        2 * s12 * pow(s25, 2) * s56 - 2 * s16 * pow(s25, 2) * s56 -
         3 * me2 * s12 * s26 * s56 + 13 * mm2 * s12 * s26 * s56 +
-        2 * pow<2>(s12) * s26 * s56 - 2 * me2 * s15 * s26 * s56 +
+        2 * pow(s12, 2) * s26 * s56 - 2 * me2 * s15 * s26 * s56 +
         7 * mm2 * s15 * s26 * s56 + 2 * s12 * s15 * s26 * s56 +
         8 * s12 * s16 * s26 * s56 + 2 * s15 * s16 * s26 * s56 -
         8 * mm2 * s25 * s26 * s56 + 2 * s15 * s25 * s26 * s56 -
-        2 * s16 * s25 * s26 * s56 - 2 * s12 * pow<2>(s26) * s56 +
-        2 * s15 * pow<2>(s26) * s56 + 2 * me2 * mm2 * pow<2>(s56) -
-        2 * me2 * s12 * pow<2>(s56) + 5 * mm2 * s12 * pow<2>(s56) -
-        2 * me2 * s15 * pow<2>(s56) + 2 * s12 * s16 * pow<2>(s56) -
-        2 * s12 * s26 * pow<2>(s56)};
+        2 * s16 * s25 * s26 * s56 - 2 * s12 * pow(s26, 2) * s56 +
+        2 * s15 * pow(s26, 2) * s56 + 2 * me2 * mm2 * pow(s56, 2) -
+        2 * me2 * s12 * pow(s56, 2) + 5 * mm2 * s12 * pow(s56, 2) -
+        2 * me2 * s15 * pow(s56, 2) + 2 * s12 * s16 * pow(s56, 2) -
+        2 * s12 * s26 * pow(s56, 2)};
     const auto if46{
-        8 * me2 * mm2 * pow<2>(s12) - 6 * me2 * pow<3>(s12) -
-        6 * mm2 * pow<3>(s12) + 4 * pow<4>(s12) - 6 * pow<2>(me2) * s12 * s15 +
-        2 * me2 * mm2 * s12 * s15 - 4 * me2 * pow<2>(s12) * s15 -
-        6 * mm2 * pow<2>(s12) * s15 + 8 * pow<3>(s12) * s15 +
-        4 * pow<2>(s12) * pow<2>(s15) - 6 * pow<2>(me2) * s12 * s16 +
-        2 * me2 * mm2 * s12 * s16 - 4 * me2 * pow<2>(s12) * s16 -
-        6 * mm2 * pow<2>(s12) * s16 + 8 * pow<3>(s12) * s16 -
-        12 * pow<2>(me2) * s15 * s16 - 4 * me2 * mm2 * s15 * s16 +
+        8 * me2 * mm2 * pow(s12, 2) - 6 * me2 * pow(s12, 3) -
+        6 * mm2 * pow(s12, 3) + 4 * pow(s12, 4) - 6 * pow(me2, 2) * s12 * s15 +
+        2 * me2 * mm2 * s12 * s15 - 4 * me2 * pow(s12, 2) * s15 -
+        6 * mm2 * pow(s12, 2) * s15 + 8 * pow(s12, 3) * s15 +
+        4 * pow(s12, 2) * pow(s15, 2) - 6 * pow(me2, 2) * s12 * s16 +
+        2 * me2 * mm2 * s12 * s16 - 4 * me2 * pow(s12, 2) * s16 -
+        6 * mm2 * pow(s12, 2) * s16 + 8 * pow(s12, 3) * s16 -
+        12 * pow(me2, 2) * s15 * s16 - 4 * me2 * mm2 * s15 * s16 +
         8 * me2 * s12 * s15 * s16 - 6 * mm2 * s12 * s15 * s16 +
-        12 * pow<2>(s12) * s15 * s16 + 4 * me2 * pow<2>(s15) * s16 +
-        4 * s12 * pow<2>(s15) * s16 + 4 * pow<2>(s12) * pow<2>(s16) +
-        4 * me2 * s15 * pow<2>(s16) + 4 * s12 * s15 * pow<2>(s16) -
-        2 * me2 * mm2 * s12 * s25 + 6 * pow<2>(mm2) * s12 * s25 +
-        6 * me2 * pow<2>(s12) * s25 + 4 * mm2 * pow<2>(s12) * s25 -
-        8 * pow<3>(s12) * s25 - 4 * me2 * s12 * s15 * s25 -
-        4 * mm2 * s12 * s15 * s25 - 6 * pow<2>(s12) * s15 * s25 +
-        3 * pow<2>(me2) * s16 * s25 - 2 * me2 * mm2 * s16 * s25 +
-        3 * pow<2>(mm2) * s16 * s25 - 12 * pow<2>(s12) * s16 * s25 -
+        12 * pow(s12, 2) * s15 * s16 + 4 * me2 * pow(s15, 2) * s16 +
+        4 * s12 * pow(s15, 2) * s16 + 4 * pow(s12, 2) * pow(s16, 2) +
+        4 * me2 * s15 * pow(s16, 2) + 4 * s12 * s15 * pow(s16, 2) -
+        2 * me2 * mm2 * s12 * s25 + 6 * pow(mm2, 2) * s12 * s25 +
+        6 * me2 * pow(s12, 2) * s25 + 4 * mm2 * pow(s12, 2) * s25 -
+        8 * pow(s12, 3) * s25 - 4 * me2 * s12 * s15 * s25 -
+        4 * mm2 * s12 * s15 * s25 - 6 * pow(s12, 2) * s15 * s25 +
+        3 * pow(me2, 2) * s16 * s25 - 2 * me2 * mm2 * s16 * s25 +
+        3 * pow(mm2, 2) * s16 * s25 - 12 * pow(s12, 2) * s16 * s25 -
         9 * me2 * s15 * s16 * s25 - 2 * mm2 * s15 * s16 * s25 -
-        4 * s12 * s15 * s16 * s25 + me2 * pow<2>(s16) * s25 -
-        2 * mm2 * pow<2>(s16) * s25 - 4 * s12 * pow<2>(s16) * s25 +
-        4 * pow<2>(s12) * pow<2>(s25) + 2 * me2 * s16 * pow<2>(s25) -
-        mm2 * s16 * pow<2>(s25) + 4 * s12 * s16 * pow<2>(s25) -
-        2 * me2 * mm2 * s12 * s26 + 6 * pow<2>(mm2) * s12 * s26 +
-        6 * me2 * pow<2>(s12) * s26 + 4 * mm2 * pow<2>(s12) * s26 -
-        8 * pow<3>(s12) * s26 + 3 * pow<2>(me2) * s15 * s26 -
-        2 * me2 * mm2 * s15 * s26 + 3 * pow<2>(mm2) * s15 * s26 -
-        12 * pow<2>(s12) * s15 * s26 + me2 * pow<2>(s15) * s26 -
-        2 * mm2 * pow<2>(s15) * s26 - 4 * s12 * pow<2>(s15) * s26 -
+        4 * s12 * s15 * s16 * s25 + me2 * pow(s16, 2) * s25 -
+        2 * mm2 * pow(s16, 2) * s25 - 4 * s12 * pow(s16, 2) * s25 +
+        4 * pow(s12, 2) * pow(s25, 2) + 2 * me2 * s16 * pow(s25, 2) -
+        mm2 * s16 * pow(s25, 2) + 4 * s12 * s16 * pow(s25, 2) -
+        2 * me2 * mm2 * s12 * s26 + 6 * pow(mm2, 2) * s12 * s26 +
+        6 * me2 * pow(s12, 2) * s26 + 4 * mm2 * pow(s12, 2) * s26 -
+        8 * pow(s12, 3) * s26 + 3 * pow(me2, 2) * s15 * s26 -
+        2 * me2 * mm2 * s15 * s26 + 3 * pow(mm2, 2) * s15 * s26 -
+        12 * pow(s12, 2) * s15 * s26 + me2 * pow(s15, 2) * s26 -
+        2 * mm2 * pow(s15, 2) * s26 - 4 * s12 * pow(s15, 2) * s26 -
         4 * me2 * s12 * s16 * s26 - 4 * mm2 * s12 * s16 * s26 -
-        6 * pow<2>(s12) * s16 * s26 - 9 * me2 * s15 * s16 * s26 -
+        6 * pow(s12, 2) * s16 * s26 - 9 * me2 * s15 * s16 * s26 -
         2 * mm2 * s15 * s16 * s26 - 4 * s12 * s15 * s16 * s26 -
-        4 * me2 * mm2 * s25 * s26 - 12 * pow<2>(mm2) * s25 * s26 -
+        4 * me2 * mm2 * s25 * s26 - 12 * pow(mm2, 2) * s25 * s26 -
         6 * me2 * s12 * s25 * s26 + 8 * mm2 * s12 * s25 * s26 +
-        12 * pow<2>(s12) * s25 * s26 + 2 * me2 * s15 * s25 * s26 +
+        12 * pow(s12, 2) * s25 * s26 + 2 * me2 * s15 * s25 * s26 +
         9 * mm2 * s15 * s25 * s26 + 4 * s12 * s15 * s25 * s26 +
         2 * me2 * s16 * s25 * s26 + 9 * mm2 * s16 * s25 * s26 +
-        4 * s12 * s16 * s25 * s26 - 4 * mm2 * pow<2>(s25) * s26 -
-        4 * s12 * pow<2>(s25) * s26 + 4 * pow<2>(s12) * pow<2>(s26) +
-        2 * me2 * s15 * pow<2>(s26) - mm2 * s15 * pow<2>(s26) +
-        4 * s12 * s15 * pow<2>(s26) - 4 * mm2 * s25 * pow<2>(s26) -
-        4 * s12 * s25 * pow<2>(s26) + 8 * pow<2>(me2) * mm2 * s56 +
-        8 * me2 * pow<2>(mm2) * s56 + 3 * pow<2>(me2) * s12 * s56 -
-        6 * me2 * mm2 * s12 * s56 + 3 * pow<2>(mm2) * s12 * s56 -
-        4 * pow<3>(s12) * s56 - 6 * me2 * mm2 * s15 * s56 -
+        4 * s12 * s16 * s25 * s26 - 4 * mm2 * pow(s25, 2) * s26 -
+        4 * s12 * pow(s25, 2) * s26 + 4 * pow(s12, 2) * pow(s26, 2) +
+        2 * me2 * s15 * pow(s26, 2) - mm2 * s15 * pow(s26, 2) +
+        4 * s12 * s15 * pow(s26, 2) - 4 * mm2 * s25 * pow(s26, 2) -
+        4 * s12 * s25 * pow(s26, 2) + 8 * pow(me2, 2) * mm2 * s56 +
+        8 * me2 * pow(mm2, 2) * s56 + 3 * pow(me2, 2) * s12 * s56 -
+        6 * me2 * mm2 * s12 * s56 + 3 * pow(mm2, 2) * s12 * s56 -
+        4 * pow(s12, 3) * s56 - 6 * me2 * mm2 * s15 * s56 -
         3 * me2 * s12 * s15 * s56 - 2 * mm2 * s12 * s15 * s56 -
-        4 * pow<2>(s12) * s15 * s56 - 6 * me2 * mm2 * s16 * s56 -
+        4 * pow(s12, 2) * s15 * s56 - 6 * me2 * mm2 * s16 * s56 -
         3 * me2 * s12 * s16 * s56 - 2 * mm2 * s12 * s16 * s56 -
-        4 * pow<2>(s12) * s16 * s56 - 8 * me2 * s15 * s16 * s56 -
+        4 * pow(s12, 2) * s16 * s56 - 8 * me2 * s15 * s16 * s56 -
         2 * s12 * s15 * s16 * s56 + 6 * me2 * mm2 * s25 * s56 +
         2 * me2 * s12 * s25 * s56 + 3 * mm2 * s12 * s25 * s56 +
-        4 * pow<2>(s12) * s25 * s56 + me2 * s16 * s25 * s56 +
+        4 * pow(s12, 2) * s25 * s56 + me2 * s16 * s25 * s56 +
         mm2 * s16 * s25 * s56 + 4 * s12 * s16 * s25 * s56 +
         6 * me2 * mm2 * s26 * s56 + 2 * me2 * s12 * s26 * s56 +
-        3 * mm2 * s12 * s26 * s56 + 4 * pow<2>(s12) * s26 * s56 +
+        3 * mm2 * s12 * s26 * s56 + 4 * pow(s12, 2) * s26 * s56 +
         me2 * s15 * s26 * s56 + mm2 * s15 * s26 * s56 +
         4 * s12 * s15 * s26 * s56 - 8 * mm2 * s25 * s26 * s56 -
-        2 * s12 * s25 * s26 * s56 + 8 * me2 * mm2 * pow<2>(s56) +
-        me2 * s12 * pow<2>(s56) + mm2 * s12 * pow<2>(s56)};
+        2 * s12 * s25 * s26 * s56 + 8 * me2 * mm2 * pow(s56, 2) +
+        me2 * s12 * pow(s56, 2) + mm2 * s12 * pow(s56, 2)};
     const auto if56{
-        16 * me2 * pow<2>(mm2) * s12 - 12 * me2 * mm2 * pow<2>(s12) -
-        12 * pow<2>(mm2) * pow<2>(s12) + 8 * mm2 * pow<3>(s12) -
-        12 * pow<2>(me2) * mm2 * s15 + 4 * me2 * pow<2>(mm2) * s15 -
-        8 * me2 * mm2 * s12 * s15 - 12 * pow<2>(mm2) * s12 * s15 +
-        16 * mm2 * pow<2>(s12) * s15 + 8 * mm2 * s12 * pow<2>(s15) -
-        12 * pow<2>(me2) * mm2 * s16 - 4 * me2 * pow<2>(mm2) * s16 -
-        4 * me2 * mm2 * s12 * s16 + 10 * mm2 * pow<2>(s12) * s16 +
+        16 * me2 * pow(mm2, 2) * s12 - 12 * me2 * mm2 * pow(s12, 2) -
+        12 * pow(mm2, 2) * pow(s12, 2) + 8 * mm2 * pow(s12, 3) -
+        12 * pow(me2, 2) * mm2 * s15 + 4 * me2 * pow(mm2, 2) * s15 -
+        8 * me2 * mm2 * s12 * s15 - 12 * pow(mm2, 2) * s12 * s15 +
+        16 * mm2 * pow(s12, 2) * s15 + 8 * mm2 * s12 * pow(s15, 2) -
+        12 * pow(me2, 2) * mm2 * s16 - 4 * me2 * pow(mm2, 2) * s16 -
+        4 * me2 * mm2 * s12 * s16 + 10 * mm2 * pow(s12, 2) * s16 +
         4 * me2 * mm2 * s15 * s16 + 10 * mm2 * s12 * s15 * s16 -
-        6 * pow<2>(me2) * pow<2>(s16) + 2 * me2 * mm2 * pow<2>(s16) +
-        4 * me2 * s12 * pow<2>(s16) + 4 * me2 * s15 * pow<2>(s16) +
-        2 * me2 * pow<3>(s16) - 4 * me2 * pow<2>(mm2) * s25 +
-        12 * pow<3>(mm2) * s25 + 12 * me2 * mm2 * s12 * s25 +
-        8 * pow<2>(mm2) * s12 * s25 - 16 * mm2 * pow<2>(s12) * s25 -
-        8 * me2 * mm2 * s15 * s25 - 8 * pow<2>(mm2) * s15 * s25 -
+        6 * pow(me2, 2) * pow(s16, 2) + 2 * me2 * mm2 * pow(s16, 2) +
+        4 * me2 * s12 * pow(s16, 2) + 4 * me2 * s15 * pow(s16, 2) +
+        2 * me2 * pow(s16, 3) - 4 * me2 * pow(mm2, 2) * s25 +
+        12 * pow(mm2, 3) * s25 + 12 * me2 * mm2 * s12 * s25 +
+        8 * pow(mm2, 2) * s12 * s25 - 16 * mm2 * pow(s12, 2) * s25 -
+        8 * me2 * mm2 * s15 * s25 - 8 * pow(mm2, 2) * s15 * s25 -
         12 * mm2 * s12 * s15 * s25 - 8 * me2 * mm2 * s16 * s25 -
-        20 * pow<2>(mm2) * s16 * s25 - 6 * mm2 * s12 * s16 * s25 +
-        6 * mm2 * s15 * s16 * s25 - 5 * me2 * pow<2>(s16) * s25 +
-        7 * mm2 * pow<2>(s16) * s25 + s15 * pow<2>(s16) * s25 +
-        pow<3>(s16) * s25 + 8 * mm2 * s12 * pow<2>(s25) -
-        16 * me2 * pow<2>(mm2) * s26 + 24 * me2 * mm2 * s12 * s26 +
-        24 * pow<2>(mm2) * s12 * s26 - 24 * mm2 * pow<2>(s12) * s26 +
-        8 * me2 * mm2 * s15 * s26 + 12 * pow<2>(mm2) * s15 * s26 -
-        32 * mm2 * s12 * s15 * s26 - 8 * mm2 * pow<2>(s15) * s26 +
+        20 * pow(mm2, 2) * s16 * s25 - 6 * mm2 * s12 * s16 * s25 +
+        6 * mm2 * s15 * s16 * s25 - 5 * me2 * pow(s16, 2) * s25 +
+        7 * mm2 * pow(s16, 2) * s25 + s15 * pow(s16, 2) * s25 +
+        pow(s16, 3) * s25 + 8 * mm2 * s12 * pow(s25, 2) -
+        16 * me2 * pow(mm2, 2) * s26 + 24 * me2 * mm2 * s12 * s26 +
+        24 * pow(mm2, 2) * s12 * s26 - 24 * mm2 * pow(s12, 2) * s26 +
+        8 * me2 * mm2 * s15 * s26 + 12 * pow(mm2, 2) * s15 * s26 -
+        32 * mm2 * s12 * s15 * s26 - 8 * mm2 * pow(s15, 2) * s26 +
         6 * me2 * s12 * s16 * s26 - 16 * mm2 * s12 * s16 * s26 -
-        4 * pow<2>(s12) * s16 * s26 + 7 * me2 * s15 * s16 * s26 -
+        4 * pow(s12, 2) * s16 * s26 + 7 * me2 * s15 * s16 * s26 -
         7 * mm2 * s15 * s16 * s26 - 8 * s12 * s15 * s16 * s26 -
-        3 * pow<2>(s15) * s16 * s26 - 4 * s12 * pow<2>(s16) * s26 -
-        3 * s15 * pow<2>(s16) * s26 - 12 * me2 * mm2 * s25 * s26 -
-        8 * pow<2>(mm2) * s25 * s26 + 32 * mm2 * s12 * s25 * s26 +
+        3 * pow(s15, 2) * s16 * s26 - 4 * s12 * pow(s16, 2) * s26 -
+        3 * s15 * pow(s16, 2) * s26 - 12 * me2 * mm2 * s25 * s26 -
+        8 * pow(mm2, 2) * s25 * s26 + 32 * mm2 * s12 * s25 * s26 +
         12 * mm2 * s15 * s25 * s26 - 6 * me2 * s16 * s25 * s26 +
         4 * mm2 * s16 * s25 * s26 + 8 * s12 * s16 * s25 * s26 +
-        6 * s15 * s16 * s25 * s26 + 2 * pow<2>(s16) * s25 * s26 -
-        8 * mm2 * pow<2>(s25) * s26 - 4 * s16 * pow<2>(s25) * s26 -
-        12 * me2 * mm2 * pow<2>(s26) - 12 * pow<2>(mm2) * pow<2>(s26) +
-        24 * mm2 * s12 * pow<2>(s26) + 16 * mm2 * s15 * pow<2>(s26) -
-        6 * me2 * s16 * pow<2>(s26) + 6 * mm2 * s16 * pow<2>(s26) +
-        8 * s12 * s16 * pow<2>(s26) + 8 * s15 * s16 * pow<2>(s26) +
-        4 * pow<2>(s16) * pow<2>(s26) - 16 * mm2 * s25 * pow<2>(s26) -
-        8 * s16 * s25 * pow<2>(s26) - 8 * mm2 * pow<3>(s26) -
-        4 * s16 * pow<3>(s26) + 12 * pow<2>(me2) * mm2 * s56 -
-        4 * me2 * pow<2>(mm2) * s56 + 8 * me2 * mm2 * s12 * s56 +
-        12 * pow<2>(mm2) * s12 * s56 - 16 * mm2 * pow<2>(s12) * s56 -
-        16 * mm2 * s12 * s15 * s56 + 6 * pow<2>(me2) * s16 * s56 -
+        6 * s15 * s16 * s25 * s26 + 2 * pow(s16, 2) * s25 * s26 -
+        8 * mm2 * pow(s25, 2) * s26 - 4 * s16 * pow(s25, 2) * s26 -
+        12 * me2 * mm2 * pow(s26, 2) - 12 * pow(mm2, 2) * pow(s26, 2) +
+        24 * mm2 * s12 * pow(s26, 2) + 16 * mm2 * s15 * pow(s26, 2) -
+        6 * me2 * s16 * pow(s26, 2) + 6 * mm2 * s16 * pow(s26, 2) +
+        8 * s12 * s16 * pow(s26, 2) + 8 * s15 * s16 * pow(s26, 2) +
+        4 * pow(s16, 2) * pow(s26, 2) - 16 * mm2 * s25 * pow(s26, 2) -
+        8 * s16 * s25 * pow(s26, 2) - 8 * mm2 * pow(s26, 3) -
+        4 * s16 * pow(s26, 3) + 12 * pow(me2, 2) * mm2 * s56 -
+        4 * me2 * pow(mm2, 2) * s56 + 8 * me2 * mm2 * s12 * s56 +
+        12 * pow(mm2, 2) * s12 * s56 - 16 * mm2 * pow(s12, 2) * s56 -
+        16 * mm2 * s12 * s15 * s56 + 6 * pow(me2, 2) * s16 * s56 -
         6 * me2 * mm2 * s16 * s56 - 3 * me2 * s12 * s16 * s56 -
         9 * mm2 * s12 * s16 * s56 - s12 * s15 * s16 * s56 -
-        2 * me2 * pow<2>(s16) * s56 - s12 * pow<2>(s16) * s56 +
-        8 * me2 * mm2 * s25 * s56 + 8 * pow<2>(mm2) * s25 * s56 +
+        2 * me2 * pow(s16, 2) * s56 - s12 * pow(s16, 2) * s56 +
+        8 * me2 * mm2 * s25 * s56 + 8 * pow(mm2, 2) * s25 * s56 +
         12 * mm2 * s12 * s25 * s56 + 4 * me2 * s16 * s25 * s56 -
-        6 * mm2 * s16 * s25 * s56 - pow<2>(s16) * s25 * s56 -
-        8 * me2 * mm2 * s26 * s56 - 12 * pow<2>(mm2) * s26 * s56 +
+        6 * mm2 * s16 * s25 * s56 - pow(s16, 2) * s25 * s56 -
+        8 * me2 * mm2 * s26 * s56 - 12 * pow(mm2, 2) * s26 * s56 +
         32 * mm2 * s12 * s26 * s56 + 16 * mm2 * s15 * s26 * s56 -
         4 * me2 * s16 * s26 * s56 + 6 * mm2 * s16 * s26 * s56 +
         8 * s12 * s16 * s26 * s56 + 7 * s15 * s16 * s26 * s56 +
-        4 * pow<2>(s16) * s26 * s56 - 12 * mm2 * s25 * s26 * s56 -
-        6 * s16 * s25 * s26 * s56 - 16 * mm2 * pow<2>(s26) * s56 -
-        8 * s16 * pow<2>(s26) * s56 + 8 * mm2 * s12 * pow<2>(s56) +
-        s12 * s16 * pow<2>(s56) - 8 * mm2 * s26 * pow<2>(s56) -
-        4 * s16 * s26 * pow<2>(s56)};
+        4 * pow(s16, 2) * s26 * s56 - 12 * mm2 * s25 * s26 * s56 -
+        6 * s16 * s25 * s26 * s56 - 16 * mm2 * pow(s26, 2) * s56 -
+        8 * s16 * pow(s26, 2) * s56 + 8 * mm2 * s12 * pow(s56, 2) +
+        s12 * s16 * pow(s56, 2) - 8 * mm2 * s26 * pow(s56, 2) -
+        4 * s16 * s26 * pow(s56, 2)};
     const auto if66{
-        32 * pow<2>(me2) * pow<2>(mm2) - 24 * pow<2>(me2) * mm2 * s12 -
-        24 * me2 * pow<2>(mm2) * s12 + 16 * me2 * mm2 * pow<2>(s12) -
-        24 * pow<2>(me2) * mm2 * s15 - 24 * me2 * pow<2>(mm2) * s15 +
-        32 * me2 * mm2 * s12 * s15 + 16 * me2 * mm2 * pow<2>(s15) -
-        32 * pow<2>(me2) * mm2 * s16 + 24 * me2 * mm2 * s12 * s16 +
-        24 * me2 * mm2 * s15 * s16 - 8 * pow<2>(me2) * pow<2>(s16) +
-        4 * me2 * s12 * pow<2>(s16) + 4 * me2 * s15 * pow<2>(s16) +
-        32 * me2 * pow<2>(mm2) * s25 - 24 * me2 * mm2 * s12 * s25 -
-        20 * me2 * mm2 * s15 * s25 + 12 * pow<2>(mm2) * s15 * s25 -
-        8 * mm2 * s12 * s15 * s25 - 8 * mm2 * pow<2>(s15) * s25 -
+        32 * pow(me2, 2) * pow(mm2, 2) - 24 * pow(me2, 2) * mm2 * s12 -
+        24 * me2 * pow(mm2, 2) * s12 + 16 * me2 * mm2 * pow(s12, 2) -
+        24 * pow(me2, 2) * mm2 * s15 - 24 * me2 * pow(mm2, 2) * s15 +
+        32 * me2 * mm2 * s12 * s15 + 16 * me2 * mm2 * pow(s15, 2) -
+        32 * pow(me2, 2) * mm2 * s16 + 24 * me2 * mm2 * s12 * s16 +
+        24 * me2 * mm2 * s15 * s16 - 8 * pow(me2, 2) * pow(s16, 2) +
+        4 * me2 * s12 * pow(s16, 2) + 4 * me2 * s15 * pow(s16, 2) +
+        32 * me2 * pow(mm2, 2) * s25 - 24 * me2 * mm2 * s12 * s25 -
+        20 * me2 * mm2 * s15 * s25 + 12 * pow(mm2, 2) * s15 * s25 -
+        8 * mm2 * s12 * s15 * s25 - 8 * mm2 * pow(s15, 2) * s25 -
         32 * me2 * mm2 * s16 * s25 - 12 * mm2 * s15 * s16 * s25 -
-        8 * me2 * pow<2>(s16) * s25 - 2 * s15 * pow<2>(s16) * s25 -
-        8 * pow<2>(mm2) * pow<2>(s25) + 4 * mm2 * s12 * pow<2>(s25) +
-        8 * mm2 * s15 * pow<2>(s25) + 8 * mm2 * s16 * pow<2>(s25) +
-        2 * pow<2>(s16) * pow<2>(s25) + 24 * pow<2>(me2) * mm2 * s26 +
-        24 * me2 * pow<2>(mm2) * s26 - 32 * me2 * mm2 * s12 * s26 -
-        32 * me2 * mm2 * s15 * s26 + 12 * pow<2>(me2) * s16 * s26 -
+        8 * me2 * pow(s16, 2) * s25 - 2 * s15 * pow(s16, 2) * s25 -
+        8 * pow(mm2, 2) * pow(s25, 2) + 4 * mm2 * s12 * pow(s25, 2) +
+        8 * mm2 * s15 * pow(s25, 2) + 8 * mm2 * s16 * pow(s25, 2) +
+        2 * pow(s16, 2) * pow(s25, 2) + 24 * pow(me2, 2) * mm2 * s26 +
+        24 * me2 * pow(mm2, 2) * s26 - 32 * me2 * mm2 * s12 * s26 -
+        32 * me2 * mm2 * s15 * s26 + 12 * pow(me2, 2) * s16 * s26 -
         20 * me2 * mm2 * s16 * s26 - 8 * me2 * s12 * s16 * s26 -
-        8 * me2 * s15 * s16 * s26 - 8 * me2 * pow<2>(s16) * s26 +
+        8 * me2 * s15 * s16 * s26 - 8 * me2 * pow(s16, 2) * s26 +
         24 * me2 * mm2 * s25 * s26 + 8 * mm2 * s15 * s25 * s26 +
         12 * me2 * s16 * s25 * s26 + 2 * s15 * s16 * s25 * s26 -
-        4 * mm2 * pow<2>(s25) * s26 - 2 * s16 * pow<2>(s25) * s26 +
-        16 * me2 * mm2 * pow<2>(s26) + 8 * me2 * s16 * pow<2>(s26) +
-        24 * pow<2>(me2) * mm2 * s56 + 24 * me2 * pow<2>(mm2) * s56 -
+        4 * mm2 * pow(s25, 2) * s26 - 2 * s16 * pow(s25, 2) * s26 +
+        16 * me2 * mm2 * pow(s26, 2) + 8 * me2 * s16 * pow(s26, 2) +
+        24 * pow(me2, 2) * mm2 * s56 + 24 * me2 * pow(mm2, 2) * s56 -
         32 * me2 * mm2 * s12 * s56 - 32 * me2 * mm2 * s15 * s56 +
-        12 * pow<2>(me2) * s16 * s56 - 20 * me2 * mm2 * s16 * s56 -
+        12 * pow(me2, 2) * s16 * s56 - 20 * me2 * mm2 * s16 * s56 -
         8 * me2 * s12 * s16 * s56 - 8 * me2 * s15 * s16 * s56 -
-        8 * me2 * pow<2>(s16) * s56 + 20 * me2 * mm2 * s25 * s56 -
-        12 * pow<2>(mm2) * s25 * s56 + 8 * mm2 * s12 * s25 * s56 +
+        8 * me2 * pow(s16, 2) * s56 + 20 * me2 * mm2 * s25 * s56 -
+        12 * pow(mm2, 2) * s25 * s56 + 8 * mm2 * s12 * s25 * s56 +
         16 * mm2 * s15 * s25 * s56 + 10 * me2 * s16 * s25 * s56 +
         10 * mm2 * s16 * s25 * s56 + 2 * s12 * s16 * s25 * s56 +
-        4 * s15 * s16 * s25 * s56 + 4 * pow<2>(s16) * s25 * s56 -
-        8 * mm2 * pow<2>(s25) * s56 - 4 * s16 * pow<2>(s25) * s56 +
+        4 * s15 * s16 * s25 * s56 + 4 * pow(s16, 2) * s25 * s56 -
+        8 * mm2 * pow(s25, 2) * s56 - 4 * s16 * pow(s25, 2) * s56 +
         32 * me2 * mm2 * s26 * s56 + 16 * me2 * s16 * s26 * s56 -
         8 * mm2 * s25 * s26 * s56 - 4 * s16 * s25 * s26 * s56 +
-        16 * me2 * mm2 * pow<2>(s56) + 8 * me2 * s16 * pow<2>(s56) -
-        8 * mm2 * s25 * pow<2>(s56) - 4 * s16 * s25 * pow<2>(s56)};
+        16 * me2 * mm2 * pow(s56, 2) + 8 * me2 * s16 * pow(s56, 2) -
+        8 * mm2 * s25 * pow(s56, 2) - 4 * s16 * s25 * pow(s56, 2)};
 
-    return if11 / pow<2>(den1) + if22 / pow<2>(den2) + if33 / pow<2>(den3) +
-           if44 / pow<2>(den4) + if55 / pow<2>(den5) + if66 / pow<2>(den6) +
+    return if11 / pow(den1, 2) + if22 / pow(den2, 2) + if33 / pow(den3, 2) +
+           if44 / pow(den4, 2) + if55 / pow(den5, 2) + if66 / pow(den6, 2) +
            2 * (if12 / (den1 * den2) + if13 / (den1 * den3) +
                 if14 / (den1 * den4) + if15 / (den1 * den5) +
                 if16 / (den1 * den6) + if23 / (den2 * den3) +
@@ -1482,427 +1482,427 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS2n(double mm2, double me2, 
     //
 
     const auto if11{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        36 * pow<2>(me2) * s25 + 4 * me2 * mm2 * s25 - 8 * me2 * s12 * s25 -
-        8 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 18 * me2 * pow<2>(s25) +
-        2 * mm2 * pow<2>(s25) - 4 * s12 * pow<2>(s25) - 2 * s15 * pow<2>(s25) -
-        4 * s16 * pow<2>(s25) + 4 * pow<3>(s25) + 24 * pow<2>(me2) * s26 +
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        36 * pow(me2, 2) * s25 + 4 * me2 * mm2 * s25 - 8 * me2 * s12 * s25 -
+        8 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 18 * me2 * pow(s25, 2) +
+        2 * mm2 * pow(s25, 2) - 4 * s12 * pow(s25, 2) - 2 * s15 * pow(s25, 2) -
+        4 * s16 * pow(s25, 2) + 4 * pow(s25, 3) + 24 * pow(me2, 2) * s26 +
         4 * me2 * s16 * s26 + 8 * me2 * s25 * s26 + 2 * s15 * s25 * s26 +
-        4 * pow<2>(s25) * s26 - 4 * me2 * pow<2>(s26) + 24 * pow<2>(me2) * s56 +
+        4 * pow(s25, 2) * s26 - 4 * me2 * pow(s26, 2) + 24 * pow(me2, 2) * s56 +
         4 * me2 * s16 * s56 + 14 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 -
         4 * s12 * s25 * s56 - 2 * s15 * s25 * s56 - 4 * s16 * s25 * s56 +
-        8 * pow<2>(s25) * s56 - 8 * me2 * s26 * s56 + 4 * s25 * s26 * s56 -
-        4 * me2 * pow<2>(s56) + 4 * s25 * pow<2>(s56)};
+        8 * pow(s25, 2) * s56 - 8 * me2 * s26 * s56 + 4 * s25 * s26 * s56 -
+        4 * me2 * pow(s56, 2) + 4 * s25 * pow(s56, 2)};
     const auto if12{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        30 * pow<2>(me2) * s25 + 2 * me2 * mm2 * s25 - 4 * me2 * s12 * s25 -
-        4 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 6 * me2 * pow<2>(s25) +
-        2 * s15 * pow<2>(s25) + 2 * s16 * pow<2>(s25) - 2 * pow<3>(s25) +
-        30 * pow<2>(me2) * s26 + 2 * me2 * mm2 * s26 - 4 * me2 * s12 * s26 -
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        30 * pow(me2, 2) * s25 + 2 * me2 * mm2 * s25 - 4 * me2 * s12 * s25 -
+        4 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 6 * me2 * pow(s25, 2) +
+        2 * s15 * pow(s25, 2) + 2 * s16 * pow(s25, 2) - 2 * pow(s25, 3) +
+        30 * pow(me2, 2) * s26 + 2 * me2 * mm2 * s26 - 4 * me2 * s12 * s26 -
         4 * me2 * s15 * s26 - 4 * me2 * s16 * s26 + 12 * me2 * s25 * s26 +
-        4 * s15 * s25 * s26 + 4 * s16 * s25 * s26 - 6 * pow<2>(s25) * s26 +
-        6 * me2 * pow<2>(s26) + 2 * s15 * pow<2>(s26) + 2 * s16 * pow<2>(s26) -
-        6 * s25 * pow<2>(s26) - 2 * pow<3>(s26) + 24 * pow<2>(me2) * s56 +
+        4 * s15 * s25 * s26 + 4 * s16 * s25 * s26 - 6 * pow(s25, 2) * s26 +
+        6 * me2 * pow(s26, 2) + 2 * s15 * pow(s26, 2) + 2 * s16 * pow(s26, 2) -
+        6 * s25 * pow(s26, 2) - 2 * pow(s26, 3) + 24 * pow(me2, 2) * s56 +
         12 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 - 4 * s12 * s25 * s56 -
-        2 * pow<2>(s25) * s56 + 12 * me2 * s26 * s56 + 2 * mm2 * s26 * s56 -
-        4 * s12 * s26 * s56 - 4 * s25 * s26 * s56 - 2 * pow<2>(s26) * s56 +
-        6 * me2 * pow<2>(s56) + 2 * mm2 * pow<2>(s56) - 4 * s12 * pow<2>(s56) -
-        2 * s15 * pow<2>(s56) - 2 * s16 * pow<2>(s56) + 2 * s25 * pow<2>(s56) +
-        2 * s26 * pow<2>(s56) + 2 * pow<3>(s56)};
+        2 * pow(s25, 2) * s56 + 12 * me2 * s26 * s56 + 2 * mm2 * s26 * s56 -
+        4 * s12 * s26 * s56 - 4 * s25 * s26 * s56 - 2 * pow(s26, 2) * s56 +
+        6 * me2 * pow(s56, 2) + 2 * mm2 * pow(s56, 2) - 4 * s12 * pow(s56, 2) -
+        2 * s15 * pow(s56, 2) - 2 * s16 * pow(s56, 2) + 2 * s25 * pow(s56, 2) +
+        2 * s26 * pow(s56, 2) + 2 * pow(s56, 3)};
     const auto if22{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        24 * pow<2>(me2) * s25 + 4 * me2 * s15 * s25 - 4 * me2 * pow<2>(s25) +
-        36 * pow<2>(me2) * s26 + 4 * me2 * mm2 * s26 - 8 * me2 * s12 * s26 -
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        24 * pow(me2, 2) * s25 + 4 * me2 * s15 * s25 - 4 * me2 * pow(s25, 2) +
+        36 * pow(me2, 2) * s26 + 4 * me2 * mm2 * s26 - 8 * me2 * s12 * s26 -
         4 * me2 * s15 * s26 - 8 * me2 * s16 * s26 + 8 * me2 * s25 * s26 +
-        2 * s16 * s25 * s26 + 18 * me2 * pow<2>(s26) + 2 * mm2 * pow<2>(s26) -
-        4 * s12 * pow<2>(s26) - 4 * s15 * pow<2>(s26) - 2 * s16 * pow<2>(s26) +
-        4 * s25 * pow<2>(s26) + 4 * pow<3>(s26) + 24 * pow<2>(me2) * s56 +
+        2 * s16 * s25 * s26 + 18 * me2 * pow(s26, 2) + 2 * mm2 * pow(s26, 2) -
+        4 * s12 * pow(s26, 2) - 4 * s15 * pow(s26, 2) - 2 * s16 * pow(s26, 2) +
+        4 * s25 * pow(s26, 2) + 4 * pow(s26, 3) + 24 * pow(me2, 2) * s56 +
         4 * me2 * s15 * s56 - 8 * me2 * s25 * s56 + 14 * me2 * s26 * s56 +
         2 * mm2 * s26 * s56 - 4 * s12 * s26 * s56 - 4 * s15 * s26 * s56 -
-        2 * s16 * s26 * s56 + 4 * s25 * s26 * s56 + 8 * pow<2>(s26) * s56 -
-        4 * me2 * pow<2>(s56) + 4 * s26 * pow<2>(s56)};
+        2 * s16 * s26 * s56 + 4 * s25 * s26 * s56 + 8 * pow(s26, 2) * s56 -
+        4 * me2 * pow(s56, 2) + 4 * s26 * pow(s56, 2)};
     const auto if13{
-        -6 * me2 * pow<2>(s12) - 2 * mm2 * pow<2>(s12) + 4 * pow<3>(s12) -
-        6 * pow<2>(me2) * s15 - 2 * me2 * mm2 * s15 - 7 * me2 * s12 * s15 -
-        3 * mm2 * s12 * s15 + 10 * pow<2>(s12) * s15 - me2 * pow<2>(s15) -
-        mm2 * pow<2>(s15) + 7 * s12 * pow<2>(s15) + pow<3>(s15) -
-        5 * me2 * s12 * s16 - mm2 * s12 * s16 + 6 * pow<2>(s12) * s16 -
+        -6 * me2 * pow(s12, 2) - 2 * mm2 * pow(s12, 2) + 4 * pow(s12, 3) -
+        6 * pow(me2, 2) * s15 - 2 * me2 * mm2 * s15 - 7 * me2 * s12 * s15 -
+        3 * mm2 * s12 * s15 + 10 * pow(s12, 2) * s15 - me2 * pow(s15, 2) -
+        mm2 * pow(s15, 2) + 7 * s12 * pow(s15, 2) + pow(s15, 3) -
+        5 * me2 * s12 * s16 - mm2 * s12 * s16 + 6 * pow(s12, 2) * s16 -
         me2 * s15 * s16 - mm2 * s15 * s16 + 8 * s12 * s15 * s16 +
-        2 * pow<2>(s15) * s16 + s12 * pow<2>(s16) + s15 * pow<2>(s16) +
-        6 * me2 * mm2 * s25 + 2 * pow<2>(mm2) * s25 + 12 * me2 * s12 * s25 -
-        2 * mm2 * s12 * s25 - 12 * pow<2>(s12) * s25 + 5 * me2 * s15 * s25 +
-        mm2 * s15 * s25 - 19 * s12 * s15 * s25 - 7 * pow<2>(s15) * s25 +
+        2 * pow(s15, 2) * s16 + s12 * pow(s16, 2) + s15 * pow(s16, 2) +
+        6 * me2 * mm2 * s25 + 2 * pow(mm2, 2) * s25 + 12 * me2 * s12 * s25 -
+        2 * mm2 * s12 * s25 - 12 * pow(s12, 2) * s25 + 5 * me2 * s15 * s25 +
+        mm2 * s15 * s25 - 19 * s12 * s15 * s25 - 7 * pow(s15, 2) * s25 +
         4 * me2 * s16 * s25 - 2 * mm2 * s16 * s25 - 10 * s12 * s16 * s25 -
-        9 * s15 * s16 * s25 - pow<2>(s16) * s25 - 6 * me2 * pow<2>(s25) +
-        4 * mm2 * pow<2>(s25) + 12 * s12 * pow<2>(s25) + 9 * s15 * pow<2>(s25) +
-        4 * s16 * pow<2>(s25) - 4 * pow<3>(s25) + 6 * me2 * s12 * s26 -
-        8 * pow<2>(s12) * s26 - 2 * me2 * s15 * s26 + 2 * mm2 * s15 * s26 -
-        11 * s12 * s15 * s26 - 4 * pow<2>(s15) * s26 - 4 * s12 * s16 * s26 -
+        9 * s15 * s16 * s25 - pow(s16, 2) * s25 - 6 * me2 * pow(s25, 2) +
+        4 * mm2 * pow(s25, 2) + 12 * s12 * pow(s25, 2) + 9 * s15 * pow(s25, 2) +
+        4 * s16 * pow(s25, 2) - 4 * pow(s25, 3) + 6 * me2 * s12 * s26 -
+        8 * pow(s12, 2) * s26 - 2 * me2 * s15 * s26 + 2 * mm2 * s15 * s26 -
+        11 * s12 * s15 * s26 - 4 * pow(s15, 2) * s26 - 4 * s12 * s16 * s26 -
         5 * s15 * s16 * s26 - 6 * me2 * s25 * s26 + 4 * mm2 * s25 * s26 +
         16 * s12 * s25 * s26 + 12 * s15 * s25 * s26 + 4 * s16 * s25 * s26 -
-        8 * pow<2>(s25) * s26 + 4 * s12 * pow<2>(s26) + 3 * s15 * pow<2>(s26) -
-        4 * s25 * pow<2>(s26) + 3 * pow<2>(me2) * s56 + 4 * me2 * mm2 * s56 +
-        pow<2>(mm2) * s56 + 10 * me2 * s12 * s56 + 2 * mm2 * s12 * s56 -
-        12 * pow<2>(s12) * s56 + 2 * me2 * s15 * s56 + 3 * mm2 * s15 * s56 -
-        16 * s12 * s15 * s56 - 5 * pow<2>(s15) * s56 - mm2 * s16 * s56 -
+        8 * pow(s25, 2) * s26 + 4 * s12 * pow(s26, 2) + 3 * s15 * pow(s26, 2) -
+        4 * s25 * pow(s26, 2) + 3 * pow(me2, 2) * s56 + 4 * me2 * mm2 * s56 +
+        pow(mm2, 2) * s56 + 10 * me2 * s12 * s56 + 2 * mm2 * s12 * s56 -
+        12 * pow(s12, 2) * s56 + 2 * me2 * s15 * s56 + 3 * mm2 * s15 * s56 -
+        16 * s12 * s15 * s56 - 5 * pow(s15, 2) * s56 - mm2 * s16 * s56 -
         7 * s12 * s16 * s56 - 6 * s15 * s16 * s56 - 9 * me2 * s25 * s56 +
         2 * mm2 * s25 * s56 + 22 * s12 * s25 * s56 + 16 * s15 * s25 * s56 +
-        7 * s16 * s25 * s56 - 10 * pow<2>(s25) * s56 + 2 * me2 * s26 * s56 +
+        7 * s16 * s25 * s56 - 10 * pow(s25, 2) * s56 + 2 * me2 * s26 * s56 +
         3 * mm2 * s26 * s56 + 10 * s12 * s26 * s56 + 7 * s15 * s26 * s56 -
-        10 * s25 * s26 * s56 + 2 * mm2 * pow<2>(s56) + 6 * s12 * pow<2>(s56) +
-        4 * s15 * pow<2>(s56) - 6 * s25 * pow<2>(s56)};
+        10 * s25 * s26 * s56 + 2 * mm2 * pow(s56, 2) + 6 * s12 * pow(s56, 2) +
+        4 * s15 * pow(s56, 2) - 6 * s25 * pow(s56, 2)};
     const auto if23{
-        -6 * me2 * pow<2>(s12) - 2 * mm2 * pow<2>(s12) + 4 * pow<3>(s12) -
-        6 * pow<2>(me2) * s15 - 2 * me2 * mm2 * s15 - me2 * s12 * s15 -
-        mm2 * s12 * s15 + 6 * pow<2>(s12) * s15 + 2 * me2 * pow<2>(s15) +
-        2 * s12 * pow<2>(s15) - 11 * me2 * s12 * s16 - 3 * mm2 * s12 * s16 +
-        10 * pow<2>(s12) * s16 - 3 * me2 * s15 * s16 - mm2 * s15 * s16 +
-        9 * s12 * s15 * s16 + pow<2>(s15) * s16 - 5 * me2 * pow<2>(s16) -
-        mm2 * pow<2>(s16) + 7 * s12 * pow<2>(s16) + 2 * s15 * pow<2>(s16) +
-        pow<3>(s16) + 12 * me2 * s12 * s25 + 2 * mm2 * s12 * s25 -
-        12 * pow<2>(s12) * s25 - me2 * s15 * s25 - 3 * mm2 * s15 * s25 -
-        8 * s12 * s15 * s25 + 2 * pow<2>(s15) * s25 + 10 * me2 * s16 * s25 -
-        18 * s12 * s16 * s25 - 2 * s15 * s16 * s25 - 4 * pow<2>(s16) * s25 -
-        6 * me2 * pow<2>(s25) + 12 * s12 * pow<2>(s25) + 2 * s15 * pow<2>(s25) +
-        8 * s16 * pow<2>(s25) - 4 * pow<3>(s25) + 6 * me2 * mm2 * s26 +
-        2 * pow<2>(mm2) * s26 + 6 * me2 * s12 * s26 - 4 * mm2 * s12 * s26 -
-        8 * pow<2>(s12) * s26 - 5 * me2 * s15 * s26 - 7 * mm2 * s15 * s26 -
-        2 * s12 * s15 * s26 + 4 * pow<2>(s15) * s26 + 3 * me2 * s16 * s26 -
+        -6 * me2 * pow(s12, 2) - 2 * mm2 * pow(s12, 2) + 4 * pow(s12, 3) -
+        6 * pow(me2, 2) * s15 - 2 * me2 * mm2 * s15 - me2 * s12 * s15 -
+        mm2 * s12 * s15 + 6 * pow(s12, 2) * s15 + 2 * me2 * pow(s15, 2) +
+        2 * s12 * pow(s15, 2) - 11 * me2 * s12 * s16 - 3 * mm2 * s12 * s16 +
+        10 * pow(s12, 2) * s16 - 3 * me2 * s15 * s16 - mm2 * s15 * s16 +
+        9 * s12 * s15 * s16 + pow(s15, 2) * s16 - 5 * me2 * pow(s16, 2) -
+        mm2 * pow(s16, 2) + 7 * s12 * pow(s16, 2) + 2 * s15 * pow(s16, 2) +
+        pow(s16, 3) + 12 * me2 * s12 * s25 + 2 * mm2 * s12 * s25 -
+        12 * pow(s12, 2) * s25 - me2 * s15 * s25 - 3 * mm2 * s15 * s25 -
+        8 * s12 * s15 * s25 + 2 * pow(s15, 2) * s25 + 10 * me2 * s16 * s25 -
+        18 * s12 * s16 * s25 - 2 * s15 * s16 * s25 - 4 * pow(s16, 2) * s25 -
+        6 * me2 * pow(s25, 2) + 12 * s12 * pow(s25, 2) + 2 * s15 * pow(s25, 2) +
+        8 * s16 * pow(s25, 2) - 4 * pow(s25, 3) + 6 * me2 * mm2 * s26 +
+        2 * pow(mm2, 2) * s26 + 6 * me2 * s12 * s26 - 4 * mm2 * s12 * s26 -
+        8 * pow(s12, 2) * s26 - 5 * me2 * s15 * s26 - 7 * mm2 * s15 * s26 -
+        2 * s12 * s15 * s26 + 4 * pow(s15, 2) * s26 + 3 * me2 * s16 * s26 -
         5 * mm2 * s16 * s26 - 10 * s12 * s16 * s26 + 3 * s15 * s16 * s26 -
-        pow<2>(s16) * s26 - 6 * me2 * s25 * s26 + 6 * mm2 * s25 * s26 +
+        pow(s16, 2) * s26 - 6 * me2 * s25 * s26 + 6 * mm2 * s25 * s26 +
         16 * s12 * s25 * s26 - 2 * s15 * s25 * s26 + 8 * s16 * s25 * s26 -
-        8 * pow<2>(s25) * s26 + 6 * mm2 * pow<2>(s26) + 4 * s12 * pow<2>(s26) -
-        4 * s15 * pow<2>(s26) - 4 * s25 * pow<2>(s26) + 3 * pow<2>(me2) * s56 +
-        4 * me2 * mm2 * s56 + pow<2>(mm2) * s56 + 10 * me2 * s12 * s56 +
-        2 * mm2 * s12 * s56 - 12 * pow<2>(s12) * s56 - me2 * s15 * s56 -
-        3 * mm2 * s15 * s56 - 8 * s12 * s15 * s56 + 2 * pow<2>(s15) * s56 +
+        8 * pow(s25, 2) * s26 + 6 * mm2 * pow(s26, 2) + 4 * s12 * pow(s26, 2) -
+        4 * s15 * pow(s26, 2) - 4 * s25 * pow(s26, 2) + 3 * pow(me2, 2) * s56 +
+        4 * me2 * mm2 * s56 + pow(mm2, 2) * s56 + 10 * me2 * s12 * s56 +
+        2 * mm2 * s12 * s56 - 12 * pow(s12, 2) * s56 - me2 * s15 * s56 -
+        3 * mm2 * s15 * s56 - 8 * s12 * s15 * s56 + 2 * pow(s15, 2) * s56 +
         9 * me2 * s16 * s56 + mm2 * s16 * s56 - 17 * s12 * s16 * s56 -
-        s15 * s16 * s56 - 3 * pow<2>(s16) * s56 - 9 * me2 * s25 * s56 +
+        s15 * s16 * s56 - 3 * pow(s16, 2) * s56 - 9 * me2 * s25 * s56 +
         mm2 * s25 * s56 + 22 * s12 * s25 * s56 + s15 * s25 * s56 +
-        11 * s16 * s25 * s56 - 10 * pow<2>(s25) * s56 - me2 * s26 * s56 +
+        11 * s16 * s25 * s56 - 10 * pow(s25, 2) * s56 - me2 * s26 * s56 +
         9 * mm2 * s26 * s56 + 12 * s12 * s26 * s56 - 7 * s15 * s26 * s56 +
-        2 * s16 * s26 * s56 - 10 * s25 * s26 * s56 - 4 * me2 * pow<2>(s56) +
-        10 * s12 * pow<2>(s56) - s15 * pow<2>(s56) + 3 * s16 * pow<2>(s56) -
-        7 * s25 * pow<2>(s56) - s26 * pow<2>(s56) - pow<3>(s56)};
+        2 * s16 * s26 * s56 - 10 * s25 * s26 * s56 - 4 * me2 * pow(s56, 2) +
+        10 * s12 * pow(s56, 2) - s15 * pow(s56, 2) + 3 * s16 * pow(s56, 2) -
+        7 * s25 * pow(s56, 2) - s26 * pow(s56, 2) - pow(s56, 3)};
     const auto if33{
-        24 * me2 * pow<2>(mm2) + 8 * pow<3>(mm2) - 16 * pow<2>(mm2) * s12 -
-        24 * me2 * mm2 * s15 - 16 * pow<2>(mm2) * s15 + 16 * mm2 * s12 * s15 +
-        6 * me2 * pow<2>(s15) + 10 * mm2 * pow<2>(s15) - 4 * s12 * pow<2>(s15) -
-        2 * pow<3>(s15) - 12 * me2 * mm2 * s16 - 12 * pow<2>(mm2) * s16 +
+        24 * me2 * pow(mm2, 2) + 8 * pow(mm2, 3) - 16 * pow(mm2, 2) * s12 -
+        24 * me2 * mm2 * s15 - 16 * pow(mm2, 2) * s15 + 16 * mm2 * s12 * s15 +
+        6 * me2 * pow(s15, 2) + 10 * mm2 * pow(s15, 2) - 4 * s12 * pow(s15, 2) -
+        2 * pow(s15, 3) - 12 * me2 * mm2 * s16 - 12 * pow(mm2, 2) * s16 +
         8 * mm2 * s12 * s16 + 6 * me2 * s15 * s16 + 14 * mm2 * s15 * s16 -
-        4 * s12 * s15 * s16 - 4 * pow<2>(s15) * s16 + 4 * mm2 * pow<2>(s16) -
-        2 * s15 * pow<2>(s16) + 16 * pow<2>(mm2) * s25 - 16 * mm2 * s15 * s25 +
-        4 * pow<2>(s15) * s25 - 8 * mm2 * s16 * s25 + 4 * s15 * s16 * s25 +
-        16 * pow<2>(mm2) * s26 - 16 * mm2 * s15 * s26 + 4 * pow<2>(s15) * s26 -
+        4 * s12 * s15 * s16 - 4 * pow(s15, 2) * s16 + 4 * mm2 * pow(s16, 2) -
+        2 * s15 * pow(s16, 2) + 16 * pow(mm2, 2) * s25 - 16 * mm2 * s15 * s25 +
+        4 * pow(s15, 2) * s25 - 8 * mm2 * s16 * s25 + 4 * s15 * s16 * s25 +
+        16 * pow(mm2, 2) * s26 - 16 * mm2 * s15 * s26 + 4 * pow(s15, 2) * s26 -
         8 * mm2 * s16 * s26 + 4 * s15 * s16 * s26 + 12 * me2 * mm2 * s56 +
-        12 * pow<2>(mm2) * s56 - 8 * mm2 * s12 * s56 - 6 * me2 * s15 * s56 -
-        14 * mm2 * s15 * s56 + 4 * s12 * s15 * s56 + 4 * pow<2>(s15) * s56 -
+        12 * pow(mm2, 2) * s56 - 8 * mm2 * s12 * s56 - 6 * me2 * s15 * s56 -
+        14 * mm2 * s15 * s56 + 4 * s12 * s15 * s56 + 4 * pow(s15, 2) * s56 -
         8 * mm2 * s16 * s56 + 4 * s15 * s16 * s56 + 8 * mm2 * s25 * s56 -
         4 * s15 * s25 * s56 + 8 * mm2 * s26 * s56 - 4 * s15 * s26 * s56 +
-        4 * mm2 * pow<2>(s56) - 2 * s15 * pow<2>(s56)};
+        4 * mm2 * pow(s56, 2) - 2 * s15 * pow(s56, 2)};
     const auto if14{
-        -12 * pow<2>(me2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow<2>(s12) -
-        10 * pow<2>(me2) * s15 - 2 * me2 * mm2 * s15 + 12 * me2 * s12 * s15 +
-        2 * me2 * pow<2>(s15) + 8 * me2 * s12 * s16 + 6 * me2 * s15 * s16 +
-        12 * pow<2>(me2) * s25 + 4 * me2 * mm2 * s25 - 18 * me2 * s12 * s25 -
+        -12 * pow(me2, 2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow(s12, 2) -
+        10 * pow(me2, 2) * s15 - 2 * me2 * mm2 * s15 + 12 * me2 * s12 * s15 +
+        2 * me2 * pow(s15, 2) + 8 * me2 * s12 * s16 + 6 * me2 * s15 * s16 +
+        12 * pow(me2, 2) * s25 + 4 * me2 * mm2 * s25 - 18 * me2 * s12 * s25 -
         15 * me2 * s15 * s25 - mm2 * s15 * s25 + 3 * s12 * s15 * s25 +
-        pow<2>(s15) * s25 - 11 * me2 * s16 * s25 - mm2 * s16 * s25 +
-        s12 * s16 * s25 + 3 * s15 * s16 * s25 + 2 * pow<2>(s16) * s25 +
-        10 * me2 * pow<2>(s25) - 2 * mm2 * pow<2>(s25) - s15 * pow<2>(s25) -
-        s16 * pow<2>(s25) - 12 * me2 * s12 * s26 - 10 * me2 * s15 * s26 -
-        2 * pow<2>(s15) * s26 - 2 * s12 * s16 * s26 - 2 * s15 * s16 * s26 +
+        pow(s15, 2) * s25 - 11 * me2 * s16 * s25 - mm2 * s16 * s25 +
+        s12 * s16 * s25 + 3 * s15 * s16 * s25 + 2 * pow(s16, 2) * s25 +
+        10 * me2 * pow(s25, 2) - 2 * mm2 * pow(s25, 2) - s15 * pow(s25, 2) -
+        s16 * pow(s25, 2) - 12 * me2 * s12 * s26 - 10 * me2 * s15 * s26 -
+        2 * pow(s15, 2) * s26 - 2 * s12 * s16 * s26 - 2 * s15 * s16 * s26 +
         12 * me2 * s25 * s26 - 2 * mm2 * s25 * s26 + 2 * s12 * s25 * s26 +
-        2 * s15 * s25 * s26 - 2 * pow<2>(s25) * s26 + 2 * s12 * pow<2>(s26) +
-        2 * s15 * pow<2>(s26) - 2 * s25 * pow<2>(s26) + 6 * pow<2>(me2) * s56 +
+        2 * s15 * s25 * s26 - 2 * pow(s25, 2) * s26 + 2 * s12 * pow(s26, 2) +
+        2 * s15 * pow(s26, 2) - 2 * s25 * pow(s26, 2) + 6 * pow(me2, 2) * s56 +
         2 * me2 * mm2 * s56 - 14 * me2 * s12 * s56 - 12 * me2 * s15 * s56 -
-        mm2 * s15 * s56 + 3 * s12 * s15 * s56 + pow<2>(s15) * s56 -
+        mm2 * s15 * s56 + 3 * s12 * s15 * s56 + pow(s15, 2) * s56 -
         4 * me2 * s16 * s56 - s12 * s16 * s56 + s15 * s16 * s56 +
         16 * me2 * s25 * s56 - 3 * mm2 * s25 * s56 - 2 * s15 * s25 * s56 -
         s16 * s25 * s56 + 5 * me2 * s26 * s56 - mm2 * s26 * s56 +
         4 * s12 * s26 * s56 + 3 * s15 * s26 * s56 + 2 * s16 * s26 * s56 -
-        4 * s25 * s26 * s56 - 2 * pow<2>(s26) * s56 + 5 * me2 * pow<2>(s56) -
-        s15 * pow<2>(s56) - 2 * s26 * pow<2>(s56)};
+        4 * s25 * s26 * s56 - 2 * pow(s26, 2) * s56 + 5 * me2 * pow(s56, 2) -
+        s15 * pow(s56, 2) - 2 * s26 * pow(s56, 2)};
     const auto if24{
-        -12 * pow<2>(me2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow<2>(s12) -
-        10 * pow<2>(me2) * s15 - 2 * me2 * mm2 * s15 + 12 * me2 * s12 * s15 +
-        2 * me2 * pow<2>(s15) - 12 * pow<2>(me2) * s16 - 4 * me2 * mm2 * s16 +
-        16 * me2 * s12 * s16 + 12 * me2 * s15 * s16 + 8 * me2 * pow<2>(s16) +
-        12 * pow<2>(me2) * s25 - 16 * me2 * s12 * s25 - 8 * me2 * s15 * s25 -
-        16 * me2 * s16 * s25 + 8 * me2 * pow<2>(s25) - 4 * me2 * mm2 * s26 -
+        -12 * pow(me2, 2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow(s12, 2) -
+        10 * pow(me2, 2) * s15 - 2 * me2 * mm2 * s15 + 12 * me2 * s12 * s15 +
+        2 * me2 * pow(s15, 2) - 12 * pow(me2, 2) * s16 - 4 * me2 * mm2 * s16 +
+        16 * me2 * s12 * s16 + 12 * me2 * s15 * s16 + 8 * me2 * pow(s16, 2) +
+        12 * pow(me2, 2) * s25 - 16 * me2 * s12 * s25 - 8 * me2 * s15 * s25 -
+        16 * me2 * s16 * s25 + 8 * me2 * pow(s25, 2) - 4 * me2 * mm2 * s26 -
         10 * me2 * s12 * s26 - 6 * me2 * s15 * s26 - 7 * me2 * s16 * s26 +
         mm2 * s16 * s26 - 3 * s12 * s16 * s26 - 4 * s15 * s16 * s26 -
-        3 * pow<2>(s16) * s26 + 10 * me2 * s25 * s26 + 4 * s16 * s25 * s26 +
-        2 * mm2 * pow<2>(s26) + 3 * s16 * pow<2>(s26) + 12 * pow<2>(me2) * s56 -
+        3 * pow(s16, 2) * s26 + 10 * me2 * s25 * s26 + 4 * s16 * s25 * s26 +
+        2 * mm2 * pow(s26, 2) + 3 * s16 * pow(s26, 2) + 12 * pow(me2, 2) * s56 -
         16 * me2 * s12 * s56 - 8 * me2 * s15 * s56 - 16 * me2 * s16 * s56 +
         16 * me2 * s25 * s56 + 9 * me2 * s26 * s56 + 3 * mm2 * s26 * s56 +
-        4 * s16 * s26 * s56 - s25 * s26 * s56 - pow<2>(s26) * s56 +
-        8 * me2 * pow<2>(s56) - s26 * pow<2>(s56)};
+        4 * s16 * s26 * s56 - s25 * s26 * s56 - pow(s26, 2) * s56 +
+        8 * me2 * pow(s56, 2) - s26 * pow(s56, 2)};
     const auto if34{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) +
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) +
         4 * me2 * mm2 * s15 - 6 * me2 * s12 * s15 - 8 * mm2 * s12 * s15 +
-        4 * pow<2>(s12) * s15 - 4 * me2 * pow<2>(s15) + 4 * s12 * pow<2>(s15) +
-        10 * me2 * mm2 * s16 + 2 * pow<2>(mm2) * s16 - 12 * mm2 * s12 * s16 -
+        4 * pow(s12, 2) * s15 - 4 * me2 * pow(s15, 2) + 4 * s12 * pow(s15, 2) +
+        10 * me2 * mm2 * s16 + 2 * pow(mm2, 2) * s16 - 12 * mm2 * s12 * s16 -
         7 * me2 * s15 * s16 - 5 * mm2 * s15 * s16 + 8 * s12 * s15 * s16 +
-        3 * pow<2>(s15) * s16 - 2 * mm2 * pow<2>(s16) + 3 * s15 * pow<2>(s16) -
-        12 * me2 * mm2 * s25 - 4 * pow<2>(mm2) * s25 + 16 * mm2 * s12 * s25 +
+        3 * pow(s15, 2) * s16 - 2 * mm2 * pow(s16, 2) + 3 * s15 * pow(s16, 2) -
+        12 * me2 * mm2 * s25 - 4 * pow(mm2, 2) * s25 + 16 * mm2 * s12 * s25 +
         6 * me2 * s15 * s25 + 8 * mm2 * s15 * s25 - 8 * s12 * s15 * s25 -
-        4 * pow<2>(s15) * s25 + 12 * mm2 * s16 * s25 - 8 * s15 * s16 * s25 -
-        8 * mm2 * pow<2>(s25) + 4 * s15 * pow<2>(s25) - 12 * me2 * mm2 * s26 +
+        4 * pow(s15, 2) * s25 + 12 * mm2 * s16 * s25 - 8 * s15 * s16 * s25 -
+        8 * mm2 * pow(s25, 2) + 4 * s15 * pow(s25, 2) - 12 * me2 * mm2 * s26 +
         16 * mm2 * s12 * s26 + 6 * me2 * s15 * s26 + 2 * mm2 * s15 * s26 -
-        8 * s12 * s15 * s26 - 2 * pow<2>(s15) * s26 + 8 * mm2 * s16 * s26 -
+        8 * s12 * s15 * s26 - 2 * pow(s15, 2) * s26 + 8 * mm2 * s16 * s26 -
         6 * s15 * s16 * s26 - 16 * mm2 * s25 * s26 + 8 * s15 * s25 * s26 -
-        8 * mm2 * pow<2>(s26) + 4 * s15 * pow<2>(s26) - 10 * me2 * mm2 * s56 -
-        2 * pow<2>(mm2) * s56 + 12 * mm2 * s12 * s56 + 7 * me2 * s15 * s56 +
-        5 * mm2 * s15 * s56 - 8 * s12 * s15 * s56 - 3 * pow<2>(s15) * s56 +
+        8 * mm2 * pow(s26, 2) + 4 * s15 * pow(s26, 2) - 10 * me2 * mm2 * s56 -
+        2 * pow(mm2, 2) * s56 + 12 * mm2 * s12 * s56 + 7 * me2 * s15 * s56 +
+        5 * mm2 * s15 * s56 - 8 * s12 * s15 * s56 - 3 * pow(s15, 2) * s56 +
         4 * mm2 * s16 * s56 - 6 * s15 * s16 * s56 - 12 * mm2 * s25 * s56 +
         8 * s15 * s25 * s56 - 8 * mm2 * s26 * s56 + 6 * s15 * s26 * s56 -
-        2 * mm2 * pow<2>(s56) + 3 * s15 * pow<2>(s56)};
+        2 * mm2 * pow(s56, 2) + 3 * s15 * pow(s56, 2)};
     const auto if44{
-        24 * pow<2>(me2) * mm2 + 8 * me2 * pow<2>(mm2) - 16 * me2 * mm2 * s12 -
-        12 * pow<2>(me2) * s15 - 12 * me2 * mm2 * s15 + 8 * me2 * s12 * s15 +
-        4 * me2 * pow<2>(s15) - 16 * me2 * mm2 * s16 + 8 * me2 * s15 * s16 +
+        24 * pow(me2, 2) * mm2 + 8 * me2 * pow(mm2, 2) - 16 * me2 * mm2 * s12 -
+        12 * pow(me2, 2) * s15 - 12 * me2 * mm2 * s15 + 8 * me2 * s12 * s15 +
+        4 * me2 * pow(s15, 2) - 16 * me2 * mm2 * s16 + 8 * me2 * s15 * s16 +
         16 * me2 * mm2 * s25 - 8 * me2 * s15 * s25 + 24 * me2 * mm2 * s26 -
         12 * me2 * s15 * s26 + 4 * mm2 * s16 * s26 - 2 * s15 * s16 * s26 -
-        4 * mm2 * pow<2>(s26) + 2 * s15 * pow<2>(s26) + 16 * me2 * mm2 * s56 -
+        4 * mm2 * pow(s26, 2) + 2 * s15 * pow(s26, 2) + 16 * me2 * mm2 * s56 -
         8 * me2 * s15 * s56 - 4 * mm2 * s26 * s56 + 2 * s15 * s26 * s56};
     const auto if15{
-        -6 * me2 * pow<2>(s12) - 2 * mm2 * pow<2>(s12) + 4 * pow<3>(s12) -
-        11 * me2 * s12 * s15 - 3 * mm2 * s12 * s15 + 10 * pow<2>(s12) * s15 -
-        5 * me2 * pow<2>(s15) - mm2 * pow<2>(s15) + 7 * s12 * pow<2>(s15) +
-        pow<3>(s15) - 6 * pow<2>(me2) * s16 - 2 * me2 * mm2 * s16 -
-        me2 * s12 * s16 - mm2 * s12 * s16 + 6 * pow<2>(s12) * s16 -
+        -6 * me2 * pow(s12, 2) - 2 * mm2 * pow(s12, 2) + 4 * pow(s12, 3) -
+        11 * me2 * s12 * s15 - 3 * mm2 * s12 * s15 + 10 * pow(s12, 2) * s15 -
+        5 * me2 * pow(s15, 2) - mm2 * pow(s15, 2) + 7 * s12 * pow(s15, 2) +
+        pow(s15, 3) - 6 * pow(me2, 2) * s16 - 2 * me2 * mm2 * s16 -
+        me2 * s12 * s16 - mm2 * s12 * s16 + 6 * pow(s12, 2) * s16 -
         3 * me2 * s15 * s16 - mm2 * s15 * s16 + 9 * s12 * s15 * s16 +
-        2 * pow<2>(s15) * s16 + 2 * me2 * pow<2>(s16) + 2 * s12 * pow<2>(s16) +
-        s15 * pow<2>(s16) + 6 * me2 * mm2 * s25 + 2 * pow<2>(mm2) * s25 +
-        6 * me2 * s12 * s25 - 4 * mm2 * s12 * s25 - 8 * pow<2>(s12) * s25 +
+        2 * pow(s15, 2) * s16 + 2 * me2 * pow(s16, 2) + 2 * s12 * pow(s16, 2) +
+        s15 * pow(s16, 2) + 6 * me2 * mm2 * s25 + 2 * pow(mm2, 2) * s25 +
+        6 * me2 * s12 * s25 - 4 * mm2 * s12 * s25 - 8 * pow(s12, 2) * s25 +
         3 * me2 * s15 * s25 - 5 * mm2 * s15 * s25 - 10 * s12 * s15 * s25 -
-        pow<2>(s15) * s25 - 5 * me2 * s16 * s25 - 7 * mm2 * s16 * s25 -
-        2 * s12 * s16 * s25 + 3 * s15 * s16 * s25 + 4 * pow<2>(s16) * s25 +
-        6 * mm2 * pow<2>(s25) + 4 * s12 * pow<2>(s25) - 4 * s16 * pow<2>(s25) +
-        12 * me2 * s12 * s26 + 2 * mm2 * s12 * s26 - 12 * pow<2>(s12) * s26 +
-        10 * me2 * s15 * s26 - 18 * s12 * s15 * s26 - 4 * pow<2>(s15) * s26 -
+        pow(s15, 2) * s25 - 5 * me2 * s16 * s25 - 7 * mm2 * s16 * s25 -
+        2 * s12 * s16 * s25 + 3 * s15 * s16 * s25 + 4 * pow(s16, 2) * s25 +
+        6 * mm2 * pow(s25, 2) + 4 * s12 * pow(s25, 2) - 4 * s16 * pow(s25, 2) +
+        12 * me2 * s12 * s26 + 2 * mm2 * s12 * s26 - 12 * pow(s12, 2) * s26 +
+        10 * me2 * s15 * s26 - 18 * s12 * s15 * s26 - 4 * pow(s15, 2) * s26 -
         me2 * s16 * s26 - 3 * mm2 * s16 * s26 - 8 * s12 * s16 * s26 -
-        2 * s15 * s16 * s26 + 2 * pow<2>(s16) * s26 - 6 * me2 * s25 * s26 +
+        2 * s15 * s16 * s26 + 2 * pow(s16, 2) * s26 - 6 * me2 * s25 * s26 +
         6 * mm2 * s25 * s26 + 16 * s12 * s25 * s26 + 8 * s15 * s25 * s26 -
-        2 * s16 * s25 * s26 - 4 * pow<2>(s25) * s26 - 6 * me2 * pow<2>(s26) +
-        12 * s12 * pow<2>(s26) + 8 * s15 * pow<2>(s26) + 2 * s16 * pow<2>(s26) -
-        8 * s25 * pow<2>(s26) - 4 * pow<3>(s26) + 3 * pow<2>(me2) * s56 +
-        4 * me2 * mm2 * s56 + pow<2>(mm2) * s56 + 10 * me2 * s12 * s56 +
-        2 * mm2 * s12 * s56 - 12 * pow<2>(s12) * s56 + 9 * me2 * s15 * s56 +
-        mm2 * s15 * s56 - 17 * s12 * s15 * s56 - 3 * pow<2>(s15) * s56 -
+        2 * s16 * s25 * s26 - 4 * pow(s25, 2) * s26 - 6 * me2 * pow(s26, 2) +
+        12 * s12 * pow(s26, 2) + 8 * s15 * pow(s26, 2) + 2 * s16 * pow(s26, 2) -
+        8 * s25 * pow(s26, 2) - 4 * pow(s26, 3) + 3 * pow(me2, 2) * s56 +
+        4 * me2 * mm2 * s56 + pow(mm2, 2) * s56 + 10 * me2 * s12 * s56 +
+        2 * mm2 * s12 * s56 - 12 * pow(s12, 2) * s56 + 9 * me2 * s15 * s56 +
+        mm2 * s15 * s56 - 17 * s12 * s15 * s56 - 3 * pow(s15, 2) * s56 -
         me2 * s16 * s56 - 3 * mm2 * s16 * s56 - 8 * s12 * s16 * s56 -
-        s15 * s16 * s56 + 2 * pow<2>(s16) * s56 - me2 * s25 * s56 +
+        s15 * s16 * s56 + 2 * pow(s16, 2) * s56 - me2 * s25 * s56 +
         9 * mm2 * s25 * s56 + 12 * s12 * s25 * s56 + 2 * s15 * s25 * s56 -
         7 * s16 * s25 * s56 - 9 * me2 * s26 * s56 + mm2 * s26 * s56 +
         22 * s12 * s26 * s56 + 11 * s15 * s26 * s56 + s16 * s26 * s56 -
-        10 * s25 * s26 * s56 - 10 * pow<2>(s26) * s56 - 4 * me2 * pow<2>(s56) +
-        10 * s12 * pow<2>(s56) + 3 * s15 * pow<2>(s56) - s16 * pow<2>(s56) -
-        s25 * pow<2>(s56) - 7 * s26 * pow<2>(s56) - pow<3>(s56)};
+        10 * s25 * s26 * s56 - 10 * pow(s26, 2) * s56 - 4 * me2 * pow(s56, 2) +
+        10 * s12 * pow(s56, 2) + 3 * s15 * pow(s56, 2) - s16 * pow(s56, 2) -
+        s25 * pow(s56, 2) - 7 * s26 * pow(s56, 2) - pow(s56, 3)};
     const auto if25{
-        -6 * me2 * pow<2>(s12) - 2 * mm2 * pow<2>(s12) + 4 * pow<3>(s12) -
-        5 * me2 * s12 * s15 - mm2 * s12 * s15 + 6 * pow<2>(s12) * s15 +
-        s12 * pow<2>(s15) - 6 * pow<2>(me2) * s16 - 2 * me2 * mm2 * s16 -
-        7 * me2 * s12 * s16 - 3 * mm2 * s12 * s16 + 10 * pow<2>(s12) * s16 -
+        -6 * me2 * pow(s12, 2) - 2 * mm2 * pow(s12, 2) + 4 * pow(s12, 3) -
+        5 * me2 * s12 * s15 - mm2 * s12 * s15 + 6 * pow(s12, 2) * s15 +
+        s12 * pow(s15, 2) - 6 * pow(me2, 2) * s16 - 2 * me2 * mm2 * s16 -
+        7 * me2 * s12 * s16 - 3 * mm2 * s12 * s16 + 10 * pow(s12, 2) * s16 -
         me2 * s15 * s16 - mm2 * s15 * s16 + 8 * s12 * s15 * s16 +
-        pow<2>(s15) * s16 - me2 * pow<2>(s16) - mm2 * pow<2>(s16) +
-        7 * s12 * pow<2>(s16) + 2 * s15 * pow<2>(s16) + pow<3>(s16) +
-        6 * me2 * s12 * s25 - 8 * pow<2>(s12) * s25 - 4 * s12 * s15 * s25 -
+        pow(s15, 2) * s16 - me2 * pow(s16, 2) - mm2 * pow(s16, 2) +
+        7 * s12 * pow(s16, 2) + 2 * s15 * pow(s16, 2) + pow(s16, 3) +
+        6 * me2 * s12 * s25 - 8 * pow(s12, 2) * s25 - 4 * s12 * s15 * s25 -
         2 * me2 * s16 * s25 + 2 * mm2 * s16 * s25 - 11 * s12 * s16 * s25 -
-        5 * s15 * s16 * s25 - 4 * pow<2>(s16) * s25 + 4 * s12 * pow<2>(s25) +
-        3 * s16 * pow<2>(s25) + 6 * me2 * mm2 * s26 + 2 * pow<2>(mm2) * s26 +
-        12 * me2 * s12 * s26 - 2 * mm2 * s12 * s26 - 12 * pow<2>(s12) * s26 +
+        5 * s15 * s16 * s25 - 4 * pow(s16, 2) * s25 + 4 * s12 * pow(s25, 2) +
+        3 * s16 * pow(s25, 2) + 6 * me2 * mm2 * s26 + 2 * pow(mm2, 2) * s26 +
+        12 * me2 * s12 * s26 - 2 * mm2 * s12 * s26 - 12 * pow(s12, 2) * s26 +
         4 * me2 * s15 * s26 - 2 * mm2 * s15 * s26 - 10 * s12 * s15 * s26 -
-        pow<2>(s15) * s26 + 5 * me2 * s16 * s26 + mm2 * s16 * s26 -
-        19 * s12 * s16 * s26 - 9 * s15 * s16 * s26 - 7 * pow<2>(s16) * s26 -
+        pow(s15, 2) * s26 + 5 * me2 * s16 * s26 + mm2 * s16 * s26 -
+        19 * s12 * s16 * s26 - 9 * s15 * s16 * s26 - 7 * pow(s16, 2) * s26 -
         6 * me2 * s25 * s26 + 4 * mm2 * s25 * s26 + 16 * s12 * s25 * s26 +
-        4 * s15 * s25 * s26 + 12 * s16 * s25 * s26 - 4 * pow<2>(s25) * s26 -
-        6 * me2 * pow<2>(s26) + 4 * mm2 * pow<2>(s26) + 12 * s12 * pow<2>(s26) +
-        4 * s15 * pow<2>(s26) + 9 * s16 * pow<2>(s26) - 8 * s25 * pow<2>(s26) -
-        4 * pow<3>(s26) + 3 * pow<2>(me2) * s56 + 4 * me2 * mm2 * s56 +
-        pow<2>(mm2) * s56 + 10 * me2 * s12 * s56 + 2 * mm2 * s12 * s56 -
-        12 * pow<2>(s12) * s56 - mm2 * s15 * s56 - 7 * s12 * s15 * s56 +
+        4 * s15 * s25 * s26 + 12 * s16 * s25 * s26 - 4 * pow(s25, 2) * s26 -
+        6 * me2 * pow(s26, 2) + 4 * mm2 * pow(s26, 2) + 12 * s12 * pow(s26, 2) +
+        4 * s15 * pow(s26, 2) + 9 * s16 * pow(s26, 2) - 8 * s25 * pow(s26, 2) -
+        4 * pow(s26, 3) + 3 * pow(me2, 2) * s56 + 4 * me2 * mm2 * s56 +
+        pow(mm2, 2) * s56 + 10 * me2 * s12 * s56 + 2 * mm2 * s12 * s56 -
+        12 * pow(s12, 2) * s56 - mm2 * s15 * s56 - 7 * s12 * s15 * s56 +
         2 * me2 * s16 * s56 + 3 * mm2 * s16 * s56 - 16 * s12 * s16 * s56 -
-        6 * s15 * s16 * s56 - 5 * pow<2>(s16) * s56 + 2 * me2 * s25 * s56 +
+        6 * s15 * s16 * s56 - 5 * pow(s16, 2) * s56 + 2 * me2 * s25 * s56 +
         3 * mm2 * s25 * s56 + 10 * s12 * s25 * s56 + 7 * s16 * s25 * s56 -
         9 * me2 * s26 * s56 + 2 * mm2 * s26 * s56 + 22 * s12 * s26 * s56 +
         7 * s15 * s26 * s56 + 16 * s16 * s26 * s56 - 10 * s25 * s26 * s56 -
-        10 * pow<2>(s26) * s56 + 2 * mm2 * pow<2>(s56) + 6 * s12 * pow<2>(s56) +
-        4 * s16 * pow<2>(s56) - 6 * s26 * pow<2>(s56)};
+        10 * pow(s26, 2) * s56 + 2 * mm2 * pow(s56, 2) + 6 * s12 * pow(s56, 2) +
+        4 * s16 * pow(s56, 2) - 6 * s26 * pow(s56, 2)};
     const auto if35{
-        24 * me2 * pow<2>(mm2) + 8 * pow<3>(mm2) - 16 * pow<2>(mm2) * s12 -
-        18 * me2 * mm2 * s15 - 14 * pow<2>(mm2) * s15 + 12 * mm2 * s12 * s15 +
-        3 * me2 * pow<2>(s15) + 7 * mm2 * pow<2>(s15) - 2 * s12 * pow<2>(s15) -
-        pow<3>(s15) - 18 * me2 * mm2 * s16 - 14 * pow<2>(mm2) * s16 +
+        24 * me2 * pow(mm2, 2) + 8 * pow(mm2, 3) - 16 * pow(mm2, 2) * s12 -
+        18 * me2 * mm2 * s15 - 14 * pow(mm2, 2) * s15 + 12 * mm2 * s12 * s15 +
+        3 * me2 * pow(s15, 2) + 7 * mm2 * pow(s15, 2) - 2 * s12 * pow(s15, 2) -
+        pow(s15, 3) - 18 * me2 * mm2 * s16 - 14 * pow(mm2, 2) * s16 +
         12 * mm2 * s12 * s16 + 12 * me2 * s15 * s16 + 16 * mm2 * s15 * s16 -
-        8 * s12 * s15 * s16 - 5 * pow<2>(s15) * s16 + 3 * me2 * pow<2>(s16) +
-        7 * mm2 * pow<2>(s16) - 2 * s12 * pow<2>(s16) - 5 * s15 * pow<2>(s16) -
-        pow<3>(s16) + 16 * pow<2>(mm2) * s25 - 12 * mm2 * s15 * s25 +
-        2 * pow<2>(s15) * s25 - 12 * mm2 * s16 * s25 + 8 * s15 * s16 * s25 +
-        2 * pow<2>(s16) * s25 + 16 * pow<2>(mm2) * s26 - 12 * mm2 * s15 * s26 +
-        2 * pow<2>(s15) * s26 - 12 * mm2 * s16 * s26 + 8 * s15 * s16 * s26 +
-        2 * pow<2>(s16) * s26 + 12 * me2 * mm2 * s56 + 12 * pow<2>(mm2) * s56 -
+        8 * s12 * s15 * s16 - 5 * pow(s15, 2) * s16 + 3 * me2 * pow(s16, 2) +
+        7 * mm2 * pow(s16, 2) - 2 * s12 * pow(s16, 2) - 5 * s15 * pow(s16, 2) -
+        pow(s16, 3) + 16 * pow(mm2, 2) * s25 - 12 * mm2 * s15 * s25 +
+        2 * pow(s15, 2) * s25 - 12 * mm2 * s16 * s25 + 8 * s15 * s16 * s25 +
+        2 * pow(s16, 2) * s25 + 16 * pow(mm2, 2) * s26 - 12 * mm2 * s15 * s26 +
+        2 * pow(s15, 2) * s26 - 12 * mm2 * s16 * s26 + 8 * s15 * s16 * s26 +
+        2 * pow(s16, 2) * s26 + 12 * me2 * mm2 * s56 + 12 * pow(mm2, 2) * s56 -
         8 * mm2 * s12 * s56 - 9 * me2 * s15 * s56 - 13 * mm2 * s15 * s56 +
-        6 * s12 * s15 * s56 + 4 * pow<2>(s15) * s56 - 9 * me2 * s16 * s56 -
+        6 * s12 * s15 * s56 + 4 * pow(s15, 2) * s56 - 9 * me2 * s16 * s56 -
         13 * mm2 * s16 * s56 + 6 * s12 * s16 * s56 + 10 * s15 * s16 * s56 +
-        4 * pow<2>(s16) * s56 + 8 * mm2 * s25 * s56 - 6 * s15 * s25 * s56 -
+        4 * pow(s16, 2) * s56 + 8 * mm2 * s25 * s56 - 6 * s15 * s25 * s56 -
         6 * s16 * s25 * s56 + 8 * mm2 * s26 * s56 - 6 * s15 * s26 * s56 -
-        6 * s16 * s26 * s56 + 6 * me2 * pow<2>(s56) + 6 * mm2 * pow<2>(s56) -
-        4 * s12 * pow<2>(s56) - 5 * s15 * pow<2>(s56) - 5 * s16 * pow<2>(s56) +
-        4 * s25 * pow<2>(s56) + 4 * s26 * pow<2>(s56) + 2 * pow<3>(s56)};
+        6 * s16 * s26 * s56 + 6 * me2 * pow(s56, 2) + 6 * mm2 * pow(s56, 2) -
+        4 * s12 * pow(s56, 2) - 5 * s15 * pow(s56, 2) - 5 * s16 * pow(s56, 2) +
+        4 * s25 * pow(s56, 2) + 4 * s26 * pow(s56, 2) + 2 * pow(s56, 3)};
     const auto if45{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) -
-        6 * me2 * s12 * s15 - 6 * mm2 * s12 * s15 + 4 * pow<2>(s12) * s15 +
-        2 * s12 * pow<2>(s15) + 6 * me2 * mm2 * s16 + 2 * pow<2>(mm2) * s16 -
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) -
+        6 * me2 * s12 * s15 - 6 * mm2 * s12 * s15 + 4 * pow(s12, 2) * s15 +
+        2 * s12 * pow(s15, 2) + 6 * me2 * mm2 * s16 + 2 * pow(mm2, 2) * s16 -
         10 * mm2 * s12 * s16 - me2 * s15 * s16 - 3 * mm2 * s15 * s16 +
-        4 * s12 * s15 * s16 + pow<2>(s15) * s16 - s12 * pow<2>(s16) -
-        2 * s15 * pow<2>(s16) - 2 * pow<3>(s16) + 8 * mm2 * s12 * s25 -
+        4 * s12 * s15 * s16 + pow(s15, 2) * s16 - s12 * pow(s16, 2) -
+        2 * s15 * pow(s16, 2) - 2 * pow(s16, 3) + 8 * mm2 * s12 * s25 -
         4 * s12 * s15 * s25 - 3 * me2 * s16 * s25 + 3 * mm2 * s16 * s25 +
-        2 * s12 * s16 * s25 + 3 * pow<2>(s16) * s25 - 2 * s16 * pow<2>(s25) -
+        2 * s12 * s16 * s25 + 3 * pow(s16, 2) * s25 - 2 * s16 * pow(s25, 2) -
         12 * me2 * mm2 * s26 + 16 * mm2 * s12 * s26 + 6 * me2 * s15 * s26 +
-        2 * mm2 * s15 * s26 - 8 * s12 * s15 * s26 - pow<2>(s15) * s26 +
+        2 * mm2 * s15 * s26 - 8 * s12 * s15 * s26 - pow(s15, 2) * s26 +
         6 * me2 * s16 * s26 + 8 * mm2 * s16 * s26 - 4 * s12 * s16 * s26 -
-        4 * s15 * s16 * s26 - pow<2>(s16) * s26 - 8 * mm2 * s25 * s26 +
-        4 * s15 * s25 * s26 + 2 * s16 * s25 * s26 - 8 * mm2 * pow<2>(s26) +
-        4 * s15 * pow<2>(s26) + 4 * s16 * pow<2>(s26) + 6 * mm2 * s12 * s56 -
+        4 * s15 * s16 * s26 - pow(s16, 2) * s26 - 8 * mm2 * s25 * s26 +
+        4 * s15 * s25 * s26 + 2 * s16 * s25 * s26 - 8 * mm2 * pow(s26, 2) +
+        4 * s15 * pow(s26, 2) + 4 * s16 * pow(s26, 2) + 6 * mm2 * s12 * s56 -
         2 * me2 * s15 * s56 - 2 * s12 * s15 * s56 - 2 * me2 * s16 * s56 +
         mm2 * s16 * s56 + s12 * s16 * s56 + 2 * s15 * s16 * s56 +
-        4 * pow<2>(s16) * s56 + 3 * me2 * s25 * s56 + mm2 * s25 * s56 -
+        4 * pow(s16, 2) * s56 + 3 * me2 * s25 * s56 + mm2 * s25 * s56 -
         2 * s12 * s25 * s56 - 2 * s15 * s25 * s56 - 5 * s16 * s25 * s56 +
-        2 * pow<2>(s25) * s56 - 3 * me2 * s26 * s56 - 4 * mm2 * s26 * s56 +
+        2 * pow(s25, 2) * s56 - 3 * me2 * s26 * s56 - 4 * mm2 * s26 * s56 +
         2 * s12 * s26 * s56 + s15 * s26 * s56 + s16 * s26 * s56 -
-        2 * pow<2>(s26) * s56 + 2 * me2 * pow<2>(s56) - mm2 * pow<2>(s56) -
-        2 * s16 * pow<2>(s56) + 2 * s25 * pow<2>(s56)};
+        2 * pow(s26, 2) * s56 + 2 * me2 * pow(s56, 2) - mm2 * pow(s56, 2) -
+        2 * s16 * pow(s56, 2) + 2 * s25 * pow(s56, 2)};
     const auto if55{
-        24 * me2 * pow<2>(mm2) + 8 * pow<3>(mm2) - 16 * pow<2>(mm2) * s12 -
-        12 * me2 * mm2 * s15 - 12 * pow<2>(mm2) * s15 + 8 * mm2 * s12 * s15 +
-        4 * mm2 * pow<2>(s15) - 24 * me2 * mm2 * s16 - 16 * pow<2>(mm2) * s16 +
+        24 * me2 * pow(mm2, 2) + 8 * pow(mm2, 3) - 16 * pow(mm2, 2) * s12 -
+        12 * me2 * mm2 * s15 - 12 * pow(mm2, 2) * s15 + 8 * mm2 * s12 * s15 +
+        4 * mm2 * pow(s15, 2) - 24 * me2 * mm2 * s16 - 16 * pow(mm2, 2) * s16 +
         16 * mm2 * s12 * s16 + 6 * me2 * s15 * s16 + 14 * mm2 * s15 * s16 -
-        4 * s12 * s15 * s16 - 2 * pow<2>(s15) * s16 + 6 * me2 * pow<2>(s16) +
-        10 * mm2 * pow<2>(s16) - 4 * s12 * pow<2>(s16) - 4 * s15 * pow<2>(s16) -
-        2 * pow<3>(s16) + 16 * pow<2>(mm2) * s25 - 8 * mm2 * s15 * s25 -
-        16 * mm2 * s16 * s25 + 4 * s15 * s16 * s25 + 4 * pow<2>(s16) * s25 +
-        16 * pow<2>(mm2) * s26 - 8 * mm2 * s15 * s26 - 16 * mm2 * s16 * s26 +
-        4 * s15 * s16 * s26 + 4 * pow<2>(s16) * s26 + 12 * me2 * mm2 * s56 +
-        12 * pow<2>(mm2) * s56 - 8 * mm2 * s12 * s56 - 8 * mm2 * s15 * s56 -
+        4 * s12 * s15 * s16 - 2 * pow(s15, 2) * s16 + 6 * me2 * pow(s16, 2) +
+        10 * mm2 * pow(s16, 2) - 4 * s12 * pow(s16, 2) - 4 * s15 * pow(s16, 2) -
+        2 * pow(s16, 3) + 16 * pow(mm2, 2) * s25 - 8 * mm2 * s15 * s25 -
+        16 * mm2 * s16 * s25 + 4 * s15 * s16 * s25 + 4 * pow(s16, 2) * s25 +
+        16 * pow(mm2, 2) * s26 - 8 * mm2 * s15 * s26 - 16 * mm2 * s16 * s26 +
+        4 * s15 * s16 * s26 + 4 * pow(s16, 2) * s26 + 12 * me2 * mm2 * s56 +
+        12 * pow(mm2, 2) * s56 - 8 * mm2 * s12 * s56 - 8 * mm2 * s15 * s56 -
         6 * me2 * s16 * s56 - 14 * mm2 * s16 * s56 + 4 * s12 * s16 * s56 +
-        4 * s15 * s16 * s56 + 4 * pow<2>(s16) * s56 + 8 * mm2 * s25 * s56 -
+        4 * s15 * s16 * s56 + 4 * pow(s16, 2) * s56 + 8 * mm2 * s25 * s56 -
         4 * s16 * s25 * s56 + 8 * mm2 * s26 * s56 - 4 * s16 * s26 * s56 +
-        4 * mm2 * pow<2>(s56) - 2 * s16 * pow<2>(s56)};
+        4 * mm2 * pow(s56, 2) - 2 * s16 * pow(s56, 2)};
     const auto if16{
-        -12 * pow<2>(me2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow<2>(s12) -
-        12 * pow<2>(me2) * s15 - 4 * me2 * mm2 * s15 + 16 * me2 * s12 * s15 +
-        8 * me2 * pow<2>(s15) - 10 * pow<2>(me2) * s16 - 2 * me2 * mm2 * s16 +
-        12 * me2 * s12 * s16 + 12 * me2 * s15 * s16 + 2 * me2 * pow<2>(s16) -
+        -12 * pow(me2, 2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow(s12, 2) -
+        12 * pow(me2, 2) * s15 - 4 * me2 * mm2 * s15 + 16 * me2 * s12 * s15 +
+        8 * me2 * pow(s15, 2) - 10 * pow(me2, 2) * s16 - 2 * me2 * mm2 * s16 +
+        12 * me2 * s12 * s16 + 12 * me2 * s15 * s16 + 2 * me2 * pow(s16, 2) -
         4 * me2 * mm2 * s25 - 10 * me2 * s12 * s25 - 7 * me2 * s15 * s25 +
-        mm2 * s15 * s25 - 3 * s12 * s15 * s25 - 3 * pow<2>(s15) * s25 -
-        6 * me2 * s16 * s25 - 4 * s15 * s16 * s25 + 2 * mm2 * pow<2>(s25) +
-        3 * s15 * pow<2>(s25) + 12 * pow<2>(me2) * s26 - 16 * me2 * s12 * s26 -
+        mm2 * s15 * s25 - 3 * s12 * s15 * s25 - 3 * pow(s15, 2) * s25 -
+        6 * me2 * s16 * s25 - 4 * s15 * s16 * s25 + 2 * mm2 * pow(s25, 2) +
+        3 * s15 * pow(s25, 2) + 12 * pow(me2, 2) * s26 - 16 * me2 * s12 * s26 -
         16 * me2 * s15 * s26 - 8 * me2 * s16 * s26 + 10 * me2 * s25 * s26 +
-        4 * s15 * s25 * s26 + 8 * me2 * pow<2>(s26) + 12 * pow<2>(me2) * s56 -
+        4 * s15 * s25 * s26 + 8 * me2 * pow(s26, 2) + 12 * pow(me2, 2) * s56 -
         16 * me2 * s12 * s56 - 16 * me2 * s15 * s56 - 8 * me2 * s16 * s56 +
         9 * me2 * s25 * s56 + 3 * mm2 * s25 * s56 + 4 * s15 * s25 * s56 -
-        pow<2>(s25) * s56 + 16 * me2 * s26 * s56 - s25 * s26 * s56 +
-        8 * me2 * pow<2>(s56) - s25 * pow<2>(s56)};
+        pow(s25, 2) * s56 + 16 * me2 * s26 * s56 - s25 * s26 * s56 +
+        8 * me2 * pow(s56, 2) - s25 * pow(s56, 2)};
     const auto if26{
-        -12 * pow<2>(me2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow<2>(s12) +
-        8 * me2 * s12 * s15 - 10 * pow<2>(me2) * s16 - 2 * me2 * mm2 * s16 +
-        12 * me2 * s12 * s16 + 6 * me2 * s15 * s16 + 2 * me2 * pow<2>(s16) -
+        -12 * pow(me2, 2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow(s12, 2) +
+        8 * me2 * s12 * s15 - 10 * pow(me2, 2) * s16 - 2 * me2 * mm2 * s16 +
+        12 * me2 * s12 * s16 + 6 * me2 * s15 * s16 + 2 * me2 * pow(s16, 2) -
         12 * me2 * s12 * s25 - 2 * s12 * s15 * s25 - 10 * me2 * s16 * s25 -
-        2 * s15 * s16 * s25 - 2 * pow<2>(s16) * s25 + 2 * s12 * pow<2>(s25) +
-        2 * s16 * pow<2>(s25) + 12 * pow<2>(me2) * s26 + 4 * me2 * mm2 * s26 -
+        2 * s15 * s16 * s25 - 2 * pow(s16, 2) * s25 + 2 * s12 * pow(s25, 2) +
+        2 * s16 * pow(s25, 2) + 12 * pow(me2, 2) * s26 + 4 * me2 * mm2 * s26 -
         18 * me2 * s12 * s26 - 11 * me2 * s15 * s26 - mm2 * s15 * s26 +
-        s12 * s15 * s26 + 2 * pow<2>(s15) * s26 - 15 * me2 * s16 * s26 -
+        s12 * s15 * s26 + 2 * pow(s15, 2) * s26 - 15 * me2 * s16 * s26 -
         mm2 * s16 * s26 + 3 * s12 * s16 * s26 + 3 * s15 * s16 * s26 +
-        pow<2>(s16) * s26 + 12 * me2 * s25 * s26 - 2 * mm2 * s25 * s26 +
-        2 * s12 * s25 * s26 + 2 * s16 * s25 * s26 - 2 * pow<2>(s25) * s26 +
-        10 * me2 * pow<2>(s26) - 2 * mm2 * pow<2>(s26) - s15 * pow<2>(s26) -
-        s16 * pow<2>(s26) - 2 * s25 * pow<2>(s26) + 6 * pow<2>(me2) * s56 +
+        pow(s16, 2) * s26 + 12 * me2 * s25 * s26 - 2 * mm2 * s25 * s26 +
+        2 * s12 * s25 * s26 + 2 * s16 * s25 * s26 - 2 * pow(s25, 2) * s26 +
+        10 * me2 * pow(s26, 2) - 2 * mm2 * pow(s26, 2) - s15 * pow(s26, 2) -
+        s16 * pow(s26, 2) - 2 * s25 * pow(s26, 2) + 6 * pow(me2, 2) * s56 +
         2 * me2 * mm2 * s56 - 14 * me2 * s12 * s56 - 4 * me2 * s15 * s56 -
         s12 * s15 * s56 - 12 * me2 * s16 * s56 - mm2 * s16 * s56 +
-        3 * s12 * s16 * s56 + s15 * s16 * s56 + pow<2>(s16) * s56 +
+        3 * s12 * s16 * s56 + s15 * s16 * s56 + pow(s16, 2) * s56 +
         5 * me2 * s25 * s56 - mm2 * s25 * s56 + 4 * s12 * s25 * s56 +
-        2 * s15 * s25 * s56 + 3 * s16 * s25 * s56 - 2 * pow<2>(s25) * s56 +
+        2 * s15 * s25 * s56 + 3 * s16 * s25 * s56 - 2 * pow(s25, 2) * s56 +
         16 * me2 * s26 * s56 - 3 * mm2 * s26 * s56 - s15 * s26 * s56 -
-        2 * s16 * s26 * s56 - 4 * s25 * s26 * s56 + 5 * me2 * pow<2>(s56) -
-        s16 * pow<2>(s56) - 2 * s25 * pow<2>(s56)};
+        2 * s16 * s26 * s56 - 4 * s25 * s26 * s56 + 5 * me2 * pow(s56, 2) -
+        s16 * pow(s56, 2) - 2 * s25 * pow(s56, 2)};
     const auto if36{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) +
-        6 * me2 * mm2 * s15 + 2 * pow<2>(mm2) * s15 - 10 * mm2 * s12 * s15 -
-        s12 * pow<2>(s15) - 2 * pow<3>(s15) - 6 * me2 * s12 * s16 -
-        6 * mm2 * s12 * s16 + 4 * pow<2>(s12) * s16 - me2 * s15 * s16 -
-        3 * mm2 * s15 * s16 + 4 * s12 * s15 * s16 - 2 * pow<2>(s15) * s16 +
-        2 * s12 * pow<2>(s16) + s15 * pow<2>(s16) - 12 * me2 * mm2 * s25 +
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) +
+        6 * me2 * mm2 * s15 + 2 * pow(mm2, 2) * s15 - 10 * mm2 * s12 * s15 -
+        s12 * pow(s15, 2) - 2 * pow(s15, 3) - 6 * me2 * s12 * s16 -
+        6 * mm2 * s12 * s16 + 4 * pow(s12, 2) * s16 - me2 * s15 * s16 -
+        3 * mm2 * s15 * s16 + 4 * s12 * s15 * s16 - 2 * pow(s15, 2) * s16 +
+        2 * s12 * pow(s16, 2) + s15 * pow(s16, 2) - 12 * me2 * mm2 * s25 +
         16 * mm2 * s12 * s25 + 6 * me2 * s15 * s25 + 8 * mm2 * s15 * s25 -
-        4 * s12 * s15 * s25 - pow<2>(s15) * s25 + 6 * me2 * s16 * s25 +
+        4 * s12 * s15 * s25 - pow(s15, 2) * s25 + 6 * me2 * s16 * s25 +
         2 * mm2 * s16 * s25 - 8 * s12 * s16 * s25 - 4 * s15 * s16 * s25 -
-        pow<2>(s16) * s25 - 8 * mm2 * pow<2>(s25) + 4 * s15 * pow<2>(s25) +
-        4 * s16 * pow<2>(s25) + 8 * mm2 * s12 * s26 - 3 * me2 * s15 * s26 +
-        3 * mm2 * s15 * s26 + 2 * s12 * s15 * s26 + 3 * pow<2>(s15) * s26 -
+        pow(s16, 2) * s25 - 8 * mm2 * pow(s25, 2) + 4 * s15 * pow(s25, 2) +
+        4 * s16 * pow(s25, 2) + 8 * mm2 * s12 * s26 - 3 * me2 * s15 * s26 +
+        3 * mm2 * s15 * s26 + 2 * s12 * s15 * s26 + 3 * pow(s15, 2) * s26 -
         4 * s12 * s16 * s26 - 8 * mm2 * s25 * s26 + 2 * s15 * s25 * s26 +
-        4 * s16 * s25 * s26 - 2 * s15 * pow<2>(s26) + 6 * mm2 * s12 * s56 -
+        4 * s16 * s25 * s26 - 2 * s15 * pow(s26, 2) + 6 * mm2 * s12 * s56 -
         2 * me2 * s15 * s56 + mm2 * s15 * s56 + s12 * s15 * s56 +
-        4 * pow<2>(s15) * s56 - 2 * me2 * s16 * s56 - 2 * s12 * s16 * s56 +
+        4 * pow(s15, 2) * s56 - 2 * me2 * s16 * s56 - 2 * s12 * s16 * s56 +
         2 * s15 * s16 * s56 - 3 * me2 * s25 * s56 - 4 * mm2 * s25 * s56 +
         2 * s12 * s25 * s56 + s15 * s25 * s56 + s16 * s25 * s56 -
-        2 * pow<2>(s25) * s56 + 3 * me2 * s26 * s56 + mm2 * s26 * s56 -
+        2 * pow(s25, 2) * s56 + 3 * me2 * s26 * s56 + mm2 * s26 * s56 -
         2 * s12 * s26 * s56 - 5 * s15 * s26 * s56 - 2 * s16 * s26 * s56 +
-        2 * pow<2>(s26) * s56 + 2 * me2 * pow<2>(s56) - mm2 * pow<2>(s56) -
-        2 * s15 * pow<2>(s56) + 2 * s26 * pow<2>(s56)};
+        2 * pow(s26, 2) * s56 + 2 * me2 * pow(s56, 2) - mm2 * pow(s56, 2) -
+        2 * s15 * pow(s56, 2) + 2 * s26 * pow(s56, 2)};
     const auto if46{
-        6 * me2 * pow<2>(s12) + 2 * mm2 * pow<2>(s12) - 4 * pow<3>(s12) +
-        5 * me2 * s12 * s15 + mm2 * s12 * s15 - 6 * pow<2>(s12) * s15 -
-        s12 * pow<2>(s15) + 5 * me2 * s12 * s16 + mm2 * s12 * s16 -
-        6 * pow<2>(s12) * s16 + 2 * me2 * s15 * s16 - 6 * s12 * s15 * s16 -
-        s12 * pow<2>(s16) - 6 * me2 * s12 * s25 + 8 * pow<2>(s12) * s25 +
+        6 * me2 * pow(s12, 2) + 2 * mm2 * pow(s12, 2) - 4 * pow(s12, 3) +
+        5 * me2 * s12 * s15 + mm2 * s12 * s15 - 6 * pow(s12, 2) * s15 -
+        s12 * pow(s15, 2) + 5 * me2 * s12 * s16 + mm2 * s12 * s16 -
+        6 * pow(s12, 2) * s16 + 2 * me2 * s15 * s16 - 6 * s12 * s15 * s16 -
+        s12 * pow(s16, 2) - 6 * me2 * s12 * s25 + 8 * pow(s12, 2) * s25 +
         4 * s12 * s15 * s25 - 5 * me2 * s16 * s25 + mm2 * s16 * s25 +
-        9 * s12 * s16 * s25 + s15 * s16 * s25 + pow<2>(s16) * s25 -
-        4 * s12 * pow<2>(s25) - 3 * s16 * pow<2>(s25) - 6 * me2 * s12 * s26 +
-        8 * pow<2>(s12) * s26 - 5 * me2 * s15 * s26 + mm2 * s15 * s26 +
-        9 * s12 * s15 * s26 + pow<2>(s15) * s26 + 4 * s12 * s16 * s26 +
+        9 * s12 * s16 * s25 + s15 * s16 * s25 + pow(s16, 2) * s25 -
+        4 * s12 * pow(s25, 2) - 3 * s16 * pow(s25, 2) - 6 * me2 * s12 * s26 +
+        8 * pow(s12, 2) * s26 - 5 * me2 * s15 * s26 + mm2 * s15 * s26 +
+        9 * s12 * s15 * s26 + pow(s15, 2) * s26 + 4 * s12 * s16 * s26 +
         s15 * s16 * s26 + 6 * me2 * s25 * s26 - 4 * mm2 * s25 * s26 -
         12 * s12 * s25 * s26 - 3 * s15 * s25 * s26 - 3 * s16 * s25 * s26 +
-        4 * pow<2>(s25) * s26 - 4 * s12 * pow<2>(s26) - 3 * s15 * pow<2>(s26) +
-        4 * s25 * pow<2>(s26) - 3 * pow<2>(me2) * s56 + 2 * me2 * mm2 * s56 +
-        pow<2>(mm2) * s56 + 4 * pow<2>(s12) * s56 - mm2 * s15 * s56 +
+        4 * pow(s25, 2) * s26 - 4 * s12 * pow(s26, 2) - 3 * s15 * pow(s26, 2) +
+        4 * s25 * pow(s26, 2) - 3 * pow(me2, 2) * s56 + 2 * me2 * mm2 * s56 +
+        pow(mm2, 2) * s56 + 4 * pow(s12, 2) * s56 - mm2 * s15 * s56 +
         2 * s12 * s15 * s56 - mm2 * s16 * s56 + 2 * s12 * s16 * s56 -
         2 * me2 * s25 * s56 + mm2 * s25 * s56 - 4 * s12 * s25 * s56 -
         2 * s16 * s25 * s56 - 2 * me2 * s26 * s56 + mm2 * s26 * s56 -
         4 * s12 * s26 * s56 - 2 * s15 * s26 * s56 + 2 * s25 * s26 * s56 -
-        me2 * pow<2>(s56) + mm2 * pow<2>(s56)};
+        me2 * pow(s56, 2) + mm2 * pow(s56, 2)};
     const auto if56{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) +
-        10 * me2 * mm2 * s15 + 2 * pow<2>(mm2) * s15 - 12 * mm2 * s12 * s15 -
-        2 * mm2 * pow<2>(s15) + 4 * me2 * mm2 * s16 - 6 * me2 * s12 * s16 -
-        8 * mm2 * s12 * s16 + 4 * pow<2>(s12) * s16 - 7 * me2 * s15 * s16 -
-        5 * mm2 * s15 * s16 + 8 * s12 * s15 * s16 + 3 * pow<2>(s15) * s16 -
-        4 * me2 * pow<2>(s16) + 4 * s12 * pow<2>(s16) + 3 * s15 * pow<2>(s16) -
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) +
+        10 * me2 * mm2 * s15 + 2 * pow(mm2, 2) * s15 - 12 * mm2 * s12 * s15 -
+        2 * mm2 * pow(s15, 2) + 4 * me2 * mm2 * s16 - 6 * me2 * s12 * s16 -
+        8 * mm2 * s12 * s16 + 4 * pow(s12, 2) * s16 - 7 * me2 * s15 * s16 -
+        5 * mm2 * s15 * s16 + 8 * s12 * s15 * s16 + 3 * pow(s15, 2) * s16 -
+        4 * me2 * pow(s16, 2) + 4 * s12 * pow(s16, 2) + 3 * s15 * pow(s16, 2) -
         12 * me2 * mm2 * s25 + 16 * mm2 * s12 * s25 + 8 * mm2 * s15 * s25 +
         6 * me2 * s16 * s25 + 2 * mm2 * s16 * s25 - 8 * s12 * s16 * s25 -
-        6 * s15 * s16 * s25 - 2 * pow<2>(s16) * s25 - 8 * mm2 * pow<2>(s25) +
-        4 * s16 * pow<2>(s25) - 12 * me2 * mm2 * s26 - 4 * pow<2>(mm2) * s26 +
+        6 * s15 * s16 * s25 - 2 * pow(s16, 2) * s25 - 8 * mm2 * pow(s25, 2) +
+        4 * s16 * pow(s25, 2) - 12 * me2 * mm2 * s26 - 4 * pow(mm2, 2) * s26 +
         16 * mm2 * s12 * s26 + 12 * mm2 * s15 * s26 + 6 * me2 * s16 * s26 +
         8 * mm2 * s16 * s26 - 8 * s12 * s16 * s26 - 8 * s15 * s16 * s26 -
-        4 * pow<2>(s16) * s26 - 16 * mm2 * s25 * s26 + 8 * s16 * s25 * s26 -
-        8 * mm2 * pow<2>(s26) + 4 * s16 * pow<2>(s26) - 10 * me2 * mm2 * s56 -
-        2 * pow<2>(mm2) * s56 + 12 * mm2 * s12 * s56 + 4 * mm2 * s15 * s56 +
+        4 * pow(s16, 2) * s26 - 16 * mm2 * s25 * s26 + 8 * s16 * s25 * s26 -
+        8 * mm2 * pow(s26, 2) + 4 * s16 * pow(s26, 2) - 10 * me2 * mm2 * s56 -
+        2 * pow(mm2, 2) * s56 + 12 * mm2 * s12 * s56 + 4 * mm2 * s15 * s56 +
         7 * me2 * s16 * s56 + 5 * mm2 * s16 * s56 - 8 * s12 * s16 * s56 -
-        6 * s15 * s16 * s56 - 3 * pow<2>(s16) * s56 - 8 * mm2 * s25 * s56 +
+        6 * s15 * s16 * s56 - 3 * pow(s16, 2) * s56 - 8 * mm2 * s25 * s56 +
         6 * s16 * s25 * s56 - 12 * mm2 * s26 * s56 + 8 * s16 * s26 * s56 -
-        2 * mm2 * pow<2>(s56) + 3 * s16 * pow<2>(s56)};
+        2 * mm2 * pow(s56, 2) + 3 * s16 * pow(s56, 2)};
     const auto if66{
-        24 * pow<2>(me2) * mm2 + 8 * me2 * pow<2>(mm2) - 16 * me2 * mm2 * s12 -
-        16 * me2 * mm2 * s15 - 12 * pow<2>(me2) * s16 - 12 * me2 * mm2 * s16 +
-        8 * me2 * s12 * s16 + 8 * me2 * s15 * s16 + 4 * me2 * pow<2>(s16) +
+        24 * pow(me2, 2) * mm2 + 8 * me2 * pow(mm2, 2) - 16 * me2 * mm2 * s12 -
+        16 * me2 * mm2 * s15 - 12 * pow(me2, 2) * s16 - 12 * me2 * mm2 * s16 +
+        8 * me2 * s12 * s16 + 8 * me2 * s15 * s16 + 4 * me2 * pow(s16, 2) +
         24 * me2 * mm2 * s25 + 4 * mm2 * s15 * s25 - 12 * me2 * s16 * s25 -
-        2 * s15 * s16 * s25 - 4 * mm2 * pow<2>(s25) + 2 * s16 * pow<2>(s25) +
+        2 * s15 * s16 * s25 - 4 * mm2 * pow(s25, 2) + 2 * s16 * pow(s25, 2) +
         16 * me2 * mm2 * s26 - 8 * me2 * s16 * s26 + 16 * me2 * mm2 * s56 -
         8 * me2 * s16 * s56 - 4 * mm2 * s25 * s56 + 2 * s16 * s25 * s56};
 
-    return if11 / pow<2>(den1) + if22 / pow<2>(den2) + if33 / pow<2>(den3) +
-           if44 / pow<2>(den4) + if55 / pow<2>(den5) + if66 / pow<2>(den6) +
+    return if11 / pow(den1, 2) + if22 / pow(den2, 2) + if33 / pow(den3, 2) +
+           if44 / pow(den4, 2) + if55 / pow(den5, 2) + if66 / pow(den6, 2) +
            2 * (if12 / (den1 * den2) + if13 / (den1 * den3) +
                 if14 / (den1 * den4) + if15 / (den1 * den5) +
                 if16 / (den1 * den6) + if23 / (den2 * den3) +
@@ -1923,406 +1923,406 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS5n(double mm2, double me2, 
     //
 
     const auto if11{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        36 * pow<2>(me2) * s25 + 4 * me2 * mm2 * s25 - 8 * me2 * s12 * s25 -
-        8 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 16 * me2 * pow<2>(s25) -
-        2 * s12 * pow<2>(s25) - 2 * s16 * pow<2>(s25) + 2 * pow<3>(s25) +
-        24 * pow<2>(me2) * s26 + 4 * me2 * s16 * s26 + 6 * me2 * s25 * s26 -
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        36 * pow(me2, 2) * s25 + 4 * me2 * mm2 * s25 - 8 * me2 * s12 * s25 -
+        8 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 16 * me2 * pow(s25, 2) -
+        2 * s12 * pow(s25, 2) - 2 * s16 * pow(s25, 2) + 2 * pow(s25, 3) +
+        24 * pow(me2, 2) * s26 + 4 * me2 * s16 * s26 + 6 * me2 * s25 * s26 -
         2 * mm2 * s25 * s26 + 2 * s12 * s25 * s26 + 4 * s15 * s25 * s26 +
-        2 * s16 * s25 * s26 - 4 * me2 * pow<2>(s26) - 2 * s25 * pow<2>(s26) +
-        24 * pow<2>(me2) * s56 + 4 * me2 * s16 * s56 + 12 * me2 * s25 * s56 -
-        2 * s12 * s25 * s56 - 2 * s16 * s25 * s56 + 4 * pow<2>(s25) * s56 -
-        8 * me2 * s26 * s56 - 4 * me2 * pow<2>(s56) + 2 * s25 * pow<2>(s56)};
+        2 * s16 * s25 * s26 - 4 * me2 * pow(s26, 2) - 2 * s25 * pow(s26, 2) +
+        24 * pow(me2, 2) * s56 + 4 * me2 * s16 * s56 + 12 * me2 * s25 * s56 -
+        2 * s12 * s25 * s56 - 2 * s16 * s25 * s56 + 4 * pow(s25, 2) * s56 -
+        8 * me2 * s26 * s56 - 4 * me2 * pow(s56, 2) + 2 * s25 * pow(s56, 2)};
     const auto if12{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        30 * pow<2>(me2) * s25 + 2 * me2 * mm2 * s25 - 4 * me2 * s12 * s25 -
-        4 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 4 * me2 * pow<2>(s25) -
-        2 * mm2 * pow<2>(s25) + 2 * s12 * pow<2>(s25) + 4 * s15 * pow<2>(s25) +
-        4 * s16 * pow<2>(s25) - 4 * pow<3>(s25) + 30 * pow<2>(me2) * s26 +
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        30 * pow(me2, 2) * s25 + 2 * me2 * mm2 * s25 - 4 * me2 * s12 * s25 -
+        4 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 4 * me2 * pow(s25, 2) -
+        2 * mm2 * pow(s25, 2) + 2 * s12 * pow(s25, 2) + 4 * s15 * pow(s25, 2) +
+        4 * s16 * pow(s25, 2) - 4 * pow(s25, 3) + 30 * pow(me2, 2) * s26 +
         2 * me2 * mm2 * s26 - 4 * me2 * s12 * s26 - 4 * me2 * s15 * s26 -
         4 * me2 * s16 * s26 + 8 * me2 * s25 * s26 - 4 * mm2 * s25 * s26 +
         4 * s12 * s25 * s26 + 8 * s15 * s25 * s26 + 8 * s16 * s25 * s26 -
-        12 * pow<2>(s25) * s26 + 4 * me2 * pow<2>(s26) - 2 * mm2 * pow<2>(s26) +
-        2 * s12 * pow<2>(s26) + 4 * s15 * pow<2>(s26) + 4 * s16 * pow<2>(s26) -
-        12 * s25 * pow<2>(s26) - 4 * pow<3>(s26) + 24 * pow<2>(me2) * s56 +
+        12 * pow(s25, 2) * s26 + 4 * me2 * pow(s26, 2) - 2 * mm2 * pow(s26, 2) +
+        2 * s12 * pow(s26, 2) + 4 * s15 * pow(s26, 2) + 4 * s16 * pow(s26, 2) -
+        12 * s25 * pow(s26, 2) - 4 * pow(s26, 3) + 24 * pow(me2, 2) * s56 +
         8 * me2 * s25 * s56 - 2 * mm2 * s25 * s56 + 4 * s15 * s25 * s56 +
-        4 * s16 * s25 * s56 - 8 * pow<2>(s25) * s56 + 8 * me2 * s26 * s56 -
+        4 * s16 * s25 * s56 - 8 * pow(s25, 2) * s56 + 8 * me2 * s26 * s56 -
         2 * mm2 * s26 * s56 + 4 * s15 * s26 * s56 + 4 * s16 * s26 * s56 -
-        16 * s25 * s26 * s56 - 8 * pow<2>(s26) * s56 + 4 * me2 * pow<2>(s56) -
-        2 * s12 * pow<2>(s56) - 4 * s25 * pow<2>(s56) - 4 * s26 * pow<2>(s56)};
+        16 * s25 * s26 * s56 - 8 * pow(s26, 2) * s56 + 4 * me2 * pow(s56, 2) -
+        2 * s12 * pow(s56, 2) - 4 * s25 * pow(s56, 2) - 4 * s26 * pow(s56, 2)};
     const auto if22{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        20 * pow<2>(me2) * s25 - 4 * me2 * mm2 * s25 + 4 * me2 * s12 * s25 +
-        8 * me2 * s15 * s25 + 4 * me2 * s16 * s25 - 8 * me2 * pow<2>(s25) +
-        32 * pow<2>(me2) * s26 - 4 * me2 * s12 * s26 - 4 * me2 * s16 * s26 +
-        2 * s16 * s25 * s26 + 14 * me2 * pow<2>(s26) + 2 * mm2 * pow<2>(s26) -
-        4 * s12 * pow<2>(s26) - 4 * s15 * pow<2>(s26) - 2 * s16 * pow<2>(s26) +
-        4 * s25 * pow<2>(s26) + 4 * pow<3>(s26) + 20 * pow<2>(me2) * s56 -
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        20 * pow(me2, 2) * s25 - 4 * me2 * mm2 * s25 + 4 * me2 * s12 * s25 +
+        8 * me2 * s15 * s25 + 4 * me2 * s16 * s25 - 8 * me2 * pow(s25, 2) +
+        32 * pow(me2, 2) * s26 - 4 * me2 * s12 * s26 - 4 * me2 * s16 * s26 +
+        2 * s16 * s25 * s26 + 14 * me2 * pow(s26, 2) + 2 * mm2 * pow(s26, 2) -
+        4 * s12 * pow(s26, 2) - 4 * s15 * pow(s26, 2) - 2 * s16 * pow(s26, 2) +
+        4 * s25 * pow(s26, 2) + 4 * pow(s26, 3) + 20 * pow(me2, 2) * s56 -
         4 * me2 * mm2 * s56 + 4 * me2 * s12 * s56 + 8 * me2 * s15 * s56 +
         4 * me2 * s16 * s56 - 16 * me2 * s25 * s56 + 6 * me2 * s26 * s56 +
         2 * mm2 * s26 * s56 - 4 * s12 * s26 * s56 - 4 * s15 * s26 * s56 -
-        2 * s16 * s26 * s56 + 4 * s25 * s26 * s56 + 8 * pow<2>(s26) * s56 -
-        8 * me2 * pow<2>(s56) + 4 * s26 * pow<2>(s56)};
+        2 * s16 * s26 * s56 + 4 * s25 * s26 * s56 + 8 * pow(s26, 2) * s56 -
+        8 * me2 * pow(s56, 2) + 4 * s26 * pow(s56, 2)};
     const auto if13{
-        -6 * pow<2>(me2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow<2>(s12) -
-        mm2 * pow<2>(s12) + 2 * pow<3>(s12) - 6 * pow<2>(me2) * s15 +
+        -6 * pow(me2, 2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow(s12, 2) -
+        mm2 * pow(s12, 2) + 2 * pow(s12, 3) - 6 * pow(me2, 2) * s15 +
         2 * me2 * mm2 * s15 - me2 * s12 * s15 - mm2 * s12 * s15 +
-        5 * pow<2>(s12) * s15 - 2 * me2 * pow<2>(s15) + 3 * s12 * pow<2>(s15) -
-        4 * pow<2>(me2) * s16 + 2 * me2 * s12 * s16 + 3 * pow<2>(s12) * s16 -
-        3 * me2 * s15 * s16 + 3 * s12 * s15 * s16 - me2 * pow<2>(s16) +
-        6 * pow<2>(me2) * s25 + 2 * me2 * mm2 * s25 - 5 * me2 * s12 * s25 -
-        3 * mm2 * s12 * s25 - 3 * pow<2>(s12) * s25 - 4 * me2 * s15 * s25 -
+        5 * pow(s12, 2) * s15 - 2 * me2 * pow(s15, 2) + 3 * s12 * pow(s15, 2) -
+        4 * pow(me2, 2) * s16 + 2 * me2 * s12 * s16 + 3 * pow(s12, 2) * s16 -
+        3 * me2 * s15 * s16 + 3 * s12 * s15 * s16 - me2 * pow(s16, 2) +
+        6 * pow(me2, 2) * s25 + 2 * me2 * mm2 * s25 - 5 * me2 * s12 * s25 -
+        3 * mm2 * s12 * s25 - 3 * pow(s12, 2) * s25 - 4 * me2 * s15 * s25 -
         2 * mm2 * s15 * s25 - 3 * s12 * s15 * s25 - 3 * me2 * s16 * s25 -
-        2 * mm2 * s16 * s25 + 4 * me2 * pow<2>(s25) + 2 * mm2 * pow<2>(s25) +
-        s12 * pow<2>(s25) - s16 * pow<2>(s25) + 3 * pow<2>(me2) * s26 -
-        2 * me2 * mm2 * s26 - pow<2>(mm2) * s26 - 4 * me2 * s12 * s26 -
-        3 * pow<2>(s12) * s26 - 4 * me2 * s15 * s26 + mm2 * s15 * s26 -
+        2 * mm2 * s16 * s25 + 4 * me2 * pow(s25, 2) + 2 * mm2 * pow(s25, 2) +
+        s12 * pow(s25, 2) - s16 * pow(s25, 2) + 3 * pow(me2, 2) * s26 -
+        2 * me2 * mm2 * s26 - pow(mm2, 2) * s26 - 4 * me2 * s12 * s26 -
+        3 * pow(s12, 2) * s26 - 4 * me2 * s15 * s26 + mm2 * s15 * s26 -
         2 * s12 * s15 * s26 - 3 * me2 * s16 * s26 + mm2 * s16 * s26 +
         s12 * s16 * s26 + 5 * me2 * s25 * s26 + 2 * s12 * s25 * s26 -
-        s16 * s25 * s26 + 2 * me2 * pow<2>(s26) - 3 * mm2 * pow<2>(s26) +
-        s12 * pow<2>(s26) + 8 * pow<2>(me2) * s56 + 4 * me2 * mm2 * s56 -
-        2 * me2 * s12 * s56 - 6 * pow<2>(s12) * s56 - 2 * me2 * s15 * s56 -
+        s16 * s25 * s26 + 2 * me2 * pow(s26, 2) - 3 * mm2 * pow(s26, 2) +
+        s12 * pow(s26, 2) + 8 * pow(me2, 2) * s56 + 4 * me2 * mm2 * s56 -
+        2 * me2 * s12 * s56 - 6 * pow(s12, 2) * s56 - 2 * me2 * s15 * s56 -
         5 * s12 * s15 * s56 - 2 * me2 * s16 * s56 - s12 * s16 * s56 +
         6 * me2 * s25 * s56 + 4 * mm2 * s25 * s56 + 4 * s12 * s25 * s56 -
         s16 * s25 * s56 + 6 * me2 * s26 * s56 - 2 * mm2 * s26 * s56 +
-        3 * s12 * s26 * s56 + 2 * me2 * pow<2>(s56) + 2 * s12 * pow<2>(s56)};
+        3 * s12 * s26 * s56 + 2 * me2 * pow(s56, 2) + 2 * s12 * pow(s56, 2)};
     const auto if23{
-        -6 * pow<2>(me2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow<2>(s12) -
-        mm2 * pow<2>(s12) + 2 * pow<3>(s12) - 6 * pow<2>(me2) * s15 +
-        2 * me2 * mm2 * s15 + 4 * me2 * s12 * s15 + 2 * pow<2>(s12) * s15 -
-        4 * pow<2>(me2) * s16 + me2 * s12 * s16 - mm2 * s12 * s16 +
-        4 * pow<2>(s12) * s16 - 2 * me2 * s15 * s16 + 2 * s12 * s15 * s16 -
-        2 * me2 * pow<2>(s16) + 2 * s12 * pow<2>(s16) + 6 * pow<2>(me2) * s25 +
+        -6 * pow(me2, 2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow(s12, 2) -
+        mm2 * pow(s12, 2) + 2 * pow(s12, 3) - 6 * pow(me2, 2) * s15 +
+        2 * me2 * mm2 * s15 + 4 * me2 * s12 * s15 + 2 * pow(s12, 2) * s15 -
+        4 * pow(me2, 2) * s16 + me2 * s12 * s16 - mm2 * s12 * s16 +
+        4 * pow(s12, 2) * s16 - 2 * me2 * s15 * s16 + 2 * s12 * s15 * s16 -
+        2 * me2 * pow(s16, 2) + 2 * s12 * pow(s16, 2) + 6 * pow(me2, 2) * s25 +
         2 * me2 * mm2 * s25 - 5 * me2 * s12 * s25 - mm2 * s12 * s25 -
-        4 * pow<2>(s12) * s25 - 4 * me2 * s15 * s25 - 2 * s12 * s15 * s25 -
+        4 * pow(s12, 2) * s25 - 4 * me2 * s15 * s25 - 2 * s12 * s15 * s25 -
         3 * me2 * s16 * s25 - mm2 * s16 * s25 - 4 * s12 * s16 * s25 +
-        4 * me2 * pow<2>(s25) + 2 * mm2 * pow<2>(s25) + 2 * s12 * pow<2>(s25) +
-        3 * pow<2>(me2) * s26 + 4 * me2 * mm2 * s26 + pow<2>(mm2) * s26 -
-        7 * me2 * s12 * s26 - 3 * mm2 * s12 * s26 - 2 * pow<2>(s12) * s26 -
+        4 * me2 * pow(s25, 2) + 2 * mm2 * pow(s25, 2) + 2 * s12 * pow(s25, 2) +
+        3 * pow(me2, 2) * s26 + 4 * me2 * mm2 * s26 + pow(mm2, 2) * s26 -
+        7 * me2 * s12 * s26 - 3 * mm2 * s12 * s26 - 2 * pow(s12, 2) * s26 -
         3 * me2 * s15 * s26 - mm2 * s15 * s26 - 5 * me2 * s16 * s26 -
-        3 * mm2 * s16 * s26 + s15 * s16 * s26 + pow<2>(s16) * s26 +
+        3 * mm2 * s16 * s26 + s15 * s16 * s26 + pow(s16, 2) * s26 +
         9 * me2 * s25 * s26 + 5 * mm2 * s25 * s26 - s15 * s25 * s26 -
-        3 * s16 * s25 * s26 + 2 * pow<2>(s25) * s26 + 3 * me2 * pow<2>(s26) +
-        mm2 * pow<2>(s26) + s15 * pow<2>(s26) - s16 * pow<2>(s26) +
-        2 * s25 * pow<2>(s26) + 8 * pow<2>(me2) * s56 + 4 * me2 * mm2 * s56 -
-        6 * me2 * s12 * s56 - 4 * pow<2>(s12) * s56 - 2 * me2 * s15 * s56 -
+        3 * s16 * s25 * s26 + 2 * pow(s25, 2) * s26 + 3 * me2 * pow(s26, 2) +
+        mm2 * pow(s26, 2) + s15 * pow(s26, 2) - s16 * pow(s26, 2) +
+        2 * s25 * pow(s26, 2) + 8 * pow(me2, 2) * s56 + 4 * me2 * mm2 * s56 -
+        6 * me2 * s12 * s56 - 4 * pow(s12, 2) * s56 - 2 * me2 * s15 * s56 -
         2 * s12 * s15 * s56 - 4 * s12 * s16 * s56 + 8 * me2 * s25 * s56 +
         2 * mm2 * s25 * s56 + 4 * s12 * s25 * s56 + 8 * me2 * s26 * s56 +
         4 * mm2 * s26 * s56 - s15 * s26 * s56 - 2 * s16 * s26 * s56 +
-        3 * s25 * s26 * s56 + pow<2>(s26) * s56 + 2 * me2 * pow<2>(s56) +
-        2 * s12 * pow<2>(s56) + s26 * pow<2>(s56)};
+        3 * s25 * s26 * s56 + pow(s26, 2) * s56 + 2 * me2 * pow(s56, 2) +
+        2 * s12 * pow(s56, 2) + s26 * pow(s56, 2)};
     const auto if33{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) -
-        4 * mm2 * s12 * s15 + 4 * me2 * pow<2>(s15) - 2 * s12 * pow<2>(s15) -
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) -
+        4 * mm2 * s12 * s15 + 4 * me2 * pow(s15, 2) - 2 * s12 * pow(s15, 2) -
         4 * mm2 * s12 * s16 + 8 * me2 * s15 * s16 - 4 * s12 * s15 * s16 +
-        4 * me2 * pow<2>(s16) - 2 * s12 * pow<2>(s16) - 12 * me2 * mm2 * s25 -
-        4 * pow<2>(mm2) * s25 + 16 * mm2 * s12 * s25 + 4 * mm2 * s15 * s25 +
-        2 * pow<2>(s15) * s25 + 4 * mm2 * s16 * s25 + 4 * s15 * s16 * s25 +
-        2 * pow<2>(s16) * s25 - 8 * mm2 * pow<2>(s25) + 8 * mm2 * s12 * s26 -
+        4 * me2 * pow(s16, 2) - 2 * s12 * pow(s16, 2) - 12 * me2 * mm2 * s25 -
+        4 * pow(mm2, 2) * s25 + 16 * mm2 * s12 * s25 + 4 * mm2 * s15 * s25 +
+        2 * pow(s15, 2) * s25 + 4 * mm2 * s16 * s25 + 4 * s15 * s16 * s25 +
+        2 * pow(s16, 2) * s25 - 8 * mm2 * pow(s25, 2) + 8 * mm2 * s12 * s26 -
         6 * me2 * s15 * s26 - 2 * mm2 * s15 * s26 + 4 * s12 * s15 * s26 +
-        4 * pow<2>(s15) * s26 - 6 * me2 * s16 * s26 - 2 * mm2 * s16 * s26 +
-        4 * s12 * s16 * s26 + 8 * s15 * s16 * s26 + 4 * pow<2>(s16) * s26 -
+        4 * pow(s15, 2) * s26 - 6 * me2 * s16 * s26 - 2 * mm2 * s16 * s26 +
+        4 * s12 * s16 * s26 + 8 * s15 * s16 * s26 + 4 * pow(s16, 2) * s26 -
         8 * mm2 * s25 * s26 - 4 * s15 * s25 * s26 - 4 * s16 * s25 * s26 -
-        4 * s15 * pow<2>(s26) - 4 * s16 * pow<2>(s26) + 4 * mm2 * s12 * s56 -
+        4 * s15 * pow(s26, 2) - 4 * s16 * pow(s26, 2) + 4 * mm2 * s12 * s56 -
         8 * me2 * s15 * s56 + 4 * s12 * s15 * s56 - 8 * me2 * s16 * s56 +
         4 * s12 * s16 * s56 - 4 * mm2 * s25 * s56 - 4 * s15 * s25 * s56 -
         4 * s16 * s25 * s56 + 6 * me2 * s26 * s56 + 2 * mm2 * s26 * s56 -
         4 * s12 * s26 * s56 - 8 * s15 * s26 * s56 - 8 * s16 * s26 * s56 +
-        4 * s25 * s26 * s56 + 4 * pow<2>(s26) * s56 + 4 * me2 * pow<2>(s56) -
-        2 * s12 * pow<2>(s56) + 2 * s25 * pow<2>(s56) + 4 * s26 * pow<2>(s56)};
+        4 * s25 * s26 * s56 + 4 * pow(s26, 2) * s56 + 4 * me2 * pow(s56, 2) -
+        2 * s12 * pow(s56, 2) + 2 * s25 * pow(s56, 2) + 4 * s26 * pow(s56, 2)};
     const auto if14{
-        -12 * pow<3>(me2) - 4 * pow<2>(me2) * mm2 + 2 * pow<2>(me2) * s12 -
-        2 * me2 * mm2 * s12 + 4 * me2 * pow<2>(s12) + 6 * me2 * s12 * s15 +
-        8 * pow<2>(me2) * s16 + 4 * me2 * s12 * s16 + me2 * s15 * s16 -
-        12 * pow<2>(me2) * s25 - 4 * me2 * mm2 * s25 - 3 * me2 * s12 * s25 -
-        mm2 * s12 * s25 + pow<2>(s12) * s25 - 2 * me2 * s15 * s25 +
+        -12 * pow(me2, 3) - 4 * pow(me2, 2) * mm2 + 2 * pow(me2, 2) * s12 -
+        2 * me2 * mm2 * s12 + 4 * me2 * pow(s12, 2) + 6 * me2 * s12 * s15 +
+        8 * pow(me2, 2) * s16 + 4 * me2 * s12 * s16 + me2 * s15 * s16 -
+        12 * pow(me2, 2) * s25 - 4 * me2 * mm2 * s25 - 3 * me2 * s12 * s25 -
+        mm2 * s12 * s25 + pow(s12, 2) * s25 - 2 * me2 * s15 * s25 +
         3 * s12 * s15 * s25 - mm2 * s16 * s25 + 3 * s12 * s16 * s25 +
-        2 * s15 * s16 * s25 + 2 * pow<2>(s16) * s25 - 2 * me2 * pow<2>(s25) -
-        2 * mm2 * pow<2>(s25) - s12 * pow<2>(s25) - 2 * s16 * pow<2>(s25) -
-        18 * pow<2>(me2) * s26 - 2 * me2 * mm2 * s26 - 2 * me2 * s12 * s26 -
-        2 * me2 * s15 * s26 + mm2 * s15 * s26 - 2 * pow<2>(s15) * s26 +
+        2 * s15 * s16 * s25 + 2 * pow(s16, 2) * s25 - 2 * me2 * pow(s25, 2) -
+        2 * mm2 * pow(s25, 2) - s12 * pow(s25, 2) - 2 * s16 * pow(s25, 2) -
+        18 * pow(me2, 2) * s26 - 2 * me2 * mm2 * s26 - 2 * me2 * s12 * s26 -
+        2 * me2 * s15 * s26 + mm2 * s15 * s26 - 2 * pow(s15, 2) * s26 +
         2 * me2 * s16 * s26 - s12 * s16 * s26 - 2 * s15 * s16 * s26 -
         6 * me2 * s25 * s26 - 3 * mm2 * s25 * s26 + 2 * s15 * s25 * s26 -
-        2 * s16 * s25 * s26 - 3 * me2 * pow<2>(s26) + mm2 * pow<2>(s26) -
-        2 * s16 * pow<2>(s26) + 2 * s25 * pow<2>(s26) + 2 * pow<3>(s26) -
-        10 * pow<2>(me2) * s56 + 2 * me2 * mm2 * s56 - 4 * me2 * s12 * s56 -
-        pow<2>(s12) * s56 - 4 * me2 * s15 * s56 + s12 * s15 * s56 -
+        2 * s16 * s25 * s26 - 3 * me2 * pow(s26, 2) + mm2 * pow(s26, 2) -
+        2 * s16 * pow(s26, 2) + 2 * s25 * pow(s26, 2) + 2 * pow(s26, 3) -
+        10 * pow(me2, 2) * s56 + 2 * me2 * mm2 * s56 - 4 * me2 * s12 * s56 -
+        pow(s12, 2) * s56 - 4 * me2 * s15 * s56 + s12 * s15 * s56 -
         me2 * s16 * s56 - s12 * s16 * s56 - 2 * me2 * s25 * s56 -
         2 * mm2 * s25 * s56 - 2 * s16 * s25 * s56 - 3 * me2 * s26 * s56 +
-        3 * s12 * s26 * s56 + 2 * s15 * s26 * s56 + 2 * pow<2>(s26) * s56 +
-        s12 * pow<2>(s56)};
+        3 * s12 * s26 * s56 + 2 * s15 * s26 * s56 + 2 * pow(s26, 2) * s56 +
+        s12 * pow(s56, 2)};
     const auto if24{
-        -12 * pow<3>(me2) - 4 * pow<2>(me2) * mm2 + 2 * pow<2>(me2) * s12 -
-        2 * me2 * mm2 * s12 + 4 * me2 * pow<2>(s12) + 6 * me2 * s12 * s15 +
-        2 * pow<2>(me2) * s16 - 2 * me2 * mm2 * s16 + 8 * me2 * s12 * s16 +
-        6 * me2 * s15 * s16 + 4 * me2 * pow<2>(s16) - 8 * pow<2>(me2) * s25 -
+        -12 * pow(me2, 3) - 4 * pow(me2, 2) * mm2 + 2 * pow(me2, 2) * s12 -
+        2 * me2 * mm2 * s12 + 4 * me2 * pow(s12, 2) + 6 * me2 * s12 * s15 +
+        2 * pow(me2, 2) * s16 - 2 * me2 * mm2 * s16 + 8 * me2 * s12 * s16 +
+        6 * me2 * s15 * s16 + 4 * me2 * pow(s16, 2) - 8 * pow(me2, 2) * s25 -
         4 * me2 * mm2 * s25 - 4 * me2 * s12 * s25 - 4 * me2 * s16 * s25 -
-        20 * pow<2>(me2) * s26 - 4 * me2 * mm2 * s26 + me2 * s16 * s26 +
+        20 * pow(me2, 2) * s26 - 4 * me2 * mm2 * s26 + me2 * s16 * s26 +
         mm2 * s16 * s26 - 2 * s12 * s16 * s26 - 3 * s15 * s16 * s26 -
-        2 * pow<2>(s16) * s26 - 6 * me2 * s25 * s26 + 2 * s16 * s25 * s26 -
-        7 * me2 * pow<2>(s26) + mm2 * pow<2>(s26) + s16 * pow<2>(s26) +
-        s25 * pow<2>(s26) + pow<3>(s26) - 8 * pow<2>(me2) * s56 -
+        2 * pow(s16, 2) * s26 - 6 * me2 * s25 * s26 + 2 * s16 * s25 * s26 -
+        7 * me2 * pow(s26, 2) + mm2 * pow(s26, 2) + s16 * pow(s26, 2) +
+        s25 * pow(s26, 2) + pow(s26, 3) - 8 * pow(me2, 2) * s56 -
         4 * me2 * mm2 * s56 - 4 * me2 * s12 * s56 - 4 * me2 * s16 * s56 -
         6 * me2 * s26 * s56 + 2 * mm2 * s26 * s56 + 2 * s16 * s26 * s56 +
-        pow<2>(s26) * s56};
+        pow(s26, 2) * s56};
     const auto if34{
-        6 * me2 * pow<2>(s12) + 2 * mm2 * pow<2>(s12) - 4 * pow<3>(s12) +
-        6 * pow<2>(me2) * s15 + 2 * me2 * mm2 * s15 - 4 * pow<2>(s12) * s15 -
-        2 * me2 * pow<2>(s15) + 6 * pow<2>(me2) * s16 + 2 * me2 * mm2 * s16 +
-        4 * me2 * s12 * s16 + 2 * mm2 * s12 * s16 - 8 * pow<2>(s12) * s16 -
-        2 * me2 * s15 * s16 - 4 * s12 * s15 * s16 - 4 * s12 * pow<2>(s16) -
-        12 * me2 * s12 * s25 - 4 * mm2 * s12 * s25 + 12 * pow<2>(s12) * s25 +
+        6 * me2 * pow(s12, 2) + 2 * mm2 * pow(s12, 2) - 4 * pow(s12, 3) +
+        6 * pow(me2, 2) * s15 + 2 * me2 * mm2 * s15 - 4 * pow(s12, 2) * s15 -
+        2 * me2 * pow(s15, 2) + 6 * pow(me2, 2) * s16 + 2 * me2 * mm2 * s16 +
+        4 * me2 * s12 * s16 + 2 * mm2 * s12 * s16 - 8 * pow(s12, 2) * s16 -
+        2 * me2 * s15 * s16 - 4 * s12 * s15 * s16 - 4 * s12 * pow(s16, 2) -
+        12 * me2 * s12 * s25 - 4 * mm2 * s12 * s25 + 12 * pow(s12, 2) * s25 +
         8 * s12 * s15 * s25 - 4 * me2 * s16 * s25 - 2 * mm2 * s16 * s25 +
-        16 * s12 * s16 * s25 + 4 * s15 * s16 * s25 + 4 * pow<2>(s16) * s25 +
-        6 * me2 * pow<2>(s25) + 2 * mm2 * pow<2>(s25) - 12 * s12 * pow<2>(s25) -
-        4 * s15 * pow<2>(s25) - 8 * s16 * pow<2>(s25) + 4 * pow<3>(s25) -
-        6 * me2 * s12 * s26 + 8 * pow<2>(s12) * s26 + 5 * me2 * s15 * s26 +
-        mm2 * s15 * s26 + 2 * s12 * s15 * s26 - pow<2>(s15) * s26 +
+        16 * s12 * s16 * s25 + 4 * s15 * s16 * s25 + 4 * pow(s16, 2) * s25 +
+        6 * me2 * pow(s25, 2) + 2 * mm2 * pow(s25, 2) - 12 * s12 * pow(s25, 2) -
+        4 * s15 * pow(s25, 2) - 8 * s16 * pow(s25, 2) + 4 * pow(s25, 3) -
+        6 * me2 * s12 * s26 + 8 * pow(s12, 2) * s26 + 5 * me2 * s15 * s26 +
+        mm2 * s15 * s26 + 2 * s12 * s15 * s26 - pow(s15, 2) * s26 +
         4 * me2 * s16 * s26 + 2 * mm2 * s16 * s26 + 6 * s12 * s16 * s26 -
         s15 * s16 * s26 + 6 * me2 * s25 * s26 - 16 * s12 * s25 * s26 -
-        2 * s15 * s25 * s26 - 6 * s16 * s25 * s26 + 8 * pow<2>(s25) * s26 -
-        4 * s12 * pow<2>(s26) + 4 * s25 * pow<2>(s26) - 6 * pow<2>(me2) * s56 -
+        2 * s15 * s25 * s26 - 6 * s16 * s25 * s26 + 8 * pow(s25, 2) * s26 -
+        4 * s12 * pow(s26, 2) + 4 * s25 * pow(s26, 2) - 6 * pow(me2, 2) * s56 -
         2 * me2 * mm2 * s56 - 4 * me2 * s12 * s56 - 2 * mm2 * s12 * s56 +
-        8 * pow<2>(s12) * s56 + 2 * me2 * s15 * s56 + 4 * s12 * s15 * s56 +
+        8 * pow(s12, 2) * s56 + 2 * me2 * s15 * s56 + 4 * s12 * s15 * s56 +
         8 * s12 * s16 * s56 + 4 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 -
         16 * s12 * s25 * s56 - 4 * s15 * s25 * s56 - 8 * s16 * s25 * s56 +
-        8 * pow<2>(s25) * s56 - 4 * me2 * s26 * s56 - 2 * mm2 * s26 * s56 -
+        8 * pow(s25, 2) * s56 - 4 * me2 * s26 * s56 - 2 * mm2 * s26 * s56 -
         6 * s12 * s26 * s56 + s15 * s26 * s56 + 6 * s25 * s26 * s56 -
-        4 * s12 * pow<2>(s56) + 4 * s25 * pow<2>(s56)};
+        4 * s12 * pow(s56, 2) + 4 * s25 * pow(s56, 2)};
     const auto if44{
-        12 * pow<2>(me2) * s12 + 4 * me2 * mm2 * s12 - 8 * me2 * pow<2>(s12) +
-        8 * pow<2>(me2) * s15 - 8 * me2 * s12 * s15 + 12 * pow<2>(me2) * s16 +
+        12 * pow(me2, 2) * s12 + 4 * me2 * mm2 * s12 - 8 * me2 * pow(s12, 2) +
+        8 * pow(me2, 2) * s15 - 8 * me2 * s12 * s15 + 12 * pow(me2, 2) * s16 +
         4 * me2 * mm2 * s16 - 16 * me2 * s12 * s16 - 8 * me2 * s15 * s16 -
-        8 * me2 * pow<2>(s16) - 12 * pow<2>(me2) * s25 - 4 * me2 * mm2 * s25 +
+        8 * me2 * pow(s16, 2) - 12 * pow(me2, 2) * s25 - 4 * me2 * mm2 * s25 +
         16 * me2 * s12 * s25 + 8 * me2 * s15 * s25 + 16 * me2 * s16 * s25 -
-        8 * me2 * pow<2>(s25) + 12 * me2 * s12 * s26 + 8 * me2 * s15 * s26 +
+        8 * me2 * pow(s25, 2) + 12 * me2 * s12 * s26 + 8 * me2 * s15 * s26 +
         10 * me2 * s16 * s26 - 2 * mm2 * s16 * s26 + 4 * s12 * s16 * s26 +
-        4 * s15 * s16 * s26 + 4 * pow<2>(s16) * s26 - 12 * me2 * s25 * s26 -
-        4 * s16 * s25 * s26 - 2 * s12 * pow<2>(s26) - 2 * s15 * pow<2>(s26) -
-        4 * s16 * pow<2>(s26) + 2 * s25 * pow<2>(s26) - 12 * pow<2>(me2) * s56 -
+        4 * s15 * s16 * s26 + 4 * pow(s16, 2) * s26 - 12 * me2 * s25 * s26 -
+        4 * s16 * s25 * s26 - 2 * s12 * pow(s26, 2) - 2 * s15 * pow(s26, 2) -
+        4 * s16 * pow(s26, 2) + 2 * s25 * pow(s26, 2) - 12 * pow(me2, 2) * s56 -
         4 * me2 * mm2 * s56 + 16 * me2 * s12 * s56 + 8 * me2 * s15 * s56 +
         16 * me2 * s16 * s56 - 16 * me2 * s25 * s56 - 10 * me2 * s26 * s56 +
         2 * mm2 * s26 * s56 - 4 * s12 * s26 * s56 - 4 * s15 * s26 * s56 -
-        8 * s16 * s26 * s56 + 4 * s25 * s26 * s56 + 4 * pow<2>(s26) * s56 -
-        8 * me2 * pow<2>(s56) + 4 * s26 * pow<2>(s56)};
+        8 * s16 * s26 * s56 + 4 * s25 * s26 * s56 + 4 * pow(s26, 2) * s56 -
+        8 * me2 * pow(s56, 2) + 4 * s26 * pow(s56, 2)};
     const auto if15{
-        -6 * pow<2>(me2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow<2>(s12) -
-        mm2 * pow<2>(s12) + 2 * pow<3>(s12) - 6 * pow<2>(me2) * s15 -
+        -6 * pow(me2, 2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow(s12, 2) -
+        mm2 * pow(s12, 2) + 2 * pow(s12, 3) - 6 * pow(me2, 2) * s15 -
         2 * me2 * mm2 * s15 + me2 * s12 * s15 - mm2 * s12 * s15 +
-        5 * pow<2>(s12) * s15 + 3 * s12 * pow<2>(s15) - 10 * pow<2>(me2) * s16 -
-        6 * me2 * mm2 * s16 + 8 * me2 * s12 * s16 + 3 * pow<2>(s12) * s16 +
-        6 * me2 * s15 * s16 + 4 * s12 * s15 * s16 + 6 * me2 * pow<2>(s16) +
-        s12 * pow<2>(s16) - 3 * me2 * s12 * s25 - 3 * mm2 * s12 * s25 -
-        2 * pow<2>(s12) * s25 - 2 * me2 * s15 * s25 - 2 * mm2 * s15 * s25 -
+        5 * pow(s12, 2) * s15 + 3 * s12 * pow(s15, 2) - 10 * pow(me2, 2) * s16 -
+        6 * me2 * mm2 * s16 + 8 * me2 * s12 * s16 + 3 * pow(s12, 2) * s16 +
+        6 * me2 * s15 * s16 + 4 * s12 * s15 * s16 + 6 * me2 * pow(s16, 2) +
+        s12 * pow(s16, 2) - 3 * me2 * s12 * s25 - 3 * mm2 * s12 * s25 -
+        2 * pow(s12, 2) * s25 - 2 * me2 * s15 * s25 - 2 * mm2 * s15 * s25 -
         3 * s12 * s15 * s25 - 4 * me2 * s16 * s25 - 2 * mm2 * s16 * s25 -
-        s12 * s16 * s25 + s15 * s16 * s25 + pow<2>(s16) * s25 +
-        2 * mm2 * pow<2>(s25) + 3 * pow<2>(me2) * s26 - 2 * me2 * mm2 * s26 -
-        pow<2>(mm2) * s26 + 2 * mm2 * s12 * s26 - 6 * pow<2>(s12) * s26 +
+        s12 * s16 * s25 + s15 * s16 * s25 + pow(s16, 2) * s25 +
+        2 * mm2 * pow(s25, 2) + 3 * pow(me2, 2) * s26 - 2 * me2 * mm2 * s26 -
+        pow(mm2, 2) * s26 + 2 * mm2 * s12 * s26 - 6 * pow(s12, 2) * s26 +
         me2 * s15 * s26 + mm2 * s15 * s26 - 10 * s12 * s15 * s26 -
-        2 * pow<2>(s15) * s26 - 4 * me2 * s16 * s26 - 6 * s12 * s16 * s26 -
+        2 * pow(s15, 2) * s26 - 4 * me2 * s16 * s26 - 6 * s12 * s16 * s26 -
         2 * s15 * s16 * s26 + me2 * s25 * s26 + 3 * mm2 * s25 * s26 +
         4 * s12 * s25 * s26 + 3 * s15 * s25 * s26 + s16 * s25 * s26 -
-        me2 * pow<2>(s26) - mm2 * pow<2>(s26) + 6 * s12 * pow<2>(s26) +
-        5 * s15 * pow<2>(s26) + 3 * s16 * pow<2>(s26) - 2 * s25 * pow<2>(s26) -
-        2 * pow<3>(s26) + 6 * pow<2>(me2) * s56 + 2 * me2 * mm2 * s56 -
-        2 * me2 * s12 * s56 - 5 * pow<2>(s12) * s56 - 7 * s12 * s15 * s56 -
+        me2 * pow(s26, 2) - mm2 * pow(s26, 2) + 6 * s12 * pow(s26, 2) +
+        5 * s15 * pow(s26, 2) + 3 * s16 * pow(s26, 2) - 2 * s25 * pow(s26, 2) -
+        2 * pow(s26, 3) + 6 * pow(me2, 2) * s56 + 2 * me2 * mm2 * s56 -
+        2 * me2 * s12 * s56 - 5 * pow(s12, 2) * s56 - 7 * s12 * s15 * s56 -
         4 * me2 * s16 * s56 - 5 * s12 * s16 * s56 + 2 * me2 * s25 * s56 +
         4 * mm2 * s25 * s56 + 3 * s12 * s25 * s56 - s16 * s25 * s56 +
         10 * s12 * s26 * s56 + 5 * s15 * s26 * s56 + 3 * s16 * s26 * s56 -
-        3 * s25 * s26 * s56 - 5 * pow<2>(s26) * s56 + 4 * s12 * pow<2>(s56) -
-        3 * s26 * pow<2>(s56)};
+        3 * s25 * s26 * s56 - 5 * pow(s26, 2) * s56 + 4 * s12 * pow(s56, 2) -
+        3 * s26 * pow(s56, 2)};
     const auto if25{
-        -6 * pow<2>(me2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow<2>(s12) -
-        mm2 * pow<2>(s12) + 2 * pow<3>(s12) + 3 * pow<2>(s12) * s15 -
-        4 * pow<2>(me2) * s16 - 4 * me2 * mm2 * s16 + me2 * s12 * s16 -
-        mm2 * s12 * s16 + 5 * pow<2>(s12) * s16 + 3 * me2 * s15 * s16 +
-        3 * s12 * s15 * s16 + 3 * me2 * pow<2>(s16) + 3 * s12 * pow<2>(s16) -
-        4 * me2 * s12 * s25 - 2 * mm2 * s12 * s25 - 2 * pow<2>(s12) * s25 -
+        -6 * pow(me2, 2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow(s12, 2) -
+        mm2 * pow(s12, 2) + 2 * pow(s12, 3) + 3 * pow(s12, 2) * s15 -
+        4 * pow(me2, 2) * s16 - 4 * me2 * mm2 * s16 + me2 * s12 * s16 -
+        mm2 * s12 * s16 + 5 * pow(s12, 2) * s16 + 3 * me2 * s15 * s16 +
+        3 * s12 * s15 * s16 + 3 * me2 * pow(s16, 2) + 3 * s12 * pow(s16, 2) -
+        4 * me2 * s12 * s25 - 2 * mm2 * s12 * s25 - 2 * pow(s12, 2) * s25 -
         4 * me2 * s16 * s25 - mm2 * s16 * s25 - 2 * s12 * s16 * s25 +
-        3 * pow<2>(me2) * s26 + 4 * me2 * mm2 * s26 + pow<2>(mm2) * s26 -
-        4 * me2 * s12 * s26 - 2 * mm2 * s12 * s26 - 4 * pow<2>(s12) * s26 -
+        3 * pow(me2, 2) * s26 + 4 * me2 * mm2 * s26 + pow(mm2, 2) * s26 -
+        4 * me2 * s12 * s26 - 2 * mm2 * s12 * s26 - 4 * pow(s12, 2) * s26 -
         me2 * s15 * s26 - 2 * mm2 * s15 * s26 - 3 * s12 * s15 * s26 -
         5 * me2 * s16 * s26 - 3 * mm2 * s16 * s26 - 5 * s12 * s16 * s26 +
         2 * me2 * s25 * s26 + 3 * mm2 * s25 * s26 + 2 * s12 * s25 * s26 +
-        s16 * s25 * s26 + 3 * me2 * pow<2>(s26) + 2 * mm2 * pow<2>(s26) +
-        2 * s12 * pow<2>(s26) + s16 * pow<2>(s26) - me2 * s12 * s56 -
-        mm2 * s12 * s56 - 3 * pow<2>(s12) * s56 - 4 * me2 * s16 * s56 -
+        s16 * s25 * s26 + 3 * me2 * pow(s26, 2) + 2 * mm2 * pow(s26, 2) +
+        2 * s12 * pow(s26, 2) + s16 * pow(s26, 2) - me2 * s12 * s56 -
+        mm2 * s12 * s56 - 3 * pow(s12, 2) * s56 - 4 * me2 * s16 * s56 -
         3 * s12 * s16 * s56 + 2 * me2 * s26 * s56 + 2 * mm2 * s26 * s56 +
         3 * s12 * s26 * s56 + s16 * s26 * s56};
     const auto if35{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) +
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) +
         8 * me2 * mm2 * s15 - 3 * me2 * s12 * s15 - 9 * mm2 * s12 * s15 +
-        2 * pow<2>(s12) * s15 - 4 * me2 * pow<2>(s15) + 3 * s12 * pow<2>(s15) +
+        2 * pow(s12, 2) * s15 - 4 * me2 * pow(s15, 2) + 3 * s12 * pow(s15, 2) +
         8 * me2 * mm2 * s16 - 6 * me2 * s12 * s16 - 10 * mm2 * s12 * s16 +
-        4 * pow<2>(s12) * s16 - 8 * me2 * s15 * s16 + 7 * s12 * s15 * s16 -
-        4 * me2 * pow<2>(s16) + 4 * s12 * pow<2>(s16) - 12 * me2 * mm2 * s25 -
-        4 * pow<2>(mm2) * s25 + 16 * mm2 * s12 * s25 + 6 * me2 * s15 * s25 +
-        10 * mm2 * s15 * s25 - 6 * s12 * s15 * s25 - 4 * pow<2>(s15) * s25 +
+        4 * pow(s12, 2) * s16 - 8 * me2 * s15 * s16 + 7 * s12 * s15 * s16 -
+        4 * me2 * pow(s16, 2) + 4 * s12 * pow(s16, 2) - 12 * me2 * mm2 * s25 -
+        4 * pow(mm2, 2) * s25 + 16 * mm2 * s12 * s25 + 6 * me2 * s15 * s25 +
+        10 * mm2 * s15 * s25 - 6 * s12 * s15 * s25 - 4 * pow(s15, 2) * s25 +
         9 * me2 * s16 * s25 + 11 * mm2 * s16 * s25 - 10 * s12 * s16 * s25 -
-        9 * s15 * s16 * s25 - 5 * pow<2>(s16) * s25 - 8 * mm2 * pow<2>(s25) +
-        4 * s15 * pow<2>(s25) + 6 * s16 * pow<2>(s25) - 6 * me2 * mm2 * s26 -
-        2 * pow<2>(mm2) * s26 + 12 * mm2 * s12 * s26 + 6 * me2 * s15 * s26 +
-        8 * mm2 * s15 * s26 - 6 * s12 * s15 * s26 - 4 * pow<2>(s15) * s26 +
+        9 * s15 * s16 * s25 - 5 * pow(s16, 2) * s25 - 8 * mm2 * pow(s25, 2) +
+        4 * s15 * pow(s25, 2) + 6 * s16 * pow(s25, 2) - 6 * me2 * mm2 * s26 -
+        2 * pow(mm2, 2) * s26 + 12 * mm2 * s12 * s26 + 6 * me2 * s15 * s26 +
+        8 * mm2 * s15 * s26 - 6 * s12 * s15 * s26 - 4 * pow(s15, 2) * s26 +
         3 * me2 * s16 * s26 + 7 * mm2 * s16 * s26 - 6 * s12 * s16 * s26 -
-        7 * s15 * s16 * s26 - 3 * pow<2>(s16) * s26 - 12 * mm2 * s25 * s26 +
-        8 * s15 * s25 * s26 + 8 * s16 * s25 * s26 - 4 * mm2 * pow<2>(s26) +
-        4 * s15 * pow<2>(s26) + 2 * s16 * pow<2>(s26) - 8 * me2 * mm2 * s56 +
-        3 * me2 * s12 * s56 + 9 * mm2 * s12 * s56 - 2 * pow<2>(s12) * s56 +
+        7 * s15 * s16 * s26 - 3 * pow(s16, 2) * s26 - 12 * mm2 * s25 * s26 +
+        8 * s15 * s25 * s26 + 8 * s16 * s25 * s26 - 4 * mm2 * pow(s26, 2) +
+        4 * s15 * pow(s26, 2) + 2 * s16 * pow(s26, 2) - 8 * me2 * mm2 * s56 +
+        3 * me2 * s12 * s56 + 9 * mm2 * s12 * s56 - 2 * pow(s12, 2) * s56 +
         8 * me2 * s15 * s56 - 6 * s12 * s15 * s56 + 8 * me2 * s16 * s56 -
         7 * s12 * s16 * s56 - 6 * me2 * s25 * s56 - 10 * mm2 * s25 * s56 +
         6 * s12 * s25 * s56 + 8 * s15 * s25 * s56 + 9 * s16 * s25 * s56 -
-        4 * pow<2>(s25) * s56 - 6 * me2 * s26 * s56 - 8 * mm2 * s26 * s56 +
+        4 * pow(s25, 2) * s56 - 6 * me2 * s26 * s56 - 8 * mm2 * s26 * s56 +
         6 * s12 * s26 * s56 + 8 * s15 * s26 * s56 + 7 * s16 * s26 * s56 -
-        8 * s25 * s26 * s56 - 4 * pow<2>(s26) * s56 - 4 * me2 * pow<2>(s56) +
-        3 * s12 * pow<2>(s56) - 4 * s25 * pow<2>(s56) - 4 * s26 * pow<2>(s56)};
+        8 * s25 * s26 * s56 - 4 * pow(s26, 2) * s56 - 4 * me2 * pow(s56, 2) +
+        3 * s12 * pow(s56, 2) - 4 * s25 * pow(s56, 2) - 4 * s26 * pow(s56, 2)};
     const auto if45{
-        6 * me2 * pow<2>(s12) + 2 * mm2 * pow<2>(s12) - 4 * pow<3>(s12) +
-        4 * me2 * s12 * s15 - 4 * pow<2>(s12) * s15 + 8 * me2 * s12 * s16 +
-        2 * mm2 * s12 * s16 - 8 * pow<2>(s12) * s16 + 2 * me2 * s15 * s16 -
-        4 * s12 * s15 * s16 + me2 * pow<2>(s16) - 4 * s12 * pow<2>(s16) -
-        6 * me2 * s12 * s25 - 2 * mm2 * s12 * s25 + 8 * pow<2>(s12) * s25 +
+        6 * me2 * pow(s12, 2) + 2 * mm2 * pow(s12, 2) - 4 * pow(s12, 3) +
+        4 * me2 * s12 * s15 - 4 * pow(s12, 2) * s15 + 8 * me2 * s12 * s16 +
+        2 * mm2 * s12 * s16 - 8 * pow(s12, 2) * s16 + 2 * me2 * s15 * s16 -
+        4 * s12 * s15 * s16 + me2 * pow(s16, 2) - 4 * s12 * pow(s16, 2) -
+        6 * me2 * s12 * s25 - 2 * mm2 * s12 * s25 + 8 * pow(s12, 2) * s25 +
         4 * s12 * s15 * s25 - 3 * me2 * s16 * s25 - mm2 * s16 * s25 +
-        10 * s12 * s16 * s25 + 2 * s15 * s16 * s25 + 2 * pow<2>(s16) * s25 -
-        4 * s12 * pow<2>(s25) - 2 * s16 * pow<2>(s25) - 2 * me2 * mm2 * s26 -
-        2 * pow<2>(mm2) * s26 - 6 * me2 * s12 * s26 + 2 * mm2 * s12 * s26 +
-        8 * pow<2>(s12) * s26 - me2 * s15 * s26 + 5 * mm2 * s15 * s26 +
-        3 * s12 * s15 * s26 - 2 * pow<2>(s15) * s26 - 2 * me2 * s16 * s26 +
+        10 * s12 * s16 * s25 + 2 * s15 * s16 * s25 + 2 * pow(s16, 2) * s25 -
+        4 * s12 * pow(s25, 2) - 2 * s16 * pow(s25, 2) - 2 * me2 * mm2 * s26 -
+        2 * pow(mm2, 2) * s26 - 6 * me2 * s12 * s26 + 2 * mm2 * s12 * s26 +
+        8 * pow(s12, 2) * s26 - me2 * s15 * s26 + 5 * mm2 * s15 * s26 +
+        3 * s12 * s15 * s26 - 2 * pow(s15, 2) * s26 - 2 * me2 * s16 * s26 +
         6 * mm2 * s16 * s26 + 7 * s12 * s16 * s26 - 5 * s15 * s16 * s26 -
-        2 * pow<2>(s16) * s26 + 3 * me2 * s25 * s26 - 3 * mm2 * s25 * s26 -
-        10 * s12 * s25 * s26 - 2 * s16 * s25 * s26 + 2 * pow<2>(s25) * s26 +
-        3 * me2 * pow<2>(s26) - 2 * mm2 * pow<2>(s26) - 6 * s12 * pow<2>(s26) -
-        s16 * pow<2>(s26) + 4 * s25 * pow<2>(s26) + 2 * pow<3>(s26) -
-        5 * me2 * s12 * s56 - mm2 * s12 * s56 + 6 * pow<2>(s12) * s56 +
+        2 * pow(s16, 2) * s26 + 3 * me2 * s25 * s26 - 3 * mm2 * s25 * s26 -
+        10 * s12 * s25 * s26 - 2 * s16 * s25 * s26 + 2 * pow(s25, 2) * s26 +
+        3 * me2 * pow(s26, 2) - 2 * mm2 * pow(s26, 2) - 6 * s12 * pow(s26, 2) -
+        s16 * pow(s26, 2) + 4 * s25 * pow(s26, 2) + 2 * pow(s26, 3) -
+        5 * me2 * s12 * s56 - mm2 * s12 * s56 + 6 * pow(s12, 2) * s56 +
         2 * s12 * s15 * s56 - me2 * s16 * s56 + 6 * s12 * s16 * s56 -
         6 * s12 * s25 * s56 - 2 * s16 * s25 * s56 + 2 * me2 * s26 * s56 -
         3 * mm2 * s26 * s56 - 7 * s12 * s26 * s56 + 2 * s15 * s26 * s56 +
-        2 * s16 * s26 * s56 + 2 * s25 * s26 * s56 + 2 * pow<2>(s26) * s56 -
-        2 * s12 * pow<2>(s56)};
+        2 * s16 * s26 * s56 + 2 * s25 * s26 * s56 + 2 * pow(s26, 2) * s56 -
+        2 * s12 * pow(s56, 2)};
     const auto if55{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) +
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) +
         8 * me2 * mm2 * s15 - 8 * mm2 * s12 * s15 + 8 * me2 * mm2 * s16 -
-        6 * me2 * s12 * s16 - 10 * mm2 * s12 * s16 + 4 * pow<2>(s12) * s16 -
-        4 * me2 * s15 * s16 + 4 * s12 * s15 * s16 - 4 * me2 * pow<2>(s16) +
-        4 * s12 * pow<2>(s16) - 12 * me2 * mm2 * s25 - 4 * pow<2>(mm2) * s25 +
+        6 * me2 * s12 * s16 - 10 * mm2 * s12 * s16 + 4 * pow(s12, 2) * s16 -
+        4 * me2 * s15 * s16 + 4 * s12 * s15 * s16 - 4 * me2 * pow(s16, 2) +
+        4 * s12 * pow(s16, 2) - 12 * me2 * mm2 * s25 - 4 * pow(mm2, 2) * s25 +
         16 * mm2 * s12 * s25 + 8 * mm2 * s15 * s25 + 6 * me2 * s16 * s25 +
         10 * mm2 * s16 * s25 - 8 * s12 * s16 * s25 - 4 * s15 * s16 * s25 -
-        4 * pow<2>(s16) * s25 - 8 * mm2 * pow<2>(s25) + 4 * s16 * pow<2>(s25) -
-        12 * me2 * mm2 * s26 - 4 * pow<2>(mm2) * s26 + 16 * mm2 * s12 * s26 +
+        4 * pow(s16, 2) * s25 - 8 * mm2 * pow(s25, 2) + 4 * s16 * pow(s25, 2) -
+        12 * me2 * mm2 * s26 - 4 * pow(mm2, 2) * s26 + 16 * mm2 * s12 * s26 +
         8 * mm2 * s15 * s26 + 6 * me2 * s16 * s26 + 10 * mm2 * s16 * s26 -
-        8 * s12 * s16 * s26 - 4 * s15 * s16 * s26 - 4 * pow<2>(s16) * s26 -
-        16 * mm2 * s25 * s26 + 8 * s16 * s25 * s26 - 8 * mm2 * pow<2>(s26) +
-        4 * s16 * pow<2>(s26) - 8 * me2 * mm2 * s56 + 8 * mm2 * s12 * s56 +
+        8 * s12 * s16 * s26 - 4 * s15 * s16 * s26 - 4 * pow(s16, 2) * s26 -
+        16 * mm2 * s25 * s26 + 8 * s16 * s25 * s26 - 8 * mm2 * pow(s26, 2) +
+        4 * s16 * pow(s26, 2) - 8 * me2 * mm2 * s56 + 8 * mm2 * s12 * s56 +
         4 * me2 * s16 * s56 - 4 * s12 * s16 * s56 - 8 * mm2 * s25 * s56 +
         4 * s16 * s25 * s56 - 8 * mm2 * s26 * s56 + 4 * s16 * s26 * s56};
     const auto if16{
-        -12 * pow<2>(me2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow<2>(s12) -
-        12 * pow<2>(me2) * s15 - 4 * me2 * mm2 * s15 + 16 * me2 * s12 * s15 +
-        8 * me2 * pow<2>(s15) - 10 * pow<2>(me2) * s16 - 2 * me2 * mm2 * s16 +
-        12 * me2 * s12 * s16 + 12 * me2 * s15 * s16 + 2 * me2 * pow<2>(s16) -
+        -12 * pow(me2, 2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow(s12, 2) -
+        12 * pow(me2, 2) * s15 - 4 * me2 * mm2 * s15 + 16 * me2 * s12 * s15 +
+        8 * me2 * pow(s15, 2) - 10 * pow(me2, 2) * s16 - 2 * me2 * mm2 * s16 +
+        12 * me2 * s12 * s16 + 12 * me2 * s15 * s16 + 2 * me2 * pow(s16, 2) -
         4 * me2 * mm2 * s25 - 9 * me2 * s12 * s25 + mm2 * s12 * s25 -
-        pow<2>(s12) * s25 - 6 * me2 * s15 * s25 + 2 * mm2 * s15 * s25 -
-        5 * s12 * s15 * s25 - 4 * pow<2>(s15) * s25 - 5 * me2 * s16 * s25 +
+        pow(s12, 2) * s25 - 6 * me2 * s15 * s25 + 2 * mm2 * s15 * s25 -
+        5 * s12 * s15 * s25 - 4 * pow(s15, 2) * s25 - 5 * me2 * s16 * s25 +
         mm2 * s16 * s25 - 2 * s12 * s16 * s25 - 6 * s15 * s16 * s25 -
-        pow<2>(s16) * s25 + 2 * mm2 * pow<2>(s25) + s12 * pow<2>(s25) +
-        4 * s15 * pow<2>(s25) + s16 * pow<2>(s25) + 12 * pow<2>(me2) * s26 -
+        pow(s16, 2) * s25 + 2 * mm2 * pow(s25, 2) + s12 * pow(s25, 2) +
+        4 * s15 * pow(s25, 2) + s16 * pow(s25, 2) + 12 * pow(me2, 2) * s26 -
         16 * me2 * s12 * s26 - 16 * me2 * s15 * s26 - 8 * me2 * s16 * s26 +
         7 * me2 * s25 * s26 - 3 * mm2 * s25 * s26 + 4 * s12 * s25 * s26 +
-        8 * s15 * s25 * s26 + 4 * s16 * s25 * s26 - 3 * pow<2>(s25) * s26 +
-        8 * me2 * pow<2>(s26) - 3 * s25 * pow<2>(s26) + 12 * pow<2>(me2) * s56 -
+        8 * s15 * s25 * s26 + 4 * s16 * s25 * s26 - 3 * pow(s25, 2) * s26 +
+        8 * me2 * pow(s26, 2) - 3 * s25 * pow(s26, 2) + 12 * pow(me2, 2) * s56 -
         16 * me2 * s12 * s56 - 16 * me2 * s15 * s56 - 8 * me2 * s16 * s56 +
         6 * me2 * s25 * s56 + 4 * s12 * s25 * s56 + 8 * s15 * s25 * s56 +
-        4 * s16 * s25 * s56 - 4 * pow<2>(s25) * s56 + 16 * me2 * s26 * s56 -
-        7 * s25 * s26 * s56 + 8 * me2 * pow<2>(s56) - 4 * s25 * pow<2>(s56)};
+        4 * s16 * s25 * s56 - 4 * pow(s25, 2) * s56 + 16 * me2 * s26 * s56 -
+        7 * s25 * s26 * s56 + 8 * me2 * pow(s56, 2) - 4 * s25 * pow(s56, 2)};
     const auto if26{
-        -12 * pow<2>(me2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow<2>(s12) +
-        8 * me2 * s12 * s15 - 6 * pow<2>(me2) * s16 - 2 * me2 * mm2 * s16 +
-        10 * me2 * s12 * s16 + 4 * me2 * s15 * s16 + 3 * me2 * pow<2>(s16) -
-        10 * me2 * s12 * s25 + 2 * mm2 * s12 * s25 - 2 * pow<2>(s12) * s25 -
+        -12 * pow(me2, 2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow(s12, 2) +
+        8 * me2 * s12 * s15 - 6 * pow(me2, 2) * s16 - 2 * me2 * mm2 * s16 +
+        10 * me2 * s12 * s16 + 4 * me2 * s15 * s16 + 3 * me2 * pow(s16, 2) -
+        10 * me2 * s12 * s25 + 2 * mm2 * s12 * s25 - 2 * pow(s12, 2) * s25 -
         4 * s12 * s15 * s25 - 5 * me2 * s16 * s25 + mm2 * s16 * s25 -
-        3 * s12 * s16 * s25 - 2 * s15 * s16 * s25 - 2 * pow<2>(s16) * s25 +
-        4 * s12 * pow<2>(s25) + 2 * s16 * pow<2>(s25) + 6 * pow<2>(me2) * s26 +
+        3 * s12 * s16 * s25 - 2 * s15 * s16 * s25 - 2 * pow(s16, 2) * s25 +
+        4 * s12 * pow(s25, 2) + 2 * s16 * pow(s25, 2) + 6 * pow(me2, 2) * s26 +
         2 * me2 * mm2 * s26 - 13 * me2 * s12 * s26 + mm2 * s12 * s26 -
-        pow<2>(s12) * s26 - 7 * me2 * s15 * s26 - mm2 * s15 * s26 +
-        2 * pow<2>(s15) * s26 - 10 * me2 * s16 * s26 + 2 * s15 * s16 * s26 +
+        pow(s12, 2) * s26 - 7 * me2 * s15 * s26 - mm2 * s15 * s26 +
+        2 * pow(s15, 2) * s26 - 10 * me2 * s16 * s26 + 2 * s15 * s16 * s26 +
         5 * me2 * s25 * s26 - 3 * mm2 * s25 * s26 + 6 * s12 * s25 * s26 +
-        4 * s16 * s25 * s26 - 2 * pow<2>(s25) * s26 + 6 * me2 * pow<2>(s26) -
-        mm2 * pow<2>(s26) + s12 * pow<2>(s26) - 2 * s15 * pow<2>(s26) -
-        2 * s25 * pow<2>(s26) - 9 * me2 * s12 * s56 + mm2 * s12 * s56 -
-        pow<2>(s12) * s56 - 2 * s12 * s15 * s56 - 7 * me2 * s16 * s56 +
+        4 * s16 * s25 * s26 - 2 * pow(s25, 2) * s26 + 6 * me2 * pow(s26, 2) -
+        mm2 * pow(s26, 2) + s12 * pow(s26, 2) - 2 * s15 * pow(s26, 2) -
+        2 * s25 * pow(s26, 2) - 9 * me2 * s12 * s56 + mm2 * s12 * s56 -
+        pow(s12, 2) * s56 - 2 * s12 * s15 * s56 - 7 * me2 * s16 * s56 +
         6 * s12 * s25 * s56 + 2 * s16 * s25 * s56 + 7 * me2 * s26 * s56 -
         2 * mm2 * s26 * s56 + 3 * s12 * s26 * s56 - 2 * s15 * s26 * s56 -
-        2 * s25 * s26 * s56 + 2 * s12 * pow<2>(s56)};
+        2 * s25 * s26 * s56 + 2 * s12 * pow(s56, 2)};
     const auto if36{
-        12 * pow<2>(me2) * mm2 + 4 * me2 * pow<2>(mm2) - 2 * me2 * mm2 * s12 +
-        2 * pow<2>(mm2) * s12 - 4 * mm2 * pow<2>(s12) - 6 * pow<2>(me2) * s15 -
+        12 * pow(me2, 2) * mm2 + 4 * me2 * pow(mm2, 2) - 2 * me2 * mm2 * s12 +
+        2 * pow(mm2, 2) * s12 - 4 * mm2 * pow(s12, 2) - 6 * pow(me2, 2) * s15 -
         6 * me2 * mm2 * s15 + 4 * me2 * s12 * s15 - 6 * mm2 * s12 * s15 +
-        pow<2>(s12) * s15 + 2 * me2 * pow<2>(s15) + 2 * s12 * pow<2>(s15) -
-        6 * pow<2>(me2) * s16 - 6 * me2 * mm2 * s16 + me2 * s12 * s16 -
-        3 * mm2 * s12 * s16 + 2 * pow<2>(s12) * s16 + 5 * me2 * s15 * s16 +
-        4 * s12 * s15 * s16 + 2 * me2 * pow<2>(s16) + s12 * pow<2>(s16) +
-        8 * me2 * mm2 * s25 + 4 * pow<2>(mm2) * s25 + 4 * mm2 * s12 * s25 -
+        pow(s12, 2) * s15 + 2 * me2 * pow(s15, 2) + 2 * s12 * pow(s15, 2) -
+        6 * pow(me2, 2) * s16 - 6 * me2 * mm2 * s16 + me2 * s12 * s16 -
+        3 * mm2 * s12 * s16 + 2 * pow(s12, 2) * s16 + 5 * me2 * s15 * s16 +
+        4 * s12 * s15 * s16 + 2 * me2 * pow(s16, 2) + s12 * pow(s16, 2) +
+        8 * me2 * mm2 * s25 + 4 * pow(mm2, 2) * s25 + 4 * mm2 * s12 * s25 -
         4 * me2 * s15 * s25 - 2 * mm2 * s15 * s25 - s12 * s15 * s25 -
         5 * me2 * s16 * s25 - 6 * mm2 * s16 * s25 - s12 * s16 * s25 +
-        2 * s15 * s16 * s25 + 3 * pow<2>(s16) * s25 - s16 * pow<2>(s25) +
+        2 * s15 * s16 * s25 + 3 * pow(s16, 2) * s25 - s16 * pow(s25, 2) +
         8 * me2 * mm2 * s26 + 3 * me2 * s12 * s26 + 5 * mm2 * s12 * s26 -
-        2 * pow<2>(s12) * s26 - 3 * me2 * s15 * s26 - 3 * s12 * s15 * s26 -
+        2 * pow(s12, 2) * s26 - 3 * me2 * s15 * s26 - 3 * s12 * s15 * s26 -
         2 * me2 * s16 * s26 - 4 * s12 * s16 * s26 - 3 * me2 * s25 * s26 +
-        4 * s12 * s25 * s26 + 2 * s15 * s25 * s26 - 2 * pow<2>(s25) * s26 -
-        3 * me2 * pow<2>(s26) - mm2 * pow<2>(s26) + 4 * s12 * pow<2>(s26) +
-        2 * s15 * pow<2>(s26) + 2 * s16 * pow<2>(s26) - 4 * s25 * pow<2>(s26) -
-        2 * pow<3>(s26) + 6 * pow<2>(me2) * s56 + 6 * me2 * mm2 * s56 -
-        3 * me2 * s12 * s56 + 5 * mm2 * s12 * s56 - pow<2>(s12) * s56 -
+        4 * s12 * s25 * s26 + 2 * s15 * s25 * s26 - 2 * pow(s25, 2) * s26 -
+        3 * me2 * pow(s26, 2) - mm2 * pow(s26, 2) + 4 * s12 * pow(s26, 2) +
+        2 * s15 * pow(s26, 2) + 2 * s16 * pow(s26, 2) - 4 * s25 * pow(s26, 2) -
+        2 * pow(s26, 3) + 6 * pow(me2, 2) * s56 + 6 * me2 * mm2 * s56 -
+        3 * me2 * s12 * s56 + 5 * mm2 * s12 * s56 - pow(s12, 2) * s56 -
         4 * me2 * s15 * s56 - 4 * s12 * s15 * s56 - 3 * me2 * s16 * s56 -
         4 * s12 * s16 * s56 + 4 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 +
         s12 * s25 * s56 - 2 * s16 * s25 * s56 + 2 * me2 * s26 * s56 +
         mm2 * s26 * s56 + 3 * s12 * s26 * s56 - 2 * s25 * s26 * s56 -
-        2 * pow<2>(s26) * s56 + 2 * me2 * pow<2>(s56) + 2 * s12 * pow<2>(s56)};
+        2 * pow(s26, 2) * s56 + 2 * me2 * pow(s56, 2) + 2 * s12 * pow(s56, 2)};
     const auto if46{
-        6 * pow<2>(me2) * s12 + 2 * me2 * mm2 * s12 - me2 * pow<2>(s12) +
-        mm2 * pow<2>(s12) - 2 * pow<3>(s12) - 3 * pow<2>(s12) * s15 +
-        6 * pow<2>(me2) * s16 + 2 * me2 * mm2 * s16 - 5 * me2 * s12 * s16 +
-        mm2 * s12 * s16 - 3 * pow<2>(s12) * s16 - me2 * s15 * s16 -
-        3 * s12 * s15 * s16 - 3 * me2 * pow<2>(s16) - s12 * pow<2>(s16) +
-        4 * me2 * s12 * s25 + 2 * mm2 * s12 * s25 + 2 * pow<2>(s12) * s25 +
+        6 * pow(me2, 2) * s12 + 2 * me2 * mm2 * s12 - me2 * pow(s12, 2) +
+        mm2 * pow(s12, 2) - 2 * pow(s12, 3) - 3 * pow(s12, 2) * s15 +
+        6 * pow(me2, 2) * s16 + 2 * me2 * mm2 * s16 - 5 * me2 * s12 * s16 +
+        mm2 * s12 * s16 - 3 * pow(s12, 2) * s16 - me2 * s15 * s16 -
+        3 * s12 * s15 * s16 - 3 * me2 * pow(s16, 2) - s12 * pow(s16, 2) +
+        4 * me2 * s12 * s25 + 2 * mm2 * s12 * s25 + 2 * pow(s12, 2) * s25 +
         4 * me2 * s16 * s25 + mm2 * s16 * s25 + s12 * s16 * s25 -
-        3 * pow<2>(me2) * s26 - pow<2>(mm2) * s26 + 5 * me2 * s12 * s26 +
-        mm2 * s12 * s26 + 3 * pow<2>(s12) * s26 - me2 * s15 * s26 +
+        3 * pow(me2, 2) * s26 - pow(mm2, 2) * s26 + 5 * me2 * s12 * s26 +
+        mm2 * s12 * s26 + 3 * pow(s12, 2) * s26 - me2 * s15 * s26 +
         2 * mm2 * s15 * s26 + 3 * s12 * s15 * s26 + 5 * me2 * s16 * s26 +
         mm2 * s16 * s26 + 2 * s12 * s16 * s26 - 2 * me2 * s25 * s26 -
-        3 * mm2 * s25 * s26 - s12 * s25 * s26 - 2 * me2 * pow<2>(s26) -
-        mm2 * pow<2>(s26) - s12 * pow<2>(s26) + 3 * me2 * s12 * s56 +
-        mm2 * s12 * s56 + 2 * pow<2>(s12) * s56 + 4 * me2 * s16 * s56 +
+        3 * mm2 * s25 * s26 - s12 * s25 * s26 - 2 * me2 * pow(s26, 2) -
+        mm2 * pow(s26, 2) - s12 * pow(s26, 2) + 3 * me2 * s12 * s56 +
+        mm2 * s12 * s56 + 2 * pow(s12, 2) * s56 + 4 * me2 * s16 * s56 +
         s12 * s16 * s56 - me2 * s26 * s56 - mm2 * s26 * s56 -
         2 * s12 * s26 * s56};
     const auto if56{
-        12 * pow<2>(me2) * mm2 + 4 * me2 * pow<2>(mm2) - 2 * me2 * mm2 * s12 +
-        2 * pow<2>(mm2) * s12 - 4 * mm2 * pow<2>(s12) - 6 * mm2 * s12 * s15 -
-        6 * pow<2>(me2) * s16 - 2 * me2 * mm2 * s16 + 3 * me2 * s12 * s16 -
-        3 * mm2 * s12 * s16 + s12 * s15 * s16 - 2 * me2 * pow<2>(s16) +
-        s12 * pow<2>(s16) + 8 * me2 * mm2 * s25 + 4 * pow<2>(mm2) * s25 +
+        12 * pow(me2, 2) * mm2 + 4 * me2 * pow(mm2, 2) - 2 * me2 * mm2 * s12 +
+        2 * pow(mm2, 2) * s12 - 4 * mm2 * pow(s12, 2) - 6 * mm2 * s12 * s15 -
+        6 * pow(me2, 2) * s16 - 2 * me2 * mm2 * s16 + 3 * me2 * s12 * s16 -
+        3 * mm2 * s12 * s16 + s12 * s15 * s16 - 2 * me2 * pow(s16, 2) +
+        s12 * pow(s16, 2) + 8 * me2 * mm2 * s25 + 4 * pow(mm2, 2) * s25 +
         4 * mm2 * s12 * s25 - 4 * me2 * s16 * s25 - 4 * mm2 * s16 * s25 +
-        2 * me2 * mm2 * s26 - 2 * pow<2>(mm2) * s26 + 8 * mm2 * s12 * s26 +
+        2 * me2 * mm2 * s26 - 2 * pow(mm2, 2) * s26 + 8 * mm2 * s12 * s26 +
         6 * mm2 * s15 * s26 - 3 * me2 * s16 * s26 + 3 * mm2 * s16 * s26 -
-        s15 * s16 * s26 - pow<2>(s16) * s26 - 4 * mm2 * s25 * s26 -
-        4 * mm2 * pow<2>(s26) + 6 * mm2 * s12 * s56 - s12 * s16 * s56 -
+        s15 * s16 * s26 - pow(s16, 2) * s26 - 4 * mm2 * s25 * s26 -
+        4 * mm2 * pow(s26, 2) + 6 * mm2 * s12 * s56 - s12 * s16 * s56 -
         6 * mm2 * s26 * s56 + s16 * s26 * s56};
     const auto if66{
-        24 * pow<2>(me2) * mm2 + 8 * me2 * pow<2>(mm2) - 16 * me2 * mm2 * s12 -
-        16 * me2 * mm2 * s15 - 12 * pow<2>(me2) * s16 - 12 * me2 * mm2 * s16 +
-        8 * me2 * s12 * s16 + 8 * me2 * s15 * s16 + 4 * me2 * pow<2>(s16) +
-        20 * me2 * mm2 * s25 - 4 * pow<2>(mm2) * s25 + 4 * mm2 * s12 * s25 +
+        24 * pow(me2, 2) * mm2 + 8 * me2 * pow(mm2, 2) - 16 * me2 * mm2 * s12 -
+        16 * me2 * mm2 * s15 - 12 * pow(me2, 2) * s16 - 12 * me2 * mm2 * s16 +
+        8 * me2 * s12 * s16 + 8 * me2 * s15 * s16 + 4 * me2 * pow(s16, 2) +
+        20 * me2 * mm2 * s25 - 4 * pow(mm2, 2) * s25 + 4 * mm2 * s12 * s25 +
         8 * mm2 * s15 * s25 - 10 * me2 * s16 * s25 + 6 * mm2 * s16 * s25 -
-        2 * s12 * s16 * s25 - 4 * s15 * s16 * s25 - 2 * pow<2>(s16) * s25 -
-        8 * mm2 * pow<2>(s25) + 4 * s16 * pow<2>(s25) + 16 * me2 * mm2 * s26 -
+        2 * s12 * s16 * s25 - 4 * s15 * s16 * s25 - 2 * pow(s16, 2) * s25 -
+        8 * mm2 * pow(s25, 2) + 4 * s16 * pow(s25, 2) + 16 * me2 * mm2 * s26 -
         8 * me2 * s16 * s26 - 4 * mm2 * s25 * s26 + 2 * s16 * s25 * s26 +
         16 * me2 * mm2 * s56 - 8 * me2 * s16 * s56 - 8 * mm2 * s25 * s56 +
         4 * s16 * s25 * s56};
 
-    return if11 / pow<2>(den1) + if22 / pow<2>(den2) + if33 / pow<2>(den3) +
-           if44 / pow<2>(den4) + if55 / pow<2>(den5) + if66 / pow<2>(den6) +
+    return if11 / pow(den1, 2) + if22 / pow(den2, 2) + if33 / pow(den3, 2) +
+           if44 / pow(den4, 2) + if55 / pow(den5, 2) + if66 / pow(den6, 2) +
            2 * (if12 / (den1 * den2) + if13 / (den1 * den3) +
                 if14 / (den1 * den4) + if15 / (den1 * den5) +
                 if16 / (den1 * den6) + if23 / (den2 * den3) +
@@ -2343,406 +2343,406 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS6n(double mm2, double me2, 
     //
 
     const auto if11{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        32 * pow<2>(me2) * s25 - 4 * me2 * s12 * s25 - 4 * me2 * s15 * s25 +
-        14 * me2 * pow<2>(s25) + 2 * mm2 * pow<2>(s25) - 4 * s12 * pow<2>(s25) -
-        2 * s15 * pow<2>(s25) - 4 * s16 * pow<2>(s25) + 4 * pow<3>(s25) +
-        20 * pow<2>(me2) * s26 - 4 * me2 * mm2 * s26 + 4 * me2 * s12 * s26 +
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        32 * pow(me2, 2) * s25 - 4 * me2 * s12 * s25 - 4 * me2 * s15 * s25 +
+        14 * me2 * pow(s25, 2) + 2 * mm2 * pow(s25, 2) - 4 * s12 * pow(s25, 2) -
+        2 * s15 * pow(s25, 2) - 4 * s16 * pow(s25, 2) + 4 * pow(s25, 3) +
+        20 * pow(me2, 2) * s26 - 4 * me2 * mm2 * s26 + 4 * me2 * s12 * s26 +
         4 * me2 * s15 * s26 + 8 * me2 * s16 * s26 + 2 * s15 * s25 * s26 +
-        4 * pow<2>(s25) * s26 - 8 * me2 * pow<2>(s26) + 20 * pow<2>(me2) * s56 -
+        4 * pow(s25, 2) * s26 - 8 * me2 * pow(s26, 2) + 20 * pow(me2, 2) * s56 -
         4 * me2 * mm2 * s56 + 4 * me2 * s12 * s56 + 4 * me2 * s15 * s56 +
         8 * me2 * s16 * s56 + 6 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 -
         4 * s12 * s25 * s56 - 2 * s15 * s25 * s56 - 4 * s16 * s25 * s56 +
-        8 * pow<2>(s25) * s56 - 16 * me2 * s26 * s56 + 4 * s25 * s26 * s56 -
-        8 * me2 * pow<2>(s56) + 4 * s25 * pow<2>(s56)};
+        8 * pow(s25, 2) * s56 - 16 * me2 * s26 * s56 + 4 * s25 * s26 * s56 -
+        8 * me2 * pow(s56, 2) + 4 * s25 * pow(s56, 2)};
     const auto if12{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        30 * pow<2>(me2) * s25 + 2 * me2 * mm2 * s25 - 4 * me2 * s12 * s25 -
-        4 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 4 * me2 * pow<2>(s25) -
-        2 * mm2 * pow<2>(s25) + 2 * s12 * pow<2>(s25) + 4 * s15 * pow<2>(s25) +
-        4 * s16 * pow<2>(s25) - 4 * pow<3>(s25) + 30 * pow<2>(me2) * s26 +
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        30 * pow(me2, 2) * s25 + 2 * me2 * mm2 * s25 - 4 * me2 * s12 * s25 -
+        4 * me2 * s15 * s25 - 4 * me2 * s16 * s25 + 4 * me2 * pow(s25, 2) -
+        2 * mm2 * pow(s25, 2) + 2 * s12 * pow(s25, 2) + 4 * s15 * pow(s25, 2) +
+        4 * s16 * pow(s25, 2) - 4 * pow(s25, 3) + 30 * pow(me2, 2) * s26 +
         2 * me2 * mm2 * s26 - 4 * me2 * s12 * s26 - 4 * me2 * s15 * s26 -
         4 * me2 * s16 * s26 + 8 * me2 * s25 * s26 - 4 * mm2 * s25 * s26 +
         4 * s12 * s25 * s26 + 8 * s15 * s25 * s26 + 8 * s16 * s25 * s26 -
-        12 * pow<2>(s25) * s26 + 4 * me2 * pow<2>(s26) - 2 * mm2 * pow<2>(s26) +
-        2 * s12 * pow<2>(s26) + 4 * s15 * pow<2>(s26) + 4 * s16 * pow<2>(s26) -
-        12 * s25 * pow<2>(s26) - 4 * pow<3>(s26) + 24 * pow<2>(me2) * s56 +
+        12 * pow(s25, 2) * s26 + 4 * me2 * pow(s26, 2) - 2 * mm2 * pow(s26, 2) +
+        2 * s12 * pow(s26, 2) + 4 * s15 * pow(s26, 2) + 4 * s16 * pow(s26, 2) -
+        12 * s25 * pow(s26, 2) - 4 * pow(s26, 3) + 24 * pow(me2, 2) * s56 +
         8 * me2 * s25 * s56 - 2 * mm2 * s25 * s56 + 4 * s15 * s25 * s56 +
-        4 * s16 * s25 * s56 - 8 * pow<2>(s25) * s56 + 8 * me2 * s26 * s56 -
+        4 * s16 * s25 * s56 - 8 * pow(s25, 2) * s56 + 8 * me2 * s26 * s56 -
         2 * mm2 * s26 * s56 + 4 * s15 * s26 * s56 + 4 * s16 * s26 * s56 -
-        16 * s25 * s26 * s56 - 8 * pow<2>(s26) * s56 + 4 * me2 * pow<2>(s56) -
-        2 * s12 * pow<2>(s56) - 4 * s25 * pow<2>(s56) - 4 * s26 * pow<2>(s56)};
+        16 * s25 * s26 * s56 - 8 * pow(s26, 2) * s56 + 4 * me2 * pow(s56, 2) -
+        2 * s12 * pow(s56, 2) - 4 * s25 * pow(s56, 2) - 4 * s26 * pow(s56, 2)};
     const auto if22{
-        24 * pow<3>(me2) + 8 * pow<2>(me2) * mm2 - 16 * pow<2>(me2) * s12 -
-        16 * pow<2>(me2) * s15 - 16 * pow<2>(me2) * s16 +
-        24 * pow<2>(me2) * s25 + 4 * me2 * s15 * s25 - 4 * me2 * pow<2>(s25) +
-        36 * pow<2>(me2) * s26 + 4 * me2 * mm2 * s26 - 8 * me2 * s12 * s26 -
+        24 * pow(me2, 3) + 8 * pow(me2, 2) * mm2 - 16 * pow(me2, 2) * s12 -
+        16 * pow(me2, 2) * s15 - 16 * pow(me2, 2) * s16 +
+        24 * pow(me2, 2) * s25 + 4 * me2 * s15 * s25 - 4 * me2 * pow(s25, 2) +
+        36 * pow(me2, 2) * s26 + 4 * me2 * mm2 * s26 - 8 * me2 * s12 * s26 -
         4 * me2 * s15 * s26 - 8 * me2 * s16 * s26 + 6 * me2 * s25 * s26 -
         2 * mm2 * s25 * s26 + 2 * s12 * s25 * s26 + 2 * s15 * s25 * s26 +
-        4 * s16 * s25 * s26 - 2 * pow<2>(s25) * s26 + 16 * me2 * pow<2>(s26) -
-        2 * s12 * pow<2>(s26) - 2 * s15 * pow<2>(s26) + 2 * pow<3>(s26) +
-        24 * pow<2>(me2) * s56 + 4 * me2 * s15 * s56 - 8 * me2 * s25 * s56 +
+        4 * s16 * s25 * s26 - 2 * pow(s25, 2) * s26 + 16 * me2 * pow(s26, 2) -
+        2 * s12 * pow(s26, 2) - 2 * s15 * pow(s26, 2) + 2 * pow(s26, 3) +
+        24 * pow(me2, 2) * s56 + 4 * me2 * s15 * s56 - 8 * me2 * s25 * s56 +
         12 * me2 * s26 * s56 - 2 * s12 * s26 * s56 - 2 * s15 * s26 * s56 +
-        4 * pow<2>(s26) * s56 - 4 * me2 * pow<2>(s56) + 2 * s26 * pow<2>(s56)};
+        4 * pow(s26, 2) * s56 - 4 * me2 * pow(s56, 2) + 2 * s26 * pow(s56, 2)};
     const auto if13{
-        -6 * pow<2>(me2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow<2>(s12) -
-        mm2 * pow<2>(s12) + 2 * pow<3>(s12) - 4 * pow<2>(me2) * s15 -
+        -6 * pow(me2, 2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow(s12, 2) -
+        mm2 * pow(s12, 2) + 2 * pow(s12, 3) - 4 * pow(me2, 2) * s15 -
         4 * me2 * mm2 * s15 + me2 * s12 * s15 - mm2 * s12 * s15 +
-        5 * pow<2>(s12) * s15 + 3 * me2 * pow<2>(s15) + 3 * s12 * pow<2>(s15) +
-        3 * pow<2>(s12) * s16 + 3 * me2 * s15 * s16 + 3 * s12 * s15 * s16 +
-        3 * pow<2>(me2) * s25 + 4 * me2 * mm2 * s25 + pow<2>(mm2) * s25 -
-        4 * me2 * s12 * s25 - 2 * mm2 * s12 * s25 - 4 * pow<2>(s12) * s25 -
+        5 * pow(s12, 2) * s15 + 3 * me2 * pow(s15, 2) + 3 * s12 * pow(s15, 2) +
+        3 * pow(s12, 2) * s16 + 3 * me2 * s15 * s16 + 3 * s12 * s15 * s16 +
+        3 * pow(me2, 2) * s25 + 4 * me2 * mm2 * s25 + pow(mm2, 2) * s25 -
+        4 * me2 * s12 * s25 - 2 * mm2 * s12 * s25 - 4 * pow(s12, 2) * s25 -
         5 * me2 * s15 * s25 - 3 * mm2 * s15 * s25 - 5 * s12 * s15 * s25 -
         me2 * s16 * s25 - 2 * mm2 * s16 * s25 - 3 * s12 * s16 * s25 +
-        3 * me2 * pow<2>(s25) + 2 * mm2 * pow<2>(s25) + 2 * s12 * pow<2>(s25) +
-        s15 * pow<2>(s25) - 4 * me2 * s12 * s26 - 2 * mm2 * s12 * s26 -
-        2 * pow<2>(s12) * s26 - 4 * me2 * s15 * s26 - mm2 * s15 * s26 -
+        3 * me2 * pow(s25, 2) + 2 * mm2 * pow(s25, 2) + 2 * s12 * pow(s25, 2) +
+        s15 * pow(s25, 2) - 4 * me2 * s12 * s26 - 2 * mm2 * s12 * s26 -
+        2 * pow(s12, 2) * s26 - 4 * me2 * s15 * s26 - mm2 * s15 * s26 -
         2 * s12 * s15 * s26 + 2 * me2 * s25 * s26 + 3 * mm2 * s25 * s26 +
         2 * s12 * s25 * s26 + s15 * s25 * s26 - me2 * s12 * s56 -
-        mm2 * s12 * s56 - 3 * pow<2>(s12) * s56 - 4 * me2 * s15 * s56 -
+        mm2 * s12 * s56 - 3 * pow(s12, 2) * s56 - 4 * me2 * s15 * s56 -
         3 * s12 * s15 * s56 + 2 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 +
         3 * s12 * s25 * s56 + s15 * s25 * s56};
     const auto if23{
-        -6 * pow<2>(me2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow<2>(s12) -
-        mm2 * pow<2>(s12) + 2 * pow<3>(s12) - 10 * pow<2>(me2) * s15 -
-        6 * me2 * mm2 * s15 + 8 * me2 * s12 * s15 + 3 * pow<2>(s12) * s15 +
-        6 * me2 * pow<2>(s15) + s12 * pow<2>(s15) - 6 * pow<2>(me2) * s16 -
+        -6 * pow(me2, 2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow(s12, 2) -
+        mm2 * pow(s12, 2) + 2 * pow(s12, 3) - 10 * pow(me2, 2) * s15 -
+        6 * me2 * mm2 * s15 + 8 * me2 * s12 * s15 + 3 * pow(s12, 2) * s15 +
+        6 * me2 * pow(s15, 2) + s12 * pow(s15, 2) - 6 * pow(me2, 2) * s16 -
         2 * me2 * mm2 * s16 + me2 * s12 * s16 - mm2 * s12 * s16 +
-        5 * pow<2>(s12) * s16 + 6 * me2 * s15 * s16 + 4 * s12 * s15 * s16 +
-        3 * s12 * pow<2>(s16) + 3 * pow<2>(me2) * s25 - 2 * me2 * mm2 * s25 -
-        pow<2>(mm2) * s25 + 2 * mm2 * s12 * s25 - 6 * pow<2>(s12) * s25 -
+        5 * pow(s12, 2) * s16 + 6 * me2 * s15 * s16 + 4 * s12 * s15 * s16 +
+        3 * s12 * pow(s16, 2) + 3 * pow(me2, 2) * s25 - 2 * me2 * mm2 * s25 -
+        pow(mm2, 2) * s25 + 2 * mm2 * s12 * s25 - 6 * pow(s12, 2) * s25 -
         4 * me2 * s15 * s25 - 6 * s12 * s15 * s25 + me2 * s16 * s25 +
         mm2 * s16 * s25 - 10 * s12 * s16 * s25 - 2 * s15 * s16 * s25 -
-        2 * pow<2>(s16) * s25 - me2 * pow<2>(s25) - mm2 * pow<2>(s25) +
-        6 * s12 * pow<2>(s25) + 3 * s15 * pow<2>(s25) + 5 * s16 * pow<2>(s25) -
-        2 * pow<3>(s25) - 3 * me2 * s12 * s26 - 3 * mm2 * s12 * s26 -
-        2 * pow<2>(s12) * s26 - 4 * me2 * s15 * s26 - 2 * mm2 * s15 * s26 -
-        s12 * s15 * s26 + pow<2>(s15) * s26 - 2 * me2 * s16 * s26 -
+        2 * pow(s16, 2) * s25 - me2 * pow(s25, 2) - mm2 * pow(s25, 2) +
+        6 * s12 * pow(s25, 2) + 3 * s15 * pow(s25, 2) + 5 * s16 * pow(s25, 2) -
+        2 * pow(s25, 3) - 3 * me2 * s12 * s26 - 3 * mm2 * s12 * s26 -
+        2 * pow(s12, 2) * s26 - 4 * me2 * s15 * s26 - 2 * mm2 * s15 * s26 -
+        s12 * s15 * s26 + pow(s15, 2) * s26 - 2 * me2 * s16 * s26 -
         2 * mm2 * s16 * s26 - 3 * s12 * s16 * s26 + s15 * s16 * s26 +
         me2 * s25 * s26 + 3 * mm2 * s25 * s26 + 4 * s12 * s25 * s26 +
-        s15 * s25 * s26 + 3 * s16 * s25 * s26 - 2 * pow<2>(s25) * s26 +
-        2 * mm2 * pow<2>(s26) + 6 * pow<2>(me2) * s56 + 2 * me2 * mm2 * s56 -
-        2 * me2 * s12 * s56 - 5 * pow<2>(s12) * s56 - 4 * me2 * s15 * s56 -
+        s15 * s25 * s26 + 3 * s16 * s25 * s26 - 2 * pow(s25, 2) * s26 +
+        2 * mm2 * pow(s26, 2) + 6 * pow(me2, 2) * s56 + 2 * me2 * mm2 * s56 -
+        2 * me2 * s12 * s56 - 5 * pow(s12, 2) * s56 - 4 * me2 * s15 * s56 -
         5 * s12 * s15 * s56 - 7 * s12 * s16 * s56 + 10 * s12 * s25 * s56 +
-        3 * s15 * s25 * s56 + 5 * s16 * s25 * s56 - 5 * pow<2>(s25) * s56 +
+        3 * s15 * s25 * s56 + 5 * s16 * s25 * s56 - 5 * pow(s25, 2) * s56 +
         2 * me2 * s26 * s56 + 4 * mm2 * s26 * s56 + 3 * s12 * s26 * s56 -
-        s15 * s26 * s56 - 3 * s25 * s26 * s56 + 4 * s12 * pow<2>(s56) -
-        3 * s25 * pow<2>(s56)};
+        s15 * s26 * s56 - 3 * s25 * s26 * s56 + 4 * s12 * pow(s56, 2) -
+        3 * s25 * pow(s56, 2)};
     const auto if33{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) +
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) +
         8 * me2 * mm2 * s15 - 6 * me2 * s12 * s15 - 10 * mm2 * s12 * s15 +
-        4 * pow<2>(s12) * s15 - 4 * me2 * pow<2>(s15) + 4 * s12 * pow<2>(s15) +
+        4 * pow(s12, 2) * s15 - 4 * me2 * pow(s15, 2) + 4 * s12 * pow(s15, 2) +
         8 * me2 * mm2 * s16 - 8 * mm2 * s12 * s16 - 4 * me2 * s15 * s16 +
-        4 * s12 * s15 * s16 - 12 * me2 * mm2 * s25 - 4 * pow<2>(mm2) * s25 +
+        4 * s12 * s15 * s16 - 12 * me2 * mm2 * s25 - 4 * pow(mm2, 2) * s25 +
         16 * mm2 * s12 * s25 + 6 * me2 * s15 * s25 + 10 * mm2 * s15 * s25 -
-        8 * s12 * s15 * s25 - 4 * pow<2>(s15) * s25 + 8 * mm2 * s16 * s25 -
-        4 * s15 * s16 * s25 - 8 * mm2 * pow<2>(s25) + 4 * s15 * pow<2>(s25) -
-        12 * me2 * mm2 * s26 - 4 * pow<2>(mm2) * s26 + 16 * mm2 * s12 * s26 +
+        8 * s12 * s15 * s25 - 4 * pow(s15, 2) * s25 + 8 * mm2 * s16 * s25 -
+        4 * s15 * s16 * s25 - 8 * mm2 * pow(s25, 2) + 4 * s15 * pow(s25, 2) -
+        12 * me2 * mm2 * s26 - 4 * pow(mm2, 2) * s26 + 16 * mm2 * s12 * s26 +
         6 * me2 * s15 * s26 + 10 * mm2 * s15 * s26 - 8 * s12 * s15 * s26 -
-        4 * pow<2>(s15) * s26 + 8 * mm2 * s16 * s26 - 4 * s15 * s16 * s26 -
-        16 * mm2 * s25 * s26 + 8 * s15 * s25 * s26 - 8 * mm2 * pow<2>(s26) +
-        4 * s15 * pow<2>(s26) - 8 * me2 * mm2 * s56 + 8 * mm2 * s12 * s56 +
+        4 * pow(s15, 2) * s26 + 8 * mm2 * s16 * s26 - 4 * s15 * s16 * s26 -
+        16 * mm2 * s25 * s26 + 8 * s15 * s25 * s26 - 8 * mm2 * pow(s26, 2) +
+        4 * s15 * pow(s26, 2) - 8 * me2 * mm2 * s56 + 8 * mm2 * s12 * s56 +
         4 * me2 * s15 * s56 - 4 * s12 * s15 * s56 - 8 * mm2 * s25 * s56 +
         4 * s15 * s25 * s56 - 8 * mm2 * s26 * s56 + 4 * s15 * s26 * s56};
     const auto if14{
-        -12 * pow<2>(me2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow<2>(s12) -
-        6 * pow<2>(me2) * s15 - 2 * me2 * mm2 * s15 + 10 * me2 * s12 * s15 +
-        3 * me2 * pow<2>(s15) + 8 * me2 * s12 * s16 + 4 * me2 * s15 * s16 +
-        6 * pow<2>(me2) * s25 + 2 * me2 * mm2 * s25 - 13 * me2 * s12 * s25 +
-        mm2 * s12 * s25 - pow<2>(s12) * s25 - 10 * me2 * s15 * s25 -
+        -12 * pow(me2, 2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow(s12, 2) -
+        6 * pow(me2, 2) * s15 - 2 * me2 * mm2 * s15 + 10 * me2 * s12 * s15 +
+        3 * me2 * pow(s15, 2) + 8 * me2 * s12 * s16 + 4 * me2 * s15 * s16 +
+        6 * pow(me2, 2) * s25 + 2 * me2 * mm2 * s25 - 13 * me2 * s12 * s25 +
+        mm2 * s12 * s25 - pow(s12, 2) * s25 - 10 * me2 * s15 * s25 -
         7 * me2 * s16 * s25 - mm2 * s16 * s25 + 2 * s15 * s16 * s25 +
-        2 * pow<2>(s16) * s25 + 6 * me2 * pow<2>(s25) - mm2 * pow<2>(s25) +
-        s12 * pow<2>(s25) - 2 * s16 * pow<2>(s25) - 10 * me2 * s12 * s26 +
-        2 * mm2 * s12 * s26 - 2 * pow<2>(s12) * s26 - 5 * me2 * s15 * s26 +
-        mm2 * s15 * s26 - 3 * s12 * s15 * s26 - 2 * pow<2>(s15) * s26 -
+        2 * pow(s16, 2) * s25 + 6 * me2 * pow(s25, 2) - mm2 * pow(s25, 2) +
+        s12 * pow(s25, 2) - 2 * s16 * pow(s25, 2) - 10 * me2 * s12 * s26 +
+        2 * mm2 * s12 * s26 - 2 * pow(s12, 2) * s26 - 5 * me2 * s15 * s26 +
+        mm2 * s15 * s26 - 3 * s12 * s15 * s26 - 2 * pow(s15, 2) * s26 -
         4 * s12 * s16 * s26 - 2 * s15 * s16 * s26 + 5 * me2 * s25 * s26 -
         3 * mm2 * s25 * s26 + 6 * s12 * s25 * s26 + 4 * s15 * s25 * s26 -
-        2 * pow<2>(s25) * s26 + 4 * s12 * pow<2>(s26) + 2 * s15 * pow<2>(s26) -
-        2 * s25 * pow<2>(s26) - 9 * me2 * s12 * s56 + mm2 * s12 * s56 -
-        pow<2>(s12) * s56 - 7 * me2 * s15 * s56 - 2 * s12 * s16 * s56 +
+        2 * pow(s25, 2) * s26 + 4 * s12 * pow(s26, 2) + 2 * s15 * pow(s26, 2) -
+        2 * s25 * pow(s26, 2) - 9 * me2 * s12 * s56 + mm2 * s12 * s56 -
+        pow(s12, 2) * s56 - 7 * me2 * s15 * s56 - 2 * s12 * s16 * s56 +
         7 * me2 * s25 * s56 - 2 * mm2 * s25 * s56 + 3 * s12 * s25 * s56 -
         2 * s16 * s25 * s56 + 6 * s12 * s26 * s56 + 2 * s15 * s26 * s56 -
-        2 * s25 * s26 * s56 + 2 * s12 * pow<2>(s56)};
+        2 * s25 * s26 * s56 + 2 * s12 * pow(s56, 2)};
     const auto if24{
-        -12 * pow<2>(me2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow<2>(s12) -
-        10 * pow<2>(me2) * s15 - 2 * me2 * mm2 * s15 + 12 * me2 * s12 * s15 +
-        2 * me2 * pow<2>(s15) - 12 * pow<2>(me2) * s16 - 4 * me2 * mm2 * s16 +
-        16 * me2 * s12 * s16 + 12 * me2 * s15 * s16 + 8 * me2 * pow<2>(s16) +
-        12 * pow<2>(me2) * s25 - 16 * me2 * s12 * s25 - 8 * me2 * s15 * s25 -
-        16 * me2 * s16 * s25 + 8 * me2 * pow<2>(s25) - 4 * me2 * mm2 * s26 -
-        9 * me2 * s12 * s26 + mm2 * s12 * s26 - pow<2>(s12) * s26 -
+        -12 * pow(me2, 2) * s12 - 4 * me2 * mm2 * s12 + 8 * me2 * pow(s12, 2) -
+        10 * pow(me2, 2) * s15 - 2 * me2 * mm2 * s15 + 12 * me2 * s12 * s15 +
+        2 * me2 * pow(s15, 2) - 12 * pow(me2, 2) * s16 - 4 * me2 * mm2 * s16 +
+        16 * me2 * s12 * s16 + 12 * me2 * s15 * s16 + 8 * me2 * pow(s16, 2) +
+        12 * pow(me2, 2) * s25 - 16 * me2 * s12 * s25 - 8 * me2 * s15 * s25 -
+        16 * me2 * s16 * s25 + 8 * me2 * pow(s25, 2) - 4 * me2 * mm2 * s26 -
+        9 * me2 * s12 * s26 + mm2 * s12 * s26 - pow(s12, 2) * s26 -
         5 * me2 * s15 * s26 + mm2 * s15 * s26 - 2 * s12 * s15 * s26 -
-        pow<2>(s15) * s26 - 6 * me2 * s16 * s26 + 2 * mm2 * s16 * s26 -
-        5 * s12 * s16 * s26 - 6 * s15 * s16 * s26 - 4 * pow<2>(s16) * s26 +
+        pow(s15, 2) * s26 - 6 * me2 * s16 * s26 + 2 * mm2 * s16 * s26 -
+        5 * s12 * s16 * s26 - 6 * s15 * s16 * s26 - 4 * pow(s16, 2) * s26 +
         7 * me2 * s25 * s26 - 3 * mm2 * s25 * s26 + 4 * s12 * s25 * s26 +
-        4 * s15 * s25 * s26 + 8 * s16 * s25 * s26 - 3 * pow<2>(s25) * s26 +
-        2 * mm2 * pow<2>(s26) + s12 * pow<2>(s26) + s15 * pow<2>(s26) +
-        4 * s16 * pow<2>(s26) - 3 * s25 * pow<2>(s26) + 12 * pow<2>(me2) * s56 -
+        4 * s15 * s25 * s26 + 8 * s16 * s25 * s26 - 3 * pow(s25, 2) * s26 +
+        2 * mm2 * pow(s26, 2) + s12 * pow(s26, 2) + s15 * pow(s26, 2) +
+        4 * s16 * pow(s26, 2) - 3 * s25 * pow(s26, 2) + 12 * pow(me2, 2) * s56 -
         16 * me2 * s12 * s56 - 8 * me2 * s15 * s56 - 16 * me2 * s16 * s56 +
         16 * me2 * s25 * s56 + 6 * me2 * s26 * s56 + 4 * s12 * s26 * s56 +
         4 * s15 * s26 * s56 + 8 * s16 * s26 * s56 - 7 * s25 * s26 * s56 -
-        4 * pow<2>(s26) * s56 + 8 * me2 * pow<2>(s56) - 4 * s26 * pow<2>(s56)};
+        4 * pow(s26, 2) * s56 + 8 * me2 * pow(s56, 2) - 4 * s26 * pow(s56, 2)};
     const auto if34{
-        12 * pow<2>(me2) * mm2 + 4 * me2 * pow<2>(mm2) - 2 * me2 * mm2 * s12 +
-        2 * pow<2>(mm2) * s12 - 4 * mm2 * pow<2>(s12) - 6 * pow<2>(me2) * s15 -
+        12 * pow(me2, 2) * mm2 + 4 * me2 * pow(mm2, 2) - 2 * me2 * mm2 * s12 +
+        2 * pow(mm2, 2) * s12 - 4 * mm2 * pow(s12, 2) - 6 * pow(me2, 2) * s15 -
         2 * me2 * mm2 * s15 + 3 * me2 * s12 * s15 - 3 * mm2 * s12 * s15 -
-        2 * me2 * pow<2>(s15) + s12 * pow<2>(s15) - 6 * mm2 * s12 * s16 +
-        s12 * s15 * s16 + 2 * me2 * mm2 * s25 - 2 * pow<2>(mm2) * s25 +
+        2 * me2 * pow(s15, 2) + s12 * pow(s15, 2) - 6 * mm2 * s12 * s16 +
+        s12 * s15 * s16 + 2 * me2 * mm2 * s25 - 2 * pow(mm2, 2) * s25 +
         8 * mm2 * s12 * s25 - 3 * me2 * s15 * s25 + 3 * mm2 * s15 * s25 -
-        pow<2>(s15) * s25 + 6 * mm2 * s16 * s25 - s15 * s16 * s25 -
-        4 * mm2 * pow<2>(s25) + 8 * me2 * mm2 * s26 + 4 * pow<2>(mm2) * s26 +
+        pow(s15, 2) * s25 + 6 * mm2 * s16 * s25 - s15 * s16 * s25 -
+        4 * mm2 * pow(s25, 2) + 8 * me2 * mm2 * s26 + 4 * pow(mm2, 2) * s26 +
         4 * mm2 * s12 * s26 - 4 * me2 * s15 * s26 - 4 * mm2 * s15 * s26 -
         4 * mm2 * s25 * s26 + 6 * mm2 * s12 * s56 - s12 * s15 * s56 -
         6 * mm2 * s25 * s56 + s15 * s25 * s56};
     const auto if44{
-        24 * pow<2>(me2) * mm2 + 8 * me2 * pow<2>(mm2) - 16 * me2 * mm2 * s12 -
-        12 * pow<2>(me2) * s15 - 12 * me2 * mm2 * s15 + 8 * me2 * s12 * s15 +
-        4 * me2 * pow<2>(s15) - 16 * me2 * mm2 * s16 + 8 * me2 * s15 * s16 +
+        24 * pow(me2, 2) * mm2 + 8 * me2 * pow(mm2, 2) - 16 * me2 * mm2 * s12 -
+        12 * pow(me2, 2) * s15 - 12 * me2 * mm2 * s15 + 8 * me2 * s12 * s15 +
+        4 * me2 * pow(s15, 2) - 16 * me2 * mm2 * s16 + 8 * me2 * s15 * s16 +
         16 * me2 * mm2 * s25 - 8 * me2 * s15 * s25 + 20 * me2 * mm2 * s26 -
-        4 * pow<2>(mm2) * s26 + 4 * mm2 * s12 * s26 - 10 * me2 * s15 * s26 +
-        6 * mm2 * s15 * s26 - 2 * s12 * s15 * s26 - 2 * pow<2>(s15) * s26 +
+        4 * pow(mm2, 2) * s26 + 4 * mm2 * s12 * s26 - 10 * me2 * s15 * s26 +
+        6 * mm2 * s15 * s26 - 2 * s12 * s15 * s26 - 2 * pow(s15, 2) * s26 +
         8 * mm2 * s16 * s26 - 4 * s15 * s16 * s26 - 4 * mm2 * s25 * s26 +
-        2 * s15 * s25 * s26 - 8 * mm2 * pow<2>(s26) + 4 * s15 * pow<2>(s26) +
+        2 * s15 * s25 * s26 - 8 * mm2 * pow(s26, 2) + 4 * s15 * pow(s26, 2) +
         16 * me2 * mm2 * s56 - 8 * me2 * s15 * s56 - 8 * mm2 * s26 * s56 +
         4 * s15 * s26 * s56};
     const auto if15{
-        -6 * pow<2>(me2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow<2>(s12) -
-        mm2 * pow<2>(s12) + 2 * pow<3>(s12) - 4 * pow<2>(me2) * s15 +
-        me2 * s12 * s15 - mm2 * s12 * s15 + 4 * pow<2>(s12) * s15 -
-        2 * me2 * pow<2>(s15) + 2 * s12 * pow<2>(s15) - 6 * pow<2>(me2) * s16 +
-        2 * me2 * mm2 * s16 + 4 * me2 * s12 * s16 + 2 * pow<2>(s12) * s16 -
-        2 * me2 * s15 * s16 + 2 * s12 * s15 * s16 + 3 * pow<2>(me2) * s25 +
-        4 * me2 * mm2 * s25 + pow<2>(mm2) * s25 - 7 * me2 * s12 * s25 -
-        3 * mm2 * s12 * s25 - 2 * pow<2>(s12) * s25 - 5 * me2 * s15 * s25 -
-        3 * mm2 * s15 * s25 + pow<2>(s15) * s25 - 3 * me2 * s16 * s25 -
-        mm2 * s16 * s25 + s15 * s16 * s25 + 3 * me2 * pow<2>(s25) +
-        mm2 * pow<2>(s25) - s15 * pow<2>(s25) + s16 * pow<2>(s25) +
-        6 * pow<2>(me2) * s26 + 2 * me2 * mm2 * s26 - 5 * me2 * s12 * s26 -
-        mm2 * s12 * s26 - 4 * pow<2>(s12) * s26 - 3 * me2 * s15 * s26 -
+        -6 * pow(me2, 2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow(s12, 2) -
+        mm2 * pow(s12, 2) + 2 * pow(s12, 3) - 4 * pow(me2, 2) * s15 +
+        me2 * s12 * s15 - mm2 * s12 * s15 + 4 * pow(s12, 2) * s15 -
+        2 * me2 * pow(s15, 2) + 2 * s12 * pow(s15, 2) - 6 * pow(me2, 2) * s16 +
+        2 * me2 * mm2 * s16 + 4 * me2 * s12 * s16 + 2 * pow(s12, 2) * s16 -
+        2 * me2 * s15 * s16 + 2 * s12 * s15 * s16 + 3 * pow(me2, 2) * s25 +
+        4 * me2 * mm2 * s25 + pow(mm2, 2) * s25 - 7 * me2 * s12 * s25 -
+        3 * mm2 * s12 * s25 - 2 * pow(s12, 2) * s25 - 5 * me2 * s15 * s25 -
+        3 * mm2 * s15 * s25 + pow(s15, 2) * s25 - 3 * me2 * s16 * s25 -
+        mm2 * s16 * s25 + s15 * s16 * s25 + 3 * me2 * pow(s25, 2) +
+        mm2 * pow(s25, 2) - s15 * pow(s25, 2) + s16 * pow(s25, 2) +
+        6 * pow(me2, 2) * s26 + 2 * me2 * mm2 * s26 - 5 * me2 * s12 * s26 -
+        mm2 * s12 * s26 - 4 * pow(s12, 2) * s26 - 3 * me2 * s15 * s26 -
         mm2 * s15 * s26 - 4 * s12 * s15 * s26 - 4 * me2 * s16 * s26 -
         2 * s12 * s16 * s26 + 9 * me2 * s25 * s26 + 5 * mm2 * s25 * s26 -
-        3 * s15 * s25 * s26 - s16 * s25 * s26 + 2 * pow<2>(s25) * s26 +
-        4 * me2 * pow<2>(s26) + 2 * mm2 * pow<2>(s26) + 2 * s12 * pow<2>(s26) +
-        2 * s25 * pow<2>(s26) + 8 * pow<2>(me2) * s56 + 4 * me2 * mm2 * s56 -
-        6 * me2 * s12 * s56 - 4 * pow<2>(s12) * s56 - 4 * s12 * s15 * s56 -
+        3 * s15 * s25 * s26 - s16 * s25 * s26 + 2 * pow(s25, 2) * s26 +
+        4 * me2 * pow(s26, 2) + 2 * mm2 * pow(s26, 2) + 2 * s12 * pow(s26, 2) +
+        2 * s25 * pow(s26, 2) + 8 * pow(me2, 2) * s56 + 4 * me2 * mm2 * s56 -
+        6 * me2 * s12 * s56 - 4 * pow(s12, 2) * s56 - 4 * s12 * s15 * s56 -
         2 * me2 * s16 * s56 - 2 * s12 * s16 * s56 + 8 * me2 * s25 * s56 +
         4 * mm2 * s25 * s56 - 2 * s15 * s25 * s56 - s16 * s25 * s56 +
-        pow<2>(s25) * s56 + 8 * me2 * s26 * s56 + 2 * mm2 * s26 * s56 +
-        4 * s12 * s26 * s56 + 3 * s25 * s26 * s56 + 2 * me2 * pow<2>(s56) +
-        2 * s12 * pow<2>(s56) + s25 * pow<2>(s56)};
+        pow(s25, 2) * s56 + 8 * me2 * s26 * s56 + 2 * mm2 * s26 * s56 +
+        4 * s12 * s26 * s56 + 3 * s25 * s26 * s56 + 2 * me2 * pow(s56, 2) +
+        2 * s12 * pow(s56, 2) + s25 * pow(s56, 2)};
     const auto if25{
-        -6 * pow<2>(me2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow<2>(s12) -
-        mm2 * pow<2>(s12) + 2 * pow<3>(s12) - 4 * pow<2>(me2) * s15 +
-        2 * me2 * s12 * s15 + 3 * pow<2>(s12) * s15 - me2 * pow<2>(s15) -
-        6 * pow<2>(me2) * s16 + 2 * me2 * mm2 * s16 - me2 * s12 * s16 -
-        mm2 * s12 * s16 + 5 * pow<2>(s12) * s16 - 3 * me2 * s15 * s16 +
-        3 * s12 * s15 * s16 - 2 * me2 * pow<2>(s16) + 3 * s12 * pow<2>(s16) +
-        3 * pow<2>(me2) * s25 - 2 * me2 * mm2 * s25 - pow<2>(mm2) * s25 -
-        4 * me2 * s12 * s25 - 3 * pow<2>(s12) * s25 - 3 * me2 * s15 * s25 +
+        -6 * pow(me2, 2) * s12 - 2 * me2 * mm2 * s12 + me2 * pow(s12, 2) -
+        mm2 * pow(s12, 2) + 2 * pow(s12, 3) - 4 * pow(me2, 2) * s15 +
+        2 * me2 * s12 * s15 + 3 * pow(s12, 2) * s15 - me2 * pow(s15, 2) -
+        6 * pow(me2, 2) * s16 + 2 * me2 * mm2 * s16 - me2 * s12 * s16 -
+        mm2 * s12 * s16 + 5 * pow(s12, 2) * s16 - 3 * me2 * s15 * s16 +
+        3 * s12 * s15 * s16 - 2 * me2 * pow(s16, 2) + 3 * s12 * pow(s16, 2) +
+        3 * pow(me2, 2) * s25 - 2 * me2 * mm2 * s25 - pow(mm2, 2) * s25 -
+        4 * me2 * s12 * s25 - 3 * pow(s12, 2) * s25 - 3 * me2 * s15 * s25 +
         mm2 * s15 * s25 + s12 * s15 * s25 - 4 * me2 * s16 * s25 +
-        mm2 * s16 * s25 - 2 * s12 * s16 * s25 + 2 * me2 * pow<2>(s25) -
-        3 * mm2 * pow<2>(s25) + s12 * pow<2>(s25) + 6 * pow<2>(me2) * s26 +
+        mm2 * s16 * s25 - 2 * s12 * s16 * s25 + 2 * me2 * pow(s25, 2) -
+        3 * mm2 * pow(s25, 2) + s12 * pow(s25, 2) + 6 * pow(me2, 2) * s26 +
         2 * me2 * mm2 * s26 - 5 * me2 * s12 * s26 - 3 * mm2 * s12 * s26 -
-        3 * pow<2>(s12) * s26 - 3 * me2 * s15 * s26 - 2 * mm2 * s15 * s26 -
+        3 * pow(s12, 2) * s26 - 3 * me2 * s15 * s26 - 2 * mm2 * s15 * s26 -
         4 * me2 * s16 * s26 - 2 * mm2 * s16 * s26 - 3 * s12 * s16 * s26 +
         5 * me2 * s25 * s26 + 2 * s12 * s25 * s26 - s15 * s25 * s26 +
-        4 * me2 * pow<2>(s26) + 2 * mm2 * pow<2>(s26) + s12 * pow<2>(s26) -
-        s15 * pow<2>(s26) + 8 * pow<2>(me2) * s56 + 4 * me2 * mm2 * s56 -
-        2 * me2 * s12 * s56 - 6 * pow<2>(s12) * s56 - 2 * me2 * s15 * s56 -
+        4 * me2 * pow(s26, 2) + 2 * mm2 * pow(s26, 2) + s12 * pow(s26, 2) -
+        s15 * pow(s26, 2) + 8 * pow(me2, 2) * s56 + 4 * me2 * mm2 * s56 -
+        2 * me2 * s12 * s56 - 6 * pow(s12, 2) * s56 - 2 * me2 * s15 * s56 -
         s12 * s15 * s56 - 2 * me2 * s16 * s56 - 5 * s12 * s16 * s56 +
         6 * me2 * s25 * s56 - 2 * mm2 * s25 * s56 + 3 * s12 * s25 * s56 +
         6 * me2 * s26 * s56 + 4 * mm2 * s26 * s56 + 4 * s12 * s26 * s56 -
-        s15 * s26 * s56 + 2 * me2 * pow<2>(s56) + 2 * s12 * pow<2>(s56)};
+        s15 * s26 * s56 + 2 * me2 * pow(s56, 2) + 2 * s12 * pow(s56, 2)};
     const auto if35{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) +
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) +
         8 * me2 * mm2 * s15 - 6 * me2 * s12 * s15 - 10 * mm2 * s12 * s15 +
-        4 * pow<2>(s12) * s15 - 4 * me2 * pow<2>(s15) + 4 * s12 * pow<2>(s15) +
+        4 * pow(s12, 2) * s15 - 4 * me2 * pow(s15, 2) + 4 * s12 * pow(s15, 2) +
         8 * me2 * mm2 * s16 - 3 * me2 * s12 * s16 - 9 * mm2 * s12 * s16 +
-        2 * pow<2>(s12) * s16 - 8 * me2 * s15 * s16 + 7 * s12 * s15 * s16 -
-        4 * me2 * pow<2>(s16) + 3 * s12 * pow<2>(s16) - 6 * me2 * mm2 * s25 -
-        2 * pow<2>(mm2) * s25 + 12 * mm2 * s12 * s25 + 3 * me2 * s15 * s25 +
-        7 * mm2 * s15 * s25 - 6 * s12 * s15 * s25 - 3 * pow<2>(s15) * s25 +
+        2 * pow(s12, 2) * s16 - 8 * me2 * s15 * s16 + 7 * s12 * s15 * s16 -
+        4 * me2 * pow(s16, 2) + 3 * s12 * pow(s16, 2) - 6 * me2 * mm2 * s25 -
+        2 * pow(mm2, 2) * s25 + 12 * mm2 * s12 * s25 + 3 * me2 * s15 * s25 +
+        7 * mm2 * s15 * s25 - 6 * s12 * s15 * s25 - 3 * pow(s15, 2) * s25 +
         6 * me2 * s16 * s25 + 8 * mm2 * s16 * s25 - 6 * s12 * s16 * s25 -
-        7 * s15 * s16 * s25 - 4 * pow<2>(s16) * s25 - 4 * mm2 * pow<2>(s25) +
-        2 * s15 * pow<2>(s25) + 4 * s16 * pow<2>(s25) - 12 * me2 * mm2 * s26 -
-        4 * pow<2>(mm2) * s26 + 16 * mm2 * s12 * s26 + 9 * me2 * s15 * s26 +
-        11 * mm2 * s15 * s26 - 10 * s12 * s15 * s26 - 5 * pow<2>(s15) * s26 +
+        7 * s15 * s16 * s25 - 4 * pow(s16, 2) * s25 - 4 * mm2 * pow(s25, 2) +
+        2 * s15 * pow(s25, 2) + 4 * s16 * pow(s25, 2) - 12 * me2 * mm2 * s26 -
+        4 * pow(mm2, 2) * s26 + 16 * mm2 * s12 * s26 + 9 * me2 * s15 * s26 +
+        11 * mm2 * s15 * s26 - 10 * s12 * s15 * s26 - 5 * pow(s15, 2) * s26 +
         6 * me2 * s16 * s26 + 10 * mm2 * s16 * s26 - 6 * s12 * s16 * s26 -
-        9 * s15 * s16 * s26 - 4 * pow<2>(s16) * s26 - 12 * mm2 * s25 * s26 +
-        8 * s15 * s25 * s26 + 8 * s16 * s25 * s26 - 8 * mm2 * pow<2>(s26) +
-        6 * s15 * pow<2>(s26) + 4 * s16 * pow<2>(s26) - 8 * me2 * mm2 * s56 +
-        3 * me2 * s12 * s56 + 9 * mm2 * s12 * s56 - 2 * pow<2>(s12) * s56 +
+        9 * s15 * s16 * s26 - 4 * pow(s16, 2) * s26 - 12 * mm2 * s25 * s26 +
+        8 * s15 * s25 * s26 + 8 * s16 * s25 * s26 - 8 * mm2 * pow(s26, 2) +
+        6 * s15 * pow(s26, 2) + 4 * s16 * pow(s26, 2) - 8 * me2 * mm2 * s56 +
+        3 * me2 * s12 * s56 + 9 * mm2 * s12 * s56 - 2 * pow(s12, 2) * s56 +
         8 * me2 * s15 * s56 - 7 * s12 * s15 * s56 + 8 * me2 * s16 * s56 -
         6 * s12 * s16 * s56 - 6 * me2 * s25 * s56 - 8 * mm2 * s25 * s56 +
         6 * s12 * s25 * s56 + 7 * s15 * s25 * s56 + 8 * s16 * s25 * s56 -
-        4 * pow<2>(s25) * s56 - 6 * me2 * s26 * s56 - 10 * mm2 * s26 * s56 +
+        4 * pow(s25, 2) * s56 - 6 * me2 * s26 * s56 - 10 * mm2 * s26 * s56 +
         6 * s12 * s26 * s56 + 9 * s15 * s26 * s56 + 8 * s16 * s26 * s56 -
-        8 * s25 * s26 * s56 - 4 * pow<2>(s26) * s56 - 4 * me2 * pow<2>(s56) +
-        3 * s12 * pow<2>(s56) - 4 * s25 * pow<2>(s56) - 4 * s26 * pow<2>(s56)};
+        8 * s25 * s26 * s56 - 4 * pow(s26, 2) * s56 - 4 * me2 * pow(s56, 2) +
+        3 * s12 * pow(s56, 2) - 4 * s25 * pow(s56, 2) - 4 * s26 * pow(s56, 2)};
     const auto if45{
-        12 * pow<2>(me2) * mm2 + 4 * me2 * pow<2>(mm2) - 2 * me2 * mm2 * s12 +
-        2 * pow<2>(mm2) * s12 - 4 * mm2 * pow<2>(s12) - 6 * pow<2>(me2) * s15 -
+        12 * pow(me2, 2) * mm2 + 4 * me2 * pow(mm2, 2) - 2 * me2 * mm2 * s12 +
+        2 * pow(mm2, 2) * s12 - 4 * mm2 * pow(s12, 2) - 6 * pow(me2, 2) * s15 -
         6 * me2 * mm2 * s15 + me2 * s12 * s15 - 3 * mm2 * s12 * s15 +
-        2 * pow<2>(s12) * s15 + 2 * me2 * pow<2>(s15) + s12 * pow<2>(s15) -
-        6 * pow<2>(me2) * s16 - 6 * me2 * mm2 * s16 + 4 * me2 * s12 * s16 -
-        6 * mm2 * s12 * s16 + pow<2>(s12) * s16 + 5 * me2 * s15 * s16 +
-        4 * s12 * s15 * s16 + 2 * me2 * pow<2>(s16) + 2 * s12 * pow<2>(s16) +
+        2 * pow(s12, 2) * s15 + 2 * me2 * pow(s15, 2) + s12 * pow(s15, 2) -
+        6 * pow(me2, 2) * s16 - 6 * me2 * mm2 * s16 + 4 * me2 * s12 * s16 -
+        6 * mm2 * s12 * s16 + pow(s12, 2) * s16 + 5 * me2 * s15 * s16 +
+        4 * s12 * s15 * s16 + 2 * me2 * pow(s16, 2) + 2 * s12 * pow(s16, 2) +
         8 * me2 * mm2 * s25 + 3 * me2 * s12 * s25 + 5 * mm2 * s12 * s25 -
-        2 * pow<2>(s12) * s25 - 2 * me2 * s15 * s25 - 4 * s12 * s15 * s25 -
-        3 * me2 * s16 * s25 - 3 * s12 * s16 * s25 - 3 * me2 * pow<2>(s25) -
-        mm2 * pow<2>(s25) + 4 * s12 * pow<2>(s25) + 2 * s15 * pow<2>(s25) +
-        2 * s16 * pow<2>(s25) - 2 * pow<3>(s25) + 8 * me2 * mm2 * s26 +
-        4 * pow<2>(mm2) * s26 + 4 * mm2 * s12 * s26 - 5 * me2 * s15 * s26 -
-        6 * mm2 * s15 * s26 - s12 * s15 * s26 + 3 * pow<2>(s15) * s26 -
+        2 * pow(s12, 2) * s25 - 2 * me2 * s15 * s25 - 4 * s12 * s15 * s25 -
+        3 * me2 * s16 * s25 - 3 * s12 * s16 * s25 - 3 * me2 * pow(s25, 2) -
+        mm2 * pow(s25, 2) + 4 * s12 * pow(s25, 2) + 2 * s15 * pow(s25, 2) +
+        2 * s16 * pow(s25, 2) - 2 * pow(s25, 3) + 8 * me2 * mm2 * s26 +
+        4 * pow(mm2, 2) * s26 + 4 * mm2 * s12 * s26 - 5 * me2 * s15 * s26 -
+        6 * mm2 * s15 * s26 - s12 * s15 * s26 + 3 * pow(s15, 2) * s26 -
         4 * me2 * s16 * s26 - 2 * mm2 * s16 * s26 - s12 * s16 * s26 +
         2 * s15 * s16 * s26 - 3 * me2 * s25 * s26 + 4 * s12 * s25 * s26 +
-        2 * s16 * s25 * s26 - 4 * pow<2>(s25) * s26 - s15 * pow<2>(s26) -
-        2 * s25 * pow<2>(s26) + 6 * pow<2>(me2) * s56 + 6 * me2 * mm2 * s56 -
-        3 * me2 * s12 * s56 + 5 * mm2 * s12 * s56 - pow<2>(s12) * s56 -
+        2 * s16 * s25 * s26 - 4 * pow(s25, 2) * s26 - s15 * pow(s26, 2) -
+        2 * s25 * pow(s26, 2) + 6 * pow(me2, 2) * s56 + 6 * me2 * mm2 * s56 -
+        3 * me2 * s12 * s56 + 5 * mm2 * s12 * s56 - pow(s12, 2) * s56 -
         3 * me2 * s15 * s56 - 4 * s12 * s15 * s56 - 4 * me2 * s16 * s56 -
         4 * s12 * s16 * s56 + 2 * me2 * s25 * s56 + mm2 * s25 * s56 +
-        3 * s12 * s25 * s56 - 2 * pow<2>(s25) * s56 + 4 * me2 * s26 * s56 +
+        3 * s12 * s25 * s56 - 2 * pow(s25, 2) * s56 + 4 * me2 * s26 * s56 +
         2 * mm2 * s26 * s56 + s12 * s26 * s56 - 2 * s15 * s26 * s56 -
-        2 * s25 * s26 * s56 + 2 * me2 * pow<2>(s56) + 2 * s12 * pow<2>(s56)};
+        2 * s25 * s26 * s56 + 2 * me2 * pow(s56, 2) + 2 * s12 * pow(s56, 2)};
     const auto if55{
-        12 * me2 * mm2 * s12 + 4 * pow<2>(mm2) * s12 - 8 * mm2 * pow<2>(s12) -
-        4 * mm2 * s12 * s15 + 4 * me2 * pow<2>(s15) - 2 * s12 * pow<2>(s15) -
+        12 * me2 * mm2 * s12 + 4 * pow(mm2, 2) * s12 - 8 * mm2 * pow(s12, 2) -
+        4 * mm2 * s12 * s15 + 4 * me2 * pow(s15, 2) - 2 * s12 * pow(s15, 2) -
         4 * mm2 * s12 * s16 + 8 * me2 * s15 * s16 - 4 * s12 * s15 * s16 +
-        4 * me2 * pow<2>(s16) - 2 * s12 * pow<2>(s16) + 8 * mm2 * s12 * s25 -
+        4 * me2 * pow(s16, 2) - 2 * s12 * pow(s16, 2) + 8 * mm2 * s12 * s25 -
         6 * me2 * s15 * s25 - 2 * mm2 * s15 * s25 + 4 * s12 * s15 * s25 +
-        4 * pow<2>(s15) * s25 - 6 * me2 * s16 * s25 - 2 * mm2 * s16 * s25 +
-        4 * s12 * s16 * s25 + 8 * s15 * s16 * s25 + 4 * pow<2>(s16) * s25 -
-        4 * s15 * pow<2>(s25) - 4 * s16 * pow<2>(s25) - 12 * me2 * mm2 * s26 -
-        4 * pow<2>(mm2) * s26 + 16 * mm2 * s12 * s26 + 4 * mm2 * s15 * s26 +
-        2 * pow<2>(s15) * s26 + 4 * mm2 * s16 * s26 + 4 * s15 * s16 * s26 +
-        2 * pow<2>(s16) * s26 - 8 * mm2 * s25 * s26 - 4 * s15 * s25 * s26 -
-        4 * s16 * s25 * s26 - 8 * mm2 * pow<2>(s26) + 4 * mm2 * s12 * s56 -
+        4 * pow(s15, 2) * s25 - 6 * me2 * s16 * s25 - 2 * mm2 * s16 * s25 +
+        4 * s12 * s16 * s25 + 8 * s15 * s16 * s25 + 4 * pow(s16, 2) * s25 -
+        4 * s15 * pow(s25, 2) - 4 * s16 * pow(s25, 2) - 12 * me2 * mm2 * s26 -
+        4 * pow(mm2, 2) * s26 + 16 * mm2 * s12 * s26 + 4 * mm2 * s15 * s26 +
+        2 * pow(s15, 2) * s26 + 4 * mm2 * s16 * s26 + 4 * s15 * s16 * s26 +
+        2 * pow(s16, 2) * s26 - 8 * mm2 * s25 * s26 - 4 * s15 * s25 * s26 -
+        4 * s16 * s25 * s26 - 8 * mm2 * pow(s26, 2) + 4 * mm2 * s12 * s56 -
         8 * me2 * s15 * s56 + 4 * s12 * s15 * s56 - 8 * me2 * s16 * s56 +
         4 * s12 * s16 * s56 + 6 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 -
         4 * s12 * s25 * s56 - 8 * s15 * s25 * s56 - 8 * s16 * s25 * s56 +
-        4 * pow<2>(s25) * s56 - 4 * mm2 * s26 * s56 - 4 * s15 * s26 * s56 -
-        4 * s16 * s26 * s56 + 4 * s25 * s26 * s56 + 4 * me2 * pow<2>(s56) -
-        2 * s12 * pow<2>(s56) + 4 * s25 * pow<2>(s56) + 2 * s26 * pow<2>(s56)};
+        4 * pow(s25, 2) * s56 - 4 * mm2 * s26 * s56 - 4 * s15 * s26 * s56 -
+        4 * s16 * s26 * s56 + 4 * s25 * s26 * s56 + 4 * me2 * pow(s56, 2) -
+        2 * s12 * pow(s56, 2) + 4 * s25 * pow(s56, 2) + 2 * s26 * pow(s56, 2)};
     const auto if16{
-        -12 * pow<3>(me2) - 4 * pow<2>(me2) * mm2 + 2 * pow<2>(me2) * s12 -
-        2 * me2 * mm2 * s12 + 4 * me2 * pow<2>(s12) + 2 * pow<2>(me2) * s15 -
-        2 * me2 * mm2 * s15 + 8 * me2 * s12 * s15 + 4 * me2 * pow<2>(s15) +
-        6 * me2 * s12 * s16 + 6 * me2 * s15 * s16 - 20 * pow<2>(me2) * s25 -
+        -12 * pow(me2, 3) - 4 * pow(me2, 2) * mm2 + 2 * pow(me2, 2) * s12 -
+        2 * me2 * mm2 * s12 + 4 * me2 * pow(s12, 2) + 2 * pow(me2, 2) * s15 -
+        2 * me2 * mm2 * s15 + 8 * me2 * s12 * s15 + 4 * me2 * pow(s15, 2) +
+        6 * me2 * s12 * s16 + 6 * me2 * s15 * s16 - 20 * pow(me2, 2) * s25 -
         4 * me2 * mm2 * s25 + me2 * s15 * s25 + mm2 * s15 * s25 -
-        2 * s12 * s15 * s25 - 2 * pow<2>(s15) * s25 - 3 * s15 * s16 * s25 -
-        7 * me2 * pow<2>(s25) + mm2 * pow<2>(s25) + s15 * pow<2>(s25) +
-        pow<3>(s25) - 8 * pow<2>(me2) * s26 - 4 * me2 * mm2 * s26 -
+        2 * s12 * s15 * s25 - 2 * pow(s15, 2) * s25 - 3 * s15 * s16 * s25 -
+        7 * me2 * pow(s25, 2) + mm2 * pow(s25, 2) + s15 * pow(s25, 2) +
+        pow(s25, 3) - 8 * pow(me2, 2) * s26 - 4 * me2 * mm2 * s26 -
         4 * me2 * s12 * s26 - 4 * me2 * s15 * s26 - 6 * me2 * s25 * s26 +
-        2 * s15 * s25 * s26 + pow<2>(s25) * s26 - 8 * pow<2>(me2) * s56 -
+        2 * s15 * s25 * s26 + pow(s25, 2) * s26 - 8 * pow(me2, 2) * s56 -
         4 * me2 * mm2 * s56 - 4 * me2 * s12 * s56 - 4 * me2 * s15 * s56 -
         6 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 + 2 * s15 * s25 * s56 +
-        pow<2>(s25) * s56};
+        pow(s25, 2) * s56};
     const auto if26{
-        -12 * pow<3>(me2) - 4 * pow<2>(me2) * mm2 + 2 * pow<2>(me2) * s12 -
-        2 * me2 * mm2 * s12 + 4 * me2 * pow<2>(s12) + 8 * pow<2>(me2) * s15 +
+        -12 * pow(me2, 3) - 4 * pow(me2, 2) * mm2 + 2 * pow(me2, 2) * s12 -
+        2 * me2 * mm2 * s12 + 4 * me2 * pow(s12, 2) + 8 * pow(me2, 2) * s15 +
         4 * me2 * s12 * s15 + 6 * me2 * s12 * s16 + me2 * s15 * s16 -
-        18 * pow<2>(me2) * s25 - 2 * me2 * mm2 * s25 - 2 * me2 * s12 * s25 +
+        18 * pow(me2, 2) * s25 - 2 * me2 * mm2 * s25 - 2 * me2 * s12 * s25 +
         2 * me2 * s15 * s25 - s12 * s15 * s25 - 2 * me2 * s16 * s25 +
-        mm2 * s16 * s25 - 2 * s15 * s16 * s25 - 2 * pow<2>(s16) * s25 -
-        3 * me2 * pow<2>(s25) + mm2 * pow<2>(s25) - 2 * s15 * pow<2>(s25) +
-        2 * pow<3>(s25) - 12 * pow<2>(me2) * s26 - 4 * me2 * mm2 * s26 -
-        3 * me2 * s12 * s26 - mm2 * s12 * s26 + pow<2>(s12) * s26 -
-        mm2 * s15 * s26 + 3 * s12 * s15 * s26 + 2 * pow<2>(s15) * s26 -
+        mm2 * s16 * s25 - 2 * s15 * s16 * s25 - 2 * pow(s16, 2) * s25 -
+        3 * me2 * pow(s25, 2) + mm2 * pow(s25, 2) - 2 * s15 * pow(s25, 2) +
+        2 * pow(s25, 3) - 12 * pow(me2, 2) * s26 - 4 * me2 * mm2 * s26 -
+        3 * me2 * s12 * s26 - mm2 * s12 * s26 + pow(s12, 2) * s26 -
+        mm2 * s15 * s26 + 3 * s12 * s15 * s26 + 2 * pow(s15, 2) * s26 -
         2 * me2 * s16 * s26 + 3 * s12 * s16 * s26 + 2 * s15 * s16 * s26 -
         6 * me2 * s25 * s26 - 3 * mm2 * s25 * s26 - 2 * s15 * s25 * s26 +
-        2 * s16 * s25 * s26 + 2 * pow<2>(s25) * s26 - 2 * me2 * pow<2>(s26) -
-        2 * mm2 * pow<2>(s26) - s12 * pow<2>(s26) - 2 * s15 * pow<2>(s26) -
-        10 * pow<2>(me2) * s56 + 2 * me2 * mm2 * s56 - 4 * me2 * s12 * s56 -
-        pow<2>(s12) * s56 - me2 * s15 * s56 - s12 * s15 * s56 -
+        2 * s16 * s25 * s26 + 2 * pow(s25, 2) * s26 - 2 * me2 * pow(s26, 2) -
+        2 * mm2 * pow(s26, 2) - s12 * pow(s26, 2) - 2 * s15 * pow(s26, 2) -
+        10 * pow(me2, 2) * s56 + 2 * me2 * mm2 * s56 - 4 * me2 * s12 * s56 -
+        pow(s12, 2) * s56 - me2 * s15 * s56 - s12 * s15 * s56 -
         4 * me2 * s16 * s56 + s12 * s16 * s56 - 3 * me2 * s25 * s56 +
-        3 * s12 * s25 * s56 + 2 * s16 * s25 * s56 + 2 * pow<2>(s25) * s56 -
+        3 * s12 * s25 * s56 + 2 * s16 * s25 * s56 + 2 * pow(s25, 2) * s56 -
         2 * me2 * s26 * s56 - 2 * mm2 * s26 * s56 - 2 * s15 * s26 * s56 +
-        s12 * pow<2>(s56)};
+        s12 * pow(s56, 2)};
     const auto if36{
-        6 * me2 * pow<2>(s12) + 2 * mm2 * pow<2>(s12) - 4 * pow<3>(s12) +
-        8 * me2 * s12 * s15 + 2 * mm2 * s12 * s15 - 8 * pow<2>(s12) * s15 +
-        me2 * pow<2>(s15) - 4 * s12 * pow<2>(s15) + 4 * me2 * s12 * s16 -
-        4 * pow<2>(s12) * s16 + 2 * me2 * s15 * s16 - 4 * s12 * s15 * s16 -
-        2 * me2 * mm2 * s25 - 2 * pow<2>(mm2) * s25 - 6 * me2 * s12 * s25 +
-        2 * mm2 * s12 * s25 + 8 * pow<2>(s12) * s25 - 2 * me2 * s15 * s25 +
-        6 * mm2 * s15 * s25 + 7 * s12 * s15 * s25 - 2 * pow<2>(s15) * s25 -
+        6 * me2 * pow(s12, 2) + 2 * mm2 * pow(s12, 2) - 4 * pow(s12, 3) +
+        8 * me2 * s12 * s15 + 2 * mm2 * s12 * s15 - 8 * pow(s12, 2) * s15 +
+        me2 * pow(s15, 2) - 4 * s12 * pow(s15, 2) + 4 * me2 * s12 * s16 -
+        4 * pow(s12, 2) * s16 + 2 * me2 * s15 * s16 - 4 * s12 * s15 * s16 -
+        2 * me2 * mm2 * s25 - 2 * pow(mm2, 2) * s25 - 6 * me2 * s12 * s25 +
+        2 * mm2 * s12 * s25 + 8 * pow(s12, 2) * s25 - 2 * me2 * s15 * s25 +
+        6 * mm2 * s15 * s25 + 7 * s12 * s15 * s25 - 2 * pow(s15, 2) * s25 -
         me2 * s16 * s25 + 5 * mm2 * s16 * s25 + 3 * s12 * s16 * s25 -
-        5 * s15 * s16 * s25 - 2 * pow<2>(s16) * s25 + 3 * me2 * pow<2>(s25) -
-        2 * mm2 * pow<2>(s25) - 6 * s12 * pow<2>(s25) - s15 * pow<2>(s25) +
-        2 * pow<3>(s25) - 6 * me2 * s12 * s26 - 2 * mm2 * s12 * s26 +
-        8 * pow<2>(s12) * s26 - 3 * me2 * s15 * s26 - mm2 * s15 * s26 +
-        10 * s12 * s15 * s26 + 2 * pow<2>(s15) * s26 + 4 * s12 * s16 * s26 +
+        5 * s15 * s16 * s25 - 2 * pow(s16, 2) * s25 + 3 * me2 * pow(s25, 2) -
+        2 * mm2 * pow(s25, 2) - 6 * s12 * pow(s25, 2) - s15 * pow(s25, 2) +
+        2 * pow(s25, 3) - 6 * me2 * s12 * s26 - 2 * mm2 * s12 * s26 +
+        8 * pow(s12, 2) * s26 - 3 * me2 * s15 * s26 - mm2 * s15 * s26 +
+        10 * s12 * s15 * s26 + 2 * pow(s15, 2) * s26 + 4 * s12 * s16 * s26 +
         2 * s15 * s16 * s26 + 3 * me2 * s25 * s26 - 3 * mm2 * s25 * s26 -
-        10 * s12 * s25 * s26 - 2 * s15 * s25 * s26 + 4 * pow<2>(s25) * s26 -
-        4 * s12 * pow<2>(s26) - 2 * s15 * pow<2>(s26) + 2 * s25 * pow<2>(s26) -
-        5 * me2 * s12 * s56 - mm2 * s12 * s56 + 6 * pow<2>(s12) * s56 -
+        10 * s12 * s25 * s26 - 2 * s15 * s25 * s26 + 4 * pow(s25, 2) * s26 -
+        4 * s12 * pow(s26, 2) - 2 * s15 * pow(s26, 2) + 2 * s25 * pow(s26, 2) -
+        5 * me2 * s12 * s56 - mm2 * s12 * s56 + 6 * pow(s12, 2) * s56 -
         me2 * s15 * s56 + 6 * s12 * s15 * s56 + 2 * s12 * s16 * s56 +
         2 * me2 * s25 * s56 - 3 * mm2 * s25 * s56 - 7 * s12 * s25 * s56 +
-        2 * s15 * s25 * s56 + 2 * s16 * s25 * s56 + 2 * pow<2>(s25) * s56 -
+        2 * s15 * s25 * s56 + 2 * s16 * s25 * s56 + 2 * pow(s25, 2) * s56 -
         6 * s12 * s26 * s56 - 2 * s15 * s26 * s56 + 2 * s25 * s26 * s56 -
-        2 * s12 * pow<2>(s56)};
+        2 * s12 * pow(s56, 2)};
     const auto if46{
-        6 * pow<2>(me2) * s12 + 2 * me2 * mm2 * s12 - me2 * pow<2>(s12) +
-        mm2 * pow<2>(s12) - 2 * pow<3>(s12) + 6 * pow<2>(me2) * s15 +
+        6 * pow(me2, 2) * s12 + 2 * me2 * mm2 * s12 - me2 * pow(s12, 2) +
+        mm2 * pow(s12, 2) - 2 * pow(s12, 3) + 6 * pow(me2, 2) * s15 +
         2 * me2 * mm2 * s15 - 5 * me2 * s12 * s15 + mm2 * s12 * s15 -
-        3 * pow<2>(s12) * s15 - 3 * me2 * pow<2>(s15) - s12 * pow<2>(s15) -
-        3 * pow<2>(s12) * s16 - me2 * s15 * s16 - 3 * s12 * s15 * s16 -
-        3 * pow<2>(me2) * s25 - pow<2>(mm2) * s25 + 5 * me2 * s12 * s25 +
-        mm2 * s12 * s25 + 3 * pow<2>(s12) * s25 + 5 * me2 * s15 * s25 +
+        3 * pow(s12, 2) * s15 - 3 * me2 * pow(s15, 2) - s12 * pow(s15, 2) -
+        3 * pow(s12, 2) * s16 - me2 * s15 * s16 - 3 * s12 * s15 * s16 -
+        3 * pow(me2, 2) * s25 - pow(mm2, 2) * s25 + 5 * me2 * s12 * s25 +
+        mm2 * s12 * s25 + 3 * pow(s12, 2) * s25 + 5 * me2 * s15 * s25 +
         mm2 * s15 * s25 + 2 * s12 * s15 * s25 - me2 * s16 * s25 +
-        2 * mm2 * s16 * s25 + 3 * s12 * s16 * s25 - 2 * me2 * pow<2>(s25) -
-        mm2 * pow<2>(s25) - s12 * pow<2>(s25) + 4 * me2 * s12 * s26 +
-        2 * mm2 * s12 * s26 + 2 * pow<2>(s12) * s26 + 4 * me2 * s15 * s26 +
+        2 * mm2 * s16 * s25 + 3 * s12 * s16 * s25 - 2 * me2 * pow(s25, 2) -
+        mm2 * pow(s25, 2) - s12 * pow(s25, 2) + 4 * me2 * s12 * s26 +
+        2 * mm2 * s12 * s26 + 2 * pow(s12, 2) * s26 + 4 * me2 * s15 * s26 +
         mm2 * s15 * s26 + s12 * s15 * s26 - 2 * me2 * s25 * s26 -
         3 * mm2 * s25 * s26 - s12 * s25 * s26 + 3 * me2 * s12 * s56 +
-        mm2 * s12 * s56 + 2 * pow<2>(s12) * s56 + 4 * me2 * s15 * s56 +
+        mm2 * s12 * s56 + 2 * pow(s12, 2) * s56 + 4 * me2 * s15 * s56 +
         s12 * s15 * s56 - me2 * s25 * s56 - mm2 * s25 * s56 -
         2 * s12 * s25 * s56};
     const auto if56{
-        6 * me2 * pow<2>(s12) + 2 * mm2 * pow<2>(s12) - 4 * pow<3>(s12) +
-        6 * pow<2>(me2) * s15 + 2 * me2 * mm2 * s15 + 4 * me2 * s12 * s15 +
-        2 * mm2 * s12 * s15 - 8 * pow<2>(s12) * s15 - 4 * s12 * pow<2>(s15) +
-        6 * pow<2>(me2) * s16 + 2 * me2 * mm2 * s16 - 4 * pow<2>(s12) * s16 -
-        2 * me2 * s15 * s16 - 4 * s12 * s15 * s16 - 2 * me2 * pow<2>(s16) -
-        6 * me2 * s12 * s25 + 8 * pow<2>(s12) * s25 + 4 * me2 * s15 * s25 +
+        6 * me2 * pow(s12, 2) + 2 * mm2 * pow(s12, 2) - 4 * pow(s12, 3) +
+        6 * pow(me2, 2) * s15 + 2 * me2 * mm2 * s15 + 4 * me2 * s12 * s15 +
+        2 * mm2 * s12 * s15 - 8 * pow(s12, 2) * s15 - 4 * s12 * pow(s15, 2) +
+        6 * pow(me2, 2) * s16 + 2 * me2 * mm2 * s16 - 4 * pow(s12, 2) * s16 -
+        2 * me2 * s15 * s16 - 4 * s12 * s15 * s16 - 2 * me2 * pow(s16, 2) -
+        6 * me2 * s12 * s25 + 8 * pow(s12, 2) * s25 + 4 * me2 * s15 * s25 +
         2 * mm2 * s15 * s25 + 6 * s12 * s15 * s25 + 5 * me2 * s16 * s25 +
         mm2 * s16 * s25 + 2 * s12 * s16 * s25 - s15 * s16 * s25 -
-        pow<2>(s16) * s25 - 4 * s12 * pow<2>(s25) - 12 * me2 * s12 * s26 -
-        4 * mm2 * s12 * s26 + 12 * pow<2>(s12) * s26 - 4 * me2 * s15 * s26 -
-        2 * mm2 * s15 * s26 + 16 * s12 * s15 * s26 + 4 * pow<2>(s15) * s26 +
+        pow(s16, 2) * s25 - 4 * s12 * pow(s25, 2) - 12 * me2 * s12 * s26 -
+        4 * mm2 * s12 * s26 + 12 * pow(s12, 2) * s26 - 4 * me2 * s15 * s26 -
+        2 * mm2 * s15 * s26 + 16 * s12 * s15 * s26 + 4 * pow(s15, 2) * s26 +
         8 * s12 * s16 * s26 + 4 * s15 * s16 * s26 + 6 * me2 * s25 * s26 -
         16 * s12 * s25 * s26 - 6 * s15 * s25 * s26 - 2 * s16 * s25 * s26 +
-        4 * pow<2>(s25) * s26 + 6 * me2 * pow<2>(s26) + 2 * mm2 * pow<2>(s26) -
-        12 * s12 * pow<2>(s26) - 8 * s15 * pow<2>(s26) - 4 * s16 * pow<2>(s26) +
-        8 * s25 * pow<2>(s26) + 4 * pow<3>(s26) - 6 * pow<2>(me2) * s56 -
+        4 * pow(s25, 2) * s26 + 6 * me2 * pow(s26, 2) + 2 * mm2 * pow(s26, 2) -
+        12 * s12 * pow(s26, 2) - 8 * s15 * pow(s26, 2) - 4 * s16 * pow(s26, 2) +
+        8 * s25 * pow(s26, 2) + 4 * pow(s26, 3) - 6 * pow(me2, 2) * s56 -
         2 * me2 * mm2 * s56 - 4 * me2 * s12 * s56 - 2 * mm2 * s12 * s56 +
-        8 * pow<2>(s12) * s56 + 8 * s12 * s15 * s56 + 2 * me2 * s16 * s56 +
+        8 * pow(s12, 2) * s56 + 8 * s12 * s15 * s56 + 2 * me2 * s16 * s56 +
         4 * s12 * s16 * s56 - 4 * me2 * s25 * s56 - 2 * mm2 * s25 * s56 -
         6 * s12 * s25 * s56 + s16 * s25 * s56 + 4 * me2 * s26 * s56 +
         2 * mm2 * s26 * s56 - 16 * s12 * s26 * s56 - 8 * s15 * s26 * s56 -
-        4 * s16 * s26 * s56 + 6 * s25 * s26 * s56 + 8 * pow<2>(s26) * s56 -
-        4 * s12 * pow<2>(s56) + 4 * s26 * pow<2>(s56)};
+        4 * s16 * s26 * s56 + 6 * s25 * s26 * s56 + 8 * pow(s26, 2) * s56 -
+        4 * s12 * pow(s56, 2) + 4 * s26 * pow(s56, 2)};
     const auto if66{
-        12 * pow<2>(me2) * s12 + 4 * me2 * mm2 * s12 - 8 * me2 * pow<2>(s12) +
-        12 * pow<2>(me2) * s15 + 4 * me2 * mm2 * s15 - 16 * me2 * s12 * s15 -
-        8 * me2 * pow<2>(s15) + 8 * pow<2>(me2) * s16 - 8 * me2 * s12 * s16 -
+        12 * pow(me2, 2) * s12 + 4 * me2 * mm2 * s12 - 8 * me2 * pow(s12, 2) +
+        12 * pow(me2, 2) * s15 + 4 * me2 * mm2 * s15 - 16 * me2 * s12 * s15 -
+        8 * me2 * pow(s15, 2) + 8 * pow(me2, 2) * s16 - 8 * me2 * s12 * s16 -
         8 * me2 * s15 * s16 + 12 * me2 * s12 * s25 + 10 * me2 * s15 * s25 -
-        2 * mm2 * s15 * s25 + 4 * s12 * s15 * s25 + 4 * pow<2>(s15) * s25 +
-        8 * me2 * s16 * s25 + 4 * s15 * s16 * s25 - 2 * s12 * pow<2>(s25) -
-        4 * s15 * pow<2>(s25) - 2 * s16 * pow<2>(s25) - 12 * pow<2>(me2) * s26 -
+        2 * mm2 * s15 * s25 + 4 * s12 * s15 * s25 + 4 * pow(s15, 2) * s25 +
+        8 * me2 * s16 * s25 + 4 * s15 * s16 * s25 - 2 * s12 * pow(s25, 2) -
+        4 * s15 * pow(s25, 2) - 2 * s16 * pow(s25, 2) - 12 * pow(me2, 2) * s26 -
         4 * me2 * mm2 * s26 + 16 * me2 * s12 * s26 + 16 * me2 * s15 * s26 +
         8 * me2 * s16 * s26 - 12 * me2 * s25 * s26 - 4 * s15 * s25 * s26 +
-        2 * pow<2>(s25) * s26 - 8 * me2 * pow<2>(s26) - 12 * pow<2>(me2) * s56 -
+        2 * pow(s25, 2) * s26 - 8 * me2 * pow(s26, 2) - 12 * pow(me2, 2) * s56 -
         4 * me2 * mm2 * s56 + 16 * me2 * s12 * s56 + 16 * me2 * s15 * s56 +
         8 * me2 * s16 * s56 - 10 * me2 * s25 * s56 + 2 * mm2 * s25 * s56 -
         4 * s12 * s25 * s56 - 8 * s15 * s25 * s56 - 4 * s16 * s25 * s56 +
-        4 * pow<2>(s25) * s56 - 16 * me2 * s26 * s56 + 4 * s25 * s26 * s56 -
-        8 * me2 * pow<2>(s56) + 4 * s25 * pow<2>(s56)};
+        4 * pow(s25, 2) * s56 - 16 * me2 * s26 * s56 + 4 * s25 * s26 * s56 -
+        8 * me2 * pow(s56, 2) + 4 * s25 * pow(s56, 2)};
 
-    return if11 / pow<2>(den1) + if22 / pow<2>(den2) + if33 / pow<2>(den3) +
-           if44 / pow<2>(den4) + if55 / pow<2>(den5) + if66 / pow<2>(den6) +
+    return if11 / pow(den1, 2) + if22 / pow(den2, 2) + if33 / pow(den3, 2) +
+           if44 / pow(den4, 2) + if55 / pow(den5, 2) + if66 / pow(den6, 2) +
            2 * (if12 / (den1 * den2) + if13 / (den1 * den3) +
                 if14 / (den1 * den4) + if15 / (den1 * den5) +
                 if16 / (den1 * den6) + if23 / (den2 * den3) +

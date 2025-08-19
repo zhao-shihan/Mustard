@@ -62,7 +62,7 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4Dec
         const auto [pStar, converged]{muc::find_root::secant(
             // CDF - x
             [x = G4UniformRand()](auto p) {
-                const auto cdf{(2 / 3_pi) * (muc::polynomial({0, -3, 0, 8, 0, 3}, p) / muc::pow<3>(p * p + 1) +
+                const auto cdf{(2 / 3_pi) * (muc::polynomial({0, -3, 0, 8, 0, 3}, p) / muc::pow(p * p + 1, 3) +
                                              3 * std::atan(p))};
                 return cdf - x;
             },

@@ -63,10 +63,10 @@ auto main(int argc, char* argv[]) -> int {
     constexpr auto mPi{139.57039_MeV};
     constexpr auto mK{497.677_MeV};
     constexpr auto mP{938.27209_MeV};
-    constexpr auto mPiKLow{muc::pow<2>(mPi + mK)};
-    constexpr auto mPiKUp{muc::pow<2>(mLc - mP)};
-    constexpr auto mKPLow{muc::pow<2>(mK + mP)};
-    constexpr auto mKPUp{muc::pow<2>(mLc - mPi)};
+    constexpr auto mPiKLow{muc::pow(mPi + mK, 2)};
+    constexpr auto mPiKUp{muc::pow(mLc - mP, 2)};
+    constexpr auto mKPLow{muc::pow(mK + mP, 2)};
+    constexpr auto mKPUp{muc::pow(mLc - mPi, 2)};
 
     Mustard::RAMBO<1, 3> ramboLc2PiKP({211, -321, 2212}, {mPi, mK, mP});
     TH2D ramboLc2PiKPDalitzPlot{"RAMBO_Lc2PiKP", "RAMBO_Lc2PiKP", nBin, mPiKLow, mPiKUp, nBin, mKPLow, mKPUp};
@@ -84,15 +84,15 @@ auto main(int argc, char* argv[]) -> int {
 
     using namespace Mustard::PhysicalConstant;
     Mustard::RAMBO<1, 3> ramboMu2ENN({-11, -14, 12}, {electron_mass_c2, 0, 0});
-    TH2D ramboMu2ENNDalitzPlot{"RAMBO_Mu2ENN", "RAMBO_Mu2ENN", nBin, 0, muc::pow<2>(muon_mass_c2), nBin, 0, muc::pow<2>(muon_mass_c2)};
-    TH2D ramboMu2ENNUnweighted{"RAMBO_Mu2ENN_Unweighted", "RAMBO_Mu2ENN_Unweighted", nBin, 0, muc::pow<2>(muon_mass_c2), nBin, 0, muc::pow<2>(muon_mass_c2)};
+    TH2D ramboMu2ENNDalitzPlot{"RAMBO_Mu2ENN", "RAMBO_Mu2ENN", nBin, 0, muc::pow(muon_mass_c2, 2), nBin, 0, muc::pow(muon_mass_c2, 2)};
+    TH2D ramboMu2ENNUnweighted{"RAMBO_Mu2ENN_Unweighted", "RAMBO_Mu2ENN_Unweighted", nBin, 0, muc::pow(muon_mass_c2, 2), nBin, 0, muc::pow(muon_mass_c2, 2)};
     executor.Execute(nEvent, [&](auto) { FillDalitzPlot(ramboMu2ENN, muon_mass_c2, ramboMu2ENNDalitzPlot, ramboMu2ENNUnweighted); });
     executor.PrintExecutionSummary();
     WritePlot(ramboMu2ENNDalitzPlot, ramboMu2ENNUnweighted);
 
     Mustard::GENBOD<1, 3> genbodMu2ENN({-11, -14, 12}, {electron_mass_c2, 0, 0});
-    TH2D genbodMu2ENNDalitzPlot{"GENBOD_Mu2ENN", "GENBOD_Mu2ENN", nBin, 0, muc::pow<2>(muon_mass_c2), nBin, 0, muc::pow<2>(muon_mass_c2)};
-    TH2D genbodMu2ENNUnweighted{"GENBOD_Mu2ENN_Unweighted", "GENBOD_Mu2ENN_Unweighted", nBin, 0, muc::pow<2>(muon_mass_c2), nBin, 0, muc::pow<2>(muon_mass_c2)};
+    TH2D genbodMu2ENNDalitzPlot{"GENBOD_Mu2ENN", "GENBOD_Mu2ENN", nBin, 0, muc::pow(muon_mass_c2, 2), nBin, 0, muc::pow(muon_mass_c2, 2)};
+    TH2D genbodMu2ENNUnweighted{"GENBOD_Mu2ENN_Unweighted", "GENBOD_Mu2ENN_Unweighted", nBin, 0, muc::pow(muon_mass_c2, 2), nBin, 0, muc::pow(muon_mass_c2, 2)};
     executor.Execute(nEvent, [&](auto) { FillDalitzPlot(genbodMu2ENN, muon_mass_c2, genbodMu2ENNDalitzPlot, genbodMu2ENNUnweighted); });
     executor.PrintExecutionSummary();
     WritePlot(genbodMu2ENNDalitzPlot, genbodMu2ENNUnweighted);

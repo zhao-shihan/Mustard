@@ -79,13 +79,13 @@ using CLHEP::eplus;
 constexpr auto muon_mass_c2{105.6583755 * CLHEP::MeV};
 constexpr auto muonium_reduced_mass_c2{1 / (1 / electron_mass_c2 + 1 / muon_mass_c2)};
 constexpr auto muonium_mass_c2{muon_mass_c2 + electron_mass_c2 -
-                               muc::pow<2>(fine_structure_const * muonium_reduced_mass_c2) / (2 * electron_mass_c2)};
+                               muc::pow(fine_structure_const * muonium_reduced_mass_c2, 2) / (2 * electron_mass_c2)};
 
 constexpr auto muon_lifetime{2.1969811 * CLHEP::us};
 constexpr auto muonium_lifetime{muon_lifetime};
 
-constexpr auto reduced_fermi_constant{1.1663788e-5 * muc::pow<-2>(CLHEP::GeV)};
-constexpr auto fermi_constant{reduced_fermi_constant * muc::pow<3>(hbarc)};
+constexpr auto reduced_fermi_constant{1.1663788e-5 * muc::pow(CLHEP::GeV, -2)};
+constexpr auto fermi_constant{reduced_fermi_constant * muc::pow(hbarc, 3)};
 // --            Extra constants              -- //
 
 } // namespace Mustard::inline Utility::PhysicalConstant
