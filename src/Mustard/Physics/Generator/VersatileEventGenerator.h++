@@ -24,8 +24,9 @@
 
 #include "muc/numeric"
 
-#include "fmt/core.h"
+#include "fmt/ranges.h"
 
+#include <algorithm>
 #include <array>
 #include <source_location>
 #include <stdexcept>
@@ -47,14 +48,14 @@ public:
     constexpr VersatileEventGenerator(const std::array<int, N>& pdgID, const std::array<double, N>& mass);
 
     constexpr auto PDGID() const -> const auto& { return fPDGID; }
-    constexpr auto PDGID(int i) const -> auto { return fPDGID[i]; }
+    constexpr auto PDGID(int i) const -> auto { return fPDGID.at(i); }
     constexpr auto Mass() const -> const auto& { return fMass; }
-    constexpr auto Mass(int i) const -> auto { return fMass[i]; }
+    constexpr auto Mass(int i) const -> auto { return fMass.at(i); }
 
     constexpr auto PDGID(const std::array<int, N>& pdgID) -> void { fPDGID = pdgID; }
-    constexpr auto PDGID(int i, int pdgID) -> void { fPDGID[i] = pdgID; }
-    constexpr auto Mass(const std::array<double, N>& mass) -> void { fMass = mass; }
-    constexpr auto Mass(int i, double mass) -> void { fMass[i] = mass; }
+    constexpr auto PDGID(int i, int pdgID) -> void { fPDGID.at(i) = pdgID; }
+    constexpr auto Mass(const std::array<double, N>& mass) -> void;
+    constexpr auto Mass(int i, double mass) -> void;
 
 protected:
     /// @brief Check if center-of-mass energy is sufficient
