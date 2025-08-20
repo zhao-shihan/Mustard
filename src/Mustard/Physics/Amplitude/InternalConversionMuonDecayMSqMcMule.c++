@@ -41,30 +41,34 @@ auto InternalConversionMuonDecayMSqMcMule::operator()(const InitialStateMomenta&
     // Copyright 2020-2024  Yannick Ulrich and others (The McMule development team)
     //
 
-    const auto s12{q1 * q2};
-    const auto s13{q1 * q3};
-    const auto s14{q1 * q4};
-    const auto s15{q1 * q5};
-    const auto s16{q1 * q6};
-    const auto s23{q2 * q3};
-    const auto s24{q2 * q4};
-    const auto s25{q2 * q5};
-    const auto s26{q2 * q6};
-    const auto s34{q3 * q4};
-    const auto s35{q3 * q5};
-    const auto s36{q3 * q6};
-    const auto s45{q4 * q5};
-    const auto s46{q4 * q6};
-    const auto s56{q5 * q6};
+    constexpr auto s{[](auto&& a, auto&& b) {
+        return 2 * (a * b);
+    }};
 
-    const auto s2n{q2 * pol1};
-    const auto s3n{q3 * pol1};
-    const auto s4n{q4 * pol1};
-    const auto s5n{q5 * pol1};
-    const auto s6n{q6 * pol1};
+    const auto s12{s(q1, q2)};
+    const auto s13{s(q1, q3)};
+    const auto s14{s(q1, q4)};
+    const auto s15{s(q1, q5)};
+    const auto s16{s(q1, q6)};
+    const auto s23{s(q2, q3)};
+    const auto s24{s(q2, q4)};
+    const auto s25{s(q2, q5)};
+    const auto s26{s(q2, q6)};
+    const auto s34{s(q3, q4)};
+    const auto s35{s(q3, q5)};
+    const auto s36{s(q3, q6)};
+    const auto s45{s(q4, q5)};
+    const auto s46{s(q4, q6)};
+    const auto s56{s(q5, q6)};
 
-    const auto M1{std::sqrt(q1.m2() / 2)};
-    const auto M2{std::sqrt(std::abs(q2.m2()) / 2)};
+    const auto s2n{s(q2, pol1)};
+    const auto s3n{s(q3, pol1)};
+    const auto s4n{s(q4, pol1)};
+    const auto s5n{s(q5, pol1)};
+    const auto s6n{s(q6, pol1)};
+
+    const auto M1{std::sqrt(0.5 * s(q1, q1))};
+    const auto M2{std::sqrt(0.5 * std::abs(s(q2, q2)))};
 
     using muc::pow;
 

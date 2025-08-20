@@ -42,14 +42,18 @@ auto DoubleRadiativeMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI
     // Copyright 2020-2024  Yannick Ulrich and others (The McMule development team)
     //
 
+    constexpr auto s{[](auto&& a, auto&& b) {
+        return 2 * (a * b);
+    }};
+
     const auto mm2{p1.m2()};
     const auto me2{p2.m2()};
-    const auto s12{p1 * p2};
-    const auto s15{p1 * p5};
-    const auto s16{p1 * p6};
-    const auto s25{p2 * p5};
-    const auto s26{p2 * p6};
-    const auto s56{p5 * p6};
+    const auto s12{s(p1, p2)};
+    const auto s15{s(p1, p5)};
+    const auto s16{s(p1, p6)};
+    const auto s25{s(p2, p5)};
+    const auto s26{s(p2, p6)};
+    const auto s56{s(p5, p6)};
 
     const auto den1{s25 * (s25 + s26 + s56)};
     const auto den2{s26 * (s25 + s26 + s56)};
@@ -61,13 +65,13 @@ auto DoubleRadiativeMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI
     double pm2ennggav{};
     if (not InitialStatePolarization().isNear({}, muc::default_tolerance<double>)) {
         const CLHEP::HepLorentzVector pol1{InitialStatePolarization()};
-        pm2ennggav += pol1 * p2 *
+        pm2ennggav += s(pol1, p2) *
                       MSqPolarizedS2n(mm2, me2, s12, s15, s16, s25, s26, s56,
                                       den1, den2, den3, den4, den5, den6);
-        pm2ennggav += pol1 * p5 *
+        pm2ennggav += s(pol1, p5) *
                       MSqPolarizedS5n(mm2, me2, s12, s15, s16, s25, s26, s56,
                                       den1, den2, den3, den4, den5, den6);
-        pm2ennggav += pol1 * p6 *
+        pm2ennggav += s(pol1, p6) *
                       MSqPolarizedS6n(mm2, me2, s12, s15, s16, s25, s26, s56,
                                       den1, den2, den3, den4, den5, den6);
         pm2ennggav *= std::sqrt(mm2);
