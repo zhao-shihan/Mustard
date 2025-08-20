@@ -27,7 +27,7 @@ ParallelExecutorImpl<T>::ParallelExecutorImpl(std::string executionName, std::st
 }
 
 template<std::integral T>
-auto ParallelExecutorImpl<T>::Execute(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto ParallelExecutorImpl<T>::operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
         Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));

@@ -87,25 +87,23 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
     const auto worldComm{mplr::comm_world()};
     const auto batch{this->CalculateBatchConfiguration(worldComm.size(), n)};
-    fExecutor.Execute(
-        std::max(static_cast<Index>(worldComm.size()), batch.nBatch),
-        [&](auto k) { // k is batch index
-            if (byPassWillOccur) [[unlikely]] {
-                if (k >= n) { // by pass when there are too many processors
-                    std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, typename AData::value_type{});
-                    return;
-                }
+    fExecutor(std::max(static_cast<Index>(worldComm.size()), batch.nBatch), [&](auto k) { // k is batch index
+        if (byPassWillOccur) [[unlikely]] {
+            if (k >= n) { // by pass when there are too many processes
+                std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, typename AData::value_type{});
+                return;
             }
-            const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)};
-            if (asyncReader.Reading()) {
-                batchData = asyncReader.Acquire();
-            }
-            asyncReader.Read(iFirst, iLast);
-            if (asyncProcess.valid()) {
-                asyncProcess.get();
-            }
-            asyncProcess = std::async(std::launch::deferred, ProcessBatch);
-        });
+        }
+        const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)};
+        if (asyncReader.Reading()) {
+            batchData = asyncReader.Acquire();
+        }
+        asyncReader.Read(iFirst, iLast);
+        if (asyncProcess.valid()) {
+            asyncProcess.get();
+        }
+        asyncProcess = std::async(std::launch::deferred, ProcessBatch);
+    });
     batchData = asyncReader.Acquire();
     asyncProcess.get();
     if (not asyncReader.Exhausted()) {

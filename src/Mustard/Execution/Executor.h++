@@ -61,8 +61,8 @@ public:
     auto ExecutionName(std::string name) -> void;
     auto TaskName(std::string name) -> void;
 
-    auto Execute(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
-    auto Execute(T size, std::invocable<T> auto&& F) -> T;
+    auto operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto operator()(T size, std::invocable<T> auto&& F) -> T;
 
     auto PrintExecutionSummary() const -> void;
 

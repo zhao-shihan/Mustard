@@ -78,14 +78,13 @@ auto MPIRunManager::DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSe
         fExecutor.ExecutionName(fmt::format("G4Run {}", currentRun->GetRunID()));
     }
     // Event loop
-    fExecutor.Execute(numberOfEventToBeProcessed,
-                      [this](auto eventID) {
-                          ProcessOneEvent(eventID);
-                          TerminateOneEvent();
-                          if (runAborted) {
-                              Throw<std::runtime_error>("G4Run aborted");
-                          }
-                      });
+    fExecutor(numberOfEventToBeProcessed, [this](auto eventID) {
+        ProcessOneEvent(eventID);
+        TerminateOneEvent();
+        if (runAborted) {
+            Throw<std::runtime_error>("G4Run aborted");
+        }
+    });
     // If multi-threading, TerminateEventLoop() is invoked after all threads are finished.
     // MPIRunManager::runManagerType is sequentialRM.
     if (runManagerType == sequentialRM) {

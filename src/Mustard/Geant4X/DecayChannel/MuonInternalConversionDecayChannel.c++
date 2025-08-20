@@ -161,8 +161,8 @@ auto MuonInternalConversionDecayChannel::EstimateWeightNormalizationFactor(unsig
     const auto worldComm{mplr::comm_world()};
     {                               // Monte Carlo integration here
         muc::array2ld partialSum{}; // improve numeric stability
-        Executor<unsigned long long>{"Estimation", "Sample"}
-            .Execute(n, [&, partialSumThreshold = muc::llround(std::sqrt(n / worldComm.size()))](auto i) {
+        Executor<unsigned long long>{"Estimation", "Sample"}(
+            n, [&, partialSumThreshold = muc::llround(std::sqrt(n / worldComm.size()))](auto i) {
                 MainSamplingLoop();
                 const auto bias{originalBias(fEvent.p)};
                 partialSum += muc::array2ld{bias, muc::pow(bias, 2)};

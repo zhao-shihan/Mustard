@@ -74,7 +74,7 @@ auto Executor<T>::Task() const -> struct Scheduler<T>::Task {
     },
                       *fImpl);
 }
-
+//
 template<std::integral T>
 auto Executor<T>::NTask() const -> T {
     return std::visit([&](auto&& impl) {
@@ -140,16 +140,16 @@ auto Executor<T>::TaskName(std::string name) -> void {
 }
 
 template<std::integral T>
-auto Executor<T>::Execute(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto Executor<T>::operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     return std::visit([&](auto&& impl) {
-        return impl.Execute(std::move(task), std::forward<decltype(F)>(F));
+        return impl(std::move(task), std::forward<decltype(F)>(F));
     },
                       *fImpl);
 }
 
 template<std::integral T>
-auto Executor<T>::Execute(T size, std::invocable<T> auto&& F) -> T {
-    return Execute({0, size}, std::forward<decltype(F)>(F));
+auto Executor<T>::operator()(T size, std::invocable<T> auto&& F) -> T {
+    return (*this)({0, size}, std::forward<decltype(F)>(F));
 }
 
 template<std::integral T>

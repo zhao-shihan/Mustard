@@ -27,7 +27,7 @@ SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std
 }
 
 template<std::integral T>
-auto SequentialExecutorImpl<T>::Execute(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto SequentialExecutorImpl<T>::operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
         Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));

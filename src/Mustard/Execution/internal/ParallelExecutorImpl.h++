@@ -56,7 +56,7 @@ public:
 
     auto NProcess() const -> int { return mplr::comm_world().size(); }
 
-    auto Execute(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto PrintExecutionSummary() const -> void;
 
 private:
