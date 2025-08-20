@@ -31,6 +31,7 @@ SingletonMessenger<ADerived, ARecipients...>::SingletonMessenger() :
 template<typename ADerived, typename... ARecipients>
 template<typename ARecipient>
 SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::Register(gsl::not_null<ARecipient*> recipient) :
+    NonCopyableBase{},
     fRecipient{recipient} {
     static_assert(muc::tuple_contains_unique_v<std::tuple<ARecipients...>, ARecipient>);
     get<std::unordered_set<ARecipient*>>(SingletonMessenger::Instance().fRecipientSetTuple).emplace(fRecipient);
