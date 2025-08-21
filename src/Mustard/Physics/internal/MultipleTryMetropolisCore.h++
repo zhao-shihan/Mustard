@@ -28,9 +28,13 @@
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include "muc/algorithm"
 #include "muc/array"
 #include "muc/math"
 #include "muc/numeric"
+#include "muc/utility"
+
+#include "gsl/gsl"
 
 #include "fmt/core.h"
 
@@ -171,20 +175,38 @@ protected:
     /// @brief Set particle masses
     /// @param mass Array of particle masses
     auto Mass(const std::array<double, N>& mass) -> void;
+    /// @brief Transform hypercube to phase space
+    /// @param u A random state
+    /// @return An event from phase space
+    auto PhaseSpace(typename GENBOD<M, N>::RandomState u) -> auto { return fGENBOD({fCMSEnergy, {}}, u); }
+    /// @brief Transform hypercube to phase space and apply permutation
+    /// to identical particles if necessary
+    /// @param u A random state
+    /// @param rng Reference to CLHEP random engine
+    /// @return An event from phase space
+    auto FairPhaseSpace(typename GENBOD<M, N>::RandomState u, CLHEP::HepRandomEngine& rng) -> Event;
 
     /// @brief Set IR cuts for single final state particle
     /// @param i Particle index (0 ≤ i < N)
     /// @param cut IR cut value
     /// @warning The Markov chain requires burn-in after IR cut changes
     auto IRCut(int i, double cut) -> void;
+    /// @brief Add an identical particle index set.
+    /// @note Add the set is not necessary but recommended for reducing
+    /// discrpancies between spectra of identical particles from MCMC.
+    auto AddIdenticalSet(std::vector<int> set) -> void;
 
     /// @brief Notify MCMC that (re)burn-in is required
     auto BurnInRequired() -> void { fBurntIn = false; }
 
-    /// @brief Advance Markov chain by one event
+    /// @brief Advance Markov chain by one event and discard it
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param rng Reference to CLHEP random engine
-    auto NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void;
+    auto PassEvent(double delta, CLHEP::HepRandomEngine& rng) -> void { NextEvent(delta, rng); }
+    /// @brief Advance Markov chain by one event and sample it
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
+    /// @param rng Reference to CLHEP random engine
+    [[nodiscard]] auto SampleEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event;
 
     /// @brief Check final-state momenta pass the IR cut
     /// @param momenta Final states' 4-momenta
@@ -202,6 +224,18 @@ protected:
     /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN) × |J|(p1, ..., pN)
     auto ValidBiasedMSqDetJ(const FinalStateMomenta& momenta, double bias, double detJ) const -> double;
 
+private:
+    /// @brief Advance Markov chain by one event
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
+    /// @param rng Reference to CLHEP random engine
+    auto NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event;
+
+    /// @brief Generate a random index of array with size n
+    /// @param n Array size
+    /// @param rng Reference to CLHEP random engine
+    /// @return A random integer in 0 -- n-1
+    static auto RandomIndex(int n, CLHEP::HepRandomEngine& rng) -> int;
+
 protected:
     struct MarkovChain {
         GENBOD<M, N>::RandomState state; ///< State of the chain
@@ -209,18 +243,18 @@ protected:
     };
 
 protected:
-    double fCMSEnergy;                         ///< Currently set CM energy
-    [[no_unique_address]] A fSquaredAmplitude; ///< Squared amplitude
-    IRCutArray fIRCut;                         ///< IR cuts
-    BiasFunction fBias;                        ///< User bias function
-    GENBOD<M, N> fGENBOD;                      ///< Phase space generator
-                                               //
-    double fMCMCDelta;                         ///< MCMC max step size along one dimension
-    int fMCMCDiscard;                          ///< Events discarded between 2 samples
-                                               //
-    bool fBurntIn;                             ///< Burn-in completed flag
-    MarkovChain fMarkovChain;                  ///< Current Markov chain state
-    Event fEvent;                              ///< Current event in chain
+    double fCMSEnergy;                           ///< Currently set CM energy
+    [[no_unique_address]] A fSquaredAmplitude;   ///< Squared amplitude
+    IRCutArray fIRCut;                           ///< IR cuts
+    std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
+    BiasFunction fBias;                          ///< User bias function
+    GENBOD<M, N> fGENBOD;                        ///< Phase space generator
+                                                 //
+    double fMCMCDelta;                           ///< MCMC max step size along one dimension
+    int fMCMCDiscard;                            ///< Events discarded between 2 samples
+                                                 //
+    bool fBurntIn;                               ///< Burn-in completed flag
+    MarkovChain fMarkovChain;                    ///< Current Markov chain state
 
     static constexpr int fgMCMCDim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
 };

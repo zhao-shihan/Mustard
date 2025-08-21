@@ -24,13 +24,13 @@ MultipleTryMetropolisCore<M, N, A>::MultipleTryMetropolisCore(double cmsE, const
     fCMSEnergy{},
     fSquaredAmplitude{},
     fIRCut{},
+    fIdenticalSet{},
     fBias{[](auto&&) { return 1; }},
     fGENBOD{pdgID, mass},
     fMCMCDelta{},
     fMCMCDiscard{},
     fBurntIn{},
-    fMarkovChain{},
-    fEvent{} {
+    fMarkovChain{} {
     CMSEnergy(cmsE);
     MCMCDelta(delta);
     MCMCDiscard(discard);
@@ -130,13 +130,13 @@ auto MultipleTryMetropolisCore<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> 
     // find phase space
     while (true) {
         std::ranges::generate(fMarkovChain.state, [&rng] { return rng.flat(); });
-        fEvent = fGENBOD({fCMSEnergy, {}}, fMarkovChain.state);
-        if (not IRSafe(fEvent.p)) {
+        const auto event{PhaseSpace(fMarkovChain.state)};
+        if (not IRSafe(event.p)) {
             continue;
         }
-        if (const auto bias{ValidBias(fEvent.p)};
+        if (const auto bias{ValidBias(event.p)};
             bias > std::numeric_limits<double>::min()) {
-            const auto& [detJ, _, momenta]{fEvent};
+            const auto& [detJ, _, momenta]{event};
             fMarkovChain.biasedMSqDetJ = ValidBiasedMSqDetJ(momenta, bias, detJ);
             break;
         }
@@ -147,7 +147,7 @@ auto MultipleTryMetropolisCore<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> 
     constexpr auto nBurnIn{10000. * fgMCMCDim}; // E(distance in d-dim space) ~ sqrt(d), E(random walk distance) ~ sqrt(n) => n ~ d
     const auto factor{std::pow(epsilon / delta0, 1 / nBurnIn)};
     for (auto delta{delta0}; delta > epsilon; delta *= factor) {
-        NextEvent(delta, rng);
+        PassEvent(delta, rng);
     }
     fBurntIn = true;
 }
@@ -173,6 +173,23 @@ auto MultipleTryMetropolisCore<M, N, A>::Mass(const std::array<double, N>& mass)
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MultipleTryMetropolisCore<M, N, A>::FairPhaseSpace(typename GENBOD<M, N>::RandomState u, CLHEP::HepRandomEngine& rng) -> Event {
+    auto event{PhaseSpace(u)};
+    if (fIdenticalSet.empty() or rng.flat() < 0.5) {
+        return event;
+    }
+    const auto& idSet{fIdenticalSet[RandomIndex(fIdenticalSet.size(), rng)]};
+    if (idSet.size() == 2) {
+        std::swap(event.p[idSet.front()], event.p[idSet.back()]);
+    } else {
+        const auto idA{RandomIndex(idSet.size(), rng)};
+        const auto idB{(idA + 1) % idSet.size()};
+        std::swap(event.p[idSet[idA]], event.p[idSet[idB]]);
+    }
+    return event;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MultipleTryMetropolisCore<M, N, A>::IRCut(int i, double cut) -> void {
     if (cut < 0) [[unlikely]] {
         PrintWarning(fmt::format("Negative IR cut for particle {} (got {})", i, cut));
@@ -187,80 +204,31 @@ auto MultipleTryMetropolisCore<M, N, A>::IRCut(int i, double cut) -> void {
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisCore<M, N, A>::NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void {
-    // Rescale delta first
-    // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
-    delta /= std::sqrt(fgMCMCDim);
-    // Multiple-try Metropolis sampler (Ref: Jun S. Liu et al (2000), https://doi.org/10.2307/2669532)
-    using State = typename GENBOD<M, N>::RandomState;
-    constexpr auto kMTM{fgMCMCDim};                                   // k
-    std::array<State, kMTM> stateY;                                   // y_1, ..., y_k
-    std::array<double, kMTM> piY;                                     // pi(y_1), ..., pi(y_k)
-    State stateX;                                                     // x_1, ..., x_k-1
-    std::array<double, kMTM - 1> piX;                                 // pi(x_1), ..., pi(x_k-1)
-    std::array<double, kMTM> biasY;                                   // Bias function value at y_1, ..., y_k
-    std::array<Event, kMTM> eventY;                                   // Event at y_1, ..., y_k
-    Event eventX;                                                     // Event at x_1, ..., x_k-1
-    const auto StateProposal{[&](const State& state0, State& state) { // T(x, y) (symmetric)
-        std::ranges::transform(state0, state.begin(), [&](auto u0) {
-            auto u{CLHEP::RandGaussQ::shoot(&rng, u0, delta)};
-            return u - std::floor(u); // periodic boundary
-        });
-    }};
-    const auto MultinomialSample{[&rng](const std::array<double, kMTM>& pi, double piSum) {
-        const auto u{piSum * rng.flat()};
-        double c{};
-        for (int i{}; i < kMTM; ++i) {
-            c += pi[i];
-            if (u < c) {
-                return i;
-            }
-        }
-        return kMTM - 1;
-    }};
-    while (true) {
-        for (int i{}; i < kMTM; ++i) {
-            StateProposal(fMarkovChain.state, stateY[i]);     // Draw y_i from T(x, *)
-            eventY[i] = fGENBOD({fCMSEnergy, {}}, stateY[i]); // y_i -> event(y_i) = g(y_i)
-            const auto& [detJ, _, momenta]{eventY[i]};
-            if (not IRSafe(momenta)) {
-                piY[i] = 0;
-                continue;
-            }
-            biasY[i] = ValidBias(momenta); // g(y_i) -> B(g(y_i))
-            if (biasY[i] <= std::numeric_limits<double>::min()) {
-                piY[i] = biasY[i];
-                continue;
-            }
-            piY[i] = ValidBiasedMSqDetJ(momenta, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
-        }
-        const auto sumPiY{muc::ranges::reduce(piY)};         // pi(y_1) + ... + pi(y_k)
-        const auto selected{MultinomialSample(piY, sumPiY)}; // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
-        for (int i{}; i < kMTM - 1; ++i) {
-            StateProposal(stateY[selected], stateX);    // Draw x_i from T(Y, *)
-            eventX = fGENBOD({fCMSEnergy, {}}, stateX); // x_i -> event(x_i) = g(x_i)
-            const auto& [detJ, _, momenta]{eventX};
-            if (not IRSafe(momenta)) {
-                piX[i] = 0;
-                continue;
-            }
-            const auto biasX{ValidBias(momenta)}; // g(x_i) -> B(g(x_i))
-            if (biasX <= std::numeric_limits<double>::min()) {
-                piX[i] = biasX;
-            }
-            piX[i] = ValidBiasedMSqDetJ(momenta, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
-        }
-        const auto sumPiX{muc::ranges::reduce(piX, fMarkovChain.biasedMSqDetJ)}; // pi(x_1) + ... + pi(x_k)
-        // accept/reject Y
-        if (sumPiY >= sumPiX or
-            sumPiY >= sumPiX * rng.flat()) {
-            fMarkovChain.state = stateY[selected];
-            fMarkovChain.biasedMSqDetJ = piY[selected];
-            fEvent = eventY[selected];
-            fEvent.weight = 1 / biasY[selected];
-            return;
+auto MultipleTryMetropolisCore<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
+    if (set.size() < 2) [[unlikely]] {
+        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
+        return;
+    }
+    muc::timsort(set);
+    if (const auto duplicate{std::ranges::unique(set)};
+        duplicate.size() != 0) [[unlikely]] {
+        PrintWarning(fmt::format("There are {} duplicate index in identical set, removing them", duplicate.size()));
+        set.erase(duplicate.begin(), duplicate.end());
+    }
+    for (auto&& addedSet : std::as_const(fIdenticalSet)) {
+        const auto duplicated{std::ranges::find_first_of(addedSet, set)};
+        if (duplicated != addedSet.cend()) [[unlikely]] {
+            PrintError(fmt::format("Particle {} added accross different identical sets", *duplicated));
         }
     }
+    fIdenticalSet.emplace_back(std::move(set));
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+[[nodiscard]] auto MultipleTryMetropolisCore<M, N, A>::SampleEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event {
+    auto event{NextEvent(delta, rng)};
+
+    return event;
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -310,6 +278,95 @@ auto MultipleTryMetropolisCore<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMome
         Throw<std::runtime_error>(fmt::format("Negative biased PDF found (got {} at {})", value, Where()));
     }
     return value;
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MultipleTryMetropolisCore<M, N, A>::NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event {
+    // Rescale delta first
+    // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
+    delta /= std::sqrt(fgMCMCDim);
+    // Multiple-try Metropolis sampler (Ref: Jun S. Liu et al (2000), https://doi.org/10.2307/2669532)
+    using State = typename GENBOD<M, N>::RandomState;
+    constexpr auto kMTM{fgMCMCDim};                                   // k
+    std::array<State, kMTM> stateY;                                   // y_1, ..., y_k
+    std::array<double, kMTM> piY;                                     // pi(y_1), ..., pi(y_k)
+    State stateX;                                                     // x_1, ..., x_k-1
+    std::array<double, kMTM - 1> piX;                                 // pi(x_1), ..., pi(x_k-1)
+    std::array<double, kMTM> biasY;                                   // Bias function value at y_1, ..., y_k
+    std::array<Event, kMTM> eventY;                                   // Event at y_1, ..., y_k
+    Event eventX;                                                     // Event at x_1, ..., x_k-1
+    const auto StateProposal{[&](const State& state0, State& state) { // T(x, y) (symmetric)
+        std::ranges::transform(state0, state.begin(), [&](auto u0) {
+            const auto u{CLHEP::RandGaussQ::shoot(&rng, u0, delta)};
+            return u - std::floor(u); // periodic boundary
+        });
+    }};
+    const auto MultinomialSample{[&rng](const std::array<double, kMTM>& pi, double piSum) {
+        const auto u{piSum * rng.flat()};
+        double c{};
+        for (int i{}; i < kMTM; ++i) {
+            c += pi[i];
+            if (u < c) {
+                return i;
+            }
+        }
+        return kMTM - 1;
+    }};
+    while (true) {
+        for (int i{}; i < kMTM; ++i) {
+            StateProposal(fMarkovChain.state, stateY[i]); // Draw y_i from T(x, *)
+            eventY[i] = FairPhaseSpace(stateY[i], rng);   // y_i -> event(y_i) = g(y_i)
+            const auto& [detJ, _, momenta]{eventY[i]};
+            if (not IRSafe(momenta)) {
+                piY[i] = 0;
+                continue;
+            }
+            biasY[i] = ValidBias(momenta); // g(y_i) -> B(g(y_i))
+            if (biasY[i] <= std::numeric_limits<double>::min()) {
+                piY[i] = biasY[i];
+                continue;
+            }
+            piY[i] = ValidBiasedMSqDetJ(momenta, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
+        }
+        const auto sumPiY{muc::ranges::reduce(piY)};         // pi(y_1) + ... + pi(y_k)
+        const auto selected{MultinomialSample(piY, sumPiY)}; // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
+        for (int i{}; i < kMTM - 1; ++i) {
+            StateProposal(stateY[selected], stateX); // Draw x_i from T(Y, *)
+            eventX = FairPhaseSpace(stateX, rng);    // x_i -> event(x_i) = g(x_i)
+            const auto& [detJ, _, momenta]{eventX};
+            if (not IRSafe(momenta)) {
+                piX[i] = 0;
+                continue;
+            }
+            const auto biasX{ValidBias(momenta)}; // g(x_i) -> B(g(x_i))
+            if (biasX <= std::numeric_limits<double>::min()) {
+                piX[i] = biasX;
+            }
+            piX[i] = ValidBiasedMSqDetJ(momenta, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
+        }
+        const auto sumPiX{muc::ranges::reduce(piX, fMarkovChain.biasedMSqDetJ)}; // pi(x_1) + ... + pi(x_k)
+        // accept/reject Y
+        if (sumPiY >= sumPiX or
+            sumPiY >= sumPiX * rng.flat()) {
+            fMarkovChain.state = stateY[selected];
+            fMarkovChain.biasedMSqDetJ = piY[selected];
+            eventY[selected].weight = 1 / biasY[selected];
+            return eventY[selected];
+        }
+    }
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MultipleTryMetropolisCore<M, N, A>::RandomIndex(int n, CLHEP::HepRandomEngine& rng) -> int {
+    muc::assume(n > 0);
+    if (n == 1) {
+        return 0;
+    }
+    auto i{static_cast<int>(n * rng.flat())};
+    while (i == n) [[unlikely]] {
+        i = n * rng.flat();
+    }
+    return i;
 }
 
 } // namespace Mustard::inline Physics::internal

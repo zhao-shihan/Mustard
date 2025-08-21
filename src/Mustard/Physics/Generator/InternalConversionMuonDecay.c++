@@ -38,6 +38,7 @@ InternalConversionMuonDecay::InternalConversionMuonDecay(std::string_view parent
     MTMGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2, electron_mass_c2});
+    AddIdenticalSet({0, 4});
 }
 
 auto InternalConversionMuonDecay::Parent(std::string_view parent) -> void {

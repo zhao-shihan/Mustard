@@ -34,6 +34,7 @@ DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHE
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, 0, 0});
     IRCut(irCut);
+    AddIdenticalSet({3, 4});
 }
 
 auto DoubleRadiativeMuonDecay::Parent(std::string_view parent) -> void {

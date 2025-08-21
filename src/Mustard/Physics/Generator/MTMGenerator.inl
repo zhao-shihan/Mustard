@@ -25,12 +25,12 @@ auto MTMGenerator<M, N, A>::operator()(InitialStateMomenta pI, CLHEP::HepRandomE
 
     this->BurnIn(rng);
     for (int i{}; i < this->fMCMCDiscard; ++i) {
-        this->NextEvent(this->fMCMCDelta, rng);
+        this->PassEvent(this->fMCMCDelta, rng);
     }
-    this->NextEvent(this->fMCMCDelta, rng);
+    auto event{this->SampleEvent(this->fMCMCDelta, rng)};
 
-    this->BoostToOriginalFrame(beta, this->fEvent.p);
-    return this->fEvent;
+    this->BoostToOriginalFrame(beta, event.p);
+    return event;
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -69,8 +69,8 @@ auto MTMGenerator<M, N, A>::EstimateWeightNormalizationFactor(unsigned long long
         }};
         Parallel::ReseedRandomEngine(&rng);
         Executor<unsigned long long>{"Estimation", "Sample"}(n, [&](auto) {
-            this->NextEvent(rng);
-            const auto bias{originalBias(this->fEvent.p)};
+            const auto event{this->SampleEvent(rng)};
+            const auto bias{originalBias(event.p)};
             KahanAdd({bias, muc::pow(bias, 2)});
         });
     }
