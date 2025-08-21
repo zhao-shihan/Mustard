@@ -201,7 +201,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateWeightNormalizationFactor(
             sum = newSum;
         }};
         Parallel::ReseedRandomEngine(&rng);
-        Executor<unsigned long long>{"Estimation", "Sample"}(n, [&](auto) {
+        Executor<unsigned long long>{"Integration", "Sample"}(n, [&](auto) {
             const auto event{NextEvent(rng)};
             const auto bias{originalBias(event.p)};
             KahanAdd({bias, muc::pow(bias, 2)});
