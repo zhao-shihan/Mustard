@@ -30,7 +30,7 @@ using namespace PhysicalConstant;
 
 DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, double irCut,
                                                    double delta, int discard) :
-    MTMGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
+    MultipleTryMetropolisGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, 0, 0});
     IRCut(irCut);
@@ -48,8 +48,8 @@ auto DoubleRadiativeMuonDecay::Parent(std::string_view parent) -> void {
 }
 
 auto DoubleRadiativeMuonDecay::IRCut(double irCut) -> void {
-    MTMGenerator::IRCut(3, irCut);
-    MTMGenerator::IRCut(4, irCut);
+    MultipleTryMetropolisGenerator::IRCut(3, irCut);
+    MultipleTryMetropolisGenerator::IRCut(4, irCut);
 }
 
 } // namespace Mustard::inline Physics::inline Generator

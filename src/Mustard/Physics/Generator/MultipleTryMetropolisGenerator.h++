@@ -18,10 +18,14 @@
 
 #pragma once
 
+#include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Amplitude/PolarizedSquaredAmplitude.h++"
 #include "Mustard/Physics/Amplitude/SquaredAmplitude.h++"
+#include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
+#include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/Random.h"
@@ -46,9 +50,9 @@
 #include <limits>
 #include <utility>
 
-namespace Mustard::inline Physics::internal {
+namespace Mustard::inline Physics::inline Generator {
 
-/// @class MultipleTryMetropolisCore
+/// @class MultipleTryMetropolisGenerator
 /// @brief Multiple-try Metropolis (MTM) MCMC sampler for event generation,
 /// possibly with user-defined bias. MTM sampler can help resolve the
 /// curse of dimensionality.
@@ -64,26 +68,28 @@ namespace Mustard::inline Physics::internal {
 /// @tparam N Number of final-state particles
 /// @tparam A Squared amplitude of the process to be generated
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-class MultipleTryMetropolisCore {
+class MultipleTryMetropolisGenerator : public EventGenerator<M, N> {
 public:
+    /// @brief Initial-state 4-momentum (or container type when M>1)
+    using typename EventGenerator<M, N>::InitialStateMomenta;
     /// @brief Final-state 4-momentum container type
-    using FinalStateMomenta = typename GENBOD<M, N>::FinalStateMomenta;
+    using typename EventGenerator<M, N>::FinalStateMomenta;
     /// @brief Generated event type
-    using Event = typename GENBOD<M, N>::Event;
+    using typename EventGenerator<M, N>::Event;
     /// @brief User-defined bias function type
     using BiasFunction = std::function<auto(const FinalStateMomenta&)->double>;
     /// @brief IR cut value container type for IR-unsafe final states
     using IRCutArray = std::array<double, N>;
 
-protected:
+public:
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
-    MultipleTryMetropolisCore(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                              double delta, int discard);
+    MultipleTryMetropolisGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                   double delta, int discard);
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
     /// @param polarization Initial-state polarization vector
@@ -92,9 +98,9 @@ protected:
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     /// @note This overload is only enabled for polarized decay
-    MultipleTryMetropolisCore(double cmsE, CLHEP::Hep3Vector polarization,
-                              const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                              double delta, int discard)
+    MultipleTryMetropolisGenerator(double cmsE, CLHEP::Hep3Vector polarization,
+                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                   double delta, int discard)
         requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
@@ -104,14 +110,11 @@ protected:
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     /// @note This overload is only enabled for polarized scattering
-    MultipleTryMetropolisCore(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
-                              const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                              double delta, int discard)
+    MultipleTryMetropolisGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
+                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                   double delta, int discard)
         requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
 
-    ~MultipleTryMetropolisCore() = default;
-
-public:
     /// @brief Get polarization vector
     /// @note This overload is only enabled for polarized decay
     auto InitialStatePolarization() const -> CLHEP::Hep3Vector
@@ -161,6 +164,32 @@ public:
     /// @param rng Reference to CLHEP random engine
     auto BurnIn(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
 
+    /// @brief Generate event in center-of-mass frame
+    /// @param pI Initial-state 4-momenta (only for its boost)
+    /// @param rng Reference to CLHEP random engine
+    /// @return Generated event
+    virtual auto operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event override;
+    // Inherit operator() overloads
+    using EventGenerator<M, N>::operator();
+
+public:
+    /// @brief Weight normalization result
+    struct WeightNormalizationFactor {
+        double value; ///< Estimated normalization constant
+        double error; ///< Estimation error
+        double nEff;  ///< Statistically-effective sample count
+    };
+
+public:
+    /// @brief Estimate bias weight normalization factor
+    /// Multiply event weights with the factor to normalize weights to
+    /// the number of generated events
+    /// @note Use CheckWeightNormalizationFactor to check the result
+    auto EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor;
+    /// @brief Print and validate normalization factor quality
+    /// @return true if normalization factor quality is OK
+    static auto CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool;
+
 protected:
     /// @brief Get currently set center-of-mass frame energy
     auto CMSEnergy() const -> auto { return fCMSEnergy; }
@@ -175,16 +204,6 @@ protected:
     /// @brief Set particle masses
     /// @param mass Array of particle masses
     auto Mass(const std::array<double, N>& mass) -> void;
-    /// @brief Transform hypercube to phase space
-    /// @param u A random state
-    /// @return An event from phase space
-    auto PhaseSpace(typename GENBOD<M, N>::RandomState u) -> auto { return fGENBOD({fCMSEnergy, {}}, u); }
-    /// @brief Transform hypercube to phase space and apply permutation
-    /// to identical particles if necessary
-    /// @param u A random state
-    /// @param rng Reference to CLHEP random engine
-    /// @return An event from phase space
-    auto FairPhaseSpace(typename GENBOD<M, N>::RandomState u, CLHEP::HepRandomEngine& rng) -> Event;
 
     /// @brief Set IR cuts for single final state particle
     /// @param i Particle index (0 ≤ i < N)
@@ -199,15 +218,26 @@ protected:
     /// @brief Notify MCMC that (re)burn-in is required
     auto BurnInRequired() -> void { fBurntIn = false; }
 
-    /// @brief Advance Markov chain by one event and discard it
+private:
+    /// @brief Check if initial state momentum passed to generator matches
+    ///        currently set CMS energy
+    /// @param pI Initial-state 4-momenta passed to generator
+    auto CheckCMSEnergyUnchanged(const InitialStateMomenta& pI) const -> void;
+    /// @brief Advance Markov chain by one event
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param rng Reference to CLHEP random engine
-    auto PassEvent(double delta, CLHEP::HepRandomEngine& rng) -> void { NextEvent(delta, rng); }
-    /// @brief Advance Markov chain by one event and sample it
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param rng Reference to CLHEP random engine
-    [[nodiscard]] auto SampleEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event;
+    auto NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event;
 
+    /// @brief Transform hypercube to phase space
+    /// @param u A random state
+    /// @return An event from phase space
+    auto PhaseSpace(typename GENBOD<M, N>::RandomState u) -> auto { return fGENBOD({fCMSEnergy, {}}, u); }
+    /// @brief Transform hypercube to phase space and apply permutation
+    /// to identical particles if necessary
+    /// @param u A random state
+    /// @param rng Reference to CLHEP random engine
+    /// @return An event from phase space
+    auto FairPhaseSpace(typename GENBOD<M, N>::RandomState u, CLHEP::HepRandomEngine& rng) -> Event;
     /// @brief Check final-state momenta pass the IR cut
     /// @param momenta Final states' 4-momenta
     /// @return true if momenta is IR-safe
@@ -224,25 +254,19 @@ protected:
     /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN) × |J|(p1, ..., pN)
     auto ValidBiasedMSqDetJ(const FinalStateMomenta& momenta, double bias, double detJ) const -> double;
 
-private:
-    /// @brief Advance Markov chain by one event
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param rng Reference to CLHEP random engine
-    auto NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event;
-
     /// @brief Generate a random index of array with size n
     /// @param n Array size
     /// @param rng Reference to CLHEP random engine
     /// @return A random integer in 0 -- n-1
     static auto RandomIndex(int n, CLHEP::HepRandomEngine& rng) -> int;
 
-protected:
+private:
     struct MarkovChain {
         GENBOD<M, N>::RandomState state; ///< State of the chain
         double biasedMSqDetJ;            ///< |M|² × bias × |J|
     };
 
-protected:
+private:
     double fCMSEnergy;                           ///< Currently set CM energy
     [[no_unique_address]] A fSquaredAmplitude;   ///< Squared amplitude
     IRCutArray fIRCut;                           ///< IR cuts
@@ -259,6 +283,6 @@ protected:
     static constexpr int fgMCMCDim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
 };
 
-} // namespace Mustard::inline Physics::internal
+} // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/internal/MultipleTryMetropolisCore.inl"
+#include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.inl"
