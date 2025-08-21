@@ -136,7 +136,8 @@ auto MultipleTryMetropolisCore<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> 
         }
         if (const auto bias{ValidBias(fEvent.p)};
             bias > std::numeric_limits<double>::min()) {
-            fMarkovChain.acceptance = ValidBiasedPDF(fEvent, bias);
+            const auto& [detJ, _, momenta]{fEvent};
+            fMarkovChain.biasedMSqDetJ = ValidBiasedMSqDetJ(momenta, bias, detJ);
             break;
         }
     }
@@ -203,8 +204,7 @@ auto MultipleTryMetropolisCore<M, N, A>::NextEvent(double delta, CLHEP::HepRando
     const auto StateProposal{[&](const State& state0, State& state) { // T(x, y) (symmetric)
         std::ranges::transform(state0, state.begin(), [&](auto u0) {
             auto u{CLHEP::RandGaussQ::shoot(&rng, u0, delta)};
-            u = std::abs(muc::fmod(u, 2.)); // Reflection-
-            return u > 1 ? 2 - u : u;       // boundary
+            return u - std::floor(u); // periodic boundary
         });
     }};
     const auto MultinomialSample{[&rng](const std::array<double, kMTM>& pi, double piSum) {
@@ -222,40 +222,42 @@ auto MultipleTryMetropolisCore<M, N, A>::NextEvent(double delta, CLHEP::HepRando
         for (int i{}; i < kMTM; ++i) {
             StateProposal(fMarkovChain.state, stateY[i]);     // Draw y_i from T(x, *)
             eventY[i] = fGENBOD({fCMSEnergy, {}}, stateY[i]); // y_i -> event(y_i) = g(y_i)
-            if (not IRSafe(eventY[i].p)) {
+            const auto& [detJ, _, momenta]{eventY[i]};
+            if (not IRSafe(momenta)) {
                 piY[i] = 0;
                 continue;
             }
-            biasY[i] = ValidBias(eventY[i].p); // g(y_i) -> B(g(y_i))
+            biasY[i] = ValidBias(momenta); // g(y_i) -> B(g(y_i))
             if (biasY[i] <= std::numeric_limits<double>::min()) {
                 piY[i] = biasY[i];
                 continue;
             }
-            piY[i] = ValidBiasedPDF(eventY[i], biasY[i]); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) B(g(y_i))
+            piY[i] = ValidBiasedMSqDetJ(momenta, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
         }
         const auto sumPiY{muc::ranges::reduce(piY)};         // pi(y_1) + ... + pi(y_k)
         const auto selected{MultinomialSample(piY, sumPiY)}; // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
         for (int i{}; i < kMTM - 1; ++i) {
             StateProposal(stateY[selected], stateX);    // Draw x_i from T(Y, *)
             eventX = fGENBOD({fCMSEnergy, {}}, stateX); // x_i -> event(x_i) = g(x_i)
-            if (not IRSafe(eventX.p)) {
+            const auto& [detJ, _, momenta]{eventX};
+            if (not IRSafe(momenta)) {
                 piX[i] = 0;
                 continue;
             }
-            const auto biasX{ValidBias(eventX.p)}; // g(x_i) -> B(g(x_i))
+            const auto biasX{ValidBias(momenta)}; // g(x_i) -> B(g(x_i))
             if (biasX <= std::numeric_limits<double>::min()) {
                 piX[i] = biasX;
             }
-            piX[i] = ValidBiasedPDF(eventX, biasX); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) B(g(x_i))
+            piX[i] = ValidBiasedMSqDetJ(momenta, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
         }
-        const auto sumPiX{muc::ranges::reduce(piX, fMarkovChain.acceptance)}; // pi(x_1) + ... + pi(x_k)
+        const auto sumPiX{muc::ranges::reduce(piX, fMarkovChain.biasedMSqDetJ)}; // pi(x_1) + ... + pi(x_k)
         // accept/reject Y
         if (sumPiY >= sumPiX or
             sumPiY >= sumPiX * rng.flat()) {
             fMarkovChain.state = stateY[selected];
+            fMarkovChain.biasedMSqDetJ = piY[selected];
             fEvent = eventY[selected];
             fEvent.weight = 1 / biasY[selected];
-            fMarkovChain.acceptance = piY[selected];
             return;
         }
     }
@@ -291,11 +293,11 @@ auto MultipleTryMetropolisCore<M, N, A>::ValidBias(const FinalStateMomenta& mome
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisCore<M, N, A>::ValidBiasedPDF(const Event& event, double bias) const -> double {
-    const auto value{event.weight * fSquaredAmplitude({fCMSEnergy, {}}, event.p) * bias};
+auto MultipleTryMetropolisCore<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMomenta& momenta, double bias, double detJ) const -> double {
+    const auto value{fSquaredAmplitude({fCMSEnergy, {}}, momenta) * bias * detJ}; // |M|² × bias × |J|
     const auto Where{[&] {
-        auto where{fmt::format("({})", event.weight)};
-        for (auto&& p : event.p) {
+        auto where{fmt::format("({})", detJ)};
+        for (auto&& p : momenta) {
             where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
         }
         where += fmt::format(" Bias={}", bias);

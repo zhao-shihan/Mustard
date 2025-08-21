@@ -199,13 +199,13 @@ protected:
     /// @param event Final states from phase space
     /// @param bias Bias value at the same phase space point (from BiasWithCheck)
     /// @exception `std::runtime_error` if invalid PDF value produced
-    /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN)
-    auto ValidBiasedPDF(const Event& event, double bias) const -> double;
+    /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN) × |J|(p1, ..., pN)
+    auto ValidBiasedMSqDetJ(const FinalStateMomenta& momenta, double bias, double detJ) const -> double;
 
 protected:
     struct MarkovChain {
-        double acceptance;               ///< Acceptance of a sample
         GENBOD<M, N>::RandomState state; ///< State of the chain
+        double biasedMSqDetJ;            ///< |M|² × bias × |J|
     };
 
 protected:
