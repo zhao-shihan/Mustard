@@ -46,14 +46,14 @@ auto MTMGenerator<M, N, A>::EstimateWeightNormalizationFactor(unsigned long long
         this->fEvent = std::move(originalEvent);
     })};
 
-    WeightNormalizationFactor result{.factor = std::numeric_limits<double>::quiet_NaN(),
+    WeightNormalizationFactor result{.value = std::numeric_limits<double>::quiet_NaN(),
                                      .error = std::numeric_limits<double>::quiet_NaN(),
                                      .nEff = 0};
     if (n == 0) {
         return result;
     }
 
-    this->Bias([](auto&&) { return 1; }); // to evaluate the weight normalization factor of user-defined bias, temporarily switch to unbiased function
+    this->Bias([](auto&&) { return 1; }); // to calculate the mean of user-defined bias, sample from unbiased |M|²
     auto& rng{*CLHEP::HepRandom::getTheEngine()};
     this->BurnIn(rng);
 
@@ -77,9 +77,10 @@ auto MTMGenerator<M, N, A>::EstimateWeightNormalizationFactor(unsigned long long
     if (mplr::available()) {
         mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
     }
-    result.factor = sum[0] / n;
-    result.error = std::sqrt(sum[1]) / n;
-    result.nEff = muc::pow(result.factor / result.error, 2);
+    const auto& [sumBias, sumBiasSq]{sum};
+    result.value = sumBias / n;
+    result.error = std::sqrt(sumBiasSq / n - muc::pow(result.value, 2)) / n;
+    result.nEff = muc::pow(result.value / result.error, 2);
 
     return result;
 }
@@ -94,8 +95,6 @@ auto MTMGenerator<M, N, A>::CheckWeightNormalizationFactor(WeightNormalizationFa
                   result, error, error / result * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
     if (not ok) {
         MasterPrintWarning("N_eff TOO LOW. "
-                           "This generally means there are a few highly weighted events "
-                           "and THEY CAN BIAS THE ESTIMATIONS. "
                            "The estimation should be considered inaccurate. "
                            "Try increasing statistics.");
     }

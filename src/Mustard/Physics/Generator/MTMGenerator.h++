@@ -91,14 +91,15 @@ public:
 public:
     /// @brief Weight normalization result
     struct WeightNormalizationFactor {
-        double factor; ///< Estimated normalization constant
-        double error;  ///< Estimation error
-        double nEff;   ///< Statistically-effective sample count
+        double value; ///< Estimated normalization constant
+        double error; ///< Estimation error
+        double nEff;  ///< Statistically-effective sample count
     };
 
 public:
     /// @brief Estimate bias weight normalization factor
-    /// Multiply event weights with the factor to normalize weights to the number of (generated) events
+    /// Multiply event weights with the factor to normalize weights to
+    /// the number of generated events
     /// @note Use CheckWeightNormalizationFactor to check the result
     auto EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor;
     /// @brief Print and validate normalization factor quality
