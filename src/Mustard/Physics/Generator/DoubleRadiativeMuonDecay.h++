@@ -39,16 +39,19 @@ public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param polarization Muon polarization vector
-    /// @param B User-defined bias (should always include IR cut)
+    /// @param irCut IR cut for final-state photons
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
-    DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, BiasFunction B,
+    DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, double irCut,
                              double delta, int discard);
 
     /// @brief Set parent particle type
     /// @param parent "mu-" or "mu+"
     /// @exception std::invalid_argument for invalid parent names
     auto Parent(std::string_view parent) -> void;
+    /// @brief Set IR cut for final-state photons
+    /// @param irCut IR cut for final-state photons
+    auto IRCut(double irCut) -> void;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

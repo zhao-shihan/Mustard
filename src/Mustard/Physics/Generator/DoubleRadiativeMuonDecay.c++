@@ -28,12 +28,12 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, BiasFunction B,
+DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, double irCut,
                                                    double delta, int discard) :
     MTMGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, 0, 0});
-    Bias(std::move(B));
+    IRCut(irCut);
 }
 
 auto DoubleRadiativeMuonDecay::Parent(std::string_view parent) -> void {
@@ -44,6 +44,11 @@ auto DoubleRadiativeMuonDecay::Parent(std::string_view parent) -> void {
     } else {
         Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'", parent));
     }
+}
+
+auto DoubleRadiativeMuonDecay::IRCut(double irCut) -> void {
+    MTMGenerator::IRCut(3, irCut);
+    MTMGenerator::IRCut(4, irCut);
 }
 
 } // namespace Mustard::inline Physics::inline Generator

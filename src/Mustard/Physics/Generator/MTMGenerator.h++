@@ -21,12 +21,12 @@
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
-#include "Mustard/Physics/Amplitude/PolarizedSquaredAmplitude.h++"
 #include "Mustard/Physics/Amplitude/SquaredAmplitude.h++"
+#include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
+#include "Mustard/Physics/internal/MultipleTryMetropolisCore.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
-#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -41,7 +41,6 @@
 #include <array>
 #include <cmath>
 #include <concepts>
-#include <functional>
 #include <limits>
 #include <utility>
 
@@ -63,7 +62,8 @@ namespace Mustard::inline Physics::inline Generator {
 /// @tparam N Number of final-state particles
 /// @tparam A Squared amplitude of the process to be generated
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-class MTMGenerator : public EventGenerator<M, N> {
+class MTMGenerator : public EventGenerator<M, N>,
+                     public internal::MultipleTryMetropolisCore<M, N, A> {
 public:
     /// @brief Initial-state 4-momentum
     using typename EventGenerator<M, N>::InitialStateMomenta;
@@ -72,90 +72,13 @@ public:
     /// @brief Generated event type
     using typename EventGenerator<M, N>::Event;
     /// @brief User-defined bias function type
-    using BiasFunction = std::function<auto(const FinalStateMomenta&)->double>;
+    using typename internal::MultipleTryMetropolisCore<M, N, A>::BiasFunction;
+    /// @brief IR cut value container type for IR-unsafe final states
+    using typename internal::MultipleTryMetropolisCore<M, N, A>::IRCutArray;
 
 public:
-    /// @brief Construct event generator
-    /// @param cmsE Center-of-mass energy
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param discard Samples discarded between two events generated in the Markov chain
-    MTMGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                 double delta, int discard);
-    /// @brief Construct event generator
-    /// @param cmsE Center-of-mass energy
-    /// @param polarization Initial-state polarization vector
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param discard Samples discarded between two events generated in the Markov chain
-    /// @note This overload is only enabled for polarized decay
-    MTMGenerator(double cmsE, CLHEP::Hep3Vector polarization,
-                 const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                 double delta, int discard)
-        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
-    /// @brief Construct event generator
-    /// @param cmsE Center-of-mass energy
-    /// @param polarization Initial-state polarization vectors
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param discard Samples discarded between two events generated in the Markov chain
-    /// @note This overload is only enabled for polarized scattering
-    MTMGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
-                 const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                 double delta, int discard)
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
-
-    /// @brief Get polarization vector
-    /// @note This overload is only enabled for polarized decay
-    auto InitialStatePolarization() const -> CLHEP::Hep3Vector
-        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
-    /// @brief Get polarization vector
-    /// @param i Particle index (0 ≤ i < M)
-    /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
-    /// @brief Get all polarization vectors
-    /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
-
-    /// @brief Set polarization vector
-    /// @param p Polarization vector (|p| ≤ 1)
-    /// @note Triggers Markov chain reset (requires new burn-in)
-    /// This overload is only enabled for polarized decay
-    auto InitialStatePolarization(CLHEP::Hep3Vector p) -> void
-        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
-    /// @brief Set polarization for single initial particle
-    /// @param i Particle index (0 ≤ i < M)
-    /// @param polarization Polarization vector (|p| ≤ 1)
-    /// @note Triggers Markov chain reset (requires new burn-in).
-    /// This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i, CLHEP::Hep3Vector p) -> void
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
-    /// @brief Set all polarization vectors
-    /// @param polarization Array of polarization vectors for each initial particle (all |p| ≤ 1)
-    /// @note Triggers Markov chain reset (requires new burn-in)
-    /// This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
-
-    /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
-    /// @param B User-defined bias
-    auto Bias(BiasFunction B) -> void;
-
-    /// @brief Set MCMC step size
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    auto MCMCDelta(double delta) -> void;
-    /// @brief Set discard count between samples
-    /// @param discard Samples discarded between two events generated in the Markov chain
-    auto MCMCDiscard(int n) -> void;
-
-    /// @brief Initialize Markov chain
-    /// @param rng Reference to CLHEP random engine
-    auto BurnIn(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
+    // Inherit constructor
+    using internal::MultipleTryMetropolisCore<M, N, A>::MultipleTryMetropolisCore;
 
     /// @brief Generate event in center-of-mass frame
     /// @param pI Initial-state 4-momenta (only for its boost)
@@ -182,65 +105,11 @@ public:
     /// @return true if normalization factor quality is OK
     static auto CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool;
 
-protected:
-    /// @brief Get currently set center-of-mass frame energy
-    auto CMSEnergy() const -> auto { return fCMSEnergy; }
-    /// @brief Set center-of-mass energy
-    /// @param cmsE Center-of-mass energy
-    /// @warning The Markov chain requires burn-in after center-of-mass energy changes
-    auto CMSEnergy(double cmsE) -> void;
-
-    /// @brief Set particle PDG IDs
-    /// @param pdgID Array of particle PDG IDs
-    auto PDGID(const std::array<int, N>& pdgID) -> void { fGENBOD.PDGID(pdgID); }
-    /// @brief Set particle masses
-    /// @param mass Array of particle masses
-    auto Mass(const std::array<double, N>& mass) -> void;
-
-    /// @brief Notify MCMC that (re)burn-in is required
-    auto BurnInRequired() -> void { fBurntIn = false; }
-
 private:
     /// @brief Check if initial state momentum passed to generator matches
     ///        currently set CMS energy
     /// @param pI Initial-state 4-momenta passed to generator
     auto CheckCMSEnergyUnchanged(const InitialStateMomenta& pI) const -> void;
-    /// @brief Advance Markov chain by one event
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param rng Reference to CLHEP random engine
-    auto NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> void;
-    /// @brief Get bias with range check
-    /// @param momenta Final states' 4-momenta
-    /// @exception `std::runtime_error` if invalid bias value produced
-    /// @return B(p1, ..., pN)
-    auto ValidBias(const FinalStateMomenta& momenta) const -> double;
-    /// @brief Get reweighted PDF value with range check
-    /// @param event Final states from phase space
-    /// @param bias Bias value at the same phase space point (from BiasWithCheck)
-    /// @exception `std::runtime_error` if invalid PDF value produced
-    /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN)
-    auto ValidBiasedPDF(const Event& event, double bias) const -> double;
-
-private:
-    struct MarkovChain {
-        double acceptance;               ///< Acceptance of a sample
-        GENBOD<M, N>::RandomState state; ///< State of the chain
-    };
-
-private:
-    double fCMSEnergy;                         ///< Currently set CM energy
-    [[no_unique_address]] A fSquaredAmplitude; ///< Squared amplitude
-    BiasFunction fBias;                        ///< User bias function
-    GENBOD<M, N> fGENBOD;                      ///< Phase space generator
-                                               //
-    double fMCMCDelta;                         ///< MCMC max step size along one dimension
-    int fMCMCDiscard;                          ///< Events discarded between 2 samples
-                                               //
-    bool fBurntIn;                             ///< Burn-in completed flag
-    MarkovChain fMarkovChain;                  ///< Current Markov chain state
-    Event fEvent;                              ///< Current event in chain
-
-    static constexpr int fgMCMCDim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
 };
 
 } // namespace Mustard::inline Physics::inline Generator
