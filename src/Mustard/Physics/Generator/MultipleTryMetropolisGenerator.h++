@@ -232,8 +232,7 @@ private:
     /// @param u A random state
     /// @return An event from phase space
     auto PhaseSpace(typename GENBOD<M, N>::RandomState u) -> auto { return fGENBOD({fCMSEnergy, {}}, u); }
-    /// @brief Transform hypercube to phase space and apply permutation
-    /// to identical particles if necessary
+    /// @brief Transform hypercube to phase space and swap identical particles if necessary
     /// @param u A random state
     /// @param rng Reference to CLHEP random engine
     /// @return An event from phase space
