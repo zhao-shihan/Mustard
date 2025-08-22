@@ -115,6 +115,9 @@ public:
                                    double delta, int discard)
         requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
 
+    // Keep the class abstract
+    virtual ~MultipleTryMetropolisGenerator() override = 0;
+
     /// @brief Get polarization vector
     /// @note This overload is only enabled for polarized decay
     auto InitialStatePolarization() const -> CLHEP::Hep3Vector
@@ -219,6 +222,15 @@ protected:
     auto BurnInRequired() -> void { fBurntIn = false; }
 
 private:
+    struct MarkovChain {
+        struct State {
+            GENBOD<M, N>::RandomState u; ///< Random state
+            std::array<int, N> pID;      ///< Particle ID mapping (for swapping identical particles)
+        } state;                         ///< State of the chain
+        double biasedMSqDetJ;            ///< |M|² × bias × |J|
+    };
+
+private:
     /// @brief Check whether initial state momentum passed to generator matches
     /// currently set CMS energy
     /// @param pI Initial-state 4-momenta passed to generator
@@ -231,12 +243,11 @@ private:
     /// @brief Transform hypercube to phase space
     /// @param u A random state
     /// @return An event from phase space
-    auto PhaseSpace(typename GENBOD<M, N>::RandomState u) -> auto { return fGENBOD(u, {fCMSEnergy, {}}); }
-    /// @brief Transform hypercube to phase space and swap identical particles if necessary
-    /// @param u A random state
-    /// @param rng Reference to CLHEP random engine
+    auto DirectPhaseSpace(const typename GENBOD<M, N>::RandomState& u) -> auto { return fGENBOD(u, {fCMSEnergy, {}}); }
+    /// @brief Transform state space to phase space
+    /// @param state A Markov chain state
     /// @return An event from phase space
-    auto FairPhaseSpace(typename GENBOD<M, N>::RandomState u, CLHEP::HepRandomEngine& rng) -> Event;
+    auto PhaseSpace(const MarkovChain::State& state) -> Event;
     /// @brief Check final-state momenta pass the IR cut
     /// @param momenta Final states' 4-momenta
     /// @return true if momenta is IR-safe
@@ -253,22 +264,11 @@ private:
     /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN) × |J|(p1, ..., pN)
     auto ValidBiasedMSqDetJ(const FinalStateMomenta& momenta, double bias, double detJ) const -> double;
 
-    /// @brief Generate a random index of array with size n
-    /// @param rng Reference to CLHEP random engine
-    /// @param n Array size
-    /// @return A random integer in 0 -- n-1
-    static auto RandomIndex(CLHEP::HepRandomEngine& rng, int n) -> int;
-
-private:
-    struct MarkovChain {
-        GENBOD<M, N>::RandomState state; ///< State of the chain
-        double biasedMSqDetJ;            ///< |M|² × bias × |J|
-    };
-
 private:
     double fCMSEnergy;                           ///< Currently set CM energy
     [[no_unique_address]] A fSquaredAmplitude;   ///< Squared amplitude
     IRCutArray fIRCut;                           ///< IR cuts
+    bool fAlwaysIRSafe;                          ///< Flag indicates all IR cuts are 0
     std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
     BiasFunction fBias;                          ///< User bias function
     GENBOD<M, N> fGENBOD;                        ///< Phase space generator

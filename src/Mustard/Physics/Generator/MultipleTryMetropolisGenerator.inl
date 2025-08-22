@@ -25,6 +25,7 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double c
     fCMSEnergy{},
     fSquaredAmplitude{},
     fIRCut{},
+    fAlwaysIRSafe{true},
     fIdenticalSet{},
     fBias{[](auto&&) { return 1; }},
     fGENBOD{pdgID, mass},
@@ -54,6 +55,9 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double c
     MultipleTryMetropolisGenerator{cmsE, pdgID, mass, delta, discard} {
     fSquaredAmplitude.InitialStatePolarization(polarization);
 }
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+MultipleTryMetropolisGenerator<M, N, A>::~MultipleTryMetropolisGenerator() = default;
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization() const -> CLHEP::Hep3Vector
@@ -129,14 +133,15 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
         return;
     }
     // find phase space
+    muc::ranges::iota(fMarkovChain.state.pID, 0);
     while (true) {
-        std::ranges::generate(fMarkovChain.state, [&rng] { return rng.flat(); });
-        const auto event{PhaseSpace(fMarkovChain.state)};
+        std::ranges::generate(fMarkovChain.state.u, [&rng] { return rng.flat(); });
+        const auto event{DirectPhaseSpace(fMarkovChain.state.u)};
         if (not IRSafe(event.p)) {
             continue;
         }
         if (const auto bias{ValidBias(event.p)};
-            bias > std::numeric_limits<double>::min()) {
+            bias > std::numeric_limits<double>::epsilon()) {
             const auto& [detJ, _, momenta]{event};
             fMarkovChain.biasedMSqDetJ = ValidBiasedMSqDetJ(momenta, bias, detJ);
             break;
@@ -259,13 +264,14 @@ auto MultipleTryMetropolisGenerator<M, N, A>::IRCut(int i, double cut) -> void {
     if (cut < 0) [[unlikely]] {
         PrintWarning(fmt::format("Negative IR cut for particle {} (got {})", i, cut));
     }
-    if (muc::pow(fGENBOD.Mass(i) / fCMSEnergy, 2) > muc::default_tolerance<double>) [[unlikely]] {
+    if (muc::pow(fGENBOD.Mass(i) / fCMSEnergy, 2) > muc::default_tolerance<double> and cut > 0) [[unlikely]] {
         PrintWarning(fmt::format("IR cut set for massive particle {} (mass = {})", i, fGENBOD.Mass(i)));
     }
     if (not muc::isclose(cut, fIRCut.at(i))) {
         BurnInRequired();
     }
     fIRCut[i] = cut;
+    fAlwaysIRSafe = std::ranges::all_of(fIRCut, [](auto cut) { return cut <= 0; });
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -306,21 +312,44 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
     // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
     delta /= std::sqrt(fgMCMCDim);
     // Multiple-try Metropolis sampler (Ref: Jun S. Liu et al (2000), https://doi.org/10.2307/2669532)
-    using State = typename GENBOD<M, N>::RandomState;
-    constexpr auto kMTM{fgMCMCDim};                                   // k
-    std::array<State, kMTM> stateY;                                   // y_1, ..., y_k
-    std::array<double, kMTM> piY;                                     // pi(y_1), ..., pi(y_k)
-    State stateX;                                                     // x_1, ..., x_k-1
-    std::array<double, kMTM - 1> piX;                                 // pi(x_1), ..., pi(x_k-1)
-    std::array<double, kMTM> biasY;                                   // Bias function value at y_1, ..., y_k
-    std::array<Event, kMTM> eventY;                                   // Event at y_1, ..., y_k
-    Event eventX;                                                     // Event at x_1, ..., x_k-1
-    const auto StateProposal{[&](const State& state0, State& state) { // T(x, y) (symmetric)
-        std::ranges::transform(state0, state.begin(), [&](auto u0) {
+    constexpr auto kMTM{fgMCMCDim};                     // k
+    std::array<struct MarkovChain::State, kMTM> stateY; // y_1, ..., y_k
+    std::array<Event, kMTM> eventY;                     // Event at y_1, ..., y_k
+    std::array<double, kMTM> biasY;                     // Bias function value at y_1, ..., y_k
+    std::array<double, kMTM> piY;                       // pi(y_1), ..., pi(y_k)
+    struct MarkovChain::State stateX;                   // x_i
+    const auto RandomIndex([&rng](int n) {
+        muc::assume(n >= 2);
+        auto i{static_cast<int>(n * rng.flat())};
+        while (i == n) [[unlikely]] {
+            i = n * rng.flat();
+        }
+        return i;
+    });
+    // symmetric T(x, y)
+    const auto StateProposal{[&](const MarkovChain::State& state0, MarkovChain::State& state) {
+        // Walk random state
+        std::ranges::transform(state0.u, state.u.begin(), [&](auto u0) {
             const auto u{CLHEP::RandGaussQ::shoot(&rng, u0, delta)};
             return u - std::floor(u); // periodic boundary
         });
+        // Walk particle mapping if there are identical particles
+        state.pID = state0.pID;
+        if (fIdenticalSet.empty() or rng.flat() < 0.5) {
+            return;
+        }
+        const auto& idSet{fIdenticalSet.size() == 1 ?
+                              fIdenticalSet.front() :
+                              fIdenticalSet[RandomIndex(fIdenticalSet.size())]};
+        if (idSet.size() == 2) {
+            std::swap(state.pID[idSet[0]], state.pID[idSet[1]]);
+        } else {
+            const auto idA{RandomIndex(idSet.size())};
+            const auto idB{(idA + 1) % idSet.size()};
+            std::swap(state.pID[idSet[idA]], state.pID[idSet[idB]]);
+        }
     }};
+
     const auto MultinomialSample{[&rng](const std::array<double, kMTM>& pi, double piSum) {
         const auto u{piSum * rng.flat()};
         double c{};
@@ -335,36 +364,29 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
     while (true) {
         for (int i{}; i < kMTM; ++i) {
             StateProposal(fMarkovChain.state, stateY[i]); // Draw y_i from T(x, *)
-            eventY[i] = FairPhaseSpace(stateY[i], rng);   // y_i -> event(y_i) = g(y_i)
+            eventY[i] = PhaseSpace(stateY[i]);            // y_i -> event(y_i) = g(y_i)
             const auto& [detJ, _, momenta]{eventY[i]};
             if (not IRSafe(momenta)) {
                 piY[i] = 0;
                 continue;
             }
-            biasY[i] = ValidBias(momenta); // g(y_i) -> B(g(y_i))
-            if (biasY[i] <= std::numeric_limits<double>::min()) {
-                piY[i] = biasY[i];
-                continue;
-            }
+            biasY[i] = ValidBias(momenta);                        // g(y_i) -> B(g(y_i))
             piY[i] = ValidBiasedMSqDetJ(momenta, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
         }
         const auto sumPiY{muc::ranges::reduce(piY)};         // pi(y_1) + ... + pi(y_k)
         const auto selected{MultinomialSample(piY, sumPiY)}; // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
+
+        auto sumPiX{fMarkovChain.biasedMSqDetJ}; // pi(x_1) + ... + pi(x_k)
         for (int i{}; i < kMTM - 1; ++i) {
-            StateProposal(stateY[selected], stateX); // Draw x_i from T(Y, *)
-            eventX = FairPhaseSpace(stateX, rng);    // x_i -> event(x_i) = g(x_i)
-            const auto& [detJ, _, momenta]{eventX};
+            StateProposal(stateY[selected], stateX);           // Draw x_i from T(Y, *)
+            const auto [detJ, _, momenta]{PhaseSpace(stateX)}; // x_i -> event(x_i) = g(x_i)
             if (not IRSafe(momenta)) {
-                piX[i] = 0;
                 continue;
             }
-            const auto biasX{ValidBias(momenta)}; // g(x_i) -> B(g(x_i))
-            if (biasX <= std::numeric_limits<double>::min()) {
-                piX[i] = biasX;
-            }
-            piX[i] = ValidBiasedMSqDetJ(momenta, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
+            const auto biasX{ValidBias(momenta)};               // g(x_i) -> B(g(x_i))
+            sumPiX += ValidBiasedMSqDetJ(momenta, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
         }
-        const auto sumPiX{muc::ranges::reduce(piX, fMarkovChain.biasedMSqDetJ)}; // pi(x_1) + ... + pi(x_k)
+
         // accept/reject Y
         if (sumPiY >= sumPiX or
             sumPiY >= sumPiX * rng.flat()) {
@@ -377,24 +399,17 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::FairPhaseSpace(typename GENBOD<M, N>::RandomState u, CLHEP::HepRandomEngine& rng) -> Event {
-    auto event{PhaseSpace(u)};
-    if (fIdenticalSet.empty() or rng.flat() < 0.5) {
-        return event;
-    }
-    const auto& idSet{fIdenticalSet[RandomIndex(rng, fIdenticalSet.size())]};
-    if (idSet.size() == 2) {
-        std::swap(event.p[idSet.front()], event.p[idSet.back()]);
-    } else {
-        const auto idA{RandomIndex(rng, idSet.size())};
-        const auto idB{(idA + 1) % idSet.size()};
-        std::swap(event.p[idSet[idA]], event.p[idSet[idB]]);
-    }
+auto MultipleTryMetropolisGenerator<M, N, A>::PhaseSpace(const MarkovChain::State& state) -> Event {
+    auto event{DirectPhaseSpace(state.u)};
+    event.p = std::apply([&](auto... i) { return FinalStateMomenta{event.p[i]...}; }, state.pID);
     return event;
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::IRSafe(const FinalStateMomenta& momenta) const -> bool {
+    if (fAlwaysIRSafe) {
+        return true;
+    }
     for (int i{}; i < N; ++i) {
         if (momenta[i].e() <= fIRCut[i]) {
             return false;
@@ -440,19 +455,6 @@ auto MultipleTryMetropolisGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStat
         Throw<std::runtime_error>(fmt::format("Negative biased PDF found (got {} at {})", value, Where()));
     }
     return value;
-}
-
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::RandomIndex(CLHEP::HepRandomEngine& rng, int n) -> int {
-    muc::assume(n > 0);
-    if (n == 1) {
-        return 0;
-    }
-    auto i{static_cast<int>(n * rng.flat())};
-    while (i == n) [[unlikely]] {
-        i = n * rng.flat();
-    }
-    return i;
 }
 
 } // namespace Mustard::inline Physics::inline Generator
