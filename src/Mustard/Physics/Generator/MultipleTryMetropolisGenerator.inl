@@ -155,7 +155,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
-    CheckCMSEnergyUnchanged(pI);
+    CheckCMSEnergyMatch(pI);
     const auto beta{this->BoostToCMS(pI)};
 
     BurnIn(rng);
@@ -290,7 +290,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::AddIdenticalSet(std::vector<int> s
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::CheckCMSEnergyUnchanged(const InitialStateMomenta& pI) const -> void {
+auto MultipleTryMetropolisGenerator<M, N, A>::CheckCMSEnergyMatch(const InitialStateMomenta& pI) const -> void {
     if (pI == InitialStateMomenta{}) {
         return;
     }

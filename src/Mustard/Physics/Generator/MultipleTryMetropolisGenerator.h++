@@ -219,10 +219,10 @@ protected:
     auto BurnInRequired() -> void { fBurntIn = false; }
 
 private:
-    /// @brief Check if initial state momentum passed to generator matches
-    ///        currently set CMS energy
+    /// @brief Check whether initial state momentum passed to generator matches
+    /// currently set CMS energy
     /// @param pI Initial-state 4-momenta passed to generator
-    auto CheckCMSEnergyUnchanged(const InitialStateMomenta& pI) const -> void;
+    auto CheckCMSEnergyMatch(const InitialStateMomenta& pI) const -> void;
     /// @brief Advance Markov chain by one event
     /// @param rng Reference to CLHEP random engine
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
