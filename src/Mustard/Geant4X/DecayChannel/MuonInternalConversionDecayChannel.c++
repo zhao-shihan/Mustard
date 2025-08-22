@@ -123,7 +123,7 @@ auto MuonInternalConversionDecayChannel::Initialize() -> void {
     // initialize
     while (true) {
         std::ranges::generate(fRandomState, [this] { return Math::Random::Uniform<double>{}(fXoshiro256Plus); });
-        fEvent = fGENBOD({muon_mass_c2, {}}, fRandomState);
+        fEvent = fGENBOD(fRandomState, {muon_mass_c2, {}});
         if (const auto bias{BiasWithCheck(fEvent.p)};
             bias >= std::numeric_limits<double>::min()) {
             fBiasedMSq = bias * WeightedMSq(fEvent);
@@ -236,7 +236,7 @@ auto MuonInternalConversionDecayChannel::UpdateState(double delta) -> void {
                                        muc::clamp<"()">(u - delta, 0., 1.),
                                        muc::clamp<"()">(u + delta, 0., 1.)}(fXoshiro256Plus);
                                });
-        newEvent = fGENBOD({muon_mass_c2, {}}, newRandomState);
+        newEvent = fGENBOD(newRandomState, {muon_mass_c2, {}});
         const auto bias{BiasWithCheck(newEvent.p)};
         if (bias <= std::numeric_limits<double>::min()) {
             continue;

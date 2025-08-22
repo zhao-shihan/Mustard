@@ -74,31 +74,31 @@ auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization() const -
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(CLHEP::Hep3Vector p) -> void
+auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
     requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>> {
-    if (not p.isNear(InitialStatePolarization(), muc::default_tolerance<double>)) {
+    if (not pol.isNear(InitialStatePolarization(), muc::default_tolerance<double>)) {
         BurnInRequired();
     }
-    fSquaredAmplitude.InitialStatePolarization(p);
+    fSquaredAmplitude.InitialStatePolarization(pol);
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector p) -> void
+auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
     requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
-    if (not p.isNear(InitialStatePolarization(i), muc::default_tolerance<double>)) {
+    if (not pol.isNear(InitialStatePolarization(i), muc::default_tolerance<double>)) {
         BurnInRequired();
     }
-    fSquaredAmplitude.InitialStatePolarization(i, p);
+    fSquaredAmplitude.InitialStatePolarization(i, pol);
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void
+auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
     requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
-    if (not std::ranges::equal(p, InitialStatePolarization(),
+    if (not std::ranges::equal(pol, InitialStatePolarization(),
                                [](auto&& a, auto&& b) { return a.isNear(b, muc::default_tolerance<double>); })) {
         BurnInRequired();
     }
-    fSquaredAmplitude.InitialStatePolarization(p);
+    fSquaredAmplitude.InitialStatePolarization(pol);
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -148,21 +148,21 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
     constexpr auto nBurnIn{10000. * fgMCMCDim}; // E(distance in d-dim space) ~ sqrt(d), E(random walk distance) ~ sqrt(n) => n ~ d
     const auto factor{std::pow(epsilon / delta0, 1 / nBurnIn)};
     for (auto delta{delta0}; delta > epsilon; delta *= factor) {
-        NextEvent(delta, rng);
+        NextEvent(rng, delta);
     }
     fBurntIn = true;
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event {
+auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
     CheckCMSEnergyUnchanged(pI);
     const auto beta{this->BoostToCMS(pI)};
 
     BurnIn(rng);
     for (int i{}; i < fMCMCDiscard; ++i) {
-        NextEvent(fMCMCDelta, rng);
+        NextEvent(rng, fMCMCDelta);
     }
-    auto event{NextEvent(fMCMCDelta, rng)};
+    auto event{NextEvent(rng, fMCMCDelta)};
 
     this->BoostToOriginalFrame(beta, event.p);
     return event;
@@ -301,7 +301,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::CheckCMSEnergyUnchanged(const Init
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event {
+auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event {
     // Rescale delta first
     // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
     delta /= std::sqrt(fgMCMCDim);
@@ -382,11 +382,11 @@ auto MultipleTryMetropolisGenerator<M, N, A>::FairPhaseSpace(typename GENBOD<M, 
     if (fIdenticalSet.empty() or rng.flat() < 0.5) {
         return event;
     }
-    const auto& idSet{fIdenticalSet[RandomIndex(fIdenticalSet.size(), rng)]};
+    const auto& idSet{fIdenticalSet[RandomIndex(rng, fIdenticalSet.size())]};
     if (idSet.size() == 2) {
         std::swap(event.p[idSet.front()], event.p[idSet.back()]);
     } else {
-        const auto idA{RandomIndex(idSet.size(), rng)};
+        const auto idA{RandomIndex(rng, idSet.size())};
         const auto idB{(idA + 1) % idSet.size()};
         std::swap(event.p[idSet[idA]], event.p[idSet[idB]]);
     }
@@ -443,7 +443,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStat
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::RandomIndex(int n, CLHEP::HepRandomEngine& rng) -> int {
+auto MultipleTryMetropolisGenerator<M, N, A>::RandomIndex(CLHEP::HepRandomEngine& rng, int n) -> int {
     muc::assume(n > 0);
     if (n == 1) {
         return 0;

@@ -43,8 +43,8 @@ public:
     /// @brief Default constructor (all polarizations zero)
     PolarizedSquaredAmplitude() = default;
     /// @brief Construct with initial polarization array
-    /// @param polarization Array of polarization vectors for each initial particle (all |p| ≤ 1)
-    PolarizedSquaredAmplitude(const std::array<CLHEP::Hep3Vector, M>& polarization);
+    /// @param pol Array of polarization vectors for each initial particle (all |p| ≤ 1)
+    PolarizedSquaredAmplitude(const std::array<CLHEP::Hep3Vector, M>& pol);
 
     /// @brief Get polarization vector for single initial particle
     /// @param i Particle index (0 ≤ i < M)
@@ -54,11 +54,11 @@ public:
 
     /// @brief Set polarization for single initial particle
     /// @param i Particle index (0 ≤ i < M)
-    /// @param polarization Polarization vector (|p| ≤ 1)
-    auto InitialStatePolarization(int i, CLHEP::Hep3Vector polarization) -> void;
+    /// @param pol Polarization vector (|p| ≤ 1)
+    auto InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void;
     /// @brief Set all polarization vectors
-    /// @param polarization Array of polarization vectors for each initial particle (all |p| ≤ 1)
-    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& polarization) -> void;
+    /// @param pol Array of polarization vectors for each initial particle (all |p| ≤ 1)
+    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void;
 
 private:
     std::array<CLHEP::Hep3Vector, M> fInitialStatePolarization; ///< Polarization storage
@@ -76,14 +76,14 @@ public:
     /// @brief Default constructor (zero polarization)
     PolarizedSquaredAmplitude() = default;
     /// @brief Construct with polarization vector
-    /// @param polarization Polarization vector (|p| ≤ 1)
-    PolarizedSquaredAmplitude(CLHEP::Hep3Vector polarization);
+    /// @param pol Polarization vector (|p| ≤ 1)
+    PolarizedSquaredAmplitude(CLHEP::Hep3Vector pol);
 
     /// @brief Get polarization vector
     auto InitialStatePolarization() const -> auto { return fInitialStatePolarization; }
     /// @brief Set polarization vector
-    /// @param p Polarization vector (|p| ≤ 1)
-    auto InitialStatePolarization(CLHEP::Hep3Vector polarization) -> void;
+    /// @param pol Polarization vector (|p| ≤ 1)
+    auto InitialStatePolarization(CLHEP::Hep3Vector pol) -> void;
 
 private:
     CLHEP::Hep3Vector fInitialStatePolarization;

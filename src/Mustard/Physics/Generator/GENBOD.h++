@@ -79,10 +79,10 @@ public:
     using VersatileEventGenerator<M, N, 3 * N - 4>::VersatileEventGenerator;
 
     /// @brief Generate event in center-of-mass frame using precomputed random numbers
-    /// @param pI Initial-state 4-momenta
     /// @param u Flat random numbers in 0--1
+    /// @param pI Initial-state 4-momenta
     /// @return Generated event
-    virtual auto operator()(InitialStateMomenta pI, const RandomState& u) -> Event override;
+    virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads
     using VersatileEventGenerator<M, N, 3 * N - 4>::operator();
 };

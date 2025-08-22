@@ -19,40 +19,40 @@
 namespace Mustard::inline Physics::inline Amplitude {
 
 template<int M, int N>
-PolarizedSquaredAmplitude<M, N>::PolarizedSquaredAmplitude(const std::array<CLHEP::Hep3Vector, M>& polarization) :
+PolarizedSquaredAmplitude<M, N>::PolarizedSquaredAmplitude(const std::array<CLHEP::Hep3Vector, M>& pol) :
     PolarizedSquaredAmplitude{} {
-    InitialStatePolarization(polarization);
+    InitialStatePolarization(pol);
 }
 
 template<int M, int N>
-auto PolarizedSquaredAmplitude<M, N>::InitialStatePolarization(int i, CLHEP::Hep3Vector polarization) -> void {
-    const auto pol{polarization.mag()};
-    if (pol > 1) [[unlikely]] {
-        PrintWarning(fmt::format("Got polarization {} (pol) with |pol| = {} (expects |pol| <= 1)", i, pol));
+auto PolarizedSquaredAmplitude<M, N>::InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void {
+    const auto polNorm{pol.mag()};
+    if (polNorm > 1) [[unlikely]] {
+        PrintWarning(fmt::format("Got polarization {} (pol) with |pol| = {} (expects |pol| <= 1)", i, polNorm));
     }
-    fInitialStatePolarization.at(i) = polarization;
+    fInitialStatePolarization.at(i) = pol;
 }
 
 template<int M, int N>
-auto PolarizedSquaredAmplitude<M, N>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& polarization) -> void {
+auto PolarizedSquaredAmplitude<M, N>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void {
     for (int i{}; i < M; ++i) {
-        InitialStatePolarization(i, polarization[i]);
+        InitialStatePolarization(i, pol[i]);
     }
 }
 
 template<int N>
-PolarizedSquaredAmplitude<1, N>::PolarizedSquaredAmplitude(CLHEP::Hep3Vector polarization) :
+PolarizedSquaredAmplitude<1, N>::PolarizedSquaredAmplitude(CLHEP::Hep3Vector pol) :
     PolarizedSquaredAmplitude{} {
-    InitialStatePolarization(polarization);
+    InitialStatePolarization(pol);
 }
 
 template<int N>
-auto PolarizedSquaredAmplitude<1, N>::InitialStatePolarization(CLHEP::Hep3Vector polarization) -> void {
-    const auto pol{polarization.mag()};
-    if (pol > 1) [[unlikely]] {
-        PrintWarning(fmt::format("Got polarization (pol) with |pol| = {} (expects |pol| <= 1)", pol));
+auto PolarizedSquaredAmplitude<1, N>::InitialStatePolarization(CLHEP::Hep3Vector pol) -> void {
+    const auto polNorm{pol.mag()};
+    if (polNorm > 1) [[unlikely]] {
+        PrintWarning(fmt::format("Got polarization (pol) with |pol| = {} (expects |pol| <= 1)", polNorm));
     }
-    fInitialStatePolarization = polarization;
+    fInitialStatePolarization = pol;
 }
 
 } // namespace Mustard::inline Physics::inline Amplitude

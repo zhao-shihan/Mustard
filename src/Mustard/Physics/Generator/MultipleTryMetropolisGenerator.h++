@@ -130,23 +130,23 @@ public:
         requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
 
     /// @brief Set polarization vector
-    /// @param p Polarization vector (|p| ≤ 1)
+    /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note Triggers Markov chain reset (requires new burn-in)
     /// This overload is only enabled for polarized decay
-    auto InitialStatePolarization(CLHEP::Hep3Vector p) -> void
+    auto InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
         requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
     /// @brief Set polarization for single initial particle
     /// @param i Particle index (0 ≤ i < M)
-    /// @param polarization Polarization vector (|p| ≤ 1)
+    /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note Triggers Markov chain reset (requires new burn-in).
     /// This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i, CLHEP::Hep3Vector p) -> void
+    auto InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
         requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
     /// @brief Set all polarization vectors
-    /// @param polarization Array of polarization vectors for each initial particle (all |p| ≤ 1)
+    /// @param pol Array of polarization vectors for each initial particle (all |pol| ≤ 1)
     /// @note Triggers Markov chain reset (requires new burn-in)
     /// This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& p) -> void
+    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
         requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
 
     /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
@@ -165,10 +165,10 @@ public:
     auto BurnIn(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
 
     /// @brief Generate event in center-of-mass frame
-    /// @param pI Initial-state 4-momenta (only for its boost)
     /// @param rng Reference to CLHEP random engine
+    /// @param pI Initial-state 4-momenta (only for its boost)
     /// @return Generated event
-    virtual auto operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event override;
+    virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads
     using EventGenerator<M, N>::operator();
 
@@ -224,14 +224,14 @@ private:
     /// @param pI Initial-state 4-momenta passed to generator
     auto CheckCMSEnergyUnchanged(const InitialStateMomenta& pI) const -> void;
     /// @brief Advance Markov chain by one event
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param rng Reference to CLHEP random engine
-    auto NextEvent(double delta, CLHEP::HepRandomEngine& rng) -> Event;
+    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
+    auto NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event;
 
     /// @brief Transform hypercube to phase space
     /// @param u A random state
     /// @return An event from phase space
-    auto PhaseSpace(typename GENBOD<M, N>::RandomState u) -> auto { return fGENBOD({fCMSEnergy, {}}, u); }
+    auto PhaseSpace(typename GENBOD<M, N>::RandomState u) -> auto { return fGENBOD(u, {fCMSEnergy, {}}); }
     /// @brief Transform hypercube to phase space and swap identical particles if necessary
     /// @param u A random state
     /// @param rng Reference to CLHEP random engine
@@ -254,10 +254,10 @@ private:
     auto ValidBiasedMSqDetJ(const FinalStateMomenta& momenta, double bias, double detJ) const -> double;
 
     /// @brief Generate a random index of array with size n
-    /// @param n Array size
     /// @param rng Reference to CLHEP random engine
+    /// @param n Array size
     /// @return A random integer in 0 -- n-1
-    static auto RandomIndex(int n, CLHEP::HepRandomEngine& rng) -> int;
+    static auto RandomIndex(CLHEP::HepRandomEngine& rng, int n) -> int;
 
 private:
     struct MarkovChain {

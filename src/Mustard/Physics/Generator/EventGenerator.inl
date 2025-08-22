@@ -20,12 +20,12 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N>
 auto EventGenerator<M, N>::operator()(const InitialStateMomenta& pI) -> Event {
-    return (*this)(pI, *CLHEP::HepRandom::getTheEngine());
+    return (*this)(*CLHEP::HepRandom::getTheEngine(), pI);
 }
 
 template<int M, int N>
 auto EventGenerator<M, N>::operator()(CLHEP::HepRandomEngine& rng) -> Event {
-    return (*this)(InitialStateMomenta{}, rng);
+    return (*this)(rng, InitialStateMomenta{});
 }
 
 template<int M, int N>
@@ -57,15 +57,15 @@ auto EventGenerator<M, N>::BoostToOriginalFrame(CLHEP::Hep3Vector beta, FinalSta
 template<int M, int N, int D>
     requires(M >= 1 and N >= 1 and (D == -1 or D >= 3 * N - 4))
 auto EventGenerator<M, N, D>::operator()(const RandomState& u) -> Event {
-    return (*this)(InitialStateMomenta{}, u);
+    return (*this)(u, InitialStateMomenta{});
 }
 
 template<int M, int N, int D>
     requires(M >= 1 and N >= 1 and (D == -1 or D >= 3 * N - 4))
-auto EventGenerator<M, N, D>::operator()(InitialStateMomenta pI, CLHEP::HepRandomEngine& rng) -> Event {
+auto EventGenerator<M, N, D>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
     RandomState u;
     rng.flatArray(D, u.data());
-    return (*this)(std::move(pI), u);
+    return (*this)(u, std::move(pI));
 }
 
 } // namespace Mustard::inline Physics::inline Generator

@@ -20,7 +20,7 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N>
     requires(N >= 2)
-auto GENBOD<M, N>::operator()(InitialStateMomenta pI, const RandomState& u) -> Event {
+auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Event {
     const auto cmsE{this->CalculateCMSEnergy(pI)};
     this->CheckCMSEnergy(cmsE);
     const auto beta{this->BoostToCMS(pI)};
