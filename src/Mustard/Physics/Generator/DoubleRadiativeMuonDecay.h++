@@ -45,7 +45,7 @@ public:
     DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, double irCut,
                              double delta, int discard);
 
-    /// @brief Set parent particle type
+    /// @brief Set parent particle
     /// @param parent "mu-" or "mu+"
     /// @exception std::invalid_argument for invalid parent names
     auto Parent(std::string_view parent) -> void;
