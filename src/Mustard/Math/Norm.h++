@@ -45,9 +45,9 @@ namespace Mustard::Math {
 ///
 /// @return Sum of squares: x₀² + x₁² + ... + xₙ²
 constexpr auto NormSq(const Concept::NumericVectorFloatingPoint auto& x) {
-    return ([&x]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return [&x]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         return muc::hypot_sq(x[Is]...);
-    })(gslx::make_index_sequence<VectorDimension<std::decay_t<decltype(x)>>>());
+    }(gslx::make_index_sequence<VectorDimension<std::decay_t<decltype(x)>>>());
 }
 
 /// @brief Computes the Euclidean norm of a floating-point vector
@@ -74,9 +74,9 @@ auto Norm(const Concept::NumericVectorFloatingPoint auto& x) {
 /// @return Sum of squares as floating-point value: x₀² + x₁² + ... + xₙ²
 template<std::floating_point T = double>
 constexpr auto NormSq(const Concept::NumericVectorIntegral auto& x) {
-    return ([&x]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return [&x]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         return muc::hypot_sq<T>(x[Is]...);
-    })(gslx::make_index_sequence<VectorDimension<std::decay_t<decltype(x)>>>());
+    }(gslx::make_index_sequence<VectorDimension<std::decay_t<decltype(x)>>>());
 }
 
 /// @brief Computes Euclidean norm for integral vectors
