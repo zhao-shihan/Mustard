@@ -74,7 +74,7 @@ set(MUSTARD_BUILTIN_FMT_VERSION 11.2.0 CACHE STRING "Set built-in fmt version (i
 set(MUSTARD_BUILTIN_INDICATORS_VERSION 2.3 CACHE STRING "Set built-in indicators version (if required).")
 set(MUSTARD_BUILTIN_MPLR_VERSION 0.25.730 CACHE STRING "Set built-in MPLR version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.2.0 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
-set(MUSTARD_BUILTIN_MUC_VERSION 0.25.819 CACHE STRING "Set built-in muc version (if required).")
+set(MUSTARD_BUILTIN_MUC_VERSION 0.25.822 CACHE STRING "Set built-in muc version (if required).")
 set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.8.0 CACHE STRING "Set built-in yaml-cpp version (if required).")
 set(MUSTARD_DEBUG_POSTFIX d CACHE STRING "Debug library postfix.")
 
