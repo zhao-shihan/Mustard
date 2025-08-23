@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -46,7 +46,7 @@ BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
         .nargs(0)
         .action([](auto&&) {
             fmt::println("Mustard " MUSTARD_VERSION_STRING "\n"
-                         "Copyright 2020-2024  The Mustard development team\n"
+                         "Copyright 2020-2025  The Mustard development team\n"
                          "Mustard is free software: you can redistribute it and/or modify it under the "
                          "terms of the GNU General Public License as published by the Free Software "
                          "Foundation, either version 3 of the License, or (at your option) any later "

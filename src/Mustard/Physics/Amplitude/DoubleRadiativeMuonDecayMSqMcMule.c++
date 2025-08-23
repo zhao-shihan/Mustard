@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -39,7 +39,7 @@ auto DoubleRadiativeMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
     //
-    // Copyright 2020-2024  Yannick Ulrich and others (The McMule development team)
+    // Copyright 2020-2025  Yannick Ulrich and others (The McMule development team)
     //
 
     constexpr auto s{[](auto&& a, auto&& b) {
@@ -90,7 +90,7 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqUnpolarized(double mm2, double me2, d
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
     //
-    // Copyright 2020-2024  Yannick Ulrich and others (The McMule development team)
+    // Copyright 2020-2025  Yannick Ulrich and others (The McMule development team)
     //
 
     const auto if11{
@@ -1482,7 +1482,7 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS2n(double mm2, double me2, 
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
     //
-    // Copyright 2020-2024  Yannick Ulrich and others (The McMule development team)
+    // Copyright 2020-2025  Yannick Ulrich and others (The McMule development team)
     //
 
     const auto if11{
@@ -1923,7 +1923,7 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS5n(double mm2, double me2, 
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
     //
-    // Copyright 2020-2024  Yannick Ulrich and others (The McMule development team)
+    // Copyright 2020-2025  Yannick Ulrich and others (The McMule development team)
     //
 
     const auto if11{
@@ -2343,7 +2343,7 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS6n(double mm2, double me2, 
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
     //
-    // Copyright 2020-2024  Yannick Ulrich and others (The McMule development team)
+    // Copyright 2020-2025  Yannick Ulrich and others (The McMule development team)
     //
 
     const auto if11{
