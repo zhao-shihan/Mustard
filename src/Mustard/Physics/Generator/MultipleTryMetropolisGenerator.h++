@@ -32,8 +32,11 @@
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include "mplr/mplr.hpp"
+
 #include "muc/algorithm"
 #include "muc/array"
+#include "muc/chrono"
 #include "muc/math"
 #include "muc/numeric"
 #include "muc/utility"
@@ -48,6 +51,7 @@
 #include <concepts>
 #include <functional>
 #include <limits>
+#include <typeinfo>
 #include <utility>
 
 namespace Mustard::inline Physics::inline Generator {
@@ -166,6 +170,9 @@ public:
     /// @brief Initialize Markov chain
     /// @param rng Reference to CLHEP random engine
     auto BurnIn(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
+    /// @brief Initialize Markov chain and print some notice to stdout
+    /// @param rng Reference to CLHEP random engine
+    auto BurnInWithNotice(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
 
     /// @brief Generate event in center-of-mass frame
     /// @param rng Reference to CLHEP random engine

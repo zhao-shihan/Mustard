@@ -159,6 +159,21 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+auto MultipleTryMetropolisGenerator<M, N, A>::BurnInWithNotice(CLHEP::HepRandomEngine& rng) -> void {
+    const auto thisName{muc::try_demangle(typeid(*this).name())};
+    if (fBurntIn) {
+        MasterPrintLn("Markov chain in {} already burnt-in.", thisName);
+        return;
+    }
+    MasterPrintLn("Markov chain of {} burning-in, please wait...", thisName);
+    muc::chrono::stopwatch stopwatch;
+    BurnIn(rng);
+    auto seconds{muc::chrono::seconds<double>{stopwatch.read()}.count()};
+    mplr::comm_world().ireduce(mplr::max<double>{}, 0, seconds).wait(mplr::duty_ratio::preset::relaxed);
+    MasterPrintLn("Markov chain burnt-in in {:.2f} seconds.", seconds);
+}
+
+template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
     CheckCMSEnergyMatch(pI);
     const auto beta{this->BoostToCMS(pI)};
