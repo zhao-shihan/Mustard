@@ -29,7 +29,7 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, double irCut,
-                                                   double delta, int discard) :
+                                                   double delta, unsigned discard) :
     MultipleTryMetropolisGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, 0, 0});

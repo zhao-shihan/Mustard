@@ -43,7 +43,7 @@ public:
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, double irCut,
-                             double delta, int discard);
+                             double delta, unsigned discard);
 
     /// @brief Set parent particle
     /// @param parent "mu-" or "mu+"

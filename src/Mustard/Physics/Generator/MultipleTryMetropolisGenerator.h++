@@ -82,8 +82,6 @@ public:
     using typename EventGenerator<M, N>::Event;
     /// @brief User-defined bias function type
     using BiasFunction = std::function<auto(const FinalStateMomenta&)->double>;
-    /// @brief IR cut value container type for IR-unsafe final states
-    using IRCutArray = std::array<double, N>;
 
 public:
     /// @brief Construct event generator
@@ -93,7 +91,7 @@ public:
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     /// @param discard Samples discarded between two events generated in the Markov chain
     MultipleTryMetropolisGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   double delta, int discard);
+                                   double delta, unsigned discard);
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
     /// @param polarization Initial-state polarization vector
@@ -104,7 +102,7 @@ public:
     /// @note This overload is only enabled for polarized decay
     MultipleTryMetropolisGenerator(double cmsE, CLHEP::Hep3Vector polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   double delta, int discard)
+                                   double delta, unsigned discard)
         requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
@@ -116,7 +114,7 @@ public:
     /// @note This overload is only enabled for polarized scattering
     MultipleTryMetropolisGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   double delta, int discard)
+                                   double delta, unsigned discard)
         requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
 
     // Keep the class abstract
@@ -165,7 +163,7 @@ public:
     auto MCMCDelta(double delta) -> void;
     /// @brief Set discard count between samples
     /// @param discard Samples discarded between two events generated in the Markov chain
-    auto MCMCDiscard(int n) -> void;
+    auto MCMCDiscard(unsigned n) -> void;
 
     /// @brief Initialize Markov chain
     /// @param rng Reference to CLHEP random engine
@@ -184,21 +182,28 @@ public:
 
 public:
     /// @brief Weight normalization result
-    struct WeightNormalizationFactor {
+    struct NormalizationFactor {
         double value; ///< Estimated normalization constant
         double error; ///< Integration error
         double nEff;  ///< Statistically-effective sample size
     };
 
 public:
-    /// @brief Estimate bias weight normalization factor
-    /// Multiply event weights with the factor to normalize weights to
-    /// the number of generated events
-    /// @note Use CheckWeightNormalizationFactor to check the result
-    auto EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor;
+    /// @brief Estimate normalization factor.
+    /// Multiply event weights with the normalization factor
+    /// to normalize weights to the number of generated events.
+    /// Essential for calculating total cross-section or width
+    /// when bias function is set
+    /// @param n Number of samples for MC integration
+    /// @param executor An executor instance
+    /// @param rng Reference to CLHEP random engine
+    /// @note Use CheckNormalizationFactor to check the result
+    auto EstimateNormalizationFactor(unsigned long long n, Executor<unsigned long long>& executor,
+                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> NormalizationFactor;
     /// @brief Print and validate normalization factor quality
+    /// @param factor Weight normalization factor to be checked
     /// @return true if normalization factor quality is OK
-    static auto CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool;
+    static auto CheckNormalizationFactor(NormalizationFactor factor) -> bool;
 
 protected:
     /// @brief Get currently set center-of-mass frame energy
@@ -256,32 +261,32 @@ private:
     /// @return An event from phase space
     auto PhaseSpace(const MarkovChain::State& state) -> Event;
     /// @brief Check final-state momenta pass the IR cut
-    /// @param momenta Final states' 4-momenta
+    /// @param pF Final states' 4-momenta
     /// @return true if momenta is IR-safe
-    auto IRSafe(const FinalStateMomenta& momenta) const -> bool;
+    auto IRSafe(const FinalStateMomenta& pF) const -> bool;
     /// @brief Get bias with range check
-    /// @param momenta Final states' 4-momenta
+    /// @param pF Final states' 4-momenta
     /// @exception `std::runtime_error` if invalid bias value produced
     /// @return B(p1, ..., pN)
-    auto ValidBias(const FinalStateMomenta& momenta) const -> double;
+    auto ValidBias(const FinalStateMomenta& pF) const -> double;
     /// @brief Get reweighted PDF value with range check
+    /// @param pF Final states' 4-momenta
     /// @param event Final states from phase space
     /// @param bias Bias value at the same phase space point (from BiasWithCheck)
     /// @exception `std::runtime_error` if invalid PDF value produced
     /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN) × |J|(p1, ..., pN)
-    auto ValidBiasedMSqDetJ(const FinalStateMomenta& momenta, double bias, double detJ) const -> double;
+    auto ValidBiasedMSqDetJ(const FinalStateMomenta& pF, double bias, double detJ) const -> double;
 
 private:
     double fCMSEnergy;                           ///< Currently set CM energy
     [[no_unique_address]] A fSquaredAmplitude;   ///< Squared amplitude
-    IRCutArray fIRCut;                           ///< IR cuts
-    bool fAlwaysIRSafe;                          ///< Flag indicates all IR cuts are 0
+    std::vector<std::pair<int, double>> fIRCut;  ///< IR cuts
     std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
     BiasFunction fBias;                          ///< User bias function
     GENBOD<M, N> fGENBOD;                        ///< Phase space generator
                                                  //
     double fMCMCDelta;                           ///< MCMC max step size along one dimension
-    int fMCMCDiscard;                            ///< Events discarded between 2 samples
+    unsigned fMCMCDiscard;                       ///< Events discarded between 2 samples
                                                  //
     bool fBurntIn;                               ///< Burn-in completed flag
     MarkovChain fMarkovChain;                    ///< Current Markov chain state

@@ -20,12 +20,11 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                        double delta, int discard) :
+                                                                        double delta, unsigned discard) :
     EventGenerator<M, N>{},
     fCMSEnergy{},
     fSquaredAmplitude{},
     fIRCut{},
-    fAlwaysIRSafe{true},
     fIdenticalSet{},
     fBias{[](auto&&) { return 1; }},
     fGENBOD{pdgID, mass},
@@ -41,7 +40,7 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double c
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, CLHEP::Hep3Vector polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                        double delta, int discard) // clang-format off
+                                                                        double delta, unsigned discard) // clang-format off
     requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>> : // clang-format on
     MultipleTryMetropolisGenerator{cmsE, pdgID, mass, delta, discard} {
     fSquaredAmplitude.InitialStatePolarization(polarization);
@@ -50,7 +49,7 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double c
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                        double delta, int discard) // clang-format off
+                                                                        double delta, unsigned discard) // clang-format off
     requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) : // clang-format on
     MultipleTryMetropolisGenerator{cmsE, pdgID, mass, delta, discard} {
     fSquaredAmplitude.InitialStatePolarization(polarization);
@@ -120,9 +119,9 @@ auto MultipleTryMetropolisGenerator<M, N, A>::MCMCDelta(double delta) -> void {
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::MCMCDiscard(int n) -> void {
-    if (n < 0) [[unlikely]] {
-        PrintWarning(fmt::format("Negative discarded MCMC samples (got {})", n));
+auto MultipleTryMetropolisGenerator<M, N, A>::MCMCDiscard(unsigned n) -> void {
+    if (n >= std::numeric_limits<int>::max()) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious number of discarded MCMC samples (got {})", n));
     }
     fMCMCDiscard = n;
 }
@@ -142,15 +141,19 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
         }
         if (const auto bias{ValidBias(event.p)};
             bias > std::numeric_limits<double>::epsilon()) {
-            const auto& [detJ, _, momenta]{event};
-            fMarkovChain.biasedMSqDetJ = ValidBiasedMSqDetJ(momenta, bias, detJ);
+            const auto& [detJ, _, pF]{event};
+            fMarkovChain.biasedMSqDetJ = ValidBiasedMSqDetJ(pF, bias, detJ);
             break;
         }
     }
     // burning in
     constexpr auto delta0{0.1};
     constexpr auto epsilon{muc::default_tolerance<double>};
-    constexpr auto nBurnIn{10000. * fgMCMCDim}; // E(distance in d-dim space) ~ sqrt(d), E(random walk distance) ~ sqrt(n) => n ~ d
+    // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
+    // nBurnIn should satisfy E(random walk displacement) ~ scale * E(distance in d-dim space),
+    // so we solve nBurnIn from sqrt(random walk distance) = scale * sqrt(dimension) with some scale
+    constexpr auto travelScale{10};
+    const auto nBurnIn{std::log(epsilon / delta0) / std::log(1 - delta0 / (muc::pow(travelScale, 2) * fgMCMCDim))};
     const auto factor{std::pow(epsilon / delta0, 1 / nBurnIn)};
     for (auto delta{delta0}; delta > epsilon; delta *= factor) {
         NextEvent(rng, delta);
@@ -179,7 +182,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine&
     const auto beta{this->BoostToCMS(pI)};
 
     BurnIn(rng);
-    for (int i{}; i < fMCMCDiscard; ++i) {
+    for (unsigned i{}; i < fMCMCDiscard; ++i) {
         NextEvent(rng, fMCMCDelta);
     }
     auto event{NextEvent(rng, fMCMCDelta)};
@@ -189,7 +192,8 @@ auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine&
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::EstimateWeightNormalizationFactor(unsigned long long n) -> WeightNormalizationFactor {
+auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(unsigned long long n, Executor<unsigned long long>& executor,
+                                                                          CLHEP::HepRandomEngine& rng) -> NormalizationFactor {
     auto originalBias{std::move(fBias)};
     auto originalBurntIn{std::move(fBurntIn)};
     auto originalMarkovChain{std::move(fMarkovChain)};
@@ -199,20 +203,29 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateWeightNormalizationFactor(
         fMarkovChain = std::move(originalMarkovChain);
     })};
 
-    WeightNormalizationFactor result{.value = std::numeric_limits<double>::quiet_NaN(),
+    NormalizationFactor factor{.value = std::numeric_limits<double>::quiet_NaN(),
                                      .error = std::numeric_limits<double>::quiet_NaN(),
                                      .nEff = 0};
     if (n == 0) {
-        return result;
+        return factor;
     }
 
     Bias([](auto&&) { return 1; }); // to calculate the mean of user-defined bias, sample from unbiased |M|²
-    auto& rng{*CLHEP::HepRandom::getTheEngine()};
+
+    MasterPrintLn("Estimating weight normalization factor in {}, please wait...", muc::try_demangle(typeid(*this).name()));
     BurnIn(rng);
 
     using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
     muc::array2d sum{};
     { // Monte Carlo integration here
+        auto originalExecutionName{executor.ExecutionName()};
+        auto originalTaskName{executor.TaskName()};
+        auto _{gsl::finally([&] {
+            executor.ExecutionName(std::move(originalExecutionName));
+            executor.TaskName(std::move(originalTaskName));
+        })};
+        executor.ExecutionName("Integration");
+        executor.TaskName("Sample");
         muc::array2d compensation{};
         const auto KahanAdd{[&](muc::array2d value) { // improve numeric stability
             const auto correctedValue{value - compensation};
@@ -221,8 +234,8 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateWeightNormalizationFactor(
             sum = newSum;
         }};
         Parallel::ReseedRandomEngine(&rng);
-        Executor<unsigned long long>{"Integration", "Sample"}(n, [&](auto) {
-            const auto event{NextEvent(rng)};
+        executor(n, [&](auto) {
+            const auto event{NextEvent(rng, fMCMCDelta)};
             const auto bias{originalBias(event.p)};
             KahanAdd({bias, muc::pow(bias, 2)});
         });
@@ -230,22 +243,22 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateWeightNormalizationFactor(
     if (mplr::available()) {
         mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
     }
-    const auto& [sumBias, sumBiasSq]{sum};
-    result.value = sumBias / n;
-    result.error = std::sqrt(sumBiasSq / n - muc::pow(result.value, 2)) / n;
-    result.nEff = muc::pow(result.value / result.error, 2);
 
-    return result;
+    const auto& [sumBias, sumBiasSq]{sum};
+    factor.value = sumBias / n;
+    factor.error = std::sqrt((sumBiasSq / n - muc::pow(factor.value, 2)) / n);
+    factor.nEff = muc::pow(sumBias, 2) / sumBiasSq;
+    return factor;
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::CheckWeightNormalizationFactor(WeightNormalizationFactor wnf) -> bool {
-    const auto [result, error, nEff]{wnf};
+auto MultipleTryMetropolisGenerator<M, N, A>::CheckNormalizationFactor(NormalizationFactor factor) -> bool {
+    const auto [value, error, nEff]{factor};
     const auto ok{nEff >= 10000};
-    MasterPrintLn("Weight normalization factor from user-defined bias:\n"
-                  "  {} +/- {}\n"
-                  "    rel. err. = {:.2}% ,  N_eff = {:.2f} {}\n",
-                  result, error, error / result * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
+    MasterPrint("Weight normalization factor from user-defined bias:\n"
+                "  {} +/- {}\n"
+                "    rel. err. = {:.2}% ,  N_eff = {:.2f} {}\n",
+                value, error, error / value * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
     if (not ok) {
         MasterPrintWarning("N_eff TOO LOW. "
                            "The estimation should be considered inaccurate. "
@@ -276,17 +289,14 @@ auto MultipleTryMetropolisGenerator<M, N, A>::Mass(const std::array<double, N>& 
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::IRCut(int i, double cut) -> void {
-    if (cut < 0) [[unlikely]] {
-        PrintWarning(fmt::format("Negative IR cut for particle {} (got {})", i, cut));
+    if (cut <= 0) [[unlikely]] {
+        PrintWarning(fmt::format("Non-positive IR cut for particle {} (got {})", i, cut));
     }
-    if (muc::pow(fGENBOD.Mass(i) / fCMSEnergy, 2) > muc::default_tolerance<double> and cut > 0) [[unlikely]] {
+    if (muc::pow(fGENBOD.Mass(i) / fCMSEnergy, 2) > muc::default_tolerance<double>) [[unlikely]] {
         PrintWarning(fmt::format("IR cut set for massive particle {} (mass = {})", i, fGENBOD.Mass(i)));
     }
-    if (not muc::isclose(cut, fIRCut.at(i))) {
-        BurnInRequired();
-    }
-    fIRCut[i] = cut;
-    fAlwaysIRSafe = std::ranges::all_of(fIRCut, [](auto cut) { return cut <= 0; });
+    BurnInRequired();
+    fIRCut.push_back({i, cut});
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -380,26 +390,26 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
         for (int i{}; i < kMTM; ++i) {
             StateProposal(fMarkovChain.state, stateY[i]); // Draw y_i from T(x, *)
             eventY[i] = PhaseSpace(stateY[i]);            // y_i -> event(y_i) = g(y_i)
-            const auto& [detJ, _, momenta]{eventY[i]};
-            if (not IRSafe(momenta)) {
+            const auto& [detJ, _, pF]{eventY[i]};
+            if (not IRSafe(pF)) {
                 piY[i] = 0;
                 continue;
             }
-            biasY[i] = ValidBias(momenta);                        // g(y_i) -> B(g(y_i))
-            piY[i] = ValidBiasedMSqDetJ(momenta, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
+            biasY[i] = ValidBias(pF);                        // g(y_i) -> B(g(y_i))
+            piY[i] = ValidBiasedMSqDetJ(pF, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
         }
         const auto sumPiY{muc::ranges::reduce(piY)};         // pi(y_1) + ... + pi(y_k)
         const auto selected{MultinomialSample(piY, sumPiY)}; // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
 
         auto sumPiX{fMarkovChain.biasedMSqDetJ}; // pi(x_1) + ... + pi(x_k)
         for (int i{}; i < kMTM - 1; ++i) {
-            StateProposal(stateY[selected], stateX);           // Draw x_i from T(Y, *)
-            const auto [detJ, _, momenta]{PhaseSpace(stateX)}; // x_i -> event(x_i) = g(x_i)
-            if (not IRSafe(momenta)) {
+            StateProposal(stateY[selected], stateX);      // Draw x_i from T(Y, *)
+            const auto [detJ, _, pF]{PhaseSpace(stateX)}; // x_i -> event(x_i) = g(x_i)
+            if (not IRSafe(pF)) {
                 continue;
             }
-            const auto biasX{ValidBias(momenta)};               // g(x_i) -> B(g(x_i))
-            sumPiX += ValidBiasedMSqDetJ(momenta, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
+            const auto biasX{ValidBias(pF)};               // g(x_i) -> B(g(x_i))
+            sumPiX += ValidBiasedMSqDetJ(pF, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
         }
 
         // accept/reject Y
@@ -421,12 +431,9 @@ auto MultipleTryMetropolisGenerator<M, N, A>::PhaseSpace(const MarkovChain::Stat
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::IRSafe(const FinalStateMomenta& momenta) const -> bool {
-    if (fAlwaysIRSafe) {
-        return true;
-    }
-    for (int i{}; i < N; ++i) {
-        if (momenta[i].e() <= fIRCut[i]) {
+auto MultipleTryMetropolisGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF) const -> bool {
+    for (auto&& [i, cut] : fIRCut) {
+        if (pF[i].e() <= cut) {
             return false;
         }
     }
@@ -434,30 +441,30 @@ auto MultipleTryMetropolisGenerator<M, N, A>::IRSafe(const FinalStateMomenta& mo
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::ValidBias(const FinalStateMomenta& momenta) const -> double {
-    const auto bias{fBias(momenta)};
-    constexpr auto Format{[](const FinalStateMomenta& momenta) {
+auto MultipleTryMetropolisGenerator<M, N, A>::ValidBias(const FinalStateMomenta& pF) const -> double {
+    const auto bias{fBias(pF)};
+    constexpr auto Format{[](const FinalStateMomenta& pF) {
         std::string where;
-        for (auto&& p : momenta) {
+        for (auto&& p : pF) {
             where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
         }
         return where;
     }};
     if (not std::isfinite(bias)) {
-        Throw<std::runtime_error>(fmt::format("Infinite bias found (got {} at {})", bias, Format(momenta)));
+        Throw<std::runtime_error>(fmt::format("Infinite bias found (got {} at {})", bias, Format(pF)));
     }
     if (bias < 0) {
-        Throw<std::runtime_error>(fmt::format("Negative bias found (got {} at {})", bias, Format(momenta)));
+        Throw<std::runtime_error>(fmt::format("Negative bias found (got {} at {})", bias, Format(pF)));
     }
     return bias;
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMomenta& momenta, double bias, double detJ) const -> double {
-    const auto value{fSquaredAmplitude({fCMSEnergy, {}}, momenta) * bias * detJ}; // |M|² × bias × |J|
+auto MultipleTryMetropolisGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMomenta& pF, double bias, double detJ) const -> double {
+    const auto value{fSquaredAmplitude({fCMSEnergy, {}}, pF) * bias * detJ}; // |M|² × bias × |J|
     const auto Where{[&] {
         auto where{fmt::format("({})", detJ)};
-        for (auto&& p : momenta) {
+        for (auto&& p : pF) {
             where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
         }
         where += fmt::format(" Bias={}", bias);

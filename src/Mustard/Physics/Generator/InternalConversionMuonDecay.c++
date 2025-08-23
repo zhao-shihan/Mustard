@@ -34,7 +34,7 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 InternalConversionMuonDecay::InternalConversionMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization,
-                                                         double delta, int discard) :
+                                                         double delta, unsigned discard) :
     MultipleTryMetropolisGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2, electron_mass_c2});
