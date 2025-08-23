@@ -124,6 +124,22 @@ auto Executor<T>::PrintProgressInterval(muc::chrono::seconds<double> t) -> void 
 }
 
 template<std::integral T>
+auto Executor<T>::ExecutionName() const -> const std::string& {
+    return std::visit([&](auto&& impl) -> const auto& {
+        return impl.ExecutionName();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::TaskName() const -> const std::string& {
+    return std::visit([&](auto&& impl) -> const auto& {
+        return impl.TaskName();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
 auto Executor<T>::ExecutionName(std::string name) -> void {
     std::visit([&](auto&& impl) {
         impl.ExecutionName(std::move(name));

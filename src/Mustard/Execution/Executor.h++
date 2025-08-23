@@ -58,6 +58,9 @@ public:
 
     auto PrintProgress(bool print) -> void;
     auto PrintProgressInterval(muc::chrono::seconds<double> t) -> void;
+
+    auto ExecutionName() const -> const std::string&;
+    auto TaskName() const -> const std::string&;
     auto ExecutionName(std::string name) -> void;
     auto TaskName(std::string name) -> void;
 

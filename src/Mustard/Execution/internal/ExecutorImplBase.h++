@@ -62,6 +62,9 @@ public:
 
     auto PrintProgress(bool a) -> void { fPrintProgress = a; }
     auto PrintProgressInterval(muc::chrono::seconds<double> t) -> void { fPrintProgressInterval = std::max({}, t); }
+
+    auto ExecutionName() const -> const auto& { return fExecutionName; }
+    auto TaskName() const -> const auto& { return fTaskName; }
     auto ExecutionName(std::string name) -> void { fExecutionName = std::move(name); }
     auto TaskName(std::string name) -> void { fTaskName = std::move(name); }
 
