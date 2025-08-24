@@ -93,9 +93,10 @@ protected:
         TTreeReaderValue<float> y{reader, "y"};                    ///< Vertex Y position
         TTreeReaderValue<float> z{reader, "z"};                    ///< Vertex Z position
         TTreeReaderValue<std::vector<int>> pdgID{reader, "pdgID"}; ///< Particle PDG IDs
-        TTreeReaderValue<std::vector<float>> px{reader, "px"};     ///< Momentum X components
-        TTreeReaderValue<std::vector<float>> py{reader, "py"};     ///< Momentum Y components
-        TTreeReaderValue<std::vector<float>> pz{reader, "pz"};     ///< Momentum Z components
+        TTreeReaderValue<std::vector<float>> e{reader, "E"};       ///< Total energy
+        TTreeReaderValue<std::vector<float>> pX{reader, "px"};     ///< Momentum X components
+        TTreeReaderValue<std::vector<float>> pY{reader, "py"};     ///< Momentum Y components
+        TTreeReaderValue<std::vector<float>> pZ{reader, "pz"};     ///< Momentum Z components
     };
 
 protected:

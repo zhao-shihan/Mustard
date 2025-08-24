@@ -39,6 +39,7 @@ namespace internal {
 
 using UnweightedGeneratedKinematics = Mustard::Data::TupleModel<
     Mustard::Data::Value<std::vector<int>, "pdgID", "Particle PDG IDs">,
+    Mustard::Data::Value<std::vector<float>, "E", "Total energy">,
     Mustard::Data::Value<std::vector<float>, "px", "Momentum X components">,
     Mustard::Data::Value<std::vector<float>, "py", "Momentum Y components">,
     Mustard::Data::Value<std::vector<float>, "pz", "Momentum Z components">>;

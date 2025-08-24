@@ -83,7 +83,7 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
     // use 'last entry' as reference index looks not perfect but G4Run may be destructed so I have to do so
     const auto iBegin{fEndEntryForCurrentRun - run->GetNumberOfEventToBeProcessed() + event->GetEventID()};
 
-    auto& [reader, weight, t, x, y, z, pID, pX, pY, pZ]{fEventData};
+    auto& [reader, weight, t, x, y, z, thePDGID, theE, thePX, thePY, thePZ]{fEventData};
     if (reader.IsInvalid()) [[unlikely]] {
         Mustard::PrintError("TTreeReader is invalid");
         return;
@@ -106,17 +106,21 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
             }
         }
 
-        const auto& [pdgID, px, py, pz]{std::tie(*pID, *pX, *pY, *pZ)};
-        if (pdgID.size() != px.size() or pdgID.size() != py.size() or pdgID.size() != pz.size()) {
-            Mustard::PrintError(fmt::format("pdgID.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent, skipping",
-                                            pdgID.size(), px.size(), py.size(), pz.size()));
+        const auto& [pdgID, e, pX, pY, pZ]{std::tie(*thePDGID, *theE, *thePX, *thePY, *thePZ)};
+        const auto nParticle{ssize(pdgID)};
+        if (ssize(e) != nParticle or
+            ssize(pX) != nParticle or
+            ssize(pY) != nParticle or
+            ssize(pZ) != nParticle) {
+            Mustard::PrintError(fmt::format("pdgID.size() ({}), E.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent, skipping",
+                                            pdgID.size(), e.size(), pX.size(), pY.size(), pZ.size()));
             return;
         }
 
         // clang-format off
         const auto primaryVertex{new G4PrimaryVertex{*x, *y, *z, *t}}; // clang-format on
-        for (gsl::index i{}; i < ssize(pdgID); ++i) {
-            primaryVertex->SetPrimary(new G4PrimaryParticle{pdgID[i], px[i], py[i], pz[i]});
+        for (gsl::index i{}; i < nParticle; ++i) {
+            primaryVertex->SetPrimary(new G4PrimaryParticle{pdgID[i], pX[i], pY[i], pZ[i], e[i]});
         }
         primaryVertex->SetWeight(*weight);
         event->AddPrimaryVertex(primaryVertex);
