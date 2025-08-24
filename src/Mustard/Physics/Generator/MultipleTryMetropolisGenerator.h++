@@ -183,9 +183,9 @@ public:
 public:
     /// @brief Weight normalization result
     struct NormalizationFactor {
-        double value; ///< Estimated normalization constant
-        double error; ///< Integration error
-        double nEff;  ///< Statistically-effective sample size
+        double value;       ///< Estimated normalization constant
+        double uncertainty; ///< MC integration uncertainty
+        double nEff;        ///< Statistically-effective sample size
     };
 
 public:

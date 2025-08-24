@@ -204,8 +204,8 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(unsign
     })};
 
     NormalizationFactor factor{.value = std::numeric_limits<double>::quiet_NaN(),
-                                     .error = std::numeric_limits<double>::quiet_NaN(),
-                                     .nEff = 0};
+                               .uncertainty = std::numeric_limits<double>::quiet_NaN(),
+                               .nEff = 0};
     if (n == 0) {
         return factor;
     }
@@ -216,7 +216,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(unsign
     BurnIn(rng);
 
     using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
-    muc::array2d sum{};
+    muc::array2ld sum{};
     { // Monte Carlo integration here
         auto originalExecutionName{executor.ExecutionName()};
         auto originalTaskName{executor.TaskName()};
@@ -226,8 +226,8 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(unsign
         })};
         executor.ExecutionName("Integration");
         executor.TaskName("Sample");
-        muc::array2d compensation{};
-        const auto KahanAdd{[&](muc::array2d value) { // improve numeric stability
+        muc::array2ld compensation{};
+        const auto KahanAdd{[&](muc::array2ld value) { // improve numeric stability
             const auto correctedValue{value - compensation};
             const auto newSum{sum + correctedValue};
             compensation = (newSum - sum) - correctedValue;
@@ -236,7 +236,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(unsign
         Parallel::ReseedRandomEngine(&rng);
         executor(n, [&](auto) {
             const auto event{NextEvent(rng, fMCMCDelta)};
-            const auto bias{originalBias(event.p)};
+            const long double bias{originalBias(event.p)};
             KahanAdd({bias, muc::pow(bias, 2)});
         });
     }
@@ -246,23 +246,25 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(unsign
 
     const auto& [sumBias, sumBiasSq]{sum};
     factor.value = sumBias / n;
-    factor.error = std::sqrt((sumBiasSq / n - muc::pow(factor.value, 2)) / n);
+    factor.uncertainty = std::sqrt((sumBiasSq / n - muc::pow(factor.value, 2)) / n);
     factor.nEff = muc::pow(sumBias, 2) / sumBiasSq;
     return factor;
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::CheckNormalizationFactor(NormalizationFactor factor) -> bool {
-    const auto [value, error, nEff]{factor};
-    const auto ok{nEff >= 10000};
-    MasterPrint("Weight normalization factor from user-defined bias:\n"
+    const auto [value, uncertainty, nEff]{factor};
+    constexpr auto minAcceptableNEff{10000};
+    const auto ok{nEff >= minAcceptableNEff};
+    MasterPrint("Normalization factor from user-defined bias:\n"
                 "  {} +/- {}\n"
-                "    rel. err. = {:.2}% ,  N_eff = {:.2f} {}\n",
-                value, error, error / value * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
+                "  rel. err. = {:.2}% ,  N_eff = {:.2f} {}\n",
+                value, uncertainty, uncertainty / value * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
     if (not ok) {
-        MasterPrintWarning("N_eff TOO LOW. "
-                           "The estimation should be considered inaccurate. "
-                           "Try increasing statistics.");
+        MasterPrintWarning(fmt::format("Effective sample size too small (expects >= {}). "
+                                       "The estimation should be considered inaccurate. "
+                                       "Try increasing statistics",
+                                       minAcceptableNEff));
     }
     return ok;
 }
