@@ -1,5 +1,11 @@
 # Mustard
 
+[![Language](https://img.shields.io/badge/language-C%2B%2B-orange.svg)](https://isocpp.org/)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](COPYING)
+[![GitHub activity](https://img.shields.io/github/commit-activity/m/zhao-shihan/Mustard)](https://github.com/zhao-shihan/Mustard/pulse)
+![GitHub last commit](https://img.shields.io/github/last-commit/zhao-shihan/Mustard?style=flat)
+[![GitHub contributors](https://img.shields.io/github/contributors/zhao-shihan/Mustard?style=flat)](https://github.com/zhao-shihan/Mustard/graphs/contributors)
+
 Mustard is a generic offline software framework for particle physics experiments, aimed at providing a modern, high-performace architecture for distributed computing capabilities, unified geometric interfaces, and high-level abstraction of data models out of the box. This framework is a core component of the MACE offline software, and was formerly developed within the MACE offline software.
 
 - [Mustard](#mustard)
