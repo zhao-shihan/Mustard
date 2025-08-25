@@ -3,16 +3,15 @@
 Mustard is a generic offline software framework for particle physics experiments, aimed at providing a modern, high-performace architecture for distributed computing capabilities, unified geometric interfaces, and high-level abstraction of data models out of the box. This framework is a core component of the MACE offline software, and was formerly developed within the MACE offline software.
 
 - [Mustard](#mustard)
-  - [Pre-built binaries](#pre-built-binaries)
   - [Dependencies](#dependencies)
     - [Toolchain](#toolchain)
     - [Libraries](#libraries)
 
-## Pre-built binaries
+<!-- ## Pre-built binaries
 
 Pre-built, optimized binaries are available through [Apptainer](https://apptainer.org/) (formerly known as Singularity).
 
-For more information, please check out [the image repository homepage](https://github.com/zhao-shihan/Mustard-apptainer).
+For more information, please check out [the image repository homepage](https://github.com/zhao-shihan/Mustard-apptainer). -->
 
 ## Dependencies
 
