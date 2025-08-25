@@ -23,8 +23,8 @@ For more information, please check out [the image repository homepage](https://g
 
 ### Toolchain
 
-1. A C++ compiler (that supports ≥ C++20. [GCC](https://gcc.gnu.org/) ≥ 12, [LLVM Clang](https://clang.llvm.org/) ≥ 16. MSVC not tested.)
-2. A C++ library (that supports ≥ C++20. [libstdc++](https://gcc.gnu.org/onlinedocs/libstdc++/) ≥ 12. [MSVC STL](https://github.com/microsoft/STL) or [libc++](https://libcxx.llvm.org) not tested)
+1. A C++ compiler (that supports ≥ C++20. [GCC](https://gcc.gnu.org/) ≥ 13, [LLVM Clang](https://clang.llvm.org/) ≥ 16. MSVC not tested.)
+2. A C++ library (that supports ≥ C++20. [libstdc++](https://gcc.gnu.org/onlinedocs/libstdc++/) ≥ 13. [MSVC STL](https://github.com/microsoft/STL) or [libc++](https://libcxx.llvm.org) not tested)
 3. [CMake](https://cmake.org/) (≥ 3.16)
 4. A build system compatible with CMake ([GNU Make](https://www.gnu.org/software/make/), [Ninja](https://ninja-build.org), or etc.)
 
