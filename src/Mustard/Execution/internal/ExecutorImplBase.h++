@@ -60,12 +60,14 @@ public:
 
     auto Executing() const -> bool { return fExecuting; }
 
+    auto PrintProgress() const -> auto { return fPrintProgress; }
     auto PrintProgress(bool a) -> void { fPrintProgress = a; }
+    auto PrintProgressInterval() const -> auto { return fPrintProgressInterval; }
     auto PrintProgressInterval(muc::chrono::seconds<double> t) -> void { fPrintProgressInterval = std::max({}, t); }
 
     auto ExecutionName() const -> const auto& { return fExecutionName; }
-    auto TaskName() const -> const auto& { return fTaskName; }
     auto ExecutionName(std::string name) -> void { fExecutionName = std::move(name); }
+    auto TaskName() const -> const auto& { return fTaskName; }
     auto TaskName(std::string name) -> void { fTaskName = std::move(name); }
 
 protected:

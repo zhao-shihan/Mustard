@@ -56,12 +56,14 @@ public:
 
     auto Executing() const -> bool;
 
+    auto PrintProgress() const -> bool;
     auto PrintProgress(bool print) -> void;
+    auto PrintProgressInterval() const -> muc::chrono::seconds<double>;
     auto PrintProgressInterval(muc::chrono::seconds<double> t) -> void;
 
     auto ExecutionName() const -> const std::string&;
-    auto TaskName() const -> const std::string&;
     auto ExecutionName(std::string name) -> void;
+    auto TaskName() const -> const std::string&;
     auto TaskName(std::string name) -> void;
 
     auto operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;

@@ -108,6 +108,22 @@ auto Executor<T>::Executing() const -> bool {
 }
 
 template<std::integral T>
+auto Executor<T>::PrintProgress() const -> bool {
+    return std::visit([&](auto&& impl) {
+        return impl.PrintProgress();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::PrintProgressInterval() const -> muc::chrono::seconds<double> {
+    return std::visit([&](auto&& impl) {
+        return impl.PrintProgressInterval();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
 auto Executor<T>::PrintProgress(bool print) -> void {
     std::visit([&](auto&& impl) {
         impl.PrintProgress(print);
@@ -132,19 +148,19 @@ auto Executor<T>::ExecutionName() const -> const std::string& {
 }
 
 template<std::integral T>
-auto Executor<T>::TaskName() const -> const std::string& {
-    return std::visit([&](auto&& impl) -> const auto& {
-        return impl.TaskName();
-    },
-                      *fImpl);
-}
-
-template<std::integral T>
 auto Executor<T>::ExecutionName(std::string name) -> void {
     std::visit([&](auto&& impl) {
         impl.ExecutionName(std::move(name));
     },
                *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::TaskName() const -> const std::string& {
+    return std::visit([&](auto&& impl) -> const auto& {
+        return impl.TaskName();
+    },
+                      *fImpl);
 }
 
 template<std::integral T>
