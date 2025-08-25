@@ -128,9 +128,14 @@ auto MultipleTryMetropolisGenerator<M, N, A>::MCMCDiscard(unsigned n) -> void {
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
+    const auto thisName{muc::try_demangle(typeid(*this).name())};
     if (fBurntIn) {
+        MasterPrintLn("Markov chain in {} already burnt in.", thisName);
         return;
     }
+    MasterPrintLn("Markov chain of {} burning in, please wait...", thisName);
+    muc::chrono::stopwatch stopwatch;
+
     // find phase space
     muc::ranges::iota(fMarkovChain.state.pID, 0);
     while (true) {
@@ -159,21 +164,12 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
         NextEvent(rng, delta);
     }
     fBurntIn = true;
-}
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::BurnInWithNotice(CLHEP::HepRandomEngine& rng) -> void {
-    const auto thisName{muc::try_demangle(typeid(*this).name())};
-    if (fBurntIn) {
-        MasterPrintLn("Markov chain in {} already burnt-in.", thisName);
-        return;
+    auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
+    if (mplr::available()) {
+        mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
     }
-    MasterPrintLn("Markov chain of {} burning-in, please wait...", thisName);
-    muc::chrono::stopwatch stopwatch;
-    BurnIn(rng);
-    auto seconds{muc::chrono::seconds<double>{stopwatch.read()}.count()};
-    mplr::comm_world().ireduce(mplr::max<double>{}, 0, seconds).wait(mplr::duty_ratio::preset::relaxed);
-    MasterPrintLn("Markov chain burnt-in in {:.2f} seconds.", seconds);
+    MasterPrintLn("Markov chain burnt in in {:.2f}s.", time);
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
@@ -181,7 +177,10 @@ auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine&
     CheckCMSEnergyMatch(pI);
     const auto beta{this->BoostToCMS(pI)};
 
-    BurnIn(rng);
+    if (not fBurntIn) [[unlikely]] {
+        PrintWarning("Markov chain not burnt in. Burning it in");
+        BurnIn(rng);
+    }
     for (unsigned i{}; i < fMCMCDiscard; ++i) {
         NextEvent(rng, fMCMCDelta);
     }
@@ -192,81 +191,124 @@ auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine&
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(unsigned long long n, Executor<unsigned long long>& executor,
-                                                                          CLHEP::HepRandomEngine& rng) -> NormalizationFactor {
-    auto originalBias{std::move(fBias)};
-    auto originalBurntIn{std::move(fBurntIn)};
-    auto originalMarkovChain{std::move(fMarkovChain)};
-    auto _{gsl::finally([&] {
-        fBias = std::move(originalBias);
-        fBurntIn = std::move(originalBurntIn);
-        fMarkovChain = std::move(originalMarkovChain);
-    })};
-
-    NormalizationFactor factor{.value = std::numeric_limits<double>::quiet_NaN(),
-                               .uncertainty = std::numeric_limits<double>::quiet_NaN(),
-                               .nEff = 0};
-    if (n == 0) {
-        return factor;
-    }
-
-    Bias([](auto&&) { return 1; }); // to calculate the mean of user-defined bias, sample from unbiased |M|²
-
-    MasterPrintLn("Estimating weight normalization factor in {}, please wait...", muc::try_demangle(typeid(*this).name()));
-    BurnIn(rng);
-
-    using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
-    muc::array2ld sum{};
-    { // Monte Carlo integration here
-        auto originalExecutionName{executor.ExecutionName()};
-        auto originalTaskName{executor.TaskName()};
-        auto _{gsl::finally([&] {
-            executor.ExecutionName(std::move(originalExecutionName));
-            executor.TaskName(std::move(originalTaskName));
-        })};
-        executor.ExecutionName("Integration");
-        executor.TaskName("Sample");
-        muc::array2ld compensation{};
-        const auto KahanAdd{[&](muc::array2ld value) { // improve numeric stability
-            const auto correctedValue{value - compensation};
-            const auto newSum{sum + correctedValue};
-            compensation = (newSum - sum) - correctedValue;
-            sum = newSum;
+auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
+                                                                          std::array<IntegrationState, 2> integrationState,
+                                                                          CLHEP::HepRandomEngine& rng) -> std::pair<IntegrationResult, std::array<IntegrationState, 2>> {
+    // Monte Carlo integration method
+    const auto Integrate{[&](std::regular_invocable<const Event&> auto&& Integrand, IntegrationState& state) {
+        // One integration iteration
+        const auto Iteration{[&](unsigned long long nSample) {
+            using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
+            muc::array2ld sum{};
+            muc::array2ld compensation{};
+            const auto KahanAdd{[&](muc::array2ld value) { // improve numeric stability
+                const auto correctedValue{value - compensation};
+                const auto newSum{sum + correctedValue};
+                compensation = (newSum - sum) - correctedValue;
+                sum = newSum;
+            }};
+            executor(nSample, [&](auto) {
+                const auto event{fGENBOD(rng, {fCMSEnergy, {}})};
+                if (not IRSafe(event.p)) {
+                    return;
+                }
+                const long double value{Integrand(event)};
+                KahanAdd({value, muc::pow(value, 2)});
+            });
+            if (mplr::available()) {
+                mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
+            }
+            state.sum += sum;
+            state.n += nSample;
+            IntegrationResult result;
+            result.value = state.sum[0] / state.n;
+            result.uncertainty = std::sqrt((state.sum[1] / state.n - muc::pow(result.value, 2)) / state.n);
+            return result;
         }};
-        Parallel::ReseedRandomEngine(&rng);
-        executor(n, [&](auto) {
-            const auto event{NextEvent(rng, fMCMCDelta)};
-            const long double bias{originalBias(event.p)};
-            KahanAdd({bias, muc::pow(bias, 2)});
-        });
-    }
+        // Iteration loop
+        auto nSample{static_cast<unsigned long long>(10 * muc::pow(precisionGoal, -2))};
+        while (true) {
+            if (state.n == 0) {
+                MasterPrintLn("Restarting integration.");
+            } else {
+                MasterPrintLn("Continuing integration from state {} {} {}.", state.sum[0], state.sum[1], state.n);
+            }
+            MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", nSample, precisionGoal);
+            const auto result{Iteration(nSample)};
+            const auto relativeUncertainty{result.uncertainty / result.value};
+            if (relativeUncertainty < precisionGoal) {
+                MasterPrintLn("Current precision: {:.3}, precision goal reached.", relativeUncertainty);
+                return result;
+            }
+            MasterPrintLn("Current precision: {:.3}, precision goal not reached.", relativeUncertainty);
+            // Increase sample size adaptively
+            const auto factor{1.2 * muc::pow(relativeUncertainty / precisionGoal, 2) - 1};
+            if (std::isfinite(factor)) {
+                nSample = factor * state.n;
+            } else {
+                nSample *= 10;
+            }
+            nSample = std::max<unsigned long long>(executor.NProcess(), nSample);
+        }
+    }};
+
+    MasterPrintLn("Estimating normalization factor in {}.", muc::try_demangle(typeid(*this).name()));
+
+    // Set task name
+    auto originalExecutionName{executor.ExecutionName()};
+    auto originalTaskName{executor.TaskName()};
+    auto _{gsl::finally([&] {
+        executor.ExecutionName(std::move(originalExecutionName));
+        executor.TaskName(std::move(originalTaskName));
+    })};
+    executor.ExecutionName("Integration");
+    executor.TaskName("Sample");
+
+    // Seeding random engine
+    Parallel::ReseedRandomEngine(&rng);
+
+    // Start integration
+    muc::chrono::stopwatch stopwatch;
+
+    // Compute denominator
+    MasterPrintLn("Computing denominator integral.");
+    const auto DenomIntegrand{[this](const Event& event) {
+        const auto& [detJ, _, pF]{event};
+        return ValidBiasedMSqDetJ(pF, 1, detJ);
+    }};
+    const auto denom{Integrate(DenomIntegrand, integrationState[1])};
+    MasterPrintLn("Denominator integration completed.");
+
+    // Compute numerator
+    MasterPrintLn("Computing numerator integral.");
+    const auto NumerIntegrand{[this](const Event& event) {
+        const auto& [detJ, _, pF]{event};
+        const auto bias{ValidBias(pF)};
+        return ValidBiasedMSqDetJ(pF, bias, detJ);
+    }};
+    const auto numer{Integrate(NumerIntegrand, integrationState[0])};
+    MasterPrintLn("Numerator integration completed.");
+
+    // Combine result
+    IntegrationResult result;
+    result.value = numer.value / denom.value;
+    result.uncertainty = std::hypot(denom.value * numer.uncertainty, numer.value * denom.uncertainty) / muc::pow(denom.value, 2);
+
+    // Report result
+    auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
     if (mplr::available()) {
-        mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
+        mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
     }
-
-    const auto& [sumBias, sumBiasSq]{sum};
-    factor.value = sumBias / n;
-    factor.uncertainty = std::sqrt((sumBiasSq / n - muc::pow(factor.value, 2)) / n);
-    factor.nEff = muc::pow(sumBias, 2) / sumBiasSq;
-    return factor;
-}
-
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::CheckNormalizationFactor(NormalizationFactor factor) -> bool {
-    const auto [value, uncertainty, nEff]{factor};
-    constexpr auto minAcceptableNEff{10000};
-    const auto ok{nEff >= minAcceptableNEff};
-    MasterPrint("Normalization factor from user-defined bias:\n"
-                "  {} +/- {}\n"
-                "  rel. err. = {:.2}% ,  N_eff = {:.2f} {}\n",
-                value, uncertainty, uncertainty / value * 100, nEff, ok ? "(OK)" : "(**INACCURATE**)");
-    if (not ok) {
-        MasterPrintWarning(fmt::format("Effective sample size too small (expects >= {}). "
-                                       "The estimation should be considered inaccurate. "
-                                       "Try increasing statistics",
-                                       minAcceptableNEff));
-    }
-    return ok;
+    const auto& [s1, s2]{integrationState};
+    MasterPrint("Estimation completed in {:.2f}s.\n"
+                "Integration state (integration can be contined from here):\n"
+                "  {} {} {} {} {} {}\n"
+                "Normalization factor from user-defined bias:\n"
+                "  {} +/- {}  (rel. unc.: {:.2}%)\n",
+                time, s1.sum[0], s1.sum[1], s1.n, s2.sum[0], s2.sum[1], s2.n,
+                result.value, result.uncertainty,
+                result.uncertainty / result.value * 100);
+    return {result, integrationState};
 }
 
 template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>

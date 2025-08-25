@@ -43,7 +43,7 @@
 
 #include "gsl/gsl"
 
-#include "fmt/core.h"
+#include "fmt/ranges.h"
 
 #include <algorithm>
 #include <array>
@@ -168,9 +168,6 @@ public:
     /// @brief Initialize Markov chain
     /// @param rng Reference to CLHEP random engine
     auto BurnIn(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
-    /// @brief Initialize Markov chain and print some notice to stdout
-    /// @param rng Reference to CLHEP random engine
-    auto BurnInWithNotice(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
 
     /// @brief Generate event in center-of-mass frame
     /// @param rng Reference to CLHEP random engine
@@ -181,11 +178,16 @@ public:
     using EventGenerator<M, N>::operator();
 
 public:
-    /// @brief Weight normalization result
-    struct NormalizationFactor {
+    /// @brief Integration internal state
+    struct IntegrationState {
+        muc::array2ld sum;    ///< Sum of integrand and squared integrand
+        unsigned long long n; ///< Sample size
+    };
+
+    /// @brief Integration result
+    struct IntegrationResult {
         double value;       ///< Estimated normalization constant
         double uncertainty; ///< MC integration uncertainty
-        double nEff;        ///< Statistically-effective sample size
     };
 
 public:
@@ -194,16 +196,14 @@ public:
     /// to normalize weights to the number of generated events.
     /// Essential for calculating total cross-section or width
     /// when bias function is set
-    /// @param n Number of samples for MC integration
     /// @param executor An executor instance
+    /// @param precisionGoal Target relative uncertainty (e.g. 0.01 for 1% rel. unc.)
+    /// @param integrationState Integration state for continuing normalization
     /// @param rng Reference to CLHEP random engine
-    /// @note Use CheckNormalizationFactor to check the result
-    auto EstimateNormalizationFactor(unsigned long long n, Executor<unsigned long long>& executor,
-                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> NormalizationFactor;
-    /// @brief Print and validate normalization factor quality
-    /// @param factor Weight normalization factor to be checked
-    /// @return true if normalization factor quality is OK
-    static auto CheckNormalizationFactor(NormalizationFactor factor) -> bool;
+    /// @return Estimated normalization factor and integration state
+    auto EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
+                                     std::array<IntegrationState, 2> integrationState = {},
+                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::pair<IntegrationResult, std::array<IntegrationState, 2>>;
 
 protected:
     /// @brief Get currently set center-of-mass frame energy
