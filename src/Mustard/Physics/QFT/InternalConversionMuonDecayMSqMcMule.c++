@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Physics/Amplitude/InternalConversionMuonDecayMSqMcMule.h++"
+#include "Mustard/Physics/QFT/InternalConversionMuonDecayMSqMcMule.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
@@ -26,7 +26,7 @@
 
 #include <cmath>
 
-namespace Mustard::inline Physics::inline Amplitude {
+namespace Mustard::inline Physics::QFT {
 
 using namespace PhysicalConstant;
 using namespace MathConstant;
@@ -509,4 +509,4 @@ auto InternalConversionMuonDecayMSqMcMule::operator()(const InitialStateMomenta&
     return constant * pm2ennee;
 }
 
-} // namespace Mustard::inline Physics::inline Amplitude
+} // namespace Mustard::inline Physics::QFT

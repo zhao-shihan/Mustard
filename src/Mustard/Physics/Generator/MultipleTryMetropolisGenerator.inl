@@ -18,12 +18,12 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         double delta, unsigned discard) :
     EventGenerator<M, N>{},
     fCMSEnergy{},
-    fSquaredAmplitude{},
+    fMatrixElement{},
     fIRCut{},
     fIdenticalSet{},
     fBias{[](auto&&) { return 1; }},
@@ -37,80 +37,80 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double c
     MCMCDiscard(discard);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, CLHEP::Hep3Vector polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         double delta, unsigned discard) // clang-format off
-    requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>> : // clang-format on
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     MultipleTryMetropolisGenerator{cmsE, pdgID, mass, delta, discard} {
-    fSquaredAmplitude.InitialStatePolarization(polarization);
+    fMatrixElement.InitialStatePolarization(polarization);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         double delta, unsigned discard) // clang-format off
-    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) : // clang-format on
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
     MultipleTryMetropolisGenerator{cmsE, pdgID, mass, delta, discard} {
-    fSquaredAmplitude.InitialStatePolarization(polarization);
+    fMatrixElement.InitialStatePolarization(polarization);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::~MultipleTryMetropolisGenerator() = default;
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization() const -> CLHEP::Hep3Vector
-    requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>> {
-    return fSquaredAmplitude.InitialStatePolarization();
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
+    return fMatrixElement.InitialStatePolarization();
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
-    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
-    return fSquaredAmplitude.InitialStatePolarization(i);
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
+    return fMatrixElement.InitialStatePolarization(i);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
-    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
-    return fSquaredAmplitude.InitialStatePolarization();
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
+    return fMatrixElement.InitialStatePolarization();
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
-    requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>> {
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
     if (not pol.isNear(InitialStatePolarization(), muc::default_tolerance<double>)) {
         BurnInRequired();
     }
-    fSquaredAmplitude.InitialStatePolarization(pol);
+    fMatrixElement.InitialStatePolarization(pol);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
-    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     if (not pol.isNear(InitialStatePolarization(i), muc::default_tolerance<double>)) {
         BurnInRequired();
     }
-    fSquaredAmplitude.InitialStatePolarization(i, pol);
+    fMatrixElement.InitialStatePolarization(i, pol);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
-    requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1) {
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     if (not std::ranges::equal(pol, InitialStatePolarization(),
                                [](auto&& a, auto&& b) { return a.isNear(b, muc::default_tolerance<double>); })) {
         BurnInRequired();
     }
-    fSquaredAmplitude.InitialStatePolarization(pol);
+    fMatrixElement.InitialStatePolarization(pol);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::Bias(BiasFunction B) -> void {
     fBias = std::move(B);
     BurnInRequired();
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::MCMCDelta(double delta) -> void {
     if (delta <= 0 or 0.5 <= delta) [[unlikely]] {
         PrintWarning(fmt::format("Suspicious MCMC delta (got {}, expects 0 < delta < 0.5)", delta));
@@ -118,7 +118,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::MCMCDelta(double delta) -> void {
     fMCMCDelta = delta;
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::MCMCDiscard(unsigned n) -> void {
     if (n >= std::numeric_limits<int>::max()) [[unlikely]] {
         PrintWarning(fmt::format("Suspicious number of discarded MCMC samples (got {})", n));
@@ -126,7 +126,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::MCMCDiscard(unsigned n) -> void {
     fMCMCDiscard = n;
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
     const auto thisName{muc::try_demangle(typeid(*this).name())};
     if (fBurntIn) {
@@ -172,7 +172,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
     MasterPrintLn("Markov chain burnt in in {:.2f}s.", time);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
     CheckCMSEnergyMatch(pI);
     const auto beta{this->BoostToCMS(pI)};
@@ -190,7 +190,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine&
     return event;
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
                                                                           std::array<IntegrationState, 2> integrationState,
                                                                           CLHEP::HepRandomEngine& rng) -> std::pair<IntegrationResult, std::array<IntegrationState, 2>> {
@@ -311,7 +311,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(Execut
     return {result, integrationState};
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::CMSEnergy(double cmsE) -> void {
     if (cmsE <= 0) [[unlikely]] {
         PrintError(fmt::format("Non-positive CMS energy (got {})", cmsE));
@@ -322,7 +322,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::CMSEnergy(double cmsE) -> void {
     fCMSEnergy = cmsE;
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::Mass(const std::array<double, N>& mass) -> void {
     if (not std::ranges::equal(mass, fGENBOD.Mass(),
                                [](auto a, auto b) { return muc::isclose(a, b); })) {
@@ -331,7 +331,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::Mass(const std::array<double, N>& 
     fGENBOD.Mass(mass);
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::IRCut(int i, double cut) -> void {
     if (cut <= 0) [[unlikely]] {
         PrintWarning(fmt::format("Non-positive IR cut for particle {} (got {})", i, cut));
@@ -343,7 +343,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::IRCut(int i, double cut) -> void {
     fIRCut.push_back({i, cut});
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
     if (set.size() < 2) [[unlikely]] {
         PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
@@ -364,7 +364,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::AddIdenticalSet(std::vector<int> s
     fIdenticalSet.emplace_back(std::move(set));
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::CheckCMSEnergyMatch(const InitialStateMomenta& pI) const -> void {
     if (pI == InitialStateMomenta{}) {
         return;
@@ -375,7 +375,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::CheckCMSEnergyMatch(const InitialS
     }
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event {
     // Rescale delta first
     // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
@@ -467,14 +467,14 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
     }
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::PhaseSpace(const MarkovChain::State& state) -> Event {
     auto event{DirectPhaseSpace(state.u)};
     event.p = std::apply([&](auto... i) { return FinalStateMomenta{event.p[i]...}; }, state.pID);
     return event;
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF) const -> bool {
     for (auto&& [i, cut] : fIRCut) {
         if (pF[i].e() <= cut) {
@@ -484,7 +484,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF
     return true;
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::ValidBias(const FinalStateMomenta& pF) const -> double {
     const auto bias{fBias(pF)};
     constexpr auto Format{[](const FinalStateMomenta& pF) {
@@ -503,9 +503,9 @@ auto MultipleTryMetropolisGenerator<M, N, A>::ValidBias(const FinalStateMomenta&
     return bias;
 }
 
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMomenta& pF, double bias, double detJ) const -> double {
-    const auto value{fSquaredAmplitude({fCMSEnergy, {}}, pF) * bias * detJ}; // |M|² × bias × |J|
+    const auto value{fMatrixElement({fCMSEnergy, {}}, pF) * bias * detJ}; // |M|² × bias × |J|
     const auto Where{[&] {
         auto where{fmt::format("({})", detJ)};
         for (auto&& p : pF) {

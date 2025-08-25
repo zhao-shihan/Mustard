@@ -21,10 +21,10 @@
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
-#include "Mustard/Physics/Amplitude/PolarizedSquaredAmplitude.h++"
-#include "Mustard/Physics/Amplitude/SquaredAmplitude.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
+#include "Mustard/Physics/QFT/MatrixElement.h++"
+#include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "CLHEP/Random/RandGaussQ.h"
@@ -70,8 +70,8 @@ namespace Mustard::inline Physics::inline Generator {
 ///
 /// @tparam M Number of initial-state particles
 /// @tparam N Number of final-state particles
-/// @tparam A Squared amplitude of the process to be generated
-template<int M, int N, std::derived_from<SquaredAmplitude<M, N>> A>
+/// @tparam A Matrix element of the process to be generated
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 class MultipleTryMetropolisGenerator : public EventGenerator<M, N> {
 public:
     /// @brief Initial-state 4-momentum (or container type when M>1)
@@ -103,7 +103,7 @@ public:
     MultipleTryMetropolisGenerator(double cmsE, CLHEP::Hep3Vector polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                    double delta, unsigned discard)
-        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
     /// @param polarization Initial-state polarization vectors
@@ -115,7 +115,7 @@ public:
     MultipleTryMetropolisGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                    double delta, unsigned discard)
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     // Keep the class abstract
     virtual ~MultipleTryMetropolisGenerator() override = 0;
@@ -123,36 +123,36 @@ public:
     /// @brief Get polarization vector
     /// @note This overload is only enabled for polarized decay
     auto InitialStatePolarization() const -> CLHEP::Hep3Vector
-        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Get polarization vector
     /// @param i Particle index (0 ≤ i < M)
     /// @note This overload is only enabled for polarized scattering
     auto InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
     /// @brief Get all polarization vectors
     /// @note This overload is only enabled for polarized scattering
     auto InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set polarization vector
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note Triggers Markov chain reset (requires new burn-in)
     /// This overload is only enabled for polarized decay
     auto InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
-        requires std::derived_from<A, PolarizedSquaredAmplitude<1, N>>;
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Set polarization for single initial particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note Triggers Markov chain reset (requires new burn-in).
     /// This overload is only enabled for polarized scattering
     auto InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
     /// @brief Set all polarization vectors
     /// @param pol Array of polarization vectors for each initial particle (all |pol| ≤ 1)
     /// @note Triggers Markov chain reset (requires new burn-in)
     /// This overload is only enabled for polarized scattering
     auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
-        requires std::derived_from<A, PolarizedSquaredAmplitude<M, N>> and (M > 1);
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
     /// @param B User-defined bias
@@ -279,7 +279,7 @@ private:
 
 private:
     double fCMSEnergy;                           ///< Currently set CM energy
-    [[no_unique_address]] A fSquaredAmplitude;   ///< Squared amplitude
+    [[no_unique_address]] A fMatrixElement;      ///< Matrix element
     std::vector<std::pair<int, double>> fIRCut;  ///< IR cuts
     std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
     BiasFunction fBias;                          ///< User bias function

@@ -18,18 +18,18 @@
 
 #pragma once
 
-#include "Mustard/Physics/Amplitude/PolarizedSquaredAmplitude.h++"
+#include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
 
-namespace Mustard::inline Physics::inline Amplitude {
+namespace Mustard::inline Physics::QFT {
 
 /// @class DoubleRadiativeMuonDecayMSqMcMule
 /// @brief Matrix element squared for μ⁻ → e⁻ννγγ and μ⁺ → e⁺ννγγ decays
 ///
 /// Implements polarized matrix element calculation for double radiative muon decay
 /// referenceing McMule's analytical formula.
-class DoubleRadiativeMuonDecayMSqMcMule : public PolarizedSquaredAmplitude<1, 5> {
+class DoubleRadiativeMuonDecayMSqMcMule : public PolarizedMatrixElement<1, 5> {
 public:
-    using PolarizedSquaredAmplitude::PolarizedSquaredAmplitude;
+    using PolarizedMatrixElement::PolarizedMatrixElement;
 
     /// @brief Calculate squared matrix element for double radiative muon decay
     /// @param pI Muon 4-momentum
@@ -50,4 +50,4 @@ private:
                                 double den1, double den2, double den3, double den4, double den5, double den6) -> double;
 };
 
-} // namespace Mustard::inline Physics::inline Amplitude
+} // namespace Mustard::inline Physics::QFT

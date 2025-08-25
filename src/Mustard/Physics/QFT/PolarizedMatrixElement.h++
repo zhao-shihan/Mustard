@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Physics/Amplitude/SquaredAmplitude.h++"
+#include "Mustard/Physics/QFT/MatrixElement.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -27,24 +27,24 @@
 
 #include <array>
 
-namespace Mustard::inline Physics::inline Amplitude {
+namespace Mustard::inline Physics::QFT {
 
-/// @class PolarizedSquaredAmplitude
+/// @class PolarizedMatrixElement
 /// @brief Base for polarized squared matrix element functor
 ///
-/// Extends `SquaredAmplitude` with polarization handling for initial-state particle(s).
+/// Extends `MatrixElement` with polarization handling for initial-state particle(s).
 /// Provides storage and access methods for initial particle polarization vector(s).
 ///
 /// @tparam M Number of initial-state particles (M ≥ 1)
 /// @tparam N Number of final-state particles (N ≥ 1)
 template<int M, int N>
-class PolarizedSquaredAmplitude : public SquaredAmplitude<M, N> {
+class PolarizedMatrixElement : public MatrixElement<M, N> {
 public:
     /// @brief Default constructor (all polarizations zero)
-    PolarizedSquaredAmplitude() = default;
+    PolarizedMatrixElement() = default;
     /// @brief Construct with initial polarization array
     /// @param pol Array of polarization vectors for each initial particle (all |p| ≤ 1)
-    PolarizedSquaredAmplitude(const std::array<CLHEP::Hep3Vector, M>& pol);
+    PolarizedMatrixElement(const std::array<CLHEP::Hep3Vector, M>& pol);
 
     /// @brief Get polarization vector for single initial particle
     /// @param i Particle index (0 ≤ i < M)
@@ -64,20 +64,20 @@ private:
     std::array<CLHEP::Hep3Vector, M> fInitialStatePolarization; ///< Polarization storage
 };
 
-/// @class PolarizedSquaredAmplitude<1, N>
+/// @class PolarizedMatrixElement<1, N>
 /// @brief Specialization for single initial-state particle
 ///
 /// Simplified interface for decay processes (1→N) with single polarization vector.
 ///
 /// @tparam N Number of final-state particles (N ≥ 1)
 template<int N>
-class PolarizedSquaredAmplitude<1, N> : public SquaredAmplitude<1, N> {
+class PolarizedMatrixElement<1, N> : public MatrixElement<1, N> {
 public:
     /// @brief Default constructor (zero polarization)
-    PolarizedSquaredAmplitude() = default;
+    PolarizedMatrixElement() = default;
     /// @brief Construct with polarization vector
     /// @param pol Polarization vector (|p| ≤ 1)
-    PolarizedSquaredAmplitude(CLHEP::Hep3Vector pol);
+    PolarizedMatrixElement(CLHEP::Hep3Vector pol);
 
     /// @brief Get polarization vector
     auto InitialStatePolarization() const -> auto { return fInitialStatePolarization; }
@@ -89,6 +89,6 @@ private:
     CLHEP::Hep3Vector fInitialStatePolarization;
 };
 
-} // namespace Mustard::inline Physics::inline Amplitude
+} // namespace Mustard::inline Physics::QFT
 
-#include "Mustard/Physics/Amplitude/PolarizedSquaredAmplitude.inl"
+#include "Mustard/Physics/QFT/PolarizedMatrixElement.inl"

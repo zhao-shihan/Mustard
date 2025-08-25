@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Physics/Amplitude/DoubleRadiativeMuonDecayMSqMcMule.h++"
 #include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.h++"
+#include "Mustard/Physics/QFT/DoubleRadiativeMuonDecayMSqMcMule.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -30,11 +30,11 @@ namespace Mustard::inline Physics::inline Generator {
 
 /// @class DoubleRadiativeMuonDecay
 /// @brief MCMC generator for mu->enngg decays
-/// Kinematics: mu- -> e- nu nu gamma gamma
-///             mu+ -> e+ nu nu gamma gamma
+/// Kinematics: μ⁻ → e⁻ ν ν γ γ
+///             μ⁺ → e⁺ ν ν γ γ
 /// @warning IR safety is not automatically guaranteed.
 /// Always set bias function to ensure IR-safe generation.
-class DoubleRadiativeMuonDecay : public MultipleTryMetropolisGenerator<1, 5, DoubleRadiativeMuonDecayMSqMcMule> {
+class DoubleRadiativeMuonDecay : public MultipleTryMetropolisGenerator<1, 5, QFT::DoubleRadiativeMuonDecayMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)

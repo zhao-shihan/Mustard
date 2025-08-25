@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "Mustard/Physics/Amplitude/PolarizedSquaredAmplitude.h++"
+#include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
 
-namespace Mustard::inline Physics::inline Amplitude {
+namespace Mustard::inline Physics::QFT {
 
 /// @class InternalConversionMuonDecayMSqMcMule
 /// @brief Matrix element squared for μ⁻ → e⁻ννe⁺e⁻ and μ⁺ → e⁺ννe⁻e⁺ decays
@@ -28,9 +28,9 @@ namespace Mustard::inline Physics::inline Amplitude {
 /// Implements polarized matrix element squared for muon decay with internal conversion
 /// (radiative decay where virtual photon converts to e⁺e⁻ pair). Referenceing
 /// McMule's analytical formula.
-class InternalConversionMuonDecayMSqMcMule : public PolarizedSquaredAmplitude<1, 5> {
+class InternalConversionMuonDecayMSqMcMule : public PolarizedMatrixElement<1, 5> {
 public:
-    using PolarizedSquaredAmplitude::PolarizedSquaredAmplitude; ///< Inherit constructors
+    using PolarizedMatrixElement::PolarizedMatrixElement; ///< Inherit constructors
 
     /// @brief Calculate squared matrix element for internal conversion muon decay
     /// @param pI Muon 4-momentum
@@ -43,4 +43,4 @@ public:
     virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
 };
 
-} // namespace Mustard::inline Physics::inline Amplitude
+} // namespace Mustard::inline Physics::QFT
