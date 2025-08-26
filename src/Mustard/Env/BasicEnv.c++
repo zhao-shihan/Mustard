@@ -35,7 +35,7 @@
 namespace Mustard::Env {
 
 BasicEnv::BasicEnv(NoBanner, int& argc, char**& argv,
-                   std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+                   muc::optional_ref<CLI::CLI<>> cli,
                    enum VerboseLevel verboseLevel,
                    bool showBannerHint) :
     EnvBase{},
@@ -60,7 +60,7 @@ BasicEnv::BasicEnv(NoBanner, int& argc, char**& argv,
 }
 
 BasicEnv::BasicEnv(int argc, char* argv[],
-                   std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+                   muc::optional_ref<CLI::CLI<>> cli,
                    enum VerboseLevel verboseLevel,
                    bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {

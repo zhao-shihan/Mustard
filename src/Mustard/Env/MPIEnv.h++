@@ -24,6 +24,8 @@
 
 #include "mplr/mplr.hpp"
 
+#include "muc/optional"
+
 #include <concepts>
 #include <functional>
 #include <optional>
@@ -37,13 +39,13 @@ class MPIEnv : public virtual BasicEnv,
                public Memory::PassiveSingleton<MPIEnv> {
 protected:
     MPIEnv(NoBanner, int& argc, char**& argv,
-           std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+           muc::optional_ref<CLI::CLI<>> cli,
            enum VerboseLevel verboseLevel,
            bool showBannerHint);
 
 public:
     MPIEnv(int argc, char* argv[],
-           std::optional<std::reference_wrapper<CLI::CLI<>>> cli = {},
+           muc::optional_ref<CLI::CLI<>> cli = {},
            enum VerboseLevel verboseLevel = {},
            bool showBannerHint = true);
 

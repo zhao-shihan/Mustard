@@ -24,6 +24,8 @@
 #include "Mustard/Env/internal/EnvBase.h++"
 #include "Mustard/Utility/InlineMacro.h++"
 
+#include "muc/optional"
+
 #include "fmt/format.h"
 
 #include <functional>
@@ -38,13 +40,13 @@ protected:
 
 protected:
     BasicEnv(NoBanner, int& argc, char**& argv,
-             std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+             muc::optional_ref<CLI::CLI<>> cli,
              enum VerboseLevel verboseLevel,
              bool showBannerHint);
 
 public:
     BasicEnv(int argc, char* argv[],
-             std::optional<std::reference_wrapper<CLI::CLI<>>> cli = {},
+             muc::optional_ref<CLI::CLI<>> cli = {},
              enum VerboseLevel verboseLevel = {},
              bool showBannerHint = true);
 

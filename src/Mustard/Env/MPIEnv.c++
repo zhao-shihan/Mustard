@@ -48,7 +48,7 @@
 namespace Mustard::Env {
 
 MPIEnv::MPIEnv(NoBanner, int& argc, char**& argv,
-               std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+               muc::optional_ref<CLI::CLI<>> cli,
                enum VerboseLevel verboseLevel,
                bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
@@ -121,7 +121,7 @@ MPIEnv::MPIEnv(NoBanner, int& argc, char**& argv,
 }
 
 MPIEnv::MPIEnv(int argc, char* argv[],
-               std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+               muc::optional_ref<CLI::CLI<>> cli,
                enum VerboseLevel verboseLevel,
                bool showBannerHint) :
     MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
