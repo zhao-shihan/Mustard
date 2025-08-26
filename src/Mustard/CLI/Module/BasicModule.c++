@@ -21,41 +21,13 @@
 
 #include "muc/utility"
 
-#include "fmt/core.h"
-
 #include <algorithm>
-#include <iostream>
-#include <stdexcept>
 
 namespace Mustard::CLI::inline Module {
 
 BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
     ModuleBase{argParser},
     fVerboseLevelValue{muc::to_underlying(Env::VerboseLevel::Warning)} {
-    ArgParser()
-        .add_argument("--help")
-        .help("Show this help and exit.")
-        .nargs(0)
-        .action([this](auto&&) {
-            fmt::print("{}", ArgParser().help().view());
-            std::exit(EXIT_SUCCESS);
-        });
-    ArgParser()
-        .add_argument("--mustard-version")
-        .help("Show Mustard version information and exit.")
-        .nargs(0)
-        .action([](auto&&) {
-            fmt::println("Mustard " MUSTARD_VERSION_STRING "\n"
-                         "Copyright 2020-2025  The Mustard development team\n"
-                         "Mustard is free software: you can redistribute it and/or modify it under the "
-                         "terms of the GNU General Public License as published by the Free Software "
-                         "Foundation, either version 3 of the License, or (at your option) any later "
-                         "version.\n"
-                         "Mustard is distributed in the hope that it will be useful, but WITHOUT ANY "
-                         "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR "
-                         "A PARTICULAR PURPOSE. See the GNU General Public License for more details.");
-            std::exit(EXIT_SUCCESS);
-        });
     ArgParser()
         .add_argument("-v", "--verbose")
         .help("Increase verbose level (-2: quiet, -1: error, 0: warning (default), 1: informative, 2: verbose). "

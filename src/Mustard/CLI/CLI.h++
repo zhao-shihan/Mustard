@@ -25,6 +25,7 @@
 #include "muc/type_traits"
 
 #include <concepts>
+#include <memory>
 #include <optional>
 #include <string_view>
 #include <utility>
@@ -52,13 +53,13 @@ public:
     auto Parsed() const -> bool { return fArgcArgv.has_value(); }
     auto ArgcArgv() const -> ArgcArgvType;
 
-    auto operator->() const -> const auto* { return &fArgParser; }
-    auto operator->() -> auto* { return &fArgParser; }
-    auto operator[](std::string_view arg) -> decltype(auto) { return fArgParser[arg]; }
+    auto operator->() const -> const auto* { return fArgParser.get(); }
+    auto operator->() -> auto* { return fArgParser.get(); }
+    auto operator[](std::string_view arg) -> auto& { return (*fArgParser)[arg]; }
 
 protected:
-    auto ArgParser() const -> const auto& { return fArgParser; }
-    auto ArgParser() -> auto& { return fArgParser; }
+    auto ArgParser() const -> const auto& { return *fArgParser; }
+    auto ArgParser() -> auto& { return *fArgParser; }
 
 protected:
     [[noreturn]] static auto ThrowParsed() -> void;
@@ -66,7 +67,7 @@ protected:
 
 private:
     std::optional<ArgcArgvType> fArgcArgv;
-    argparse::ArgumentParser fArgParser;
+    std::unique_ptr<argparse::ArgumentParser> fArgParser;
 };
 
 template<std::derived_from<ModuleBase>... AModules>

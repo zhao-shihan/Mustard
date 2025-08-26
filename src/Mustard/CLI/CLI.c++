@@ -18,6 +18,7 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/CLI/internal/MakeDefaultArgParser.h++"
 #include "Mustard/Version.h++"
 
 #include "fmt/core.h"
@@ -30,7 +31,7 @@ namespace Mustard::CLI {
 
 CLI<>::CLI() :
     fArgcArgv{},
-    fArgParser{{}, MUSTARD_VERSION_STRING, argparse::default_arguments::none} {
+    fArgParser{internal::MakeDefaultArgParser()} {
     if (static bool gInstantiated{}; gInstantiated) {
         Throw<std::logic_error>("Trying to construct CLI twice");
     } else {
