@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2025  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -285,7 +285,7 @@ auto MuonInternalConversionDecayChannel::MSqMcMule2020(const GENBOD<1, 5>::Final
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_pm2ennee.f95, FUNCTION PM2ENNEE
     //
-    // Copyright 2020-2025  Yannick Ulrich and others (The McMule development team)
+    // Copyright (C) 2020-2025  Yannick Ulrich and others (The McMule development team)
     //
 
     const auto s12 = q1 * q2;
