@@ -44,7 +44,7 @@ namespace Mustard::inline Utility {
                                                                                      \
     template<>                                                                       \
     UseXoshiro<NBit>::UseXoshiro() :                                                 \
-        fRandom{std::make_unique_for_overwrite<Random>()} {                          \
+        fRandom{std::make_unique<Random>()} {                                        \
         /* Set random engines */                                                     \
         CLHEP::HepRandom::setTheEngine(&fRandom->clhep);                             \
         delete gRandom, gRandom = &fRandom->root;                                    \
@@ -53,6 +53,16 @@ namespace Mustard::inline Utility {
             muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}()); \
         /* Reseed in parallel computing */                                           \
         Parallel::ReseedRandomEngine();                                              \
+    }                                                                                \
+                                                                                     \
+    template<>                                                                       \
+    UseXoshiro<NBit>::UseXoshiro(const Env::CLI::MonteCarloModule& cli) :            \
+        fRandom{std::make_unique<Random>()} {                                        \
+        /* Set random engines */                                                     \
+        CLHEP::HepRandom::setTheEngine(&fRandom->clhep);                             \
+        delete gRandom, gRandom = &fRandom->root;                                    \
+        /* Seed random engines from CLI */                                           \
+        cli.SeedRandomIfFlagged();                                                   \
     }                                                                                \
                                                                                      \
     template<>                                                                       \

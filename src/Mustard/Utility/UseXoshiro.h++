@@ -18,24 +18,51 @@
 
 #pragma once
 
+#include "Mustard/Env/CLI/Module/MonteCarloModule.h++"
+
 #include <memory>
 
 namespace Mustard::inline Utility {
 
-/// @brief Use Xoshiro random engine for CLHEP and ROOT, Xoshiro** for CLHEP and Xoshiro++ for ROOT.
-/// @tparam Xoshiro bit width.
-/// @note RAII style class. Random engines share lifetime with this class object.
+/// @brief Configures Xoshiro random engines for CLHEP and ROOT frameworks
+///
+/// RAII wrapper that sets Xoshiro** for CLHEP and Xoshiro++ for ROOT as their
+/// respective global random number engines. Manages engine lifetime and ensures
+/// proper initialization and cleanup.
+///
+/// @tparam ABitWidth Xoshiro variant bit width (256 or 512)
+///
+/// @note Features:
+///   - Sets CLHEP's global engine to Xoshiro**
+///   - Sets ROOT's global engine to Xoshiro++
+///   - Automatic engine lifetime management
+///   - Parallel computing reseeding support
+///   - CLI-based seeding option
+///
+/// @warning This class should be instantiated once at application startup
+/// @see CLHEPX::Random::Xoshiro256SS, CLHEPX::Random::Xoshiro512SS
+/// @see ROOTX::Math::Xoshiro256PP, ROOTX::Math::Xoshiro512PP
 template<unsigned ABitWidth>
 class UseXoshiro {
 public:
+    /// @brief Initialize with automatic seeding
+    /// @note Also performs decorrelation between CLHEP and ROOT engines
+    ///       and parallel computing reseeding
     UseXoshiro();
+    /// @brief Initialize with CLI-based seeding
+    /// @param cli MonteCarloModule CLI interface for seed configuration
+    /// @note Also performs decorrelation between CLHEP and ROOT engines
+    ///       and parallel computing reseeding
+    explicit UseXoshiro(const Env::CLI::MonteCarloModule& cli);
+    /// @brief Clean up and reset global engine pointers
     ~UseXoshiro();
 
 private:
+    /// @brief Random engine storage
     struct Random;
 
 private:
-    std::unique_ptr<Random> fRandom;
+    std::unique_ptr<Random> fRandom; ///< Engine instances
 };
 
 } // namespace Mustard::inline Utility

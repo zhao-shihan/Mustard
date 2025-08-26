@@ -21,9 +21,7 @@ auto main(int argc, char* argv[]) -> int {
     cli->add_argument("-o", "--output").help("Output file path.").default_value("test_phase_space_result.root").required().nargs(1);
     cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("NEW").required().nargs(1);
     Mustard::Env::MPIEnv env{argc, argv, cli};
-
     Mustard::UseXoshiro<256> random;
-    cli.SeedRandomIfFlagged();
 
     Mustard::File<TFile> file{cli->get("--output"), cli->get("--output-mode")};
 
