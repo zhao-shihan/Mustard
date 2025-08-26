@@ -70,8 +70,10 @@ public:
     using typename VersatileEventGenerator<M, N, 4 * N>::RandomState;
 
 public:
-    // Inherit constructor
-    using VersatileEventGenerator<M, N, 4 * N>::VersatileEventGenerator;
+    /// @brief Construct RAMBO phase space generator
+    /// @param pdgID Array of final-state particle PDG IDs (index order preserved)
+    /// @param mass Array of final-state particle masses (index order preserved)
+    RAMBO(const std::array<int, N>& pdgID, const std::array<double, N>& mass);
 
     /// @brief Generate event in center-of-mass frame using precomputed random numbers
     /// @param u Flat random numbers in 0--1
@@ -80,6 +82,9 @@ public:
     virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads
     using VersatileEventGenerator<M, N, 4 * N>::operator();
+
+private:
+    std::array<double, N> fWeightFactor;
 };
 
 } // namespace Mustard::inline Physics::inline Generator
