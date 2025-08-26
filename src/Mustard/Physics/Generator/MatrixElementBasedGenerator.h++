@@ -20,6 +20,8 @@
 
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/IntegrationResult.h++"
+#include "Mustard/Math/MCIntegrationState.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
@@ -72,16 +74,6 @@ public:
     using typename EventGenerator<M, N>::Event;
     /// @brief User-defined bias function type
     using BiasFunction = std::function<auto(const FinalStateMomenta&)->double>;
-    /// @brief Integration internal state
-    struct IntegrationState {
-        muc::array2ld sum;    ///< Sum of integrand and squared integrand
-        unsigned long long n; ///< Sample size
-    };
-    /// @brief Integration result
-    struct IntegrationResult {
-        double value;       ///< Integration result
-        double uncertainty; ///< Integration uncertainty
-    };
 
 public:
     /// @brief Construct event generator
@@ -119,8 +111,8 @@ public:
     /// @param rng Reference to CLHEP random engine
     /// @return Estimated normalization factor and integration state
     auto EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
-                                     std::array<IntegrationState, 2> integrationState = {},
-                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::pair<IntegrationResult, std::array<IntegrationState, 2>>;
+                                     std::array<Math::MCIntegrationState, 2> integrationState = {},
+                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::pair<Math::IntegrationResult, std::array<Math::MCIntegrationState, 2>>;
 
 protected:
     /// @brief Set center-of-mass energy
@@ -203,7 +195,7 @@ protected:
 private:
     /// @brief Monte Carlo integration implementation
     auto Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                   IntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> IntegrationResult;
+                   Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> Math::IntegrationResult;
 
 protected:
     GENBOD<M, N> fGENBOD; ///< Phase space generator

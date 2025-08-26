@@ -47,8 +47,8 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(double cmsE, c
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
-                                                                       std::array<IntegrationState, 2> integrationState,
-                                                                       CLHEP::HepRandomEngine& rng) -> std::pair<IntegrationResult, std::array<IntegrationState, 2>> {
+                                                                       std::array<Math::MCIntegrationState, 2> integrationState,
+                                                                       CLHEP::HepRandomEngine& rng) -> std::pair<Math::IntegrationResult, std::array<Math::MCIntegrationState, 2>> {
     MasterPrintLn("Estimating normalization factor in {}.", muc::try_demangle(typeid(*this).name()));
 
     // Set task name
@@ -87,7 +87,7 @@ auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<
     MasterPrintLn("Numerator integration completed.");
 
     // Combine result
-    IntegrationResult result;
+    Math::IntegrationResult result;
     result.value = numer.value / denom.value;
     result.uncertainty = std::hypot(denom.value * numer.uncertainty, numer.value * denom.uncertainty) / muc::pow(denom.value, 2);
 
@@ -225,7 +225,7 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMo
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                                                     IntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> IntegrationResult {
+                                                     Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> Math::IntegrationResult {
     // One integration iteration
     const auto Iteration{[&](unsigned long long nSample) {
         using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
@@ -250,7 +250,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         }
         state.sum += sum;
         state.n += nSample;
-        IntegrationResult result;
+        Math::IntegrationResult result;
         result.value = state.sum[0] / state.n;
         result.uncertainty = std::sqrt((state.sum[1] / state.n - muc::pow(result.value, 2)) / state.n);
         return result;
