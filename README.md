@@ -1,7 +1,8 @@
 # Mustard
 
-[![Language](https://img.shields.io/badge/language-C%2B%2B-orange.svg)](https://isocpp.org/)
+[![Language](https://img.shields.io/badge/language-C%2B%2B-magenta.svg)](https://isocpp.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](COPYING)
+[![GitHub release](https://badgen.net/github/release/zhao-shihan/Mustard)](https://github.com/zhao-shihan/Mustard/releases)
 [![GitHub activity](https://img.shields.io/github/commit-activity/m/zhao-shihan/Mustard)](https://github.com/zhao-shihan/Mustard/pulse)
 ![GitHub last commit](https://img.shields.io/github/last-commit/zhao-shihan/Mustard?style=flat)
 [![GitHub contributors](https://img.shields.io/github/contributors/zhao-shihan/Mustard?style=flat)](https://github.com/zhao-shihan/Mustard/graphs/contributors)
