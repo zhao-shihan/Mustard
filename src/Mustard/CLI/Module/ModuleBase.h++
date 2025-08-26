@@ -18,23 +18,20 @@
 
 #pragma once
 
-#include "Mustard/Env/CLI/Module/ModuleBase.h++"
-#include "Mustard/Env/VerboseLevel.h++"
+#include "argparse/argparse.hpp"
 
-#include <optional>
-#include <type_traits>
+namespace Mustard::CLI::inline Module {
 
-namespace Mustard::Env::CLI::inline Module {
+class ModuleBase {
+protected:
+    ModuleBase(argparse::ArgumentParser& argParser);
+    virtual ~ModuleBase() = default;
 
-class BasicModule : public ModuleBase {
-public:
-    BasicModule(argparse::ArgumentParser& argParser);
-
-    auto VerboseLevel() const -> std::optional<enum VerboseLevel>;
-    auto ShowBanner() const -> auto { return not ArgParser().is_used("--lite"); }
+    auto ArgParser() const -> const auto& { return *fArgParser; }
+    auto ArgParser() -> auto& { return *fArgParser; }
 
 private:
-    std::underlying_type_t<enum VerboseLevel> fVerboseLevelValue;
+    argparse::ArgumentParser* const fArgParser;
 };
 
-} // namespace Mustard::Env::CLI::inline Module
+} // namespace Mustard::CLI::inline Module

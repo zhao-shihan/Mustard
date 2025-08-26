@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/CLI/Module/BasicModule.h++"
+#include "Mustard/CLI/Module/BasicModule.h++"
 #include "Mustard/Version.h++"
 
 #include "muc/utility"
@@ -27,11 +27,11 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace Mustard::Env::CLI::inline Module {
+namespace Mustard::CLI::inline Module {
 
 BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
     ModuleBase{argParser},
-    fVerboseLevelValue{muc::to_underlying(VerboseLevel::Warning)} {
+    fVerboseLevelValue{muc::to_underlying(Env::VerboseLevel::Warning)} {
     ArgParser()
         .add_argument("--help")
         .help("Show this help and exit.")
@@ -77,14 +77,14 @@ BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
         .help("Do not show the Mustard banner.");
 }
 
-auto BasicModule::VerboseLevel() const -> std::optional<enum VerboseLevel> {
+auto BasicModule::VerboseLevel() const -> std::optional<Env::VerboseLevel> {
     if (ArgParser().is_used("-v") or ArgParser().is_used("-q")) {
-        return static_cast<enum VerboseLevel>(std::clamp(fVerboseLevelValue,
-                                                         muc::to_underlying(VerboseLevel::Quiet),
-                                                         muc::to_underlying(VerboseLevel::Verbose)));
+        return static_cast<Env::VerboseLevel>(std::clamp(fVerboseLevelValue,
+                                                         muc::to_underlying(Env::VerboseLevel::Quiet),
+                                                         muc::to_underlying(Env::VerboseLevel::Verbose)));
     } else {
         return std::nullopt;
     }
 }
 
-} // namespace Mustard::Env::CLI::inline Module
+} // namespace Mustard::CLI::inline Module

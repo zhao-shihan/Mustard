@@ -16,18 +16,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Mustard/CLI/Module/ModuleBase.h++"
 
-#include "Mustard/Env/CLI/Module/Geant4Module.h++"
-#include "Mustard/Env/CLI/Module/ModuleBase.h++"
-#include "Mustard/Env/CLI/MonteCarloCLI.h++"
+namespace Mustard::CLI::inline Module {
 
-#include <concepts>
+ModuleBase::ModuleBase(argparse::ArgumentParser& argParser) :
+    fArgParser{&argParser} {}
 
-namespace Mustard::Env::CLI {
-
-template<std::derived_from<ModuleBase>... AExtraModules>
-using Geant4CLI = MonteCarloCLI<Geant4Module,
-                                AExtraModules...>;
-
-} // namespace Mustard::Env::CLI
+} // namespace Mustard::CLI::inline Module

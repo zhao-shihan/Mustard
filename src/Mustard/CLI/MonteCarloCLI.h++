@@ -18,20 +18,16 @@
 
 #pragma once
 
-#include "argparse/argparse.hpp"
+#include "Mustard/CLI/BasicCLI.h++"
+#include "Mustard/CLI/Module/ModuleBase.h++"
+#include "Mustard/CLI/Module/MonteCarloModule.h++"
 
-namespace Mustard::Env::CLI::inline Module {
+#include <concepts>
 
-class ModuleBase {
-protected:
-    ModuleBase(argparse::ArgumentParser& argParser);
-    virtual ~ModuleBase() = default;
+namespace Mustard::CLI {
 
-    auto ArgParser() const -> const auto& { return *fArgParser; }
-    auto ArgParser() -> auto& { return *fArgParser; }
+template<std::derived_from<ModuleBase>... AExtraModules>
+using MonteCarloCLI = BasicCLI<MonteCarloModule,
+                               AExtraModules...>;
 
-private:
-    argparse::ArgumentParser* const fArgParser;
-};
-
-} // namespace Mustard::Env::CLI::inline Module
+} // namespace Mustard::CLI

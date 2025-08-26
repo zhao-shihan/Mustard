@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/CLI/CLI.h++"
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Version.h++"
 
@@ -26,7 +26,7 @@
 #include <cstdlib>
 #include <stdexcept>
 
-namespace Mustard::Env::CLI {
+namespace Mustard::CLI {
 
 CLI<>::CLI() :
     fArgcArgv{},
@@ -71,4 +71,4 @@ auto CLI<>::ArgcArgv() const -> ArgcArgvType {
     Throw<std::logic_error>("Command line arguments has not been parsed");
 }
 
-} // namespace Mustard::Env::CLI
+} // namespace Mustard::CLI

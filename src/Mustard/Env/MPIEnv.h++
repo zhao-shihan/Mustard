@@ -18,8 +18,8 @@
 
 #pragma once
 
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/CLI/CLI.h++"
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
 
 #include "mplr/mplr.hpp"

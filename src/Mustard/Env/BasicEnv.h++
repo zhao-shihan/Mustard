@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Env/CLI/CLI.h++"
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
 #include "Mustard/Env/VerboseLevel.h++"
 #include "Mustard/Env/internal/EnvBase.h++"

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/CLI/Module/MonteCarloModule.h++"
+#include "Mustard/CLI/Module/MonteCarloModule.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 
 #include "CLHEP/Random/Random.h"
@@ -26,7 +26,7 @@
 #include <bit>
 #include <random>
 
-namespace Mustard::Env::CLI::inline Module {
+namespace Mustard::CLI::inline Module {
 
 MonteCarloModule::MonteCarloModule(argparse::ArgumentParser& argParser) :
     ModuleBase{argParser} {
@@ -56,4 +56,4 @@ auto MonteCarloModule::SeedRandomIfFlagged() const -> bool {
     return true;
 }
 
-} // namespace Mustard::Env::CLI::inline Module
+} // namespace Mustard::CLI::inline Module

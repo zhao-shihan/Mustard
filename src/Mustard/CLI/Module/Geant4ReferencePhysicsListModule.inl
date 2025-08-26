@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Env::CLI::inline Module {
+namespace Mustard::CLI::inline Module {
 
 template<muc::ceta_string ADefault>
 Geant4ReferencePhysicsListModule<ADefault>::Geant4ReferencePhysicsListModule(argparse::ArgumentParser& argParser) :
@@ -36,7 +36,7 @@ auto Geant4ReferencePhysicsListModule<ADefault>::PhysicsList() -> G4VModularPhys
     }
 
     const auto physicsList{ArgParser().get("--physics-list")};
-    G4PhysListFactory physicsListFactory{muc::to_underlying(BasicEnv::Instance().VerboseLevel())};
+    G4PhysListFactory physicsListFactory{muc::to_underlying(Env::BasicEnv::Instance().VerboseLevel())};
 
     if (not physicsListFactory.IsReferencePhysList(physicsList)) {
         Throw<std::runtime_error>(fmt::format("{} is not a reference physics list", physicsList));
@@ -46,4 +46,4 @@ auto Geant4ReferencePhysicsListModule<ADefault>::PhysicsList() -> G4VModularPhys
     return fReferencePhysicsList;
 }
 
-} // namespace Mustard::Env::CLI::inline Module
+} // namespace Mustard::CLI::inline Module

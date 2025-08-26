@@ -18,15 +18,34 @@
 
 #pragma once
 
-#include "Mustard/Env/CLI/Module/ModuleBase.h++"
+#include "Mustard/CLI/Module/ModuleBase.h++"
+#include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
-namespace Mustard::Env::CLI::inline Module {
+#include "G4PhysListFactory.hh"
+#include "G4VModularPhysicsList.hh"
 
-class MonteCarloModule : public ModuleBase {
+#include "muc/ceta_string"
+#include "muc/utility"
+
+#include "fmt/core.h"
+
+#include <stdexcept>
+#include <string>
+
+namespace Mustard::CLI::inline Module {
+
+template<muc::ceta_string ADefault>
+class Geant4ReferencePhysicsListModule : public ModuleBase {
 public:
-    MonteCarloModule(argparse::ArgumentParser& argParser);
+    Geant4ReferencePhysicsListModule(argparse::ArgumentParser& argParser);
 
-    auto SeedRandomIfFlagged() const -> bool;
+    auto PhysicsList() -> G4VModularPhysicsList*;
+
+private:
+    G4VModularPhysicsList* fReferencePhysicsList;
 };
 
-} // namespace Mustard::Env::CLI::inline Module
+} // namespace Mustard::CLI::inline Module
+
+#include "Mustard/CLI/Module/Geant4ReferencePhysicsListModule.inl"

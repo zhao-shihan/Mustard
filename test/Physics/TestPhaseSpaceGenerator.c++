@@ -1,4 +1,4 @@
-#include "Mustard/Env/CLI/MonteCarloCLI.h++"
+#include "Mustard/CLI/MonteCarloCLI.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/File.h++"
@@ -16,7 +16,7 @@
 #include <cstdlib>
 
 auto main(int argc, char* argv[]) -> int {
-    Mustard::Env::CLI::MonteCarloCLI<> cli;
+    Mustard::CLI::MonteCarloCLI<> cli;
     cli->add_argument("n").help("Number of events to generate.").nargs(1).scan<'i', unsigned long long>();
     cli->add_argument("-o", "--output").help("Output file path.").default_value("test_phase_space_result.root").required().nargs(1);
     cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("NEW").required().nargs(1);

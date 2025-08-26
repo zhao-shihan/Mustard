@@ -18,16 +18,16 @@
 
 #pragma once
 
-#include "Mustard/Env/CLI/BasicCLI.h++"
-#include "Mustard/Env/CLI/Module/ModuleBase.h++"
-#include "Mustard/Env/CLI/Module/MonteCarloModule.h++"
+#include "Mustard/CLI/Module/ModuleBase.h++"
 
-#include <concepts>
+namespace Mustard::CLI::inline Module {
 
-namespace Mustard::Env::CLI {
+class Geant4Module : public ModuleBase {
+public:
+    Geant4Module(argparse::ArgumentParser& argParser);
 
-template<std::derived_from<ModuleBase>... AExtraModules>
-using MonteCarloCLI = BasicCLI<MonteCarloModule,
-                               AExtraModules...>;
+    auto Macro() const -> auto { return ArgParser().present("macro"); }
+    auto IsInteractive() const -> auto { return not Macro().has_value() or ArgParser().get<bool>("-i"); }
+};
 
-} // namespace Mustard::Env::CLI
+} // namespace Mustard::CLI::inline Module

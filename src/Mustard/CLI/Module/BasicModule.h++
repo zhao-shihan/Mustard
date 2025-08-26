@@ -16,12 +16,25 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Env::CLI {
+#pragma once
 
-template<std::derived_from<ModuleBase>... AModules>
-    requires muc::is_type_set_v<AModules...>
-CLI<AModules...>::CLI() :
-    CLI<>{},
-    AModules{ArgParser()}... {}
+#include "Mustard/CLI/Module/ModuleBase.h++"
+#include "Mustard/Env/VerboseLevel.h++"
 
-} // namespace Mustard::Env::CLI
+#include <optional>
+#include <type_traits>
+
+namespace Mustard::CLI::inline Module {
+
+class BasicModule : public ModuleBase {
+public:
+    BasicModule(argparse::ArgumentParser& argParser);
+
+    auto VerboseLevel() const -> std::optional<Env::VerboseLevel>;
+    auto ShowBanner() const -> auto { return not ArgParser().is_used("--lite"); }
+
+private:
+    std::underlying_type_t<Env::VerboseLevel> fVerboseLevelValue;
+};
+
+} // namespace Mustard::CLI::inline Module

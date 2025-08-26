@@ -56,7 +56,7 @@ namespace Mustard::inline Utility {
     }                                                                                \
                                                                                      \
     template<>                                                                       \
-    UseXoshiro<NBit>::UseXoshiro(const Env::CLI::MonteCarloModule& cli) :            \
+    UseXoshiro<NBit>::UseXoshiro(const CLI::MonteCarloModule& cli) :                 \
         fRandom{std::make_unique<Random>()} {                                        \
         /* Set random engines */                                                     \
         CLHEP::HepRandom::setTheEngine(&fRandom->clhep);                             \

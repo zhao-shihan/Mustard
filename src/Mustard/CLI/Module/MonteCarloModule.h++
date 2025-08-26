@@ -16,11 +16,17 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/CLI/Module/ModuleBase.h++"
+#pragma once
 
-namespace Mustard::Env::CLI::inline Module {
+#include "Mustard/CLI/Module/ModuleBase.h++"
 
-ModuleBase::ModuleBase(argparse::ArgumentParser& argParser) :
-    fArgParser{&argParser} {}
+namespace Mustard::CLI::inline Module {
 
-} // namespace Mustard::Env::CLI::inline Module
+class MonteCarloModule : public ModuleBase {
+public:
+    MonteCarloModule(argparse::ArgumentParser& argParser);
+
+    auto SeedRandomIfFlagged() const -> bool;
+};
+
+} // namespace Mustard::CLI::inline Module

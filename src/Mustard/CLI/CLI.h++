@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Env/CLI/Module/ModuleBase.h++"
+#include "Mustard/CLI/Module/ModuleBase.h++"
 
 #include "argparse/argparse.hpp"
 
@@ -29,7 +29,7 @@
 #include <string_view>
 #include <utility>
 
-namespace Mustard::Env::CLI {
+namespace Mustard::CLI {
 
 template<std::derived_from<ModuleBase>... AModules>
     requires muc::is_type_set_v<AModules...>
@@ -77,6 +77,6 @@ public:
     CLI();
 };
 
-} // namespace Mustard::Env::CLI
+} // namespace Mustard::CLI
 
-#include "Mustard/Env/CLI/CLI.inl"
+#include "Mustard/CLI/CLI.inl"

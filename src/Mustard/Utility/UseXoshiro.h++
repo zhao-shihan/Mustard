@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Env/CLI/Module/MonteCarloModule.h++"
+#include "Mustard/CLI/Module/MonteCarloModule.h++"
 
 #include <memory>
 
@@ -53,7 +53,7 @@ public:
     /// @param cli MonteCarloModule CLI interface for seed configuration
     /// @note Also performs decorrelation between CLHEP and ROOT engines
     ///       and parallel computing reseeding
-    explicit UseXoshiro(const Env::CLI::MonteCarloModule& cli);
+    explicit UseXoshiro(const CLI::MonteCarloModule& cli);
     /// @brief Clean up and reset global engine pointers
     ~UseXoshiro();
 
