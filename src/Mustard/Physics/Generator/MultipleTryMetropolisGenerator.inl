@@ -21,18 +21,12 @@ namespace Mustard::inline Physics::inline Generator {
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         double delta, unsigned discard) :
-    EventGenerator<M, N>{},
-    fCMSEnergy{},
-    fMatrixElement{},
-    fIRCut{},
+    Base{cmsE, pdgID, mass},
     fIdenticalSet{},
-    fBias{[](auto&&) { return 1; }},
-    fGENBOD{pdgID, mass},
     fMCMCDelta{},
     fMCMCDiscard{},
     fBurntIn{},
     fMarkovChain{} {
-    CMSEnergy(cmsE);
     MCMCDelta(delta);
     MCMCDiscard(discard);
 }
@@ -43,7 +37,7 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double c
                                                                         double delta, unsigned discard) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     MultipleTryMetropolisGenerator{cmsE, pdgID, mass, delta, discard} {
-    fMatrixElement.InitialStatePolarization(polarization);
+    this->InitialStatePolarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -52,7 +46,7 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double c
                                                                         double delta, unsigned discard) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
     MultipleTryMetropolisGenerator{cmsE, pdgID, mass, delta, discard} {
-    fMatrixElement.InitialStatePolarization(polarization);
+    this->InitialStatePolarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -61,19 +55,19 @@ MultipleTryMetropolisGenerator<M, N, A>::~MultipleTryMetropolisGenerator() = def
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization() const -> CLHEP::Hep3Vector
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    return fMatrixElement.InitialStatePolarization();
+    return Base::InitialStatePolarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return fMatrixElement.InitialStatePolarization(i);
+    return Base::InitialStatePolarization(i);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return fMatrixElement.InitialStatePolarization();
+    return Base::InitialStatePolarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -82,7 +76,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(CLHEP::He
     if (not pol.isNear(InitialStatePolarization(), muc::default_tolerance<double>)) {
         BurnInRequired();
     }
-    fMatrixElement.InitialStatePolarization(pol);
+    Base::InitialStatePolarization(pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -91,7 +85,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(int i, CL
     if (not pol.isNear(InitialStatePolarization(i), muc::default_tolerance<double>)) {
         BurnInRequired();
     }
-    fMatrixElement.InitialStatePolarization(i, pol);
+    Base::InitialStatePolarization(i, pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -101,12 +95,12 @@ auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(const std
                                [](auto&& a, auto&& b) { return a.isNear(b, muc::default_tolerance<double>); })) {
         BurnInRequired();
     }
-    fMatrixElement.InitialStatePolarization(pol);
+    Base::InitialStatePolarization(pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::Bias(BiasFunction B) -> void {
-    fBias = std::move(B);
+    Base::Bias(B);
     BurnInRequired();
 }
 
@@ -141,13 +135,13 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
     while (true) {
         std::ranges::generate(fMarkovChain.state.u, [&rng] { return rng.flat(); });
         const auto event{DirectPhaseSpace(fMarkovChain.state.u)};
-        if (not IRSafe(event.p)) {
+        if (not this->IRSafe(event.p)) {
             continue;
         }
-        if (const auto bias{ValidBias(event.p)};
+        if (const auto bias{this->ValidBias(event.p)};
             bias > std::numeric_limits<double>::epsilon()) {
             const auto& [detJ, _, pF]{event};
-            fMarkovChain.biasedMSqDetJ = ValidBiasedMSqDetJ(pF, bias, detJ);
+            fMarkovChain.biasedMSqDetJ = this->ValidBiasedMSqDetJ(pF, bias, detJ);
             break;
         }
     }
@@ -174,7 +168,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
-    CheckCMSEnergyMatch(pI);
+    this->CheckCMSEnergyMatch(pI);
     const auto beta{this->BoostToCMS(pI)};
 
     if (not fBurntIn) [[unlikely]] {
@@ -191,156 +185,26 @@ auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine&
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
-                                                                          std::array<IntegrationState, 2> integrationState,
-                                                                          CLHEP::HepRandomEngine& rng) -> std::pair<IntegrationResult, std::array<IntegrationState, 2>> {
-    // Monte Carlo integration method
-    const auto Integrate{[&](std::regular_invocable<const Event&> auto&& Integrand, IntegrationState& state) {
-        // One integration iteration
-        const auto Iteration{[&](unsigned long long nSample) {
-            using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
-            muc::array2ld sum{};
-            muc::array2ld compensation{};
-            const auto KahanAdd{[&](muc::array2ld value) { // improve numeric stability
-                const auto correctedValue{value - compensation};
-                const auto newSum{sum + correctedValue};
-                compensation = (newSum - sum) - correctedValue;
-                sum = newSum;
-            }};
-            executor(nSample, [&](auto) {
-                const auto event{fGENBOD(rng, {fCMSEnergy, {}})};
-                if (not IRSafe(event.p)) {
-                    return;
-                }
-                const long double value{Integrand(event)};
-                KahanAdd({value, muc::pow(value, 2)});
-            });
-            if (mplr::available()) {
-                mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
-            }
-            state.sum += sum;
-            state.n += nSample;
-            IntegrationResult result;
-            result.value = state.sum[0] / state.n;
-            result.uncertainty = std::sqrt((state.sum[1] / state.n - muc::pow(result.value, 2)) / state.n);
-            return result;
-        }};
-        // Iteration loop
-        auto nSample{static_cast<unsigned long long>(10 * muc::pow(precisionGoal, -2))};
-        while (true) {
-            if (state.n == 0) {
-                MasterPrintLn("Restarting integration.");
-            } else {
-                MasterPrintLn("Continuing integration from state {} {} {}.", state.sum[0], state.sum[1], state.n);
-            }
-            MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", nSample, precisionGoal);
-            const auto result{Iteration(nSample)};
-            const auto relativeUncertainty{result.uncertainty / result.value};
-            if (relativeUncertainty < precisionGoal) {
-                MasterPrintLn("Current precision: {:.3}, precision goal reached.", relativeUncertainty);
-                return result;
-            }
-            MasterPrintLn("Current precision: {:.3}, precision goal not reached.", relativeUncertainty);
-            // Increase sample size adaptively
-            const auto factor{1.2 * muc::pow(relativeUncertainty / precisionGoal, 2) - 1};
-            if (std::isfinite(factor)) {
-                nSample = factor * state.n;
-            } else {
-                nSample *= 10;
-            }
-            nSample = std::max<unsigned long long>(executor.NProcess(), nSample);
-        }
-    }};
-
-    MasterPrintLn("Estimating normalization factor in {}.", muc::try_demangle(typeid(*this).name()));
-
-    // Set task name
-    auto originalExecutionName{executor.ExecutionName()};
-    auto originalTaskName{executor.TaskName()};
-    auto _{gsl::finally([&] {
-        executor.ExecutionName(std::move(originalExecutionName));
-        executor.TaskName(std::move(originalTaskName));
-    })};
-    executor.ExecutionName("Integration");
-    executor.TaskName("Sample");
-
-    // Seeding random engine
-    Parallel::ReseedRandomEngine(&rng);
-
-    // Start integration
-    muc::chrono::stopwatch stopwatch;
-
-    // Compute denominator
-    MasterPrintLn("Computing denominator integral.");
-    const auto DenomIntegrand{[this](const Event& event) {
-        const auto& [detJ, _, pF]{event};
-        return ValidBiasedMSqDetJ(pF, 1, detJ);
-    }};
-    const auto denom{Integrate(DenomIntegrand, integrationState[1])};
-    MasterPrintLn("Denominator integration completed.");
-
-    // Compute numerator
-    MasterPrintLn("Computing numerator integral.");
-    const auto NumerIntegrand{[this](const Event& event) {
-        const auto& [detJ, _, pF]{event};
-        const auto bias{ValidBias(pF)};
-        return ValidBiasedMSqDetJ(pF, bias, detJ);
-    }};
-    const auto numer{Integrate(NumerIntegrand, integrationState[0])};
-    MasterPrintLn("Numerator integration completed.");
-
-    // Combine result
-    IntegrationResult result;
-    result.value = numer.value / denom.value;
-    result.uncertainty = std::hypot(denom.value * numer.uncertainty, numer.value * denom.uncertainty) / muc::pow(denom.value, 2);
-
-    // Report result
-    auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
-    if (mplr::available()) {
-        mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
-    }
-    const auto& [s1, s2]{integrationState};
-    MasterPrint("Estimation completed in {:.2f}s.\n"
-                "Integration state (integration can be contined from here):\n"
-                "  {} {} {} {} {} {}\n"
-                "Normalization factor from user-defined bias:\n"
-                "  {} +/- {}  (rel. unc.: {:.2}%)\n",
-                time, s1.sum[0], s1.sum[1], s1.n, s2.sum[0], s2.sum[1], s2.n,
-                result.value, result.uncertainty,
-                result.uncertainty / result.value * 100);
-    return {result, integrationState};
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::CMSEnergy(double cmsE) -> void {
-    if (cmsE <= 0) [[unlikely]] {
-        PrintError(fmt::format("Non-positive CMS energy (got {})", cmsE));
-    }
-    if (not muc::isclose(cmsE, fCMSEnergy)) {
+    if (not muc::isclose(cmsE, Base::CMSEnergy())) {
         BurnInRequired();
     }
-    fCMSEnergy = cmsE;
+    Base::CMSEnergy(cmsE);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::Mass(const std::array<double, N>& mass) -> void {
-    if (not std::ranges::equal(mass, fGENBOD.Mass(),
+    if (not std::ranges::equal(mass, this->fGENBOD.Mass(),
                                [](auto a, auto b) { return muc::isclose(a, b); })) {
         BurnInRequired();
     }
-    fGENBOD.Mass(mass);
+    Base::Mass(mass);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::IRCut(int i, double cut) -> void {
-    if (cut <= 0) [[unlikely]] {
-        PrintWarning(fmt::format("Non-positive IR cut for particle {} (got {})", i, cut));
-    }
-    if (muc::pow(fGENBOD.Mass(i) / fCMSEnergy, 2) > muc::default_tolerance<double>) [[unlikely]] {
-        PrintWarning(fmt::format("IR cut set for massive particle {} (mass = {})", i, fGENBOD.Mass(i)));
-    }
     BurnInRequired();
-    fIRCut.push_back({i, cut});
+    Base::IRCut(i, cut);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -362,17 +226,6 @@ auto MultipleTryMetropolisGenerator<M, N, A>::AddIdenticalSet(std::vector<int> s
         }
     }
     fIdenticalSet.emplace_back(std::move(set));
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::CheckCMSEnergyMatch(const InitialStateMomenta& pI) const -> void {
-    if (pI == InitialStateMomenta{}) {
-        return;
-    }
-    const auto cmsE{this->CalculateCMSEnergy(pI)};
-    if (not muc::isclose(cmsE, fCMSEnergy)) [[unlikely]] {
-        PrintWarning(fmt::format("Initial state 4-momenta does not match currently set CMS energy (got {}, expect {})", cmsE, fCMSEnergy));
-    }
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -435,12 +288,12 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
             StateProposal(fMarkovChain.state, stateY[i]); // Draw y_i from T(x, *)
             eventY[i] = PhaseSpace(stateY[i]);            // y_i -> event(y_i) = g(y_i)
             const auto& [detJ, _, pF]{eventY[i]};
-            if (not IRSafe(pF)) {
+            if (not this->IRSafe(pF)) {
                 piY[i] = 0;
                 continue;
             }
-            biasY[i] = ValidBias(pF);                        // g(y_i) -> B(g(y_i))
-            piY[i] = ValidBiasedMSqDetJ(pF, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
+            biasY[i] = this->ValidBias(pF);                        // g(y_i) -> B(g(y_i))
+            piY[i] = this->ValidBiasedMSqDetJ(pF, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
         }
         const auto sumPiY{muc::ranges::reduce(piY)};         // pi(y_1) + ... + pi(y_k)
         const auto selected{MultinomialSample(piY, sumPiY)}; // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
@@ -449,11 +302,11 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
         for (int i{}; i < kMTM - 1; ++i) {
             StateProposal(stateY[selected], stateX);      // Draw x_i from T(Y, *)
             const auto [detJ, _, pF]{PhaseSpace(stateX)}; // x_i -> event(x_i) = g(x_i)
-            if (not IRSafe(pF)) {
+            if (not this->IRSafe(pF)) {
                 continue;
             }
-            const auto biasX{ValidBias(pF)};               // g(x_i) -> B(g(x_i))
-            sumPiX += ValidBiasedMSqDetJ(pF, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
+            const auto biasX{this->ValidBias(pF)};               // g(x_i) -> B(g(x_i))
+            sumPiX += this->ValidBiasedMSqDetJ(pF, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
         }
 
         // accept/reject Y
@@ -472,55 +325,6 @@ auto MultipleTryMetropolisGenerator<M, N, A>::PhaseSpace(const MarkovChain::Stat
     auto event{DirectPhaseSpace(state.u)};
     event.p = std::apply([&](auto... i) { return FinalStateMomenta{event.p[i]...}; }, state.pID);
     return event;
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF) const -> bool {
-    for (auto&& [i, cut] : fIRCut) {
-        if (pF[i].e() <= cut) {
-            return false;
-        }
-    }
-    return true;
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::ValidBias(const FinalStateMomenta& pF) const -> double {
-    const auto bias{fBias(pF)};
-    constexpr auto Format{[](const FinalStateMomenta& pF) {
-        std::string where;
-        for (auto&& p : pF) {
-            where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
-        }
-        return where;
-    }};
-    if (not std::isfinite(bias)) {
-        Throw<std::runtime_error>(fmt::format("Infinite bias found (got {} at {})", bias, Format(pF)));
-    }
-    if (bias < 0) {
-        Throw<std::runtime_error>(fmt::format("Negative bias found (got {} at {})", bias, Format(pF)));
-    }
-    return bias;
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMomenta& pF, double bias, double detJ) const -> double {
-    const auto value{fMatrixElement({fCMSEnergy, {}}, pF) * bias * detJ}; // |M|² × bias × |J|
-    const auto Where{[&] {
-        auto where{fmt::format("({})", detJ)};
-        for (auto&& p : pF) {
-            where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
-        }
-        where += fmt::format(" Bias={}", bias);
-        return where;
-    }};
-    if (not std::isfinite(value)) {
-        Throw<std::runtime_error>(fmt::format("Infinite biased PDF found (got {} at {})", value, Where()));
-    }
-    if (value < 0) {
-        Throw<std::runtime_error>(fmt::format("Negative biased PDF found (got {} at {})", value, Where()));
-    }
-    return value;
 }
 
 } // namespace Mustard::inline Physics::inline Generator

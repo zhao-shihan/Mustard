@@ -18,14 +18,11 @@
 
 #pragma once
 
-#include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Parallel/ReseedRandomEngine.h++"
-#include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
+#include "Mustard/Physics/Generator/MatrixElementBasedGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
-#include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/Random.h"
@@ -43,7 +40,7 @@
 
 #include "gsl/gsl"
 
-#include "fmt/ranges.h"
+#include "fmt/core.h"
 
 #include <algorithm>
 #include <array>
@@ -72,16 +69,20 @@ namespace Mustard::inline Physics::inline Generator {
 /// @tparam N Number of final-state particles
 /// @tparam A Matrix element of the process to be generated
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-class MultipleTryMetropolisGenerator : public EventGenerator<M, N> {
+class MultipleTryMetropolisGenerator : public MatrixElementBasedGenerator<M, N, A> {
+private:
+    /// @brief The base class
+    using Base = MatrixElementBasedGenerator<M, N, A>;
+
 public:
     /// @brief Initial-state 4-momentum (or container type when M>1)
-    using typename EventGenerator<M, N>::InitialStateMomenta;
+    using typename Base::InitialStateMomenta;
     /// @brief Final-state 4-momentum container type
-    using typename EventGenerator<M, N>::FinalStateMomenta;
+    using typename Base::FinalStateMomenta;
     /// @brief Generated event type
-    using typename EventGenerator<M, N>::Event;
+    using typename Base::Event;
     /// @brief User-defined bias function type
-    using BiasFunction = std::function<auto(const FinalStateMomenta&)->double>;
+    using typename Base::BiasFunction;
 
 public:
     /// @brief Construct event generator
@@ -136,26 +137,27 @@ public:
 
     /// @brief Set polarization vector
     /// @param pol Polarization vector (|pol| ≤ 1)
-    /// @note Triggers Markov chain reset (requires new burn-in)
-    /// This overload is only enabled for polarized decay
+    /// @note This overload is only enabled for polarized decay
+    /// @warning The Markov chain requires burn-in if value changes
     auto InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Set polarization for single initial particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
-    /// @note Triggers Markov chain reset (requires new burn-in).
-    /// This overload is only enabled for polarized scattering
+    /// @note This overload is only enabled for polarized scattering
+    /// @warning The Markov chain requires burn-in if value changes
     auto InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
     /// @brief Set all polarization vectors
     /// @param pol Array of polarization vectors for each initial particle (all |pol| ≤ 1)
-    /// @note Triggers Markov chain reset (requires new burn-in)
-    /// This overload is only enabled for polarized scattering
+    /// @note This overload is only enabled for polarized scattering
+    /// @warning The Markov chain requires burn-in if value changes
     auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
     /// @param B User-defined bias
+    /// @warning The Markov chain requires burn-in after set
     auto Bias(BiasFunction B) -> void;
 
     /// @brief Set MCMC step size
@@ -175,55 +177,23 @@ public:
     /// @return Generated event
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads
-    using EventGenerator<M, N>::operator();
-
-public:
-    /// @brief Integration internal state
-    struct IntegrationState {
-        muc::array2ld sum;    ///< Sum of integrand and squared integrand
-        unsigned long long n; ///< Sample size
-    };
-
-    /// @brief Integration result
-    struct IntegrationResult {
-        double value;       ///< Estimated normalization constant
-        double uncertainty; ///< MC integration uncertainty
-    };
-
-public:
-    /// @brief Estimate normalization factor.
-    /// Multiply event weights with the normalization factor
-    /// to normalize weights to the number of generated events.
-    /// Essential for calculating total cross-section or width
-    /// when bias function is set
-    /// @param executor An executor instance
-    /// @param precisionGoal Target relative uncertainty (e.g. 0.01 for 1% rel. unc.)
-    /// @param integrationState Integration state for continuing normalization
-    /// @param rng Reference to CLHEP random engine
-    /// @return Estimated normalization factor and integration state
-    auto EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
-                                     std::array<IntegrationState, 2> integrationState = {},
-                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::pair<IntegrationResult, std::array<IntegrationState, 2>>;
+    using Base::operator();
 
 protected:
-    /// @brief Get currently set center-of-mass frame energy
-    auto CMSEnergy() const -> auto { return fCMSEnergy; }
     /// @brief Set center-of-mass energy
     /// @param cmsE Center-of-mass energy
-    /// @warning The Markov chain requires burn-in after center-of-mass energy changes
+    /// @warning The Markov chain requires burn-in if value changes
     auto CMSEnergy(double cmsE) -> void;
 
-    /// @brief Set particle PDG IDs
-    /// @param pdgID Array of particle PDG IDs
-    auto PDGID(const std::array<int, N>& pdgID) -> void { fGENBOD.PDGID(pdgID); }
     /// @brief Set particle masses
     /// @param mass Array of particle masses
+    /// @warning The Markov chain requires burn-in if value changes
     auto Mass(const std::array<double, N>& mass) -> void;
 
     /// @brief Set IR cuts for single final state particle
     /// @param i Particle index (0 ≤ i < N)
     /// @param cut IR cut value
-    /// @warning The Markov chain requires burn-in after IR cut changes
+    /// @warning The Markov chain requires burn-in after set
     auto IRCut(int i, double cut) -> void;
     /// @brief Add an identical particle index set.
     /// @note Add the set is not necessary but recommended for reducing
@@ -243,10 +213,6 @@ private:
     };
 
 private:
-    /// @brief Check whether initial state momentum passed to generator matches
-    /// currently set CMS energy
-    /// @param pI Initial-state 4-momenta passed to generator
-    auto CheckCMSEnergyMatch(const InitialStateMomenta& pI) const -> void;
     /// @brief Advance Markov chain by one event
     /// @param rng Reference to CLHEP random engine
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
@@ -255,35 +221,14 @@ private:
     /// @brief Transform hypercube to phase space
     /// @param u A random state
     /// @return An event from phase space
-    auto DirectPhaseSpace(const typename GENBOD<M, N>::RandomState& u) -> auto { return fGENBOD(u, {fCMSEnergy, {}}); }
+    auto DirectPhaseSpace(const typename GENBOD<M, N>::RandomState& u) -> auto { return this->fGENBOD(u, {Base::CMSEnergy(), {}}); }
     /// @brief Transform state space to phase space
     /// @param state A Markov chain state
     /// @return An event from phase space
     auto PhaseSpace(const MarkovChain::State& state) -> Event;
-    /// @brief Check final-state momenta pass the IR cut
-    /// @param pF Final states' 4-momenta
-    /// @return true if momenta is IR-safe
-    auto IRSafe(const FinalStateMomenta& pF) const -> bool;
-    /// @brief Get bias with range check
-    /// @param pF Final states' 4-momenta
-    /// @exception `std::runtime_error` if invalid bias value produced
-    /// @return B(p1, ..., pN)
-    auto ValidBias(const FinalStateMomenta& pF) const -> double;
-    /// @brief Get reweighted PDF value with range check
-    /// @param pF Final states' 4-momenta
-    /// @param event Final states from phase space
-    /// @param bias Bias value at the same phase space point (from BiasWithCheck)
-    /// @exception `std::runtime_error` if invalid PDF value produced
-    /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN) × |J|(p1, ..., pN)
-    auto ValidBiasedMSqDetJ(const FinalStateMomenta& pF, double bias, double detJ) const -> double;
 
 private:
-    double fCMSEnergy;                           ///< Currently set CM energy
-    [[no_unique_address]] A fMatrixElement;      ///< Matrix element
-    std::vector<std::pair<int, double>> fIRCut;  ///< IR cuts
     std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
-    BiasFunction fBias;                          ///< User bias function
-    GENBOD<M, N> fGENBOD;                        ///< Phase space generator
                                                  //
     double fMCMCDelta;                           ///< MCMC max step size along one dimension
     unsigned fMCMCDiscard;                       ///< Events discarded between 2 samples
