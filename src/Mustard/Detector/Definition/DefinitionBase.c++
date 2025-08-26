@@ -132,7 +132,7 @@ auto DefinitionBase::RegisterMaterial(gsl::not_null<G4Material*> material) const
         return;
     }
     const auto& lvs{LogicalVolumes()};
-    assert(lvs.size() > 0);
+    Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
         internal::RegisterMaterial(lv, material);
     }
@@ -143,7 +143,7 @@ auto DefinitionBase::RegisterMaterial(std::string_view logicalVolumeName, gsl::n
         return;
     }
     const auto& lvs{LogicalVolumes(logicalVolumeName)};
-    assert(lvs.size() > 0);
+    Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
         internal::RegisterMaterial(lv, material);
     }
@@ -168,7 +168,7 @@ auto DefinitionBase::RegisterRegion(gsl::not_null<G4Region*> region) const -> vo
         return;
     }
     const auto& lvs{LogicalVolumes()};
-    assert(lvs.size() > 0);
+    Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
         internal::RegisterRegion(lv, region);
     }
@@ -179,7 +179,7 @@ auto DefinitionBase::RegisterRegion(std::string_view logicalVolumeName, gsl::not
         return;
     }
     const auto& lvs{LogicalVolumes(logicalVolumeName)};
-    assert(lvs.size() > 0);
+    Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
         internal::RegisterRegion(lv, region);
     }
@@ -204,7 +204,7 @@ auto DefinitionBase::RegisterSD(gsl::not_null<G4VSensitiveDetector*> sd) const -
         return;
     }
     const auto& lvs{LogicalVolumes()};
-    assert(lvs.size() > 0);
+    Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
         internal::RegisterSD(lv, sd);
     }
@@ -215,7 +215,7 @@ auto DefinitionBase::RegisterSD(std::string_view logicalVolumeName, gsl::not_nul
         return;
     }
     const auto& lvs{LogicalVolumes(logicalVolumeName)};
-    assert(lvs.size() > 0);
+    Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
         internal::RegisterSD(lv, sd);
     }
@@ -240,7 +240,7 @@ auto DefinitionBase::RegisterField(std::unique_ptr<G4FieldManager> fieldManager,
         return;
     }
     const auto& lvs{LogicalVolumes()};
-    assert(lvs.size() > 0);
+    Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
         internal::RegisterField(lv, fieldManager.get(), forceToAllDaughters);
     }
@@ -252,7 +252,7 @@ auto DefinitionBase::RegisterField(std::string_view logicalVolumeName, std::uniq
         return;
     }
     const auto& lvs{LogicalVolumes(logicalVolumeName)};
-    assert(lvs.size() > 0);
+    Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
         internal::RegisterField(lv, fieldManager.get(), forceToAllDaughters);
     }
@@ -307,7 +307,7 @@ auto DefinitionBase::LogicalVolumes() const -> const std::vector<G4LogicalVolume
     if (fFirstLogicalVolumes == nullptr) {
         Throw<std::logic_error>(fmt::format("No logical volume in {}", muc::try_demangle(typeid(*this).name())));
     }
-    assert(not fLogicalVolumes.empty());
+    Ensures(not fLogicalVolumes.empty());
     return *fFirstLogicalVolumes;
 }
 
@@ -343,7 +343,7 @@ auto DefinitionBase::PhysicalVolumes() const -> const std::vector<G4VPhysicalVol
     if (fFirstPhysicalVolumes == nullptr) {
         Throw<std::logic_error>(fmt::format("No physical volume in {}", muc::try_demangle(typeid(*this).name())));
     }
-    assert(not fPhysicalVolumes.empty());
+    Ensures(not fPhysicalVolumes.empty());
     return *fFirstPhysicalVolumes;
 }
 

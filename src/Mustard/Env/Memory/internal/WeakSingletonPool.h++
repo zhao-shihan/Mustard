@@ -22,6 +22,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
+#include "muc/hash_map"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -34,7 +35,6 @@
 #include <string>
 #include <typeindex>
 #include <typeinfo>
-#include <unordered_map>
 
 namespace Mustard::Env::Memory::internal {
 
@@ -61,7 +61,7 @@ public:
     static auto Mutex() -> auto& { return fgMutex; }
 
 private:
-    std::unordered_map<std::type_index, const std::weak_ptr<void*>> fInstanceMap;
+    muc::flat_hash_map<std::type_index, const std::weak_ptr<void*>> fInstanceMap;
 
     static WeakSingletonPool* fgInstance;
     static bool fgInstantiated;

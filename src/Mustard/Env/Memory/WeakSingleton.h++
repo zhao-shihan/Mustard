@@ -29,7 +29,6 @@
 
 #include "fmt/core.h"
 
-#include <cassert>
 #include <memory>
 #include <mutex>
 #include <stdexcept>

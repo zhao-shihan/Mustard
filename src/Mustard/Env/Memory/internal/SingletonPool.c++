@@ -21,7 +21,6 @@
 #include "gsl/gsl"
 
 #include <algorithm>
-#include <cassert>
 
 namespace Mustard::Env::Memory::internal {
 

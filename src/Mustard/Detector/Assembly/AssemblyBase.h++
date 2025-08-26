@@ -20,6 +20,7 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 
+#include "muc/hash_map"
 #include "muc/utility"
 
 #include "fmt/core.h"
@@ -29,8 +30,6 @@
 #include <stdexcept>
 #include <typeindex>
 #include <typeinfo>
-#include <unordered_map>
-#include <unordered_set>
 
 namespace Mustard::Detector {
 
@@ -88,7 +87,7 @@ private:
     };
 
 private:
-    std::unordered_map<std::type_index, std::unique_ptr<Definition::DefinitionBase, DeleteIfTopmost>> fTop;
+    muc::flat_hash_map<std::type_index, std::unique_ptr<Definition::DefinitionBase, DeleteIfTopmost>> fTop;
 };
 
 } // namespace Assembly

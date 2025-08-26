@@ -136,9 +136,11 @@ MUSTARD_ALWAYS_INLINE auto Tuple<Ts...>::VisitImpl(gsl::index i, auto&& F) const
 template<TupleModelizable... Ts>
 auto Tuple<Ts...>::DynIndex(std::string_view name) -> gsl::index {
     static const auto index{
-        []<gsl::index... Is>(gslx::index_sequence<Is...>) { // clang-format off
-            return std::unordered_map<std::string_view, gsl::index>{
-                {std::tuple_element_t<Is, typename Model::StdTuple>::Name().sv(), Is}...}; // clang-format on
+        []<gsl::index... Is>(gslx::index_sequence<Is...>) {
+            muc::flat_hash_map<std::string_view, gsl::index> indexMap;
+            indexMap.reserve(sizeof...(Is));
+            (indexMap.emplace(std::tuple_element_t<Is, typename Model::StdTuple>::Name().sv(), Is), ...);
+            return indexMap;
         }(gslx::make_index_sequence<Size()>{})};
     try {
         return index.at(name);

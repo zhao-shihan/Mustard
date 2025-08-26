@@ -20,6 +20,8 @@
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
+#include "muc/hash_set"
+
 namespace Mustard::Detector::Assembly {
 
 auto AssemblyBase::Get(std::type_index definition) const -> const Definition::DefinitionBase& {
@@ -68,7 +70,8 @@ auto AssemblyBase::TopComplete() -> void {
         }
     }
     // check from same family
-    std::unordered_set<const Definition::DefinitionBase*> mother;
+    muc::flat_hash_set<const Definition::DefinitionBase*> mother;
+    mother.reserve(fTop.size());
     for (auto&& [_, top] : fTop) {
         const Definition::DefinitionBase* myMother{top.get()};
         while (not myMother->Topmost()) {

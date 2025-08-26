@@ -25,6 +25,7 @@
 
 #include "G4UImessenger.hh"
 
+#include "muc/hash_set"
 #include "muc/tuple"
 #include "muc/utility"
 
@@ -37,7 +38,6 @@
 #include <functional>
 #include <tuple>
 #include <typeinfo>
-#include <unordered_set>
 
 namespace Mustard::Geant4X::inline Interface {
 
@@ -94,7 +94,7 @@ protected:
 
 private:
     mutable bool fDelivering;                                           ///< Delivery state flag (prevents deregistration during delivery)
-    std::tuple<std::unordered_set<ARecipients*>...> fRecipientSetTuple; ///< Type-segregated recipient sets
+    std::tuple<muc::flat_hash_set<ARecipients*>...> fRecipientSetTuple; ///< Type-segregated recipient sets
 };
 
 } // namespace Mustard::Geant4X::inline Interface

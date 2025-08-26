@@ -26,6 +26,7 @@
 
 #include "muc/ceta_string"
 #include "muc/concepts"
+#include "muc/hash_map"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -39,7 +40,6 @@
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
-#include <unordered_map>
 #include <utility>
 
 namespace Mustard::Data {

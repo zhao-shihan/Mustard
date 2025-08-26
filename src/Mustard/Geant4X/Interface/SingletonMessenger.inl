@@ -34,7 +34,7 @@ SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::Register(gsl
     NonCopyableBase{},
     fRecipient{recipient} {
     static_assert(muc::tuple_contains_unique_v<std::tuple<ARecipients...>, ARecipient>);
-    get<std::unordered_set<ARecipient*>>(SingletonMessenger::Instance().fRecipientSetTuple).emplace(fRecipient);
+    get<muc::flat_hash_set<ARecipient*>>(SingletonMessenger::Instance().fRecipientSetTuple).emplace(fRecipient);
 }
 
 template<typename ADerived, typename... ARecipients>
@@ -48,14 +48,14 @@ SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::~Register() 
         PrintError("De-register from SingletonMessenger during delivering (fatal error)");
         std::terminate();
     }
-    get<std::unordered_set<ARecipient*>>(messenger.fRecipientSetTuple).erase(fRecipient);
+    get<muc::flat_hash_set<ARecipient*>>(messenger.fRecipientSetTuple).erase(fRecipient);
 }
 
 template<typename ADerived, typename... ARecipients>
 template<typename ARecipient>
     requires muc::tuple_contains_unique_v<std::tuple<ARecipients...>, ARecipient>
 auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& Action) const -> void {
-    const auto& recipientSet{get<std::unordered_set<ARecipient*>>(fRecipientSetTuple)};
+    const auto& recipientSet{get<muc::flat_hash_set<ARecipient*>>(fRecipientSetTuple)};
     if (recipientSet.empty()) {
         PrintError(fmt::format("Error: {} not registered", muc::try_demangle(typeid(ARecipient).name())));
         return;
