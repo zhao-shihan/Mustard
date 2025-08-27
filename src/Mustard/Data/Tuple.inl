@@ -139,7 +139,7 @@ auto Tuple<Ts...>::DynIndex(std::string_view name) -> gsl::index {
         []<gsl::index... Is>(gslx::index_sequence<Is...>) {
             muc::flat_hash_map<std::string_view, gsl::index> indexMap;
             indexMap.reserve(sizeof...(Is));
-            (indexMap.emplace(std::tuple_element_t<Is, typename Model::StdTuple>::Name().sv(), Is), ...);
+            (..., indexMap.emplace(std::tuple_element_t<Is, typename Model::StdTuple>::Name().sv(), Is));
             return indexMap;
         }(gslx::make_index_sequence<Size()>{})};
     try {
