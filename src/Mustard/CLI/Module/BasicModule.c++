@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/BasicModule.h++"
 #include "Mustard/Version.h++"
 
@@ -25,38 +26,42 @@
 
 namespace Mustard::CLI::inline Module {
 
-BasicModule::BasicModule(argparse::ArgumentParser& argParser) :
-    ModuleBase{argParser},
+BasicModule::BasicModule(gsl::not_null<CLI<>*> cli) :
+    ModuleBase{cli},
     fVerboseLevelValue{muc::to_underlying(Env::VerboseLevel::Warning)} {
-    ArgParser()
-        .add_argument("-v", "--verbose")
+    TheCLI()
+        ->add_argument("-v", "--verbose")
         .help("Increase verbose level (-2: quiet, -1: error, 0: warning (default), 1: informative, 2: verbose). "
               "This is repeatable (e.g. -v -v or -vv) and can be combined with -q or --quiet (e.g. -vvq (=1) -qv (=0) -qqvqv (=-1)).")
         .flag()
         .append()
         .nargs(0)
         .action([this](auto&&) { ++fVerboseLevelValue; });
-    ArgParser()
-        .add_argument("-q", "--quiet")
+    TheCLI()
+        ->add_argument("-q", "--quiet")
         .help("Decrease verbose level (see previous).")
         .flag()
         .append()
         .nargs(0)
         .action([this](auto&&) { --fVerboseLevelValue; });
-    ArgParser()
-        .add_argument("--lite")
+    TheCLI()
+        ->add_argument("--lite")
         .flag()
         .help("Do not show the Mustard banner.");
 }
 
 auto BasicModule::VerboseLevel() const -> std::optional<Env::VerboseLevel> {
-    if (ArgParser().is_used("-v") or ArgParser().is_used("-q")) {
+    if (TheCLI()->is_used("-v") or TheCLI()->is_used("-q")) {
         return static_cast<Env::VerboseLevel>(std::clamp(fVerboseLevelValue,
                                                          muc::to_underlying(Env::VerboseLevel::Quiet),
                                                          muc::to_underlying(Env::VerboseLevel::Verbose)));
     } else {
         return std::nullopt;
     }
+}
+
+auto BasicModule::ShowBanner() const -> bool {
+    return not TheCLI()->is_used("--lite");
 }
 
 } // namespace Mustard::CLI::inline Module

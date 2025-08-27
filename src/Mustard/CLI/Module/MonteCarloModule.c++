@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/MonteCarloModule.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 
@@ -28,16 +29,16 @@
 
 namespace Mustard::CLI::inline Module {
 
-MonteCarloModule::MonteCarloModule(argparse::ArgumentParser& argParser) :
-    ModuleBase{argParser} {
-    ArgParser()
-        .add_argument("--seed")
+MonteCarloModule::MonteCarloModule(gsl::not_null<CLI<>*> cli) :
+    ModuleBase{cli} {
+    TheCLI()
+        ->add_argument("--seed")
         .help("Set random seed. 0 means using random device (non deterministic random seed). Predefined deterministic seed is used by default.")
         .scan<'i', long>();
 }
 
 auto MonteCarloModule::SeedRandomIfFlagged() const -> bool {
-    auto seed{ArgParser().present<long>("--seed")};
+    auto seed{TheCLI()->present<long>("--seed")};
     if (not seed.has_value()) {
         return false;
     }

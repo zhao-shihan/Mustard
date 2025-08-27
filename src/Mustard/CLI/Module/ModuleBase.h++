@@ -18,20 +18,35 @@
 
 #pragma once
 
-#include "argparse/argparse.hpp"
+#include "muc/type_traits"
 
-namespace Mustard::CLI::inline Module {
+#include "gsl/gsl"
+
+#include <concepts>
+
+namespace Mustard::CLI {
+
+inline namespace Module {
+class ModuleBase;
+} // namespace Module
+
+template<std::derived_from<ModuleBase>... AModules>
+    requires muc::is_type_set_v<AModules...>
+class CLI;
+
+inline namespace Module {
 
 class ModuleBase {
 protected:
-    ModuleBase(argparse::ArgumentParser& argParser);
-    virtual ~ModuleBase() = default;
+    ModuleBase(gsl::not_null<CLI<>*> cli);
 
-    auto ArgParser() const -> const auto& { return *fArgParser; }
-    auto ArgParser() -> auto& { return *fArgParser; }
+    auto TheCLI() const -> const auto& { return *fTheCLI; }
+    auto TheCLI() -> auto& { return *fTheCLI; }
 
 private:
-    argparse::ArgumentParser* const fArgParser;
+    CLI<>* fTheCLI;
 };
 
-} // namespace Mustard::CLI::inline Module
+} // namespace Module
+
+} // namespace Mustard::CLI

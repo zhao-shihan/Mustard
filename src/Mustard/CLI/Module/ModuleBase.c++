@@ -20,7 +20,7 @@
 
 namespace Mustard::CLI::inline Module {
 
-ModuleBase::ModuleBase(argparse::ArgumentParser& argParser) :
-    fArgParser{&argParser} {}
+ModuleBase::ModuleBase(gsl::not_null<CLI<>*> cli) :
+    fTheCLI{cli} {}
 
 } // namespace Mustard::CLI::inline Module

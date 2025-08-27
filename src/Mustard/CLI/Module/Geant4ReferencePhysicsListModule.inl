@@ -19,11 +19,11 @@
 namespace Mustard::CLI::inline Module {
 
 template<muc::ceta_string ADefault>
-Geant4ReferencePhysicsListModule<ADefault>::Geant4ReferencePhysicsListModule(argparse::ArgumentParser& argParser) :
-    ModuleBase{argParser},
+Geant4ReferencePhysicsListModule<ADefault>::Geant4ReferencePhysicsListModule(gsl::not_null<CLI<>*> cli) :
+    ModuleBase{cli},
     fReferencePhysicsList{} {
-    ArgParser()
-        .add_argument("--physics-list")
+    TheCLI()
+        ->add_argument("--physics-list")
         .default_value(ADefault.s())
         .required()
         .help("Set reference physics list use in the simulation.");
@@ -35,7 +35,7 @@ auto Geant4ReferencePhysicsListModule<ADefault>::PhysicsList() -> G4VModularPhys
         return fReferencePhysicsList;
     }
 
-    const auto physicsList{ArgParser().get("--physics-list")};
+    const auto physicsList{TheCLI()->get("--physics-list")};
     G4PhysListFactory physicsListFactory{muc::to_underlying(Env::BasicEnv::Instance().VerboseLevel())};
 
     if (not physicsListFactory.IsReferencePhysList(physicsList)) {

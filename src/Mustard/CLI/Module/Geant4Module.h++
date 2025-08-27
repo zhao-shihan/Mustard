@@ -20,14 +20,16 @@
 
 #include "Mustard/CLI/Module/ModuleBase.h++"
 
+#include "gsl/gsl"
+
 namespace Mustard::CLI::inline Module {
 
 class Geant4Module : public ModuleBase {
 public:
-    Geant4Module(argparse::ArgumentParser& argParser);
+    Geant4Module(gsl::not_null<CLI<>*> cli);
 
-    auto Macro() const -> auto { return ArgParser().present("macro"); }
-    auto IsInteractive() const -> auto { return not Macro().has_value() or ArgParser().get<bool>("-i"); }
+    auto Macro() const -> auto { return TheCLI()->present("macro"); }
+    auto IsInteractive() const -> auto { return not Macro().has_value() or TheCLI()->get<bool>("-i"); }
 };
 
 } // namespace Mustard::CLI::inline Module

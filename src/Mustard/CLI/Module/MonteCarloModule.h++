@@ -20,11 +20,13 @@
 
 #include "Mustard/CLI/Module/ModuleBase.h++"
 
+#include "gsl/gsl"
+
 namespace Mustard::CLI::inline Module {
 
 class MonteCarloModule : public ModuleBase {
 public:
-    MonteCarloModule(argparse::ArgumentParser& argParser);
+    MonteCarloModule(gsl::not_null<CLI<>*> cli);
 
     auto SeedRandomIfFlagged() const -> bool;
 };

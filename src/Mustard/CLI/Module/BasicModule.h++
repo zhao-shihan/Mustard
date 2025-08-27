@@ -21,6 +21,8 @@
 #include "Mustard/CLI/Module/ModuleBase.h++"
 #include "Mustard/Env/VerboseLevel.h++"
 
+#include "gsl/gsl"
+
 #include <optional>
 #include <type_traits>
 
@@ -28,10 +30,10 @@ namespace Mustard::CLI::inline Module {
 
 class BasicModule : public ModuleBase {
 public:
-    BasicModule(argparse::ArgumentParser& argParser);
+    BasicModule(gsl::not_null<CLI<>*> cli);
 
     auto VerboseLevel() const -> std::optional<Env::VerboseLevel>;
-    auto ShowBanner() const -> auto { return not ArgParser().is_used("--lite"); }
+    auto ShowBanner() const -> bool;
 
 private:
     std::underlying_type_t<Env::VerboseLevel> fVerboseLevelValue;

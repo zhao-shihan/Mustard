@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/ModuleBase.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
@@ -27,6 +28,8 @@
 
 #include "muc/ceta_string"
 #include "muc/utility"
+
+#include "gsl/gsl"
 
 #include "fmt/core.h"
 
@@ -38,7 +41,7 @@ namespace Mustard::CLI::inline Module {
 template<muc::ceta_string ADefault>
 class Geant4ReferencePhysicsListModule : public ModuleBase {
 public:
-    Geant4ReferencePhysicsListModule(argparse::ArgumentParser& argParser);
+    Geant4ReferencePhysicsListModule(gsl::not_null<CLI<>*> cli);
 
     auto PhysicsList() -> G4VModularPhysicsList*;
 
