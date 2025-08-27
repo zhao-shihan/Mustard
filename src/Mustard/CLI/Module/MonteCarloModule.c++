@@ -18,7 +18,6 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/MonteCarloModule.h++"
-#include "Mustard/Parallel/ReseedRandomEngine.h++"
 
 #include "CLHEP/Random/Random.h"
 
@@ -38,22 +37,22 @@ MonteCarloModule::MonteCarloModule(gsl::not_null<CLI<>*> cli) :
 }
 
 auto MonteCarloModule::SeedRandomIfFlagged() const -> bool {
-    auto seed{TheCLI()->present<long>("--seed")};
-    if (not seed.has_value()) {
+    auto theSeed{TheCLI()->present<long>("--seed")};
+    if (not theSeed.has_value()) {
         return false;
     }
-    const auto theSeed{*seed != 0 ? *seed :
-                                    std::bit_cast<int>(std::random_device{}())};
+    const auto seed{*theSeed != 0 ?
+                        *theSeed :
+                        std::bit_cast<int>(std::random_device{}())};
     if (const auto clhepRandom{CLHEP::HepRandom::getTheEngine()};
         clhepRandom) {
-        clhepRandom->setSeed(theSeed, 0);
+        clhepRandom->setSeed(seed, 0);
     }
     if (gRandom) {
         // Try to decorrelate with CLHEP
-        const auto rootSeed{std::mt19937_64{static_cast<unsigned long>(theSeed)}()};
+        const auto rootSeed{std::mt19937_64{static_cast<unsigned long>(seed)}()};
         gRandom->SetSeed(rootSeed);
     }
-    Parallel::ReseedRandomEngine();
     return true;
 }
 

@@ -20,6 +20,8 @@
 
 #include "Mustard/CLI/Module/MonteCarloModule.h++"
 
+#include "muc/optional"
+
 #include <memory>
 
 namespace Mustard::inline Utility {
@@ -46,14 +48,10 @@ template<unsigned ABitWidth>
 class UseXoshiro {
 public:
     /// @brief Initialize with automatic seeding
+    /// @param cli MonteCarloModule CLI interface for seed configuration (optional)
     /// @note Also performs decorrelation between CLHEP and ROOT engines
     ///       and parallel computing reseeding
-    UseXoshiro();
-    /// @brief Initialize with CLI-based seeding
-    /// @param cli MonteCarloModule CLI interface for seed configuration
-    /// @note Also performs decorrelation between CLHEP and ROOT engines
-    ///       and parallel computing reseeding
-    explicit UseXoshiro(const CLI::MonteCarloModule& cli);
+    explicit UseXoshiro(muc::optional_ref<const CLI::MonteCarloModule> cli = {});
     /// @brief Clean up and reset global engine pointers
     ~UseXoshiro();
 

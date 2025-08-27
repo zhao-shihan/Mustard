@@ -34,41 +34,36 @@
 
 namespace Mustard::inline Utility {
 
-#define MUSTARD_UTILITY_USE_XOSHIRO_DEFINITION(NBit)                                 \
-                                                                                     \
-    template<>                                                                       \
-    struct UseXoshiro<NBit>::Random {                                                \
-        CLHEPX::Random::Xoshiro##NBit##SS clhep;                                     \
-        ROOTX::Math::Xoshiro##NBit##PP root;                                         \
-    };                                                                               \
-                                                                                     \
-    template<>                                                                       \
-    UseXoshiro<NBit>::UseXoshiro() :                                                 \
-        fRandom{std::make_unique<Random>()} {                                        \
-        /* Set random engines */                                                     \
-        CLHEP::HepRandom::setTheEngine(&fRandom->clhep);                             \
-        delete gRandom, gRandom = &fRandom->root;                                    \
-        /* Try to decorrelate Xoshiro++ from Xoshiro** */                            \
-        gRandom->SetSeed(std::mt19937_64{std::bit_cast<std::uint64_t>(               \
-            muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}()); \
-        /* Reseed in parallel computing */                                           \
-        Parallel::ReseedRandomEngine();                                              \
-    }                                                                                \
-                                                                                     \
-    template<>                                                                       \
-    UseXoshiro<NBit>::UseXoshiro(const CLI::MonteCarloModule& cli) :                 \
-        fRandom{std::make_unique<Random>()} {                                        \
-        /* Set random engines */                                                     \
-        CLHEP::HepRandom::setTheEngine(&fRandom->clhep);                             \
-        delete gRandom, gRandom = &fRandom->root;                                    \
-        /* Seed random engines from CLI */                                           \
-        cli.SeedRandomIfFlagged();                                                   \
-    }                                                                                \
-                                                                                     \
-    template<>                                                                       \
-    UseXoshiro<NBit>::~UseXoshiro() {                                                \
-        CLHEP::HepRandom::setTheEngine(nullptr);                                     \
-        gRandom = nullptr;                                                           \
+#define MUSTARD_UTILITY_USE_XOSHIRO_DEFINITION(NBit)                                     \
+                                                                                         \
+    template<>                                                                           \
+    struct UseXoshiro<NBit>::Random {                                                    \
+        CLHEPX::Random::Xoshiro##NBit##SS clhep;                                         \
+        ROOTX::Math::Xoshiro##NBit##PP root;                                             \
+    };                                                                                   \
+                                                                                         \
+    template<>                                                                           \
+    UseXoshiro<NBit>::UseXoshiro(muc::optional_ref<const CLI::MonteCarloModule> cli) :   \
+        fRandom{std::make_unique<Random>()} {                                            \
+        /* Set random engines */                                                         \
+        CLHEP::HepRandom::setTheEngine(&fRandom->clhep);                                 \
+        delete gRandom, gRandom = &fRandom->root;                                        \
+        if (cli) {                                                                       \
+            /* Seed random engines from CLI (if option set) */                           \
+            cli->get().SeedRandomIfFlagged();                                            \
+        } else {                                                                         \
+            /* Try to decorrelate Xoshiro++ from Xoshiro** */                            \
+            gRandom->SetSeed(std::mt19937_64{std::bit_cast<std::uint64_t>(               \
+                muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}()); \
+        }                                                                                \
+        /* Reseed in parallel computing */                                               \
+        Parallel::ReseedRandomEngine();                                                  \
+    }                                                                                    \
+                                                                                         \
+    template<>                                                                           \
+    UseXoshiro<NBit>::~UseXoshiro() {                                                    \
+        CLHEP::HepRandom::setTheEngine(nullptr);                                         \
+        gRandom = nullptr;                                                               \
     }
 
 MUSTARD_UTILITY_USE_XOSHIRO_DEFINITION(256)

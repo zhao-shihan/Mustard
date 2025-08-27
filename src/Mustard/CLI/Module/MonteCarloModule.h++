@@ -24,10 +24,17 @@
 
 namespace Mustard::CLI::inline Module {
 
+/// @brief CLI module for Monte Carlo program
 class MonteCarloModule : public ModuleBase {
 public:
+    /// @brief Construct Monte Carlo CLI module
+    /// @param cli CLI instance to register commands with
     MonteCarloModule(gsl::not_null<CLI<>*> cli);
 
+    /// @brief Apply seed configuration if --seed flag was provided
+    /// @return true if seeding was performed, false if no --seed flag provided
+    /// @warning If this returns true, one MUST call Parallel::ReseedRandomEngine()
+    ///          to ensure proper seeding in parallel environments
     auto SeedRandomIfFlagged() const -> bool;
 };
 
