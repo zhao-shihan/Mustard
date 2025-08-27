@@ -20,22 +20,18 @@
 #include "Mustard/Physics/Generator/InternalConversionMuonDecay.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
-#include "CLHEP/Vector/LorentzVector.h"
-
-#include "muc/math"
-#include "muc/utility"
-
 #include "fmt/core.h"
 
 #include <stdexcept>
+#include <utility>
 
 namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
 InternalConversionMuonDecay::InternalConversionMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization,
-                                                         double delta, unsigned discard) :
-    MultipleTryMetropolisGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
+                                                         std::optional<double> delta, std::optional<unsigned> discard) :
+    MultipleTryMetropolisGenerator{muon_mass_c2, polarization, {}, {}, std::move(delta), std::move(discard)} {
     Parent(parent);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2, electron_mass_c2});
     AddIdenticalSet({0, 4});

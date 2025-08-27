@@ -23,7 +23,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include <functional>
+#include <optional>
 #include <string_view>
 
 namespace Mustard::inline Physics::inline Generator {
@@ -41,9 +41,11 @@ public:
     /// @param polarization Muon polarization vector
     /// @param irCut IR cut for final-state photons
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param discard Samples discarded between two events generated in the Markov chain
+    /// (optional here, but should be set no later than before generation)
+    /// @param discard Samples discarded between two events generated from the Markov chain
+    /// (optional here, but should be set no later than before generation)
     DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, double irCut,
-                             double delta, unsigned discard);
+                             std::optional<double> delta = {}, std::optional<unsigned> discard = {});
 
     /// @brief Set parent particle
     /// @param parent "mu-" or "mu+"

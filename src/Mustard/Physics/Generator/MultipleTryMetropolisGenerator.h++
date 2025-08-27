@@ -48,6 +48,7 @@
 #include <concepts>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <typeinfo>
 #include <utility>
 
@@ -90,20 +91,24 @@ public:
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param discard Samples discarded between two events generated in the Markov chain
+    /// (optional here, but should be set no later than before generation)
+    /// @param discard Samples discarded between two events generated from the Markov chain
+    /// (optional here, but should be set no later than before generation)
     MultipleTryMetropolisGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   double delta, unsigned discard);
+                                   std::optional<double> delta = {}, std::optional<unsigned> discard = {});
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
     /// @param polarization Initial-state polarization vector
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param discard Samples discarded between two events generated in the Markov chain
+    /// (optional here, but should be set no later than before generation)
+    /// @param discard Samples discarded between two events generated from the Markov chain
+    /// (optional here, but should be set no later than before generation)
     /// @note This overload is only enabled for polarized decay
     MultipleTryMetropolisGenerator(double cmsE, CLHEP::Hep3Vector polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   double delta, unsigned discard)
+                                   std::optional<double> delta = {}, std::optional<unsigned> discard = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Construct event generator
     /// @param cmsE Center-of-mass energy
@@ -111,11 +116,13 @@ public:
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// @param discard Samples discarded between two events generated in the Markov chain
+    /// (optional here, but should be set no later than before generation)
+    /// @param discard Samples discarded between two events generated from the Markov chain
+    /// (optional here, but should be set no later than before generation)
     /// @note This overload is only enabled for polarized scattering
     MultipleTryMetropolisGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   double delta, unsigned discard)
+                                   std::optional<double> delta = {}, std::optional<unsigned> discard = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     // Keep the class abstract
@@ -164,7 +171,7 @@ public:
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     auto MCMCDelta(double delta) -> void;
     /// @brief Set discard count between samples
-    /// @param discard Samples discarded between two events generated in the Markov chain
+    /// @param discard Samples discarded between two events generated from the Markov chain
     auto MCMCDiscard(unsigned n) -> void;
 
     /// @brief Initialize Markov chain
@@ -175,6 +182,7 @@ public:
     /// @param rng Reference to CLHEP random engine
     /// @param pI Initial-state 4-momenta (only for its boost)
     /// @return Generated event
+    /// @throws `std::logic_error` if neither fMCMCDelta nor MCMCDiscard has been set
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads
     using Base::operator();
@@ -237,6 +245,8 @@ private:
     MarkovChain fMarkovChain;                    ///< Current Markov chain state
 
     static constexpr int fgMCMCDim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
+    static constexpr double fgDefaultInvalidMCMCDelta{std::numeric_limits<double>::quiet_NaN()};
+    static constexpr unsigned fgDefaultInvalidMCMCDiscard{std::numeric_limits<unsigned>::max()};
 };
 
 } // namespace Mustard::inline Physics::inline Generator
