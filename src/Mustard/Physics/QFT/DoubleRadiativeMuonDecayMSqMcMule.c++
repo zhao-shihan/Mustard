@@ -80,7 +80,7 @@ auto DoubleRadiativeMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI
                                  den1, den2, den3, den4, den5, den6);
     pm2ennggav *= -4. / 3;
 
-    constexpr auto constant{4 * muc::pow(fermi_constant, 2) * muc::pow(4 * pi * fine_structure_const, 2)};
+    constexpr auto constant{4 * muc::pow(reduced_fermi_constant, 2) * muc::pow(4 * pi * fine_structure_const, 2)};
     return constant * pm2ennggav;
 }
 

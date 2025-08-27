@@ -505,7 +505,7 @@ auto InternalConversionMuonDecayMSqMcMule::operator()(const InitialStateMomenta&
              if14 / (den1 * den4) + if23 / (den2 * den3) +
              if24 / (den2 * den4) + if34 / (den3 * den4))};
 
-    constexpr auto constant{8 * pow(fermi_constant, 2) * pow(4 * pi * fine_structure_const, 2)};
+    constexpr auto constant{8 * pow(reduced_fermi_constant, 2) * pow(4 * pi * fine_structure_const, 2)};
     return constant * pm2ennee;
 }
 
