@@ -20,8 +20,11 @@
 #include "Mustard/Physics/Generator/InternalConversionMuonDecay.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
+#include "muc/math"
+
 #include "fmt/core.h"
 
+#include <cmath>
 #include <stdexcept>
 #include <utility>
 
@@ -29,10 +32,11 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-InternalConversionMuonDecay::InternalConversionMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization,
+InternalConversionMuonDecay::InternalConversionMuonDecay(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
                                                          std::optional<double> delta, std::optional<unsigned> discard) :
-    MultipleTryMetropolisGenerator{muon_mass_c2, polarization, {}, {}, std::move(delta), std::move(discard)} {
+    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(delta), std::move(discard)} {
     Parent(parent);
+    ParentMomentum(momentum);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2, electron_mass_c2});
     AddIdenticalSet({0, 4});
 }
@@ -45,6 +49,11 @@ auto InternalConversionMuonDecay::Parent(std::string_view parent) -> void {
     } else {
         Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'", parent));
     }
+}
+
+auto InternalConversionMuonDecay::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
+    const auto energy{std::sqrt(momentum.mag2() + muc::pow(muon_mass_c2, 2))};
+    ISMomenta({energy, momentum});
 }
 
 } // namespace Mustard::inline Physics::inline Generator

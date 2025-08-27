@@ -46,8 +46,8 @@ auto main(int argc, char* argv[]) -> int {
     Mustard::Executor<unsigned long long> executor{"Generation", "Sample"};
 
     constexpr auto FillDalitzPlot{[](Mustard::EventGenerator<1, 3>& generator,
-                                     double cmsE, TH2D& dalitzPlot, TH2D& UnweightedPlot) {
-        const auto event{generator({cmsE, {}})};
+                                     double cmE, TH2D& dalitzPlot, TH2D& UnweightedPlot) {
+        const auto event{generator({cmE, {}})};
         const auto& [p1, p2, p3]{event.p};
         const auto m12{(p1 + p2).m2()};
         const auto m23{(p2 + p3).m2()};

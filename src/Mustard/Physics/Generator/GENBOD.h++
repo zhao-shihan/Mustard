@@ -78,7 +78,7 @@ public:
     // Inherit constructor
     using VersatileEventGenerator<M, N, 3 * N - 4>::VersatileEventGenerator;
 
-    /// @brief Generate event in center-of-mass frame using precomputed random numbers
+    /// @brief Generate event in c.m. frame using precomputed random numbers
     /// @param u Flat random numbers in 0--1
     /// @param pI Initial-state 4-momenta
     /// @return Generated event

@@ -19,9 +19,9 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         std::optional<double> delta, std::optional<unsigned> discard) :
-    Base{cmsE, pdgID, mass},
+    Base{pI, pdgID, mass},
     fIdenticalSet{},
     fMCMCDelta{fgDefaultInvalidMCMCDelta},
     fMCMCDiscard{fgDefaultInvalidMCMCDiscard},
@@ -36,20 +36,20 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double c
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, CLHEP::Hep3Vector polarization,
+MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         std::optional<double> delta, std::optional<unsigned> discard) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
-    MultipleTryMetropolisGenerator{cmsE, pdgID, mass, std::move(delta), std::move(discard)} {
+    MultipleTryMetropolisGenerator{pI, pdgID, mass, std::move(delta), std::move(discard)} {
     this->InitialStatePolarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
+MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         std::optional<double> delta, std::optional<unsigned> discard) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
-    MultipleTryMetropolisGenerator{cmsE, pdgID, mass, std::move(delta), std::move(discard)} {
+    MultipleTryMetropolisGenerator{pI, pdgID, mass, std::move(delta), std::move(discard)} {
     this->InitialStatePolarization(polarization);
 }
 
@@ -177,16 +177,13 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
+auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta) -> Event {
     if (std::isnan(fMCMCDelta)) {
         Throw<std::logic_error>("MCMC delta has not been set");
     }
     if (fMCMCDiscard == fgDefaultInvalidMCMCDiscard) {
         Throw<std::logic_error>("Number of discarded MCMC samples has not been set");
     }
-
-    this->CheckCMSEnergyMatch(pI);
-    const auto beta{this->BoostToCMS(pI)};
 
     if (not fBurntIn) [[unlikely]] {
         PrintWarning("Markov chain not burnt in. Burning it in");
@@ -195,18 +192,22 @@ auto MultipleTryMetropolisGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine&
     for (unsigned i{}; i < fMCMCDiscard; ++i) {
         NextEvent(rng, fMCMCDelta);
     }
-    auto event{NextEvent(rng, fMCMCDelta)};
-
-    this->BoostToOriginalFrame(beta, event.p);
-    return event;
+    return NextEvent(rng, fMCMCDelta);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::CMSEnergy(double cmsE) -> void {
-    if (not muc::isclose(cmsE, Base::CMSEnergy())) {
-        BurnInRequired();
+auto MultipleTryMetropolisGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& pI) -> void {
+    if constexpr (M == 1) {
+        if (pI.isNear(Base::ISMomenta(), muc::default_tolerance<double>)) {
+            BurnInRequired();
+        }
+    } else {
+        if (not std::ranges::equal(pI, Base::ISMomenta(),
+                                   [](auto p, auto q) { return p.isNear(q, muc::default_tolerance<double>); })) {
+            BurnInRequired();
+        }
     }
-    Base::CMSEnergy(cmsE);
+    Base::ISMomenta(pI);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>

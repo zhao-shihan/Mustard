@@ -29,7 +29,7 @@ auto EventGenerator<M, N>::operator()(CLHEP::HepRandomEngine& rng) -> Event {
 }
 
 template<int M, int N>
-auto EventGenerator<M, N>::CalculateCMSEnergy(const InitialStateMomenta& pI) -> double {
+auto EventGenerator<M, N>::CalculateCMEnergy(const InitialStateMomenta& pI) -> double {
     if constexpr (M == 1) {
         return pI.m();
     } else {
@@ -38,20 +38,28 @@ auto EventGenerator<M, N>::CalculateCMSEnergy(const InitialStateMomenta& pI) -> 
 }
 
 template<int M, int N>
-auto EventGenerator<M, N>::BoostToCMS(InitialStateMomenta& p) -> CLHEP::Hep3Vector {
+auto EventGenerator<M, N>::CalculateBoost(const InitialStateMomenta& pI) -> CLHEP::Hep3Vector {
     if constexpr (M == 1) {
-        p = CLHEP::HepLorentzVector{p.m()};
-        return p.boostVector();
+        return pI.boostVector();
     } else {
-        const auto beta{muc::ranges::reduce(p).boostVector()};
-        std::ranges::for_each(p, [b = -beta](auto&& p) { p.boost(b); });
-        return beta;
+        return muc::ranges::reduce(pI).boostVector();
     }
 }
 
 template<int M, int N>
-auto EventGenerator<M, N>::BoostToOriginalFrame(CLHEP::Hep3Vector beta, FinalStateMomenta& p) -> void {
-    std::ranges::for_each(p, [&beta](auto&& p) { p.boost(beta); });
+auto EventGenerator<M, N>::BoostToCMFrame(InitialStateMomenta& pI) -> CLHEP::Hep3Vector {
+    const auto beta{CalculateBoost(pI)};
+    if constexpr (M == 1) {
+        pI = CLHEP::HepLorentzVector{pI.m()};
+    } else {
+        std::ranges::for_each(pI, [b = -beta](auto&& p) { p.boost(b); });
+    }
+    return beta;
+}
+
+template<int M, int N>
+auto EventGenerator<M, N>::BoostToLabFrame(CLHEP::Hep3Vector beta, FinalStateMomenta& pF) -> void {
+    std::ranges::for_each(pF, [&beta](auto&& p) { p.boost(beta); });
 }
 
 template<int M, int N, int D>

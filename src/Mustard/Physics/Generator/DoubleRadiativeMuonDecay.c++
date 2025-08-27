@@ -20,8 +20,11 @@
 #include "Mustard/Physics/Generator/DoubleRadiativeMuonDecay.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
+#include "muc/math"
+
 #include "fmt/core.h"
 
+#include <cmath>
 #include <stdexcept>
 #include <utility>
 
@@ -29,10 +32,11 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector polarization, double irCut,
+DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization, double irCut,
                                                    std::optional<double> delta, std::optional<unsigned> discard) :
-    MultipleTryMetropolisGenerator{muon_mass_c2, polarization, {}, {}, delta, discard} {
+    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, delta, discard} {
     Parent(parent);
+    ParentMomentum(momentum);
     Mass({electron_mass_c2, 0, 0, 0, 0});
     IRCut(irCut);
     AddIdenticalSet({3, 4});
@@ -46,6 +50,11 @@ auto DoubleRadiativeMuonDecay::Parent(std::string_view parent) -> void {
     } else {
         Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'", parent));
     }
+}
+
+auto DoubleRadiativeMuonDecay::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
+    const auto energy{std::sqrt(momentum.mag2() + muc::pow(muon_mass_c2, 2))};
+    ISMomenta({energy, momentum});
 }
 
 auto DoubleRadiativeMuonDecay::IRCut(double irCut) -> void {

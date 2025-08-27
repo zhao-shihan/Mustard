@@ -58,10 +58,10 @@ public:
     constexpr auto Mass(int i, double mass) -> void;
 
 protected:
-    /// @brief Check if center-of-mass energy is sufficient
-    /// @param cmsE Center-of-mass energy
-    /// @exception std::domain_error if center-of-mass energy is insufficient
-    MUSTARD_ALWAYS_INLINE auto CheckCMSEnergy(double cmsE, const std::source_location& location = std::source_location::current()) const -> void;
+    /// @brief Check if c.m. energy is sufficient
+    /// @param cmE Total c.m. energy
+    /// @exception std::domain_error if c.m. energy is insufficient
+    MUSTARD_ALWAYS_INLINE auto CheckCMEnergy(double cmE, const std::source_location& location = std::source_location::current()) const -> void;
 
 protected:
     std::array<int, N> fPDGID;   ///< Final-state PDG IDs

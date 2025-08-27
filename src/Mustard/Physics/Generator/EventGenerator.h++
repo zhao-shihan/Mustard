@@ -78,47 +78,50 @@ public:
 
     /// @brief Generate event according to initial state
     /// @param rng Reference to CLHEP random engine
-    /// @param pI Initial-state 4-momenta (maybe unused, depend on specific generator)
+    /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)
     /// @return Generated event
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event = 0;
     /// @brief Generate event according to initial state using global CLHEP engine
-    /// @param pI Initial-state 4-momenta (maybe unused, depend on specific generator)
+    /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)
     /// @return Generated event
     auto operator()(const InitialStateMomenta& pI) -> Event;
-    /// @brief Generate event in center-of-mass frame.
-    /// This overload is intended for generators with fixed CMS energy (e.g. decay)
+    /// @brief Generate event in c.m. frame.
+    /// This overload is intended for generators with fixed c.m. energy (e.g. decay)
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     auto operator()(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
 
 protected:
-    /// @brief Calculate center-of-mass energy from initial state
+    /// @brief Calculate c.m. energy from initial state
     /// @param pI Initial-state 4-momenta
-    /// @return Total CM energy (invariant mass)
-    static auto CalculateCMSEnergy(const InitialStateMomenta& pI) -> double;
-    /// @brief Boost initial state to CM frame
+    /// @return Total c.m. energy (invariant mass)
+    static auto CalculateCMEnergy(const InitialStateMomenta& pI) -> double;
+    /// @brief Calculate boost from c.m. frame to lab frame
+    /// @param pI Initial-state 4-momenta
+    /// @return Boost from c.m. frame to lab frame
+    static auto CalculateBoost(const InitialStateMomenta& pI) -> CLHEP::Hep3Vector;
+    /// @brief Boost initial state to c.m. frame
     ///
-    /// Transforms initial-state momenta to center-of-mass frame:
+    /// Transforms initial-state momenta to c.m. frame:
     ///   - For 1-body initial state: resets momentum to (m,0,0,0)
     ///   - For multiple-body initial state: boosts to zero-momentum frame
     ///
     /// @param pI Initial-state 4-momenta (modified in-place)
-    /// @return Boost vector (β) from CM frame to original frame
+    /// @return Boost vector (β) from c.m. frame to lab frame
     ///
-    /// @note Return value should be saved for `BoostToOriginalFrame` call
-    /// @warning Always called before event generation in CM frame
-    [[nodiscard]] static auto BoostToCMS(InitialStateMomenta& p) -> CLHEP::Hep3Vector;
-    /// @brief Boost final state to original frame
+    /// @note Return value should be saved for `BoostToLabFrame` call
+    /// @warning Always called before event generation in c.m. frame
+    [[nodiscard]] static auto BoostToCMFrame(InitialStateMomenta& pI) -> CLHEP::Hep3Vector;
+    /// @brief Boost final state to lab frame
     ///
-    /// Applies inverse boost to return final state from CM frame
-    /// to original frame.
+    /// Applies inverse boost to return final state from c.m. frame to lab frame.
     ///
-    /// @param beta Boost vector returned from `BoostToCMS` call
-    /// @param p Final-state 4-momenta (modified in-place)
+    /// @param beta Boost vector returned from `BoostToCMFrame` call
+    /// @param pF Final-state 4-momenta (modified in-place)
     ///
-    /// @note Must use the β returned by `BoostToCMS` for correct transformation
-    /// @warning Always called after event generation in CM frame
-    static auto BoostToOriginalFrame(CLHEP::Hep3Vector beta, FinalStateMomenta& p) -> void;
+    /// @note Must use the β returned by `BoostToCMFrame` for correct transformation
+    /// @warning Always called after event generation in c.m. frame
+    static auto BoostToLabFrame(CLHEP::Hep3Vector beta, FinalStateMomenta& pF) -> void;
 };
 
 template<int M, int N, int D>
@@ -135,18 +138,18 @@ public:
 public:
     /// @brief Generate event according to initial state using precomputed random numbers
     /// @param u Flat random numbers in 0--1 (D values required)
-    /// @param pI Initial-state 4-momenta (maybe unused, depend on specific generator)
+    /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)
     /// @return Generated event
     virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event = 0;
-    /// @brief Generate event in center-of-mass frame using precomputed random numbers.
-    /// This overload is intended for generators with fixed CMS energy (e.g. decay)
+    /// @brief Generate event in c.m. frame using precomputed random numbers.
+    /// This overload is intended for generators with fixed c.m. energy (e.g. decay)
     /// @param u Flat random numbers in 0--1 (D values required)
     /// @return Generated event
     auto operator()(const RandomState& u) -> Event;
 
     /// @brief Generate event according to initial state
     /// @param rng Reference to CLHEP random engine
-    /// @param pI Initial-state 4-momenta (maybe unused, depend on specific generator)
+    /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)
     /// @return Generated event
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads

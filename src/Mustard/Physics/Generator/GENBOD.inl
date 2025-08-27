@@ -21,9 +21,9 @@ namespace Mustard::inline Physics::inline Generator {
 template<int M, int N>
     requires(N >= 2)
 auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Event {
-    const auto cmsE{this->CalculateCMSEnergy(pI)};
-    this->CheckCMSEnergy(cmsE);
-    const auto beta{this->BoostToCMS(pI)};
+    const auto cmE{this->CalculateCMEnergy(pI)};
+    this->CheckCMEnergy(cmE);
+    const auto beta{this->BoostToCMFrame(pI)};
 
     auto random{u.cbegin()};
     std::array<double, N> u0;
@@ -43,10 +43,10 @@ auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> E
 
     std::array<double, N> invMass;
     double sumMass{};
-    const auto cmsEk{cmsE - this->fSumMass};
+    const auto cmEk{cmE - this->fSumMass};
     for (int i{}; i < N; ++i) {
         sumMass += this->fMass[i];
-        invMass[i] = u0[i] * cmsEk + sumMass;
+        invMass[i] = u0[i] * cmEk + sumMass;
     }
 
     Event event{.weight = 1, .pdgID = this->fPDGID, .p = {}};
@@ -94,7 +94,7 @@ auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> E
     // Ensure the random state is exactly exhausted
     Ensures(random == u.cend());
 
-    this->BoostToOriginalFrame(beta, event.p);
+    this->BoostToLabFrame(beta, event.p);
     return event;
 }
 

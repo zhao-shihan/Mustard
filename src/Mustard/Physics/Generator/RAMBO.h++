@@ -75,7 +75,7 @@ public:
     /// @param mass Array of final-state particle masses (index order preserved)
     RAMBO(const std::array<int, N>& pdgID, const std::array<double, N>& mass);
 
-    /// @brief Generate event in center-of-mass frame using precomputed random numbers
+    /// @brief Generate event in c.m. frame using precomputed random numbers
     /// @param u Flat random numbers in 0--1
     /// @param pI Initial-state 4-momenta
     /// @return Generated event

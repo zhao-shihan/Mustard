@@ -77,30 +77,30 @@ public:
 
 public:
     /// @brief Construct event generator
-    /// @param cmsE Center-of-mass energy
+    /// @param pI initial-state 4-momenta
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    MatrixElementBasedGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass);
+    MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass);
     /// @brief Construct event generator
-    /// @param cmsE Center-of-mass energy
+    /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    MatrixElementBasedGenerator(double cmsE, CLHEP::Hep3Vector polarization,
+    MatrixElementBasedGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
                                 const std::array<int, N>& pdgID, const std::array<double, N>& mass)
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Construct event generator
-    /// @param cmsE Center-of-mass energy
+    /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vectors
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @note This overload is only enabled for polarized scattering
-    MatrixElementBasedGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
+    MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                 const std::array<int, N>& pdgID, const std::array<double, N>& mass)
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
-    /// @brief Get currently set center-of-mass frame energy
-    auto CMSEnergy() const -> auto { return fCMSEnergy; }
+    /// @brief Get currently set initial-state 4-momenta
+    auto ISMomenta() const -> const auto& { return fISMomenta; }
 
     /// @brief |M|² × bias integral divided by |M|² integral
     /// Multiply event weights with the result to normalize weights to the number of generated events.
@@ -115,25 +115,21 @@ public:
                                      CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::pair<Math::IntegrationResult, std::array<Math::MCIntegrationState, 2>>;
 
 protected:
-    /// @brief Set center-of-mass energy
-    /// @param cmsE Center-of-mass energy
-    auto CMSEnergy(double cmsE) -> void;
-    /// @brief Check whether initial state momentum passed to generator matches
-    /// currently set CMS energy
-    /// @param pI Initial-state 4-momenta passed to generator
-    auto CheckCMSEnergyMatch(const InitialStateMomenta& pI) const -> void;
+    /// @brief Set initial-state 4-momenta
+    /// @param pI initial-state 4-momenta
+    auto ISMomenta(const InitialStateMomenta& pI) -> void;
 
-    /// @brief Set particle PDG IDs
+    /// @brief Set final-state PDG IDs
     /// @param pdgID Array of particle PDG IDs
     auto PDGID(const std::array<int, N>& pdgID) -> void { fGENBOD.PDGID(pdgID); }
-    /// @brief Set particle masses
+    /// @brief Set final-state masses
     /// @param mass Array of particle masses
     auto Mass(const std::array<double, N>& mass) -> void { fGENBOD.Mass(mass); }
 
     /// @brief Generate an event on phase space
     /// @param rng Reference to CLHEP random engine
     /// @return An event from phase space
-    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, {fCMSEnergy, {}}); }
+    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto;
 
     /// @brief Get polarization vector
     /// @note This overload is only enabled for polarized decay
@@ -201,7 +197,8 @@ protected:
     GENBOD<M, N> fGENBOD; ///< Phase space generator
 
 private:
-    double fCMSEnergy;                          ///< Currently set CM energy
+    InitialStateMomenta fISMomenta;             ///< Initial-state 4-momenta
+    CLHEP::Hep3Vector fBoostFromLabToCM;        ///< Boost from lab frame to c.m. frame
     [[no_unique_address]] A fMatrixElement;     ///< Matrix element
     std::vector<std::pair<int, double>> fIRCut; ///< IR cuts
     BiasFunction fBias;                         ///< User bias function

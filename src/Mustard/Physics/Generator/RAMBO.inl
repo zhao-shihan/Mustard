@@ -37,9 +37,9 @@ RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double, N>&
 template<int M, int N>
     requires(N >= 2)
 auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Event {
-    const auto cmsE{this->CalculateCMSEnergy(pI)};
-    this->CheckCMSEnergy(cmsE);
-    const auto beta{this->BoostToCMS(pI)};
+    const auto cmE{this->CalculateCMEnergy(pI)};
+    this->CheckCMEnergy(cmE);
+    const auto beta{this->BoostToCMFrame(pI)};
 
     /**********************************************************************
      *                       rambo                                         *
@@ -50,7 +50,7 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
      *    this is version 1.0 -  written by r. kleiss                      *
      *                                                                     *
      *    N    = number of particles                                       *
-     *    cmsE = total centre-of-mass energy                               *
+     *    cmE = total centre-of-mass energy                               *
      *    xm   = particle masses ( dim=nexternal-nincoming )               *
      *    p    = particle momenta ( dim=(4,nexternal-nincoming) )          *
      *    wt   = weight of the event                                       *
@@ -78,7 +78,7 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
         std::ranges::transform(p, event.p.begin(), [](auto&& p) {
             return CLHEP::HepLorentzVector{p[1], p[2], p[3], p[0]};
         });
-        this->BoostToOriginalFrame(beta, event.p);
+        this->BoostToLabFrame(beta, event.p);
         return event;
     }};
 
@@ -117,7 +117,7 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
     }
     double g = r[0] / rmas;
     double a = 1. / (1. + g);
-    double x = cmsE / rmas;
+    double x = cmE / rmas;
 
     // transform the q's conformally into the p's
     for (int i = 0; i < N; i++) {
@@ -131,7 +131,7 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
     // calculate weight
     wt = po2log;
     if (N != 2) {
-        wt = (2. * N - 4.) * std::log(cmsE) + fWeightFactor[N - 1];
+        wt = (2. * N - 4.) * std::log(cmE) + fWeightFactor[N - 1];
     }
 
     // return for weighted massless momenta
@@ -140,16 +140,16 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
     }
 
     // massive particles: rescale the momenta by a factor x
-    double xmax = std::sqrt(1. - muc::pow(xmt / cmsE, 2));
+    double xmax = std::sqrt(1. - muc::pow(xmt / cmE, 2));
     for (int i = 0; i < N; i++) {
         xm2[i] = muc::pow(xm[i], 2);
         p2[i] = muc::pow(p[i][0], 2);
     }
     int iter = 0;
     x = xmax;
-    double accu = cmsE * acc;
+    double accu = cmE * acc;
     while (true) {
-        double f0 = -cmsE;
+        double f0 = -cmE;
         double g0 = 0.;
         double x2 = x * x;
         for (int i = 0; i < N; i++) {
@@ -182,7 +182,7 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
         wt2 = wt2 * v[i] / e[i];
         wt3 = wt3 + muc::pow(v[i], 2) / e[i];
     }
-    double wtm = (2. * N - 3.) * std::log(x) + std::log(wt2 / wt3 * cmsE);
+    double wtm = (2. * N - 3.) * std::log(x) + std::log(wt2 / wt3 * cmE);
 
     // return for  weighted massive momenta
     wt = wt + wtm;

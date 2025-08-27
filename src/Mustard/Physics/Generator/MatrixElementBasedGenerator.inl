@@ -19,29 +19,30 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(double cmsE, const std::array<int, N>& pdgID, const std::array<double, N>& mass) :
+MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass) :
     EventGenerator<M, N>{},
     fGENBOD{pdgID, mass},
-    fCMSEnergy{},
+    fISMomenta{},
+    fBoostFromLabToCM{},
     fMatrixElement{},
     fIRCut{},
     fBias{[](auto&&) { return 1; }} {
-    CMSEnergy(cmsE);
+    ISMomenta(pI);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(double cmsE, CLHEP::Hep3Vector polarization,
+MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
                                                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
-    MatrixElementBasedGenerator{cmsE, pdgID, mass} {
+    MatrixElementBasedGenerator{pI, pdgID, mass} {
     fMatrixElement.InitialStatePolarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(double cmsE, const std::array<CLHEP::Hep3Vector, M>& polarization,
+MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
-    MatrixElementBasedGenerator{cmsE, pdgID, mass} {
+    MatrixElementBasedGenerator{pI, pdgID, mass} {
     fMatrixElement.InitialStatePolarization(polarization);
 }
 
@@ -109,21 +110,17 @@ auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::CMSEnergy(double cmsE) -> void {
-    if (cmsE <= 0) [[unlikely]] {
-        PrintError(fmt::format("Non-positive CMS energy (got {})", cmsE));
-    }
-    fCMSEnergy = cmsE;
+auto MatrixElementBasedGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& pI) -> void {
+    fISMomenta = pI;
+    fBoostFromLabToCM = -this->CalculateBoost(pI);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::CheckCMSEnergyMatch(const InitialStateMomenta& pI) const -> void {
-    if (pI == InitialStateMomenta{}) {
-        return;
-    }
-    const auto cmsE{this->CalculateCMSEnergy(pI)};
-    if (not muc::isclose(cmsE, fCMSEnergy)) [[unlikely]] {
-        PrintWarning(fmt::format("Initial state 4-momenta does not match currently set CMS energy (got {}, expect {})", cmsE, fCMSEnergy));
+auto MatrixElementBasedGenerator<M, N, A>::PhaseSpace(CLHEP::HepRandomEngine& rng) {
+    if constexpr (M == 1) {
+        return fGENBOD(rng, fISMomenta);
+    } else {
+        return fGENBOD(rng, muc::ranges::reduce(fISMomenta));
     }
 }
 
@@ -168,7 +165,8 @@ auto MatrixElementBasedGenerator<M, N, A>::IRCut(int i, double cut) -> void {
     if (cut <= 0) [[unlikely]] {
         PrintWarning(fmt::format("Non-positive IR cut for particle {} (got {})", i, cut));
     }
-    if (muc::pow(fGENBOD.Mass(i) / fCMSEnergy, 2) > muc::default_tolerance<double>) [[unlikely]] {
+    const auto cmE{this->CalculateCMEnergy(fISMomenta)};
+    if (muc::pow(fGENBOD.Mass(i) / cmE, 2) > muc::default_tolerance<double>) [[unlikely]] {
         PrintWarning(fmt::format("IR cut set for massive particle {} (mass = {})", i, fGENBOD.Mass(i)));
     }
     fIRCut.push_back({i, cut});
@@ -177,7 +175,9 @@ auto MatrixElementBasedGenerator<M, N, A>::IRCut(int i, double cut) -> void {
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF) const -> bool {
     for (auto&& [i, cut] : fIRCut) {
-        if (pF[i].e() <= cut) {
+        auto p{pF[i]};
+        p.boost(fBoostFromLabToCM);
+        if (p.e() <= cut) {
             return false;
         }
     }
@@ -205,7 +205,7 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidBias(const FinalStateMomenta& pF
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMomenta& pF, double bias, double detJ) const -> double {
-    const auto value{fMatrixElement({fCMSEnergy, {}}, pF) * bias * detJ}; // |M|² × bias × |J|
+    const auto value{fMatrixElement(fISMomenta, pF) * bias * detJ}; // |M|² × bias × |J|
     const auto Where{[&] {
         auto where{fmt::format("({})", detJ)};
         for (auto&& p : pF) {
