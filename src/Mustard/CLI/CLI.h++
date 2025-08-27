@@ -42,16 +42,10 @@ public:
     CLI();
     virtual ~CLI() = 0;
 
-private:
-    struct ArgcArgvType {
-        int argc;
-        char** argv;
-    };
-
 public:
     auto ParseArgs(int argc, char* argv[]) -> void;
     auto Parsed() const -> bool { return fArgcArgv.has_value(); }
-    auto ArgcArgv() const -> ArgcArgvType;
+    auto ArgcArgv() const -> std::pair<int, char**>;
 
     auto operator->() const -> const auto* { return fArgParser.get(); }
     auto operator->() -> auto* { return fArgParser.get(); }
@@ -66,7 +60,7 @@ protected:
     [[noreturn]] static auto ThrowNotParsed() -> void;
 
 private:
-    std::optional<ArgcArgvType> fArgcArgv;
+    std::optional<std::pair<int, char**>> fArgcArgv;
     std::unique_ptr<argparse::ArgumentParser> fArgParser;
 };
 
