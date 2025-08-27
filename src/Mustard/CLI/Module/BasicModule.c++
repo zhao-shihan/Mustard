@@ -31,15 +31,14 @@ BasicModule::BasicModule(gsl::not_null<CLI<>*> cli) :
     fVerboseLevelValue{muc::to_underlying(Env::VerboseLevel::Warning)} {
     TheCLI()
         ->add_argument("-v", "--verbose")
-        .help("Increase verbose level (-2: quiet, -1: error, 0: warning (default), 1: informative, 2: verbose). "
-              "This is repeatable (e.g. -v -v or -vv) and can be combined with -q or --quiet (e.g. -vvq (=1) -qv (=0) -qqvqv (=-1)).")
+        .help("Increase verbose level (-2: quiet, -1: error, 0: warning (default), 1: informative, 2: verbose), e.g. -v (1), -v -v (2), -vv (2).")
         .flag()
         .append()
         .nargs(0)
         .action([this](auto&&) { ++fVerboseLevelValue; });
     TheCLI()
         ->add_argument("-q", "--quiet")
-        .help("Decrease verbose level (see previous).")
+        .help("Decrease verbose level (see previous), e.g. -q, -q -q, -qq. Can be used together with -v, e.g. -q -v, -vvqvq.")
         .flag()
         .append()
         .nargs(0)
