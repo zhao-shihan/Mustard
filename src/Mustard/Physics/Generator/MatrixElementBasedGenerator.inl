@@ -67,6 +67,7 @@ auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<
 
     // Start integration
     muc::chrono::stopwatch stopwatch;
+    const auto fractionPrecisionGoal{precisionGoal / std::numbers::sqrt2};
 
     // Compute denominator
     MasterPrintLn("Computing denominator integral.");
@@ -74,7 +75,7 @@ auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<
         const auto& [detJ, _, pF]{event};
         return ValidBiasedMSqDetJ(pF, 1, detJ);
     }};
-    const auto denom{Integrate(DenomIntegrand, precisionGoal, integrationState[0], executor, rng)};
+    const auto denom{Integrate(DenomIntegrand, fractionPrecisionGoal, integrationState[0], executor, rng)};
     MasterPrintLn("Denominator integration completed.");
 
     // Compute numerator
@@ -84,7 +85,7 @@ auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<
         const auto bias{ValidBias(pF)};
         return ValidBiasedMSqDetJ(pF, bias, detJ);
     }};
-    const auto numer{Integrate(NumerIntegrand, precisionGoal, integrationState[1], executor, rng)};
+    const auto numer{Integrate(NumerIntegrand, fractionPrecisionGoal, integrationState[1], executor, rng)};
     MasterPrintLn("Numerator integration completed.");
 
     // Combine result

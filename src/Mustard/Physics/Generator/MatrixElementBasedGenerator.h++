@@ -49,6 +49,7 @@
 #include <concepts>
 #include <functional>
 #include <limits>
+#include <numbers>
 #include <typeinfo>
 #include <utility>
 
