@@ -86,7 +86,6 @@ auto ParallelExecutorImpl<T>::operator()(struct Scheduler<T>::Task task, std::in
         totalProcessorTime = muc::ranges::transform_reduce(
             fExecutionInfoList, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; });
     }
-    worldComm.ibarrier().wait(mplr::duty_ratio::preset::relaxed);
     this->PostLoopReport();
     return this->NLocalExecutedTask();
 }
