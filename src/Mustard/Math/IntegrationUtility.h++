@@ -24,7 +24,7 @@ namespace Mustard::Math {
 
 /// @brief Monte Carlo integration internal state
 struct MCIntegrationState {
-    muc::array2ld sum;    ///< Sum of integrand and squared integrand
+    muc::array2d sum;     ///< Sum of integrand and squared integrand
     unsigned long long n; ///< Sample size
 };
 
