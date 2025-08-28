@@ -20,6 +20,7 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Physics/Generator/VersatileEventGenerator.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/LorentzVector.h"
@@ -79,7 +80,7 @@ public:
     /// @param u Flat random numbers in 0--1
     /// @param pI Initial-state 4-momenta
     /// @return Generated event
-    virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
+    MUSTARD_OPTIMIZE_FAST virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads
     using VersatileEventGenerator<M, N, 4 * N>::operator();
 

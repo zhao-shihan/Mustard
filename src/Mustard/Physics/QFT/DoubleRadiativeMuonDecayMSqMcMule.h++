@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 namespace Mustard::inline Physics::QFT {
 
@@ -37,17 +38,17 @@ public:
     /// @return |M|² value in CLHEP unit system
     ///
     /// @note Implementation based on McMule's analytical expressions
-    virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
+    MUSTARD_OPTIMIZE_FAST virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
 
 private:
-    static auto MSqUnpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                               double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    static auto MSqPolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    static auto MSqPolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    static auto MSqPolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                double den1, double den2, double den3, double den4, double den5, double den6) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto MSqUnpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                     double den1, double den2, double den3, double den4, double den5, double den6) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto MSqPolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                      double den1, double den2, double den3, double den4, double den5, double den6) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto MSqPolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                      double den1, double den2, double den3, double den4, double den5, double den6) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto MSqPolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                      double den1, double den2, double den3, double den4, double den5, double den6) -> double;
 };
 
 } // namespace Mustard::inline Physics::QFT

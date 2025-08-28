@@ -20,36 +20,34 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N>
     requires(N >= 2)
-auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Event {
+MUSTARD_OPTIMIZE_FAST auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Event {
     const auto cmE{this->CalculateCMEnergy(pI)};
     this->CheckCMEnergy(cmE);
     const auto beta{this->BoostToCMFrame(pI)};
 
     auto random{u.cbegin()};
-    std::array<double, N> u0;
-    u0.front() = 0;
-    random = std::ranges::copy_n(random, N - 2, u0.begin() + 1).in;
-    u0.back() = 1;
-    [](double arr[]) {
-        for (auto i{1}; i < N - 2; ++i) {
-            const auto key{arr[i]};
-            auto j{i - 1};
-            for (; j >= 0 and arr[j] > key; --j) {
-                arr[j + 1] = arr[j];
-            }
-            arr[j + 1] = key;
+    std::array<double, N - 2> u0;
+    random = std::ranges::copy_n(random, u0.size(), u0.begin()).in;
+    for (auto i{1}; i < ssize(u0); ++i) {
+        const auto key{u0[i]};
+        auto j{i - 1};
+        for (; j >= 0 and u0[j] > key; --j) {
+            u0[j + 1] = u0[j];
         }
-    }(u0.data() + 1);
-
-    std::array<double, N> invMass;
-    double sumMass{};
-    const auto cmEk{cmE - this->fSumMass};
-    for (int i{}; i < N; ++i) {
-        sumMass += this->fMass[i];
-        invMass[i] = u0[i] * cmEk + sumMass;
+        u0[j + 1] = key;
     }
 
-    Event event{.weight = 1, .pdgID = this->fPDGID, .p = {}};
+    std::array<double, N> invMass{this->fMass.front()};
+    const auto cmEk{cmE - this->fSumMass};
+    auto sumMass{this->fMass.front()};
+    for (auto i{1}; i < N - 1; ++i) {
+        sumMass += this->fMass[i];
+        invMass[i] = u0[i - 1] * cmEk + sumMass;
+    }
+    invMass.back() = cmE;
+
+    using Mustard::MathConstant::pi;
+    Event event{.weight = muc::pow(cmE, N - 3) / (4 * muc::pow(2 * pi, 2 * N + 2)), .pdgID = this->fPDGID, .p = {}};
     std::array<double, N> pRel;
     for (int i{}; i < N - 1; ++i) {
         constexpr auto RelativeMomentum{[](double m12, double m1, double m2) {
@@ -60,9 +58,9 @@ auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> E
     }
 
     // clang-format off
-    event.p[0] = {{0, pRel[0], 0}, muc::hypot(pRel[0], this->fMass[0])};          // clang-format on
+    event.p[0] = {muc::hypot(pRel[0], this->fMass[0]), {0, pRel[0], 0}};          // clang-format on
     for (int i{1};; ++i) { // clang-format off
-        event.p[i] = {{0, -pRel[i - 1], 0}, muc::hypot(pRel[i - 1], this->fMass[i])}; // clang-format on
+        event.p[i] = {muc::hypot(pRel[i - 1], this->fMass[i]), {0, -pRel[i - 1], 0}}; // clang-format on
 
         const auto cZ{2 * (*random++) - 1};
         const auto sZ{std::sqrt(1 - muc::pow(cZ, 2))};

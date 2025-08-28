@@ -33,7 +33,7 @@ namespace Mustard::inline Physics::QFT {
 using namespace PhysicalConstant;
 using namespace MathConstant;
 
-auto DoubleRadiativeMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
+MUSTARD_OPTIMIZE_FAST auto DoubleRadiativeMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
     const auto& p1{pI};
     const auto& [p2, p3, p4, p5, p6]{pF};
 
@@ -84,8 +84,8 @@ auto DoubleRadiativeMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI
     return constant * pm2ennggav;
 }
 
-auto DoubleRadiativeMuonDecayMSqMcMule::MSqUnpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                       double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto DoubleRadiativeMuonDecayMSqMcMule::MSqUnpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                                             double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -1476,8 +1476,8 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqUnpolarized(double mm2, double me2, d
                 if56 / (den5 * den6));
 }
 
-auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                        double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                                              double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -1917,8 +1917,8 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS2n(double mm2, double me2, 
                 if56 / (den5 * den6));
 }
 
-auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                        double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                                              double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -2337,8 +2337,8 @@ auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS5n(double mm2, double me2, 
                 if56 / (den5 * den6));
 }
 
-auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                        double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto DoubleRadiativeMuonDecayMSqMcMule::MSqPolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                                              double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95

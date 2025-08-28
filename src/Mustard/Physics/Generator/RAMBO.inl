@@ -36,7 +36,7 @@ RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double, N>&
 
 template<int M, int N>
     requires(N >= 2)
-auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Event {
+MUSTARD_OPTIMIZE_FAST auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Event {
     const auto cmE{this->CalculateCMEnergy(pI)};
     this->CheckCMEnergy(cmE);
     const auto beta{this->BoostToCMFrame(pI)};

@@ -31,7 +31,7 @@ namespace Mustard::inline Physics::QFT {
 using namespace PhysicalConstant;
 using namespace MathConstant;
 
-auto InternalConversionMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
+MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
     const auto& q1{pI};
     const auto& [q2, q3, q4, q6, q5]{pF}; // should 5 <-> 6 for this version
     const CLHEP::HepLorentzVector pol1{InitialStatePolarization()};

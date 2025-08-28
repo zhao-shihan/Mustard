@@ -20,6 +20,8 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Physics/Generator/VersatileEventGenerator.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
+#include "Mustard/Utility/MathConstant.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/LorentzVector.h"
@@ -56,6 +58,9 @@ namespace Mustard::inline Physics::inline Generator {
 /// Complexity: O(N^2), but typically (e.g. N < 10) faster than RAMBO when
 /// final states are massive.
 ///
+/// Event weights from this generator is exact Jacobian from phase space
+/// to [0,1]^(3N-4). The phase-space "2pi" convention follows PDG.
+///
 /// However, unlike RAMBO, event weights from GENBOD can vary largly
 /// although final states are massless. RAMBO is recommended for
 /// generating unweighted massless final states.
@@ -82,7 +87,7 @@ public:
     /// @param u Flat random numbers in 0--1
     /// @param pI Initial-state 4-momenta
     /// @return Generated event
-    virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
+    MUSTARD_OPTIMIZE_FAST virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads
     using VersatileEventGenerator<M, N, 3 * N - 4>::operator();
 };

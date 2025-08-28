@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 namespace Mustard::inline Physics::QFT {
 
@@ -40,7 +41,7 @@ public:
     /// @return |M|² value in CLHEP unit system
     ///
     /// @note Implementation based on McMule's analytical expressions
-    virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
+    MUSTARD_OPTIMIZE_FAST virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
 };
 
 } // namespace Mustard::inline Physics::QFT
