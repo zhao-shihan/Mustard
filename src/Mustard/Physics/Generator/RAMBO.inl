@@ -24,13 +24,13 @@ RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double, N>&
     VersatileEventGenerator<M, N, 4 * N>{pdgID, mass},
     fWeightFactor{} {
     // initialization step: factorials for the phase space weight
-    constexpr double po2log = 0.45158270528945486; // log(twopi / 4.);
+    constexpr auto po2log{0.45158270528945486}; // log(twopi / 4.);
     fWeightFactor[1] = po2log;
-    for (int k = 2; k < N; k++) {
-        fWeightFactor[k] = fWeightFactor[k - 1] + po2log - 2. * std::log(double(k - 1));
+    for (auto k{2}; k < N; ++k) {
+        fWeightFactor[k] = fWeightFactor[k - 1] + po2log - 2 * std::log(k - 1);
     }
-    for (int k = 2; k < N; k++) {
-        fWeightFactor[k] = (fWeightFactor[k] - std::log(double(k)));
+    for (auto k{2}; k < N; ++k) {
+        fWeightFactor[k] -= std::log(k);
     }
 }
 
@@ -50,7 +50,7 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
      *    this is version 1.0 -  written by r. kleiss                      *
      *                                                                     *
      *    N    = number of particles                                       *
-     *    cmE = total centre-of-mass energy                               *
+     *    cmE = total centre-of-mass energy                                *
      *    xm   = particle masses ( dim=nexternal-nincoming )               *
      *    p    = particle momenta ( dim=(4,nexternal-nincoming) )          *
      *    wt   = weight of the event                                       *
