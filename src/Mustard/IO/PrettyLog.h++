@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "Mustard/Utility/FunctionAttribute.h++"
+
 #include "mplr/mplr.hpp"
 
 #include <concepts>
@@ -62,7 +64,7 @@ auto MasterPrintError(std::string_view message, const std::source_location& loca
 /// @param message The exception message.
 /// @param location Source location. Default is current.
 template<std::constructible_from<std::string> AException>
-[[noreturn]] auto Throw(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+[[noreturn]] MUSTARD_NOINLINE auto Throw(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
 namespace internal {
 auto PrettyException(std::string_view message, const std::source_location& location) -> std::string;
