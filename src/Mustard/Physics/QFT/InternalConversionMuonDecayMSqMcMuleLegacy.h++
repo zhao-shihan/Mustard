@@ -23,13 +23,13 @@
 
 namespace Mustard::inline Physics::QFT {
 
-/// @class InternalConversionMuonDecayMSqMcMule
+/// @class InternalConversionMuonDecayMSqMcMuleLegacy
 /// @brief Matrix element squared for μ⁻ → e⁻ννe⁺e⁻ and μ⁺ → e⁺ννe⁻e⁺ decays
 ///
 /// Implements polarized matrix element squared for muon decay with internal conversion
 /// (radiative decay where virtual photon converts to e⁺e⁻ pair). Referenceing
 /// McMule's analytical formula.
-class InternalConversionMuonDecayMSqMcMule : public PolarizedMatrixElement<1, 5> {
+class InternalConversionMuonDecayMSqMcMuleLegacy : public PolarizedMatrixElement<1, 5> {
 public:
     using PolarizedMatrixElement::PolarizedMatrixElement; ///< Inherit constructors
 
@@ -42,18 +42,6 @@ public:
     ///
     /// @note Implementation based on McMule's analytical expressions
     MUSTARD_OPTIMIZE_FAST virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
-
-private:
-    MUSTARD_OPTIMIZE_FAST auto OneBorn(double s12, double s13, double s14, double s23, double s24, double s34,
-                                       double m12, double m22, double) const -> double;
-    MUSTARD_OPTIMIZE_FAST auto OneBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
-                                          double m12, double m22, double,
-                                          double s2n, double s3n, double s4n) const -> double;
-    MUSTARD_OPTIMIZE_FAST auto TwoBorn(double s12, double s13, double s14, double s23, double s24, double s34,
-                                       double m12, double m22, double m32) const -> double;
-    MUSTARD_OPTIMIZE_FAST auto TwoBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
-                                          double m12, double m22, double m32,
-                                          double s2n, double s3n, double s4n) const -> double;
 };
 
 } // namespace Mustard::inline Physics::QFT
