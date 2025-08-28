@@ -49,7 +49,7 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
                                                                        std::array<Math::MCIntegrationState, 2> integrationState,
-                                                                       CLHEP::HepRandomEngine& rng) -> std::pair<Math::IntegrationResult, std::array<Math::MCIntegrationState, 2>> {
+                                                                       CLHEP::HepRandomEngine& rng) -> std::pair<Math::MCIntegrationResult, std::array<Math::MCIntegrationState, 2>> {
     MasterPrintLn("Estimating normalization factor in {}.", muc::try_demangle(typeid(*this).name()));
 
     // Set task name
@@ -70,13 +70,15 @@ auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<
     const auto fractionPrecisionGoal{precisionGoal / std::numbers::sqrt2};
 
     // Compute denominator
-    MasterPrintLn("Computing denominator integral.");
+    MasterPrintLn("\n"
+                  "Computing denominator integral.");
     const auto DenomIntegrand{[this](const Event& event) {
         const auto& [detJ, _, pF]{event};
         return ValidBiasedMSqDetJ(pF, 1, detJ);
     }};
     const auto denom{Integrate(DenomIntegrand, fractionPrecisionGoal, integrationState[0], executor, rng)};
-    MasterPrintLn("Denominator integration completed.");
+    MasterPrintLn("Denominator integration completed."
+                  "\n");
 
     // Compute numerator
     MasterPrintLn("Computing numerator integral.");
@@ -86,10 +88,11 @@ auto MatrixElementBasedGenerator<M, N, A>::EstimateNormalizationFactor(Executor<
         return ValidBiasedMSqDetJ(pF, bias, detJ);
     }};
     const auto numer{Integrate(NumerIntegrand, fractionPrecisionGoal, integrationState[1], executor, rng)};
-    MasterPrintLn("Numerator integration completed.");
+    MasterPrintLn("Numerator integration completed."
+                  "\n");
 
     // Combine result
-    Math::IntegrationResult result;
+    Math::MCIntegrationResult result;
     result.value = numer.value / denom.value;
     result.uncertainty = std::hypot(denom.value * numer.uncertainty, numer.value * denom.uncertainty) / muc::pow(denom.value, 2);
 
@@ -226,7 +229,7 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMo
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                                                     Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> Math::IntegrationResult {
+                                                     Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> Math::MCIntegrationResult {
     // One integration iteration
     const auto Iteration{[&](unsigned long long nSample) {
         using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
@@ -251,35 +254,47 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         }
         state.sum += sum;
         state.n += nSample;
-        Math::IntegrationResult result;
+        Math::MCIntegrationResult result;
         result.value = state.sum[0] / state.n;
         result.uncertainty = std::sqrt((state.sum[1] / state.n - muc::pow(result.value, 2)) / state.n);
+        result.nEff = muc::pow(state.sum[0], 2) / state.sum[1];
         return result;
     }};
     // Iteration loop
+    MasterPrintLn("Integration starts. Precision goal: {:.3}.", precisionGoal);
     auto nSample{static_cast<unsigned long long>(10 * muc::pow(precisionGoal, -2))};
-    while (true) {
+    for (gsl::index iteration{1};; ++iteration) {
+        nSample = std::max(10000ull * executor.NProcess(), nSample);
         if (state.n == 0) {
-            MasterPrintLn("Restarting integration.");
+            MasterPrintLn("[Iteration {}] Restarting integration.", iteration);
         } else {
-            MasterPrintLn("Continuing integration from state {} {} {}.", state.sum[0], state.sum[1], state.n);
+            MasterPrintLn("[Iteration {}] Continuing integration from state\n"
+                          "  {} {} {}.",
+                          iteration, state.sum[0], state.sum[1], state.n);
         }
         MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", nSample, precisionGoal);
         const auto result{Iteration(nSample)};
         const auto relativeUncertainty{result.uncertainty / result.value};
-        if (relativeUncertainty < precisionGoal) {
-            MasterPrintLn("Current precision: {:.3}, precision goal reached.", relativeUncertainty);
+        if (relativeUncertainty <= precisionGoal) {
+            MasterPrintLn("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} reached."
+                          "\n"
+                          "Integration completed with {} iterations and {} samples.",
+                          relativeUncertainty, result.nEff, precisionGoal,
+                          iteration, state.n);
             return result;
         }
-        MasterPrintLn("Current precision: {:.3}, precision goal not reached.", relativeUncertainty);
+        MasterPrintLn("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} not reached."
+                      "\n",
+                      relativeUncertainty, result.nEff, precisionGoal);
         // Increase sample size adaptively
-        const auto factor{1.05 * muc::pow(relativeUncertainty / precisionGoal, 2) - 1};
+        constexpr auto zFactor{1}; // decrease z sigma to increase stability
+        const auto counterFactor{1 - zFactor / std::sqrt(result.nEff)};
+        const auto factor{std::max(0., counterFactor * muc::pow(relativeUncertainty / precisionGoal, 2) - 1)};
         if (std::isfinite(factor)) {
             nSample = factor * state.n;
         } else {
             nSample *= 10;
         }
-        nSample = std::max<unsigned long long>(executor.NProcess(), nSample);
     }
 }
 

@@ -20,8 +20,7 @@
 
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Math/IntegrationResult.h++"
-#include "Mustard/Math/MCIntegrationState.h++"
+#include "Mustard/Math/IntegrationUtility.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
@@ -113,7 +112,7 @@ public:
     /// @return Estimated normalization factor and integration state
     auto EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
                                      std::array<Math::MCIntegrationState, 2> integrationState = {},
-                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::pair<Math::IntegrationResult, std::array<Math::MCIntegrationState, 2>>;
+                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::pair<Math::MCIntegrationResult, std::array<Math::MCIntegrationState, 2>>;
 
 protected:
     /// @brief Set initial-state 4-momenta
@@ -192,7 +191,7 @@ protected:
 private:
     /// @brief Monte Carlo integration implementation
     auto Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                   Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> Math::IntegrationResult;
+                   Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> Math::MCIntegrationResult;
 
 protected:
     GENBOD<M, N> fGENBOD; ///< Phase space generator
