@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Math/Random/Generator/Xoshiro256Base.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 namespace Mustard::Math::Random::inline Generator {
 

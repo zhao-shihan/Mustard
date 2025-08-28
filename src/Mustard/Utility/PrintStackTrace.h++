@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "fmt/color.h"
 

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/bit"
 #include "muc/numeric"
@@ -37,7 +37,7 @@
 namespace Mustard::Math::internal {
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> auto {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> auto {
     assert(0 < x and x <= 1);
     muc::assume(0 < x and x <= 1);
     if constexpr (std::numeric_limits<T>::is_iec559) {

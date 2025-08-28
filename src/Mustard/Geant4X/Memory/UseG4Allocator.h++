@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Geant4X/Memory/SingletonG4Allocator.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include <concepts>
 #include <cstddef>

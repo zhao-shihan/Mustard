@@ -22,7 +22,7 @@
 #include "Mustard/Env/Memory/internal/SingletonBase.h++"
 #include "Mustard/Env/Memory/internal/SingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
 
 #include "muc/mutex"

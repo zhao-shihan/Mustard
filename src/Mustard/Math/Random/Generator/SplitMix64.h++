@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Math/Random/UniformPseudoRandomBitGeneratorBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/concepts"
 

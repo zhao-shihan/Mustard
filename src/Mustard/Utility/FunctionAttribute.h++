@@ -18,12 +18,18 @@
 
 #pragma once
 
+//
+// MUSTARD_STRONG_INLINE
+//
 #if defined _MSC_VER
 #    define MUSTARD_STRONG_INLINE __forceinline
 #else
 #    define MUSTARD_STRONG_INLINE inline
 #endif
 
+//
+// MUSTARD_ALWAYS_INLINE
+//
 #if defined __clang__
 #    define MUSTARD_ALWAYS_INLINE [[clang::always_inline]] inline
 #elif defined __GNUC__
@@ -32,10 +38,26 @@
 #    define MUSTARD_ALWAYS_INLINE MUSTARD_STRONG_INLINE
 #endif
 
+//
+// MUSTARD_NOINLINE
+//
 #if defined __clang__
 #    define MUSTARD_NOINLINE [[clang::noinline]]
 #elif defined __GNUC__
 #    define MUSTARD_NOINLINE [[gnu::noinline]]
 #elif defined _MSC_VER
 #    define MUSTARD_NOINLINE __declspec(noinline)
+#endif
+
+//
+// MUSTARD_OPTIMIZE_FAST
+//
+#ifdef NDEBUG
+#    if defined __GNUC__ or defined __clang__
+#        define MUSTARD_OPTIMIZE_FAST __attribute__((optimize("Ofast")))
+#    else
+#        define MUSTARD_OPTIMIZE_FAST
+#    endif
+#else
+#    define MUSTARD_OPTIMIZE_FAST
 #endif

@@ -21,7 +21,7 @@
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/Value.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/ceta_string"

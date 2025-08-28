@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Concept/NumericVector.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/math"
 

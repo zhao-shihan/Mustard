@@ -21,7 +21,7 @@
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
 #include "Mustard/Math/internal/FastLogOn01.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/concepts"
 

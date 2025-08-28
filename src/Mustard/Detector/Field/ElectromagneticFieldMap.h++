@@ -22,7 +22,7 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectromagneticFieldBase.h++"
 #include "Mustard/Detector/Field/FieldMapSymmetry.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"

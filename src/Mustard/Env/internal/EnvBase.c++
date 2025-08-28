@@ -38,7 +38,7 @@
 #if MUSTARD_SIGNAL_HANDLER
 
 #    include "Mustard/IO/Print.h++"
-#    include "Mustard/Utility/InlineMacro.h++"
+#    include "Mustard/Utility/FunctionAttribute.h++"
 #    include "Mustard/Utility/PrintStackTrace.h++"
 
 #    include "mplr/mplr.hpp"

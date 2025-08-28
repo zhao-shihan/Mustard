@@ -22,7 +22,7 @@
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
 #include "Mustard/Env/VerboseLevel.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/optional"
 

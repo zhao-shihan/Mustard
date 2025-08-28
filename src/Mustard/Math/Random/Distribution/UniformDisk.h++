@@ -22,7 +22,7 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/Distribution/UniformRectangle.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
 #include "muc/array"
