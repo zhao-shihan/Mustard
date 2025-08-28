@@ -18,12 +18,30 @@
 
 #pragma once
 
+#include "muc/array"
+
 namespace Mustard::Math {
 
-/// @brief Integration result
+/// @brief Monte Carlo integration internal state
+struct MCIntegrationState {
+    muc::array2ld sum;    ///< Sum of integrand and squared integrand
+    unsigned long long n; ///< Sample size
+};
+
+/// @brief General integration result
 struct IntegrationResult {
     double value;       ///< Integration result
     double uncertainty; ///< Integration uncertainty
+};
+
+/// @brief Monte Carlo Integration result
+struct MCIntegrationResult {
+    double value;       ///< Integration result
+    double uncertainty; ///< Integration uncertainty
+    double nEff;        ///< Effective sample size
+
+    /// @brief `MCIntegrationResult` is convertible to `IntegrationResult`
+    operator IntegrationResult() { return {value, uncertainty}; }
 };
 
 } // namespace Mustard::Math
