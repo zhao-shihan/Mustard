@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Physics/Generator/InternalConversionMuonDecay.h++"
+#include "Mustard/Physics/Generator/M2ENNEEGenerator.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "muc/math"
@@ -32,8 +32,8 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-InternalConversionMuonDecay::InternalConversionMuonDecay(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
-                                                         std::optional<double> delta, std::optional<unsigned> discard) :
+M2ENNEEGenerator::M2ENNEEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
+                                   std::optional<double> delta, std::optional<unsigned> discard) :
     MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(delta), std::move(discard)} {
     Parent(parent);
     ParentMomentum(momentum);
@@ -41,7 +41,7 @@ InternalConversionMuonDecay::InternalConversionMuonDecay(std::string_view parent
     AddIdenticalSet({0, 4});
 }
 
-auto InternalConversionMuonDecay::Parent(std::string_view parent) -> void {
+auto M2ENNEEGenerator::Parent(std::string_view parent) -> void {
     if (parent == "mu-") {
         PDGID({11, -12, 14, -11, 11});
     } else if (parent == "mu+") {
@@ -51,7 +51,7 @@ auto InternalConversionMuonDecay::Parent(std::string_view parent) -> void {
     }
 }
 
-auto InternalConversionMuonDecay::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
+auto M2ENNEEGenerator::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
     const auto energy{std::sqrt(momentum.mag2() + muc::pow(muon_mass_c2, 2))};
     ISMomenta({energy, momentum});
 }

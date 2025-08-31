@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Physics/QFT/InternalConversionMuonDecayMSqMcMuleLegacy.h++"
+#include "Mustard/Physics/QFT/M2ENNEE0MSqMcMuleLegacy.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
@@ -31,7 +31,7 @@ namespace Mustard::inline Physics::QFT {
 using namespace PhysicalConstant;
 using namespace MathConstant;
 
-MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMuleLegacy::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNEE0MSqMcMuleLegacy::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
     const auto& q1{pI};
     const auto& [q2, q3, q4, q6, q5]{pF}; // should 5 <-> 6 for this version
     const CLHEP::HepLorentzVector pol1{InitialStatePolarization()};

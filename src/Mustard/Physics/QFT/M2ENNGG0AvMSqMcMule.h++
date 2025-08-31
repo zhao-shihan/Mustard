@@ -23,12 +23,13 @@
 
 namespace Mustard::inline Physics::QFT {
 
-/// @class DoubleRadiativeMuonDecayMSqMcMule
-/// @brief Matrix element squared for μ⁻ → e⁻ννγγ and μ⁺ → e⁺ννγγ decays
+/// @class M2ENNGG0AvMSqMcMule
+/// @brief Matrix element squared for μ⁻ → e⁻ννγγ and μ⁺ → e⁺ννγγ decays.
+/// Neutrino energies are averaged over.
 ///
 /// Implements polarized matrix element calculation for double radiative muon decay
 /// referenceing McMule's analytical formula.
-class DoubleRadiativeMuonDecayMSqMcMule : public PolarizedMatrixElement<1, 5> {
+class M2ENNGG0AvMSqMcMule : public PolarizedMatrixElement<1, 5> {
 public:
     using PolarizedMatrixElement::PolarizedMatrixElement;
 

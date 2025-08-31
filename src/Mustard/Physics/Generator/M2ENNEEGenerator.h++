@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.h++"
-#include "Mustard/Physics/QFT/InternalConversionMuonDecayMSqMcMule.h++"
+#include "Mustard/Physics/QFT/M2ENNEE0AvMSqMcMule.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -28,11 +28,11 @@
 
 namespace Mustard::inline Physics::inline Generator {
 
-/// @class InternalConversionMuonDecay
+/// @class M2ENNEEGenerator
 /// @brief MCMC generator for mu->ennee decays
 /// Kinematics: μ⁻ → e⁻ ν ν e⁺ e⁻
 ///             μ⁺ → e⁺ ν ν e⁻ e⁺
-class InternalConversionMuonDecay : public MultipleTryMetropolisGenerator<1, 5, QFT::InternalConversionMuonDecayMSqMcMule> {
+class M2ENNEEGenerator : public MultipleTryMetropolisGenerator<1, 5, QFT::M2ENNEE0AvMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
@@ -42,8 +42,8 @@ public:
     /// (optional here, but should be set no later than before generation)
     /// @param discard Samples discarded between two events generated from the Markov chain
     /// (optional here, but should be set no later than before generation)
-    InternalConversionMuonDecay(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
-                                std::optional<double> delta = {}, std::optional<unsigned> discard = {});
+    M2ENNEEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
+                     std::optional<double> delta = {}, std::optional<unsigned> discard = {});
 
     /// @brief Set parent particle
     /// @param parent "mu-" or "mu+"

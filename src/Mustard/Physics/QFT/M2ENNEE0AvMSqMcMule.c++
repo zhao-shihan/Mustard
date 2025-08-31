@@ -16,14 +16,13 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Physics/QFT/InternalConversionMuonDecayMSqMcMule.h++"
+#include "Mustard/Physics/QFT/M2ENNEE0AvMSqMcMule.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "CLHEP/Vector/LorentzVector.h"
 
 #include "muc/math"
-#include "muc/numeric"
 
 #include <cmath>
 
@@ -32,7 +31,7 @@ namespace Mustard::inline Physics::QFT {
 using namespace PhysicalConstant;
 using namespace MathConstant;
 
-MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
     const auto& p1{pI};
     const auto& [p2, _1, _2, p3, p4]{pF};
 
@@ -49,7 +48,7 @@ MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::operator()(cons
     const auto m12{p1.m2()};
     const auto m32{p3.m2()};
 
-    const auto polarized{not InitialStatePolarization().isNear({}, muc::default_tolerance<double>)};
+    const auto polarized{InitialStatePolarization() != CLHEP::Hep3Vector{}};
     const auto sqrtM12{polarized ? std::sqrt(m12) : 0};
 
     double pm2enneeav{};
@@ -78,8 +77,8 @@ MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::operator()(cons
     return muc::pow(2 * pi * fine_structure_const * reduced_fermi_constant, 2) * pm2enneeav;
 }
 
-MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::OneBorn(double s12, double s13, double s14, double s23, double s24, double s34,
-                                                                         double m12, double m22, double) const -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::OneBorn(double s12, double s13, double s14, double s23, double s24, double s34,
+                                                        double m12, double m22, double) const -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_1l_onetrace.opt.f95, FUNCTION bornPol
@@ -740,9 +739,9 @@ MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::OneBorn(double 
             (-s12 + s23 + tmp3 + tmp7) * (-s14 + s34 + tmp3 + tmp7));
 }
 
-MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::OneBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
-                                                                            double m12, double m22, double,
-                                                                            double s2n, double s3n, double s4n) const -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::OneBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
+                                                           double m12, double m22, double,
+                                                           double s2n, double s3n, double s4n) const -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_1l_onetrace.opt.f95, FUNCTION bornPol
@@ -1266,8 +1265,8 @@ MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::OneBornPol(doub
             (-s12 + s23 + tmp3 + tmp7) * (-s14 + s34 + tmp3 + tmp7));
 }
 
-MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::TwoBorn(double s12, double s13, double s14, double s23, double s24, double s34,
-                                                                         double m12, double m22, double m32) const -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::TwoBorn(double s12, double s13, double s14, double s23, double s24, double s34,
+                                                        double m12, double m22, double m32) const -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_1l_twotrace.opt.f95, FUNCTION born
@@ -2290,9 +2289,9 @@ MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::TwoBorn(double 
             pow(s23 + s24 + s34 + tmp1, 2));
 }
 
-MUSTARD_OPTIMIZE_FAST auto InternalConversionMuonDecayMSqMcMule::TwoBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
-                                                                            double m12, double m22, double m32,
-                                                                            double s2n, double s3n, double s4n) const -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::TwoBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
+                                                           double m12, double m22, double m32,
+                                                           double s2n, double s3n, double s4n) const -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_1l_twotrace.opt.f95, FUNCTION bornPol

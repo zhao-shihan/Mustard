@@ -23,13 +23,13 @@
 
 namespace Mustard::inline Physics::QFT {
 
-/// @class InternalConversionMuonDecayMSqMcMuleLegacy
+/// @class M2ENNEE0MSqMcMuleLegacy
 /// @brief Matrix element squared for μ⁻ → e⁻ννe⁺e⁻ and μ⁺ → e⁺ννe⁻e⁺ decays
 ///
 /// Implements polarized matrix element squared for muon decay with internal conversion
 /// (radiative decay where virtual photon converts to e⁺e⁻ pair). Referenceing
 /// McMule's analytical formula.
-class InternalConversionMuonDecayMSqMcMuleLegacy : public PolarizedMatrixElement<1, 5> {
+class M2ENNEE0MSqMcMuleLegacy : public PolarizedMatrixElement<1, 5> {
 public:
     using PolarizedMatrixElement::PolarizedMatrixElement; ///< Inherit constructors
 

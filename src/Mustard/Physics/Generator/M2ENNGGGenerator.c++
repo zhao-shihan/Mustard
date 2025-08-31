@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Physics/Generator/DoubleRadiativeMuonDecay.h++"
+#include "Mustard/Physics/Generator/M2ENNGGGenerator.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "muc/math"
@@ -32,8 +32,8 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization, double irCut,
-                                                   std::optional<double> delta, std::optional<unsigned> discard) :
+M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization, double irCut,
+                                   std::optional<double> delta, std::optional<unsigned> discard) :
     MultipleTryMetropolisGenerator{{}, polarization, {}, {}, delta, discard} {
     Parent(parent);
     ParentMomentum(momentum);
@@ -42,7 +42,7 @@ DoubleRadiativeMuonDecay::DoubleRadiativeMuonDecay(std::string_view parent, CLHE
     AddIdenticalSet({3, 4});
 }
 
-auto DoubleRadiativeMuonDecay::Parent(std::string_view parent) -> void {
+auto M2ENNGGGenerator::Parent(std::string_view parent) -> void {
     if (parent == "mu-") {
         PDGID({11, -12, 14, 22, 22});
     } else if (parent == "mu+") {
@@ -52,12 +52,12 @@ auto DoubleRadiativeMuonDecay::Parent(std::string_view parent) -> void {
     }
 }
 
-auto DoubleRadiativeMuonDecay::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
+auto M2ENNGGGenerator::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
     const auto energy{std::sqrt(momentum.mag2() + muc::pow(muon_mass_c2, 2))};
     ISMomenta({energy, momentum});
 }
 
-auto DoubleRadiativeMuonDecay::IRCut(double irCut) -> void {
+auto M2ENNGGGenerator::IRCut(double irCut) -> void {
     MultipleTryMetropolisGenerator::IRCut(3, irCut);
     MultipleTryMetropolisGenerator::IRCut(4, irCut);
 }
