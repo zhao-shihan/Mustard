@@ -29,7 +29,7 @@ Wrap<PRBG>::Wrap(long seed) :
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::flatArray(const int size, double* vect) -> void {
     for (int i = 0; i < size; ++i) {
-        vect[i] = flat();
+        vect[i] = Wrap::flat();
     }
 }
 
