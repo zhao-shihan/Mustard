@@ -30,6 +30,9 @@
 //
 // MUSTARD_ALWAYS_INLINE
 //
+// It can slow the program in some cases (especially for large functions).
+// Use with profile and with care. If you're not sure what you're doing, don't use it.
+//
 #if defined __clang__
 #    define MUSTARD_ALWAYS_INLINE [[clang::always_inline]] inline
 #elif defined __GNUC__
@@ -51,6 +54,10 @@
 
 //
 // MUSTARD_OPTIMIZE_FAST
+//
+// It can slow the program or produce inexact result in some cases.
+// It can prevents inlining inside the function body, so only use on function with direct + - * / operation.
+// Use with profile and with care. If you're not sure what you're doing, don't use it.
 //
 #ifdef NDEBUG
 #    if defined __GNUC__ or defined __clang__
