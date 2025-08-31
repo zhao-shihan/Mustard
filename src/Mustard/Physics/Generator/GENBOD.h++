@@ -87,7 +87,7 @@ public:
     /// @param u Flat random numbers in 0--1
     /// @param pI Initial-state 4-momenta
     /// @return Generated event
-    MUSTARD_OPTIMIZE_FAST virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
+    virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
     // Inherit operator() overloads
     using VersatileEventGenerator<M, N, 3 * N - 4>::operator();
 };
