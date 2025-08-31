@@ -48,6 +48,7 @@
 #include <array>
 #include <cmath>
 #include <concepts>
+#include <cstdint>
 #include <functional>
 #include <limits>
 #include <numbers>
@@ -61,8 +62,8 @@ namespace Mustard::inline Physics::inline Generator {
 /// @class MatrixElementBasedGenerator
 /// @brief Generator based on a matrix element.
 ///
-/// Generates events distributed according to |M|² × bias, and
-/// weight = 1 / bias.
+/// Generates events distributed according to |M|² × acceptance, and
+/// weight = 1 / acceptance.
 ///
 /// @tparam M Number of initial-state particles
 /// @tparam N Number of final-state particles
@@ -76,8 +77,8 @@ public:
     using typename EventGenerator<M, N>::FinalStateMomenta;
     /// @brief Generated event type
     using typename EventGenerator<M, N>::Event;
-    /// @brief User-defined bias function type
-    using BiasFunction = std::function<auto(const FinalStateMomenta&)->double>;
+    /// @brief User-defined acceptance function type
+    using AcceptanceFunction = std::function<auto(const FinalStateMomenta&)->double>;
 
 public:
     /// @brief Construct event generator
@@ -106,13 +107,13 @@ public:
     /// @brief Get currently set initial-state 4-momenta
     auto ISMomenta() const -> const auto& { return fISMomenta; }
 
-    /// @brief Compute |M|² × bias integral on phase space by Monte Carlo integration.
+    /// @brief Compute |M|² × acceptance integral on phase space by Monte Carlo integration.
     /// Useful for calculating total decay width or cross section
     /// @param executor An executor instance
     /// @param precisionGoal Target relative uncertainty (e.g. 0.01 for 1% rel. unc.)
     /// @param integrationState Integration state for continuing integration
     /// @param rng Reference to CLHEP random engine
-    /// @return (1) Monte Carlo integration result of |M|² × bias integral on phase space
+    /// @return (1) Monte Carlo integration result of |M|² × acceptance integral on phase space
     ///         (2) Effective sample size
     ///         (3) Current integration state
     auto PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
@@ -176,22 +177,23 @@ protected:
     /// @return true if momenta is IR-safe
     auto IRSafe(const FinalStateMomenta& pF) const -> bool;
 
-    /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
-    /// @param B User-defined bias
-    auto Bias(BiasFunction B) -> void { fBias = std::move(B); }
+    /// @brief Set user-defined acceptance function (0 <= acceptance <= 1 recommended)
+    /// (PDF = |M|² × acceptance, weight = 1 / acceptance)
+    /// @param B User-defined acceptance
+    auto Acceptance(AcceptanceFunction Acceptance) -> void;
 
-    /// @brief Get bias with range check
+    /// @brief Get acceptance with range check
     /// @param pF Final states' 4-momenta
-    /// @exception `std::runtime_error` if invalid bias value produced
+    /// @exception `std::runtime_error` if invalid acceptance value produced
     /// @return B(p1, ..., pN)
-    auto ValidBias(const FinalStateMomenta& pF) const -> double;
+    auto ValidAcceptance(const FinalStateMomenta& pF) const -> double;
     /// @brief Get reweighted PDF value with range check
     /// @param pF Final states' 4-momenta
     /// @param event Final states from phase space
-    /// @param bias Bias value at the same phase space point (from BiasWithCheck)
+    /// @param acceptance Acceptance value at the same phase space point (from ValidAcceptance)
     /// @exception `std::runtime_error` if invalid PDF value produced
-    /// @return |M|²(p1, ..., pN) × bias(p1, ..., pN) × |J|(p1, ..., pN)
-    auto ValidBiasedMSqDetJ(const FinalStateMomenta& pF, double bias, double detJ) const -> double;
+    /// @return |M|²(p1, ..., pN) × acceptance(p1, ..., pN) × |J|(p1, ..., pN)
+    auto ValidMSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double;
 
 private:
     /// @brief Monte Carlo integration implementation
@@ -206,7 +208,8 @@ private:
     InitialStateMomenta fISMomenta;             ///< Initial-state 4-momenta
     CLHEP::Hep3Vector fBoostFromLabToCM;        ///< Boost from lab frame to c.m. frame
     std::vector<std::pair<int, double>> fIRCut; ///< IR cuts
-    BiasFunction fBias;                         ///< User bias function
+    AcceptanceFunction fAcceptance;             ///< User acceptance function
+    mutable std::int8_t fAcceptanceGt1Counter;  ///< Counter of acceptance > 1 warning
 };
 
 } // namespace Mustard::inline Physics::inline Generator

@@ -56,11 +56,11 @@ namespace Mustard::inline Physics::inline Generator {
 
 /// @class MultipleTryMetropolisGenerator
 /// @brief Multiple-try Metropolis (MTM) MCMC sampler for event generation,
-/// possibly with user-defined bias. MTM sampler can help resolve the
+/// possibly with user-defined acceptance. MTM sampler can help resolve the
 /// curse of dimensionality.
 ///
-/// Generates events distributed according to |M|² × bias, and
-/// weight = 1 / bias.
+/// Generates events distributed according to |M|² × acceptance, and
+/// weight = 1 / acceptance.
 ///
 /// The Markov chain requires burn-in after each change to
 /// initial-state momenta. So this generator is unsuitable
@@ -82,8 +82,8 @@ public:
     using typename Base::FinalStateMomenta;
     /// @brief Generated event type
     using typename Base::Event;
-    /// @brief User-defined bias function type
-    using typename Base::BiasFunction;
+    /// @brief User-defined acceptance function type
+    using typename Base::AcceptanceFunction;
 
 public:
     /// @brief Construct event generator
@@ -162,10 +162,10 @@ public:
     auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
-    /// @brief Set user-defined bias function in PDF (PDF = |M|² × bias)
-    /// @param B User-defined bias
+    /// @brief Set user-defined acceptance function in PDF (PDF = |M|² × acceptance)
+    /// @param Acceptance User-defined acceptance
     /// @warning The Markov chain requires burn-in after set
-    auto Bias(BiasFunction B) -> void;
+    auto Acceptance(AcceptanceFunction Acceptance) -> void;
 
     /// @brief Set MCMC step size
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
@@ -218,7 +218,7 @@ private:
             GENBOD<M, N>::RandomState u; ///< Random state
             std::array<int, N> pID;      ///< Particle ID mapping (for swapping identical particles)
         } state;                         ///< State of the chain
-        double biasedMSqDetJ;            ///< |M|² × bias × |J|
+        double mSqAcceptanceDetJ;        ///< |M|² × acceptance × |J|
     };
 
 private:

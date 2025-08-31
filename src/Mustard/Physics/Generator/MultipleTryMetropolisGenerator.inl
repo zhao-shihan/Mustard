@@ -103,8 +103,8 @@ auto MultipleTryMetropolisGenerator<M, N, A>::InitialStatePolarization(const std
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::Bias(BiasFunction B) -> void {
-    Base::Bias(B);
+auto MultipleTryMetropolisGenerator<M, N, A>::Acceptance(AcceptanceFunction Acceptance) -> void {
+    Base::Acceptance(Acceptance);
     BurnInRequired();
 }
 
@@ -148,10 +148,10 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
         if (not this->IRSafe(event.p)) {
             continue;
         }
-        if (const auto bias{this->ValidBias(event.p)};
-            bias > std::numeric_limits<double>::epsilon()) {
+        if (const auto acceptance{this->ValidAcceptance(event.p)};
+            acceptance > std::numeric_limits<double>::epsilon()) {
             const auto& [detJ, _, pF]{event};
-            fMarkovChain.biasedMSqDetJ = this->ValidBiasedMSqDetJ(pF, bias, detJ);
+            fMarkovChain.mSqAcceptanceDetJ = this->ValidMSqAcceptanceDetJ(pF, acceptance, detJ);
             break;
         }
     }
@@ -255,7 +255,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
     constexpr auto kMTM{fgMCMCDim};                     // k
     std::array<struct MarkovChain::State, kMTM> stateY; // y_1, ..., y_k
     std::array<Event, kMTM> eventY;                     // Event at y_1, ..., y_k
-    std::array<double, kMTM> biasY;                     // Bias function value at y_1, ..., y_k
+    std::array<double, kMTM> acceptanceY;               // Acceptance function value at y_1, ..., y_k
     std::array<double, kMTM> piY;                       // pi(y_1), ..., pi(y_k)
     struct MarkovChain::State stateX;                   // x_i
     const auto RandomIndex([&rng](int n) {
@@ -310,29 +310,29 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
                 piY[i] = 0;
                 continue;
             }
-            biasY[i] = this->ValidBias(pF);                        // g(y_i) -> B(g(y_i))
-            piY[i] = this->ValidBiasedMSqDetJ(pF, biasY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
+            acceptanceY[i] = this->ValidAcceptance(pF);                      // g(y_i) -> B(g(y_i))
+            piY[i] = this->ValidMSqAcceptanceDetJ(pF, acceptanceY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
         }
         const auto sumPiY{muc::ranges::reduce(piY)};         // pi(y_1) + ... + pi(y_k)
         const auto selected{MultinomialSample(piY, sumPiY)}; // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
 
-        auto sumPiX{fMarkovChain.biasedMSqDetJ}; // pi(x_1) + ... + pi(x_k)
+        auto sumPiX{fMarkovChain.mSqAcceptanceDetJ}; // pi(x_1) + ... + pi(x_k)
         for (int i{}; i < kMTM - 1; ++i) {
             StateProposal(stateY[selected], stateX);      // Draw x_i from T(Y, *)
             const auto [detJ, _, pF]{PhaseSpace(stateX)}; // x_i -> event(x_i) = g(x_i)
             if (not this->IRSafe(pF)) {
                 continue;
             }
-            const auto biasX{this->ValidBias(pF)};               // g(x_i) -> B(g(x_i))
-            sumPiX += this->ValidBiasedMSqDetJ(pF, biasX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
+            const auto acceptanceX{this->ValidAcceptance(pF)};             // g(x_i) -> B(g(x_i))
+            sumPiX += this->ValidMSqAcceptanceDetJ(pF, acceptanceX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
         }
 
         // accept/reject Y
         if (sumPiY >= sumPiX or
             sumPiY >= sumPiX * rng.flat()) {
             fMarkovChain.state = stateY[selected];
-            fMarkovChain.biasedMSqDetJ = piY[selected];
-            eventY[selected].weight = 1 / biasY[selected];
+            fMarkovChain.mSqAcceptanceDetJ = piY[selected];
+            eventY[selected].weight = 1 / acceptanceY[selected];
             return eventY[selected];
         }
     }

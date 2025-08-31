@@ -26,7 +26,8 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
     fISMomenta{},
     fBoostFromLabToCM{},
     fIRCut{},
-    fBias{[](auto&&) { return 1; }} {
+    fAcceptance{[](auto&&) { return 1; }},
+    fAcceptanceGt1Counter{} {
     ISMomenta(pI);
 }
 
@@ -70,8 +71,8 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
     // Start integration
     const auto Integrand{[this](const Event& event) {
         const auto& [detJ, _, pF]{event};
-        const auto bias{ValidBias(pF)};
-        return ValidBiasedMSqDetJ(pF, bias, detJ);
+        const auto acceptance{ValidAcceptance(pF)};
+        return ValidMSqAcceptanceDetJ(pF, acceptance, detJ);
     }};
     muc::chrono::stopwatch stopwatch;
     const auto [integral, nEff]{Integrate(Integrand, precisionGoal, integrationState, executor, rng)};
@@ -168,8 +169,14 @@ auto MatrixElementBasedGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF) c
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ValidBias(const FinalStateMomenta& pF) const -> double {
-    const auto bias{fBias(pF)};
+auto MatrixElementBasedGenerator<M, N, A>::Acceptance(AcceptanceFunction Acceptance) -> void {
+    fAcceptance = std::move(Acceptance);
+    fAcceptanceGt1Counter = 0;
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MatrixElementBasedGenerator<M, N, A>::ValidAcceptance(const FinalStateMomenta& pF) const -> double {
+    const auto acceptance{fAcceptance(pF)};
     constexpr auto Format{[](const FinalStateMomenta& pF) {
         std::string where;
         for (auto&& p : pF) {
@@ -177,34 +184,45 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidBias(const FinalStateMomenta& pF
         }
         return where;
     }};
-    if (not std::isfinite(bias)) {
-        Throw<std::runtime_error>(fmt::format("Infinite bias found (got {} at {})", bias, Format(pF)));
+    if (not std::isfinite(acceptance)) {
+        Throw<std::runtime_error>(fmt::format("Infinite acceptance found (got {} at {})", acceptance, Format(pF)));
     }
-    if (bias < 0) {
-        Throw<std::runtime_error>(fmt::format("Negative bias found (got {} at {})", bias, Format(pF)));
+    if (acceptance < 0) {
+        Throw<std::runtime_error>(fmt::format("Negative acceptance found (got {} at {})", acceptance, Format(pF)));
     }
-    return bias;
+    if (acceptance > 1) [[unlikely]] {
+        constexpr std::int8_t maxIncidentReport{10};
+        if (fAcceptanceGt1Counter < maxIncidentReport) {
+            ++fAcceptanceGt1Counter;
+            PrintWarning(fmt::format("Acceptance > 1 (incident: {}, this warning will be suppressed after {} incidents)",
+                                     fAcceptanceGt1Counter, maxIncidentReport));
+            if (fAcceptanceGt1Counter == maxIncidentReport) {
+                PrintWarning("Warning of acceptance > 1 suppressed");
+            }
+        }
+    }
+    return acceptance;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ValidBiasedMSqDetJ(const FinalStateMomenta& pF, double bias, double detJ) const -> double {
-    if (bias == 0) {
+auto MatrixElementBasedGenerator<M, N, A>::ValidMSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double {
+    if (acceptance <= std::numeric_limits<double>::epsilon()) {
         return 0;
     }
-    const auto value{fMatrixElement(fISMomenta, pF) * bias * detJ}; // |M|² × bias × |J|
+    const auto value{fMatrixElement(fISMomenta, pF) * acceptance * detJ}; // |M|² × acceptance × |J|
     const auto Where{[&] {
         auto where{fmt::format("({})", detJ)};
         for (auto&& p : pF) {
             where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
         }
-        where += fmt::format(" Bias={}", bias);
+        where += fmt::format(" Acceptance={}", acceptance);
         return where;
     }};
     if (not std::isfinite(value)) {
-        Throw<std::runtime_error>(fmt::format("Infinite biased PDF found (got {} at {})", value, Where()));
+        Throw<std::runtime_error>(fmt::format("Infinite |M|^2 x (Acceptance) x |J| found (got {} at {})", value, Where()));
     }
     if (value < 0) {
-        Throw<std::runtime_error>(fmt::format("Negative biased PDF found (got {} at {})", value, Where()));
+        Throw<std::runtime_error>(fmt::format("Negative |M|^2 x (Acceptance) x |J| PDF found (got {} at {})", value, Where()));
     }
     return value;
 }
