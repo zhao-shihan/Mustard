@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Physics/Generator/MatrixElementBasedGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
@@ -244,6 +245,7 @@ private:
                                                  //
     bool fBurntIn;                               ///< Burn-in completed flag
     MarkovChain fMarkovChain;                    ///< Current Markov chain state
+    Math::Random::Gaussian<double> fGaussian;    ///< Gaussian distribution
 
     static constexpr int fgMCMCDim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
     static constexpr double fgDefaultInvalidMCMCDelta{std::numeric_limits<double>::quiet_NaN()};

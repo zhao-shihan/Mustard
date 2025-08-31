@@ -83,11 +83,11 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
 
     // Report result
     const auto& [summation, nSample]{integrationState};
-    MasterPrint("Integration completed in {:.2f}s.\n"
+    MasterPrint("Integration completed in {:.3f}s.\n"
                 "Integration state (integration can be contined from here):\n"
                 "  {} {} {}\n"
                 "|M|^2 x (Acceptance) phase-space integral:\n"
-                "  {} +/- {}  (rel. unc.: {:.2}%, N_eff: {:.2f})\n",
+                "  {} +/- {}  (rel. unc.: {:.3}%, N_eff: {:.2f})\n",
                 time, summation[0], summation[1], nSample, integral.value, integral.uncertainty,
                 integral.uncertainty / integral.value * 100, nEff);
     return {integral, nEff, integrationState};

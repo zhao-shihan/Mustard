@@ -26,7 +26,8 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const In
     fMCMCDelta{fgDefaultInvalidMCMCDelta},
     fMCMCDiscard{fgDefaultInvalidMCMCDiscard},
     fBurntIn{},
-    fMarkovChain{} {
+    fMarkovChain{},
+    fGaussian{} {
     if (delta) {
         MCMCDelta(*delta);
     }
@@ -157,7 +158,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
     }
     // burning in
     constexpr auto delta0{0.1};
-    constexpr auto epsilon{muc::default_tolerance<double>};
+    constexpr auto epsilon{1e-6};
     // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
     // nBurnIn should satisfy E(random walk displacement) ~ scale * E(distance in d-dim space),
     // so we solve nBurnIn from sqrt(random walk distance) = scale * sqrt(dimension) with some scale
@@ -173,7 +174,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
     if (mplr::available()) {
         mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
     }
-    MasterPrintLn("Markov chain burnt in in {:.2f}s.", time);
+    MasterPrintLn("Markov chain burnt in in {:.3f}s.", time);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -270,7 +271,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
     const auto StateProposal{[&](const MarkovChain::State& state0, MarkovChain::State& state) {
         // Walk random state
         std::ranges::transform(state0.u, state.u.begin(), [&](auto u0) {
-            const auto u{CLHEP::RandGaussQ::shoot(&rng, u0, delta)};
+            const auto u{fGaussian(rng, {u0, delta})};
             return u - std::floor(u); // periodic boundary
         });
         // Walk particle mapping if there are identical particles
