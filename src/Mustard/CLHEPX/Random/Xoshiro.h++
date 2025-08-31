@@ -19,20 +19,20 @@
 #pragma once
 
 #include "Mustard/CLHEPX/Random/Wrap.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro256PP.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro256SS.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro512PP.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256PlusPlus.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256StarStar.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro512Plus.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro512SS.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro512PlusPlus.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro512StarStar.h++"
 
 namespace Mustard::CLHEPX::Random {
 
-using Xoshiro256SS = CLHEPX::Random::Wrap<Math::Random::Xoshiro256SS>;
-using Xoshiro256PP = CLHEPX::Random::Wrap<Math::Random::Xoshiro256PP>;
+using Xoshiro256StarStar = CLHEPX::Random::Wrap<Math::Random::Xoshiro256StarStar>;
+using Xoshiro256PlusPlus = CLHEPX::Random::Wrap<Math::Random::Xoshiro256PlusPlus>;
 using Xoshiro256Plus = CLHEPX::Random::Wrap<Math::Random::Xoshiro256Plus>;
-using Xoshiro512SS = CLHEPX::Random::Wrap<Math::Random::Xoshiro512SS>;
-using Xoshiro512PP = CLHEPX::Random::Wrap<Math::Random::Xoshiro512PP>;
+using Xoshiro512StarStar = CLHEPX::Random::Wrap<Math::Random::Xoshiro512StarStar>;
+using Xoshiro512PlusPlus = CLHEPX::Random::Wrap<Math::Random::Xoshiro512PlusPlus>;
 using Xoshiro512Plus = CLHEPX::Random::Wrap<Math::Random::Xoshiro512Plus>;
 
 } // namespace Mustard::CLHEPX::Random

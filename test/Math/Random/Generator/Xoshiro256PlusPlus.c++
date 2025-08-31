@@ -16,7 +16,7 @@
 
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/MT1993732.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro256PP.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256PlusPlus.h++"
 
 #include "Eigen/Core"
 
@@ -34,7 +34,7 @@ using namespace Mustard;
 
 int main() {
     Math::Random::MT1993732 mt1993732;
-    Math::Random::Xoshiro256PP xoshiro256PP;
+    Math::Random::Xoshiro256PlusPlus xoshiro256PP;
 
     std::cout << "Simply generate 10 million integers:" << std::endl;
 

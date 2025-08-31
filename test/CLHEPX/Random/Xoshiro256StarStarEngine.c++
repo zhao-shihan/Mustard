@@ -16,7 +16,7 @@
 
 #include "Mustard/CLHEPX/Random/Xoshiro.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro256SS.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256StarStar.h++"
 
 #include "Eigen/Core"
 
@@ -30,8 +30,8 @@
 using namespace Mustard;
 
 int main() {
-    Math::Random::Xoshiro256SS xoshiro256SS(0x123456);
-    CLHEPX::Random::Wrap<Math::Random::Xoshiro256SS> xoshiro256SSX(0x123456);
+    Math::Random::Xoshiro256StarStar xoshiro256SS(0x123456);
+    CLHEPX::Random::Wrap<Math::Random::Xoshiro256StarStar> xoshiro256SSX(0x123456);
 
     std::cout << "Simply generate 10 million integers:" << std::endl;
 
@@ -44,7 +44,7 @@ int main() {
         r = xoshiro256SS();
     }
     muc::chrono::milliseconds<double> time{stopwatch.read()};
-    std::cout << "    CLHEPX::...::Xoshiro256SSEngine : " << time << " ms (last integer: " << r << ')' << std::endl;
+    std::cout << "    CLHEPX::...::Xoshiro256StarStarEngine : " << time << " ms (last integer: " << r << ')' << std::endl;
 
     for (int i = 0; i < 1000; ++i) {
         r = (unsigned int)(xoshiro256SSX);
@@ -54,7 +54,7 @@ int main() {
         r = (unsigned int)(xoshiro256SSX);
     }
     time = stopwatch.read();
-    std::cout << "     Math::...::Xoshiro256SS : " << time << " ms (last integer: " << r << ')' << std::endl;
+    std::cout << "     Math::...::Xoshiro256StarStar : " << time << " ms (last integer: " << r << ')' << std::endl;
 
     std::cout << "2D random walk, 10 million steps:" << std::endl;
     Eigen::RowVector2d v2d = {0, 0};
@@ -72,7 +72,7 @@ int main() {
         v2d += delta2d;
     }
     time = stopwatch.read();
-    std::cout << "    CLHEPX::...::Xoshiro256SSEngine : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "    CLHEPX::...::Xoshiro256StarStarEngine : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
 
     v2d = {0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
@@ -87,7 +87,7 @@ int main() {
         v2d += delta2d;
     }
     time = stopwatch.read();
-    std::cout << "     Math::...::Xoshiro256SS : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "     Math::...::Xoshiro256StarStar : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
 
     std::cout << "3D random walk, 10 million steps:" << std::endl;
     Eigen::RowVector3d v3d = {0, 0, 0};
@@ -107,7 +107,7 @@ int main() {
         v3d += delta3d;
     }
     time = stopwatch.read();
-    std::cout << "    CLHEPX::...::Xoshiro256SSEngine : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "    CLHEPX::...::Xoshiro256StarStarEngine : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
 
     v3d = {0, 0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
@@ -124,7 +124,7 @@ int main() {
         v3d += delta3d;
     }
     time = stopwatch.read();
-    std::cout << "     Math::...::Xoshiro256SS : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "     Math::...::Xoshiro256StarStar : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
 
     std::cout << "4D random walk, 10 million steps:" << std::endl;
     Eigen::RowVector4d v4d = {0, 0, 0, 0};
@@ -146,7 +146,7 @@ int main() {
         v4d += delta4d;
     }
     time = stopwatch.read();
-    std::cout << "    CLHEPX::...::Xoshiro256SSEngine : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "    CLHEPX::...::Xoshiro256StarStarEngine : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
 
     v4d = {0, 0, 0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
@@ -165,7 +165,7 @@ int main() {
         v4d += delta4d;
     }
     time = stopwatch.read();
-    std::cout << "     Math::...::Xoshiro256SS : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "     Math::...::Xoshiro256StarStar : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
 
     return 0;
 }

@@ -16,23 +16,15 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include "Mustard/Math/Random/Generator/Xoshiro512Base.h++"
-#include "Mustard/Utility/FunctionAttribute.h++"
-
-#include <bit>
-
 namespace Mustard::Math::Random::inline Generator {
 
-class Xoshiro512SS final : public Xoshiro512Base<Xoshiro512SS> {
-public:
-    constexpr Xoshiro512SS() = default;
-    constexpr explicit Xoshiro512SS(SeedType seed);
+constexpr Xoshiro256StarStar::Xoshiro256StarStar(Xoshiro256StarStar::SeedType seed) :
+    Xoshiro256Base{seed} {}
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()() -> ResultType;
-};
+MUSTARD_ALWAYS_INLINE constexpr auto Xoshiro256StarStar::operator()() -> Xoshiro256StarStar::ResultType {
+    const auto result{std::rotl(fState[1] * 5, 7) * 9};
+    Step();
+    return result;
+}
 
 } // namespace Mustard::Math::Random::inline Generator
-
-#include "Mustard/Math/Random/Generator/Xoshiro512SS.inl"

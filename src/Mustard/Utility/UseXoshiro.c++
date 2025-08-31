@@ -38,8 +38,8 @@ namespace Mustard::inline Utility {
                                                                                          \
     template<>                                                                           \
     struct UseXoshiro<NBit>::Random {                                                    \
-        CLHEPX::Random::Xoshiro##NBit##SS clhep;                                         \
-        ROOTX::Math::Xoshiro##NBit##PP root;                                             \
+        CLHEPX::Random::Xoshiro##NBit##StarStar clhep;                                   \
+        ROOTX::Math::Xoshiro##NBit##PlusPlus root;                                       \
     };                                                                                   \
                                                                                          \
     template<>                                                                           \

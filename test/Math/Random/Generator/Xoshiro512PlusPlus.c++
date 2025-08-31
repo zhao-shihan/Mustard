@@ -16,7 +16,7 @@
 
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/MT1993732.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro512SS.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro512PlusPlus.h++"
 
 #include "Eigen/Core"
 
@@ -34,7 +34,7 @@ using namespace Mustard;
 
 int main() {
     Math::Random::MT1993732 mt1993732;
-    Math::Random::Xoshiro512SS xoshiro512SS;
+    Math::Random::Xoshiro512PlusPlus xoshiro512PP;
 
     std::cout << "Simply generate 10 million integers:" << std::endl;
 
@@ -50,14 +50,14 @@ int main() {
     std::cout << "      MT19937-32 : " << time << " ms (last integer: " << r << ')' << std::endl;
 
     for (int i = 0; i < 1000; ++i) {
-        r = xoshiro512SS();
+        r = xoshiro512PP();
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        r = xoshiro512SS();
+        r = xoshiro512PP();
     }
     time = stopwatch.read();
-    std::cout << "    xoshiro512** : " << time << " ms (last integer: " << r << ')' << std::endl;
+    std::cout << "    xoshiro512++ : " << time << " ms (last integer: " << r << ')' << std::endl;
 
     std::cout << "Shuffle a std::array<double, 16> 1 million times:" << std::endl;
     std::array<double, 16> arr16;
@@ -74,14 +74,14 @@ int main() {
     std::cout << "      MT19937-32 : " << time << " ms (first element: " << arr16.front() << ')' << std::endl;
 
     for (int i = 0; i < 1000; ++i) {
-        std::ranges::shuffle(arr16, xoshiro512SS);
+        std::ranges::shuffle(arr16, xoshiro512PP);
     }
     stopwatch = {};
     for (int i = 0; i < 1'000'000; ++i) {
-        std::ranges::shuffle(arr16, xoshiro512SS);
+        std::ranges::shuffle(arr16, xoshiro512PP);
     }
     time = stopwatch.read();
-    std::cout << "    xoshiro512** : " << time << " ms (first element: " << arr16.front() << ')' << std::endl;
+    std::cout << "    xoshiro512++ : " << time << " ms (first element: " << arr16.front() << ')' << std::endl;
 
     std::cout << "Shuffle a std::array<double, 4096> 10k times:" << std::endl;
     std::array<double, 4096> arr4096;
@@ -98,14 +98,14 @@ int main() {
     std::cout << "      MT19937-32 : " << time << " ms (first element: " << arr4096.front() << ')' << std::endl;
 
     for (int i = 0; i < 100; ++i) {
-        std::ranges::shuffle(arr4096, xoshiro512SS);
+        std::ranges::shuffle(arr4096, xoshiro512PP);
     }
     stopwatch = {};
     for (int i = 0; i < 10'000; ++i) {
-        std::ranges::shuffle(arr4096, xoshiro512SS);
+        std::ranges::shuffle(arr4096, xoshiro512PP);
     }
     time = stopwatch.read();
-    std::cout << "    xoshiro512** : " << time << " ms (first element: " << arr4096.front() << ')' << std::endl;
+    std::cout << "    xoshiro512++ : " << time << " ms (first element: " << arr4096.front() << ')' << std::endl;
 
     std::cout << "2D random walk, 10 million steps:" << std::endl;
     Eigen::RowVector2d v2d = {0, 0};
@@ -127,18 +127,18 @@ int main() {
 
     v2d = {0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS)};
+        delta2d = {Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP)};
         v2d += delta2d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS)};
+        delta2d = {Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP)};
         v2d += delta2d;
     }
     time = stopwatch.read();
-    std::cout << "    xoshiro512** : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "    xoshiro512++ : " << time << " ms (last displacement: " << std::setprecision(18) << v2d << std::setprecision(6) << ')' << std::endl;
 
     std::cout << "3D random walk, 10 million steps:" << std::endl;
     Eigen::RowVector3d v3d = {0, 0, 0};
@@ -162,20 +162,20 @@ int main() {
 
     v3d = {0, 0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS)};
+        delta3d = {Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP)};
         v3d += delta3d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS)};
+        delta3d = {Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP)};
         v3d += delta3d;
     }
     time = stopwatch.read();
-    std::cout << "    xoshiro512** : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "    xoshiro512++ : " << time << " ms (last displacement: " << std::setprecision(18) << v3d << std::setprecision(6) << ')' << std::endl;
 
     std::cout << "4D random walk, 10 million steps:" << std::endl;
     Eigen::RowVector4d v4d = {0, 0, 0, 0};
@@ -201,22 +201,22 @@ int main() {
 
     v4d = {0, 0, 0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS)};
+        delta4d = {Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP)};
         v4d += delta4d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS),
-                   Math::Random::Uniform<double>()(xoshiro512SS)};
+        delta4d = {Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP),
+                   Math::Random::Uniform<double>()(xoshiro512PP)};
         v4d += delta4d;
     }
     time = stopwatch.read();
-    std::cout << "    xoshiro512** : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
+    std::cout << "    xoshiro512++ : " << time << " ms (last displacement: " << std::setprecision(18) << v4d << std::setprecision(6) << ')' << std::endl;
 
     return 0;
 }

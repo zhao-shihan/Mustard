@@ -18,21 +18,21 @@
 
 #pragma once
 
-#include "Mustard/Math/Random/Generator/Xoshiro256Base.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro512Base.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
 #include <bit>
 
 namespace Mustard::Math::Random::inline Generator {
 
-class Xoshiro256PP final : public Xoshiro256Base<Xoshiro256PP> {
+class Xoshiro512StarStar final : public Xoshiro512Base<Xoshiro512StarStar> {
 public:
-    constexpr Xoshiro256PP() = default;
-    constexpr explicit Xoshiro256PP(SeedType seed);
+    constexpr Xoshiro512StarStar() = default;
+    constexpr explicit Xoshiro512StarStar(SeedType seed);
 
     MUSTARD_ALWAYS_INLINE constexpr auto operator()() -> ResultType;
 };
 
 } // namespace Mustard::Math::Random::inline Generator
 
-#include "Mustard/Math/Random/Generator/Xoshiro256PP.inl"
+#include "Mustard/Math/Random/Generator/Xoshiro512StarStar.inl"

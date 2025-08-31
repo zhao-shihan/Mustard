@@ -23,17 +23,17 @@ target_link_libraries(MT1993764 Mustard::Mustard)
 add_executable(Xoshiro256Plus Xoshiro256Plus.c++)
 target_link_libraries(Xoshiro256Plus Mustard::Mustard)
 
-add_executable(Xoshiro256PP Xoshiro256PP.c++)
-target_link_libraries(Xoshiro256PP Mustard::Mustard)
+add_executable(Xoshiro256PlusPlus Xoshiro256PlusPlus.c++)
+target_link_libraries(Xoshiro256PlusPlus Mustard::Mustard)
 
-add_executable(Xoshiro256SS Xoshiro256SS.c++)
-target_link_libraries(Xoshiro256SS Mustard::Mustard)
+add_executable(Xoshiro256StarStar Xoshiro256StarStar.c++)
+target_link_libraries(Xoshiro256StarStar Mustard::Mustard)
 
 add_executable(Xoshiro512Plus Xoshiro512Plus.c++)
 target_link_libraries(Xoshiro512Plus Mustard::Mustard)
 
-add_executable(Xoshiro512PP Xoshiro512PP.c++)
-target_link_libraries(Xoshiro512PP Mustard::Mustard)
+add_executable(Xoshiro512PlusPlus Xoshiro512PlusPlus.c++)
+target_link_libraries(Xoshiro512PlusPlus Mustard::Mustard)
 
-add_executable(Xoshiro512SS Xoshiro512SS.c++)
-target_link_libraries(Xoshiro512SS Mustard::Mustard)
+add_executable(Xoshiro512StarStar Xoshiro512StarStar.c++)
+target_link_libraries(Xoshiro512StarStar Mustard::Mustard)

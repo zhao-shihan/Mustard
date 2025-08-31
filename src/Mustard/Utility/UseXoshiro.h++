@@ -42,8 +42,8 @@ namespace Mustard::inline Utility {
 ///   - CLI-based seeding option
 ///
 /// @warning This class should be instantiated once at application startup
-/// @see CLHEPX::Random::Xoshiro256SS, CLHEPX::Random::Xoshiro512SS
-/// @see ROOTX::Math::Xoshiro256PP, ROOTX::Math::Xoshiro512PP
+/// @see CLHEPX::Random::Xoshiro256StarStar, CLHEPX::Random::Xoshiro512StarStar
+/// @see ROOTX::Math::Xoshiro256PlusPlus, ROOTX::Math::Xoshiro512PlusPlus
 template<unsigned ABitWidth>
 class UseXoshiro {
 public:

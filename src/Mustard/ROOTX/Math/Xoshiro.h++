@@ -18,21 +18,21 @@
 
 #pragma once
 
-#include "Mustard/Math/Random/Generator/Xoshiro256PP.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256PlusPlus.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro256SS.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro512PP.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256StarStar.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro512PlusPlus.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro512Plus.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro512SS.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro512StarStar.h++"
 #include "Mustard/ROOTX/Math/AsTRandom.h++"
 
 namespace Mustard::ROOTX::Math {
 
-using Xoshiro256SS = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro256SS>;
-using Xoshiro256PP = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro256PP>;
+using Xoshiro256StarStar = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro256StarStar>;
+using Xoshiro256PlusPlus = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro256PlusPlus>;
 using Xoshiro256Plus = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro256Plus>;
-using Xoshiro512SS = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro512SS>;
-using Xoshiro512PP = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro512PP>;
+using Xoshiro512StarStar = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro512StarStar>;
+using Xoshiro512PlusPlus = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro512PlusPlus>;
 using Xoshiro512Plus = ROOTX::Math::AsTRandom<Mustard::Math::Random::Xoshiro512Plus>;
 
 } // namespace Mustard::ROOTX::Math
