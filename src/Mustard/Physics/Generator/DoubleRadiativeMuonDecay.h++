@@ -32,8 +32,6 @@ namespace Mustard::inline Physics::inline Generator {
 /// @brief MCMC generator for mu->enngg decays
 /// Kinematics: μ⁻ → e⁻ ν ν γ γ
 ///             μ⁺ → e⁺ ν ν γ γ
-/// @warning IR safety is not automatically guaranteed.
-/// Always set bias function to ensure IR-safe generation.
 class DoubleRadiativeMuonDecay : public MultipleTryMetropolisGenerator<1, 5, QFT::DoubleRadiativeMuonDecayMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
