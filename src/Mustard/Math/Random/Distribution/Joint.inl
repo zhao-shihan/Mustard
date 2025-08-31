@@ -81,7 +81,7 @@ constexpr JointInterface<ADerived, AParameter, T, Ds...>::JointInterface(const A
 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
-MUSTARD_STRONG_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::operator()(UniformRandomBitGenerator auto& g) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::operator()(UniformRandomBitGenerator auto& g) -> T {
     return [this, &g]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
         return {this->template Margin<Is>()(g)...};
     }(gslx::index_sequence_for<Ds...>());
@@ -89,7 +89,7 @@ MUSTARD_STRONG_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds.
 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
-MUSTARD_STRONG_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> T {
     return [this, &g, &p]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
         return {this->template Margin<Is>()(g, p.template Parameter<Is>())...};
     }(gslx::index_sequence_for<Ds...>());

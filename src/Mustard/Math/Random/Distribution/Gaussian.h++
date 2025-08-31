@@ -125,8 +125,8 @@ public:
 
     constexpr auto Reset() -> void { fSaved = false; }
 
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianParameter<T>& p) -> T;
 
     constexpr auto Min() const -> auto { return std::numeric_limits<T>::lowest(); }
     constexpr auto Max() const -> auto { return std::numeric_limits<T>::max(); }
@@ -135,7 +135,7 @@ public:
 
 private:
     bool fSaved{};
-    T fSavedValue;
+    T fSavedValue{};
 };
 
 template<typename T, typename U>
@@ -163,8 +163,8 @@ public:
 
     constexpr auto Reset() -> void { fSaved = false; }
 
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianFastParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianFastParameter<T>& p) -> T;
 
     constexpr auto Min() const -> auto { return std::numeric_limits<T>::lowest(); }
     constexpr auto Max() const -> auto { return std::numeric_limits<T>::max(); }
@@ -173,7 +173,7 @@ public:
 
 private:
     bool fSaved{};
-    T fSavedValue;
+    T fSavedValue{};
 };
 
 template<typename T, typename U>

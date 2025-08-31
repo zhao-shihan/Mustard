@@ -74,12 +74,12 @@ constexpr Gaussian2DDiagnoalBase<ADerived, T>::Gaussian2DDiagnoalBase(const type
     return u;
 
 template<Concept::NumericVector2FloatingPoint T>
-MUSTARD_STRONG_INLINE auto Gaussian2DDiagnoal<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto Gaussian2DDiagnoal<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(std::log)
 }
 
 template<Concept::NumericVector2FloatingPoint T>
-MUSTARD_STRONG_INLINE auto Gaussian2DDiagnoalFast<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto Gaussian2DDiagnoalFast<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
 }
 

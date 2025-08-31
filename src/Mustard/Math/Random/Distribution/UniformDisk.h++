@@ -146,8 +146,8 @@ class UniformCompactDisk final : public internal::UniformDiskBase<T, UniformComp
 public:
     using internal::UniformDiskBase<T, UniformCompactDisk>::UniformDiskBase;
 
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> T;
 };
 
 template<typename VT, typename T>
@@ -168,8 +168,8 @@ class UniformDisk final : public internal::UniformDiskBase<T, UniformDisk> {
 public:
     using internal::UniformDiskBase<T, UniformDisk>::UniformDiskBase;
 
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> T;
 };
 
 template<typename VT, typename T>

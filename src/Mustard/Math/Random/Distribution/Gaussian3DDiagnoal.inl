@@ -84,12 +84,12 @@ constexpr Gaussian3DDiagnoalBase<ADerived, T>::Gaussian3DDiagnoalBase(const type
     }
 
 template<Concept::NumericVector3FloatingPoint T>
-MUSTARD_STRONG_INLINE auto Gaussian3DDiagnoal<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto Gaussian3DDiagnoal<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_3D_DIAGNOAL_GENERATOR_SNIPPET()
 }
 
 template<Concept::NumericVector3FloatingPoint T>
-MUSTARD_STRONG_INLINE auto Gaussian3DDiagnoalFast<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto Gaussian3DDiagnoalFast<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_3D_DIAGNOAL_GENERATOR_SNIPPET(Fast)
 }
 

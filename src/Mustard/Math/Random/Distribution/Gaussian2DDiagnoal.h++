@@ -142,8 +142,8 @@ public:
 
     constexpr void Reset() {}
 
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> T;
 
     constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
     constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
@@ -173,11 +173,11 @@ public:
 
     constexpr void Reset() {}
 
-    auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    auto operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T;
 
-    MUSTARD_STRONG_INLINE constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
-    MUSTARD_STRONG_INLINE constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
+    constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
+    constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
 
     static constexpr auto Stateless() { return true; }
 };

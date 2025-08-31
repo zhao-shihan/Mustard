@@ -63,12 +63,12 @@ constexpr GaussianBase<T, AGaussian>::GaussianBase(const typename Base::Paramete
     }
 
 template<std::floating_point T>
-MUSTARD_STRONG_INLINE auto Gaussian<T>::operator()(UniformRandomBitGenerator auto& g, const GaussianParameter<T>& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto Gaussian<T>::operator()(UniformRandomBitGenerator auto& g, const GaussianParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET()
 }
 
 template<std::floating_point T>
-MUSTARD_STRONG_INLINE auto GaussianFast<T>::operator()(UniformRandomBitGenerator auto& g, const GaussianFastParameter<T>& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto GaussianFast<T>::operator()(UniformRandomBitGenerator auto& g, const GaussianFastParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET(Fast)
 }
 

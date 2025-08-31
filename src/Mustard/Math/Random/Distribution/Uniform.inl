@@ -64,14 +64,14 @@ constexpr UniformBase<ADerived, T>::UniformBase(const typename Base::ParameterTy
 } // namespace internal
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto UniformCompact<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto UniformCompact<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T {
     const auto u{static_cast<T>(g() - g.Min()) / (g.Max() - g.Min())};
     muc::assume(0 <= u and u <= 1);
     return p.Infimum() + u * (p.Supremum() - p.Infimum());
 }
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto UniformReal<T>::operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T {
+MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto UniformReal<T>::operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T {
     T u;
     do {
         static_assert(UniformCompact<T>::Stateless());

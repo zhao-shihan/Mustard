@@ -108,8 +108,8 @@ protected:
     constexpr ~JointInterface() = default;
 
 public:
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> T;
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> T;
 
     constexpr auto Reset() -> void;
 

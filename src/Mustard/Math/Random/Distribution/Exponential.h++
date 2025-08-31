@@ -119,8 +119,8 @@ class Exponential final : public internal::ExponentialBase<Exponential, T> {
 public:
     using internal::ExponentialBase<Exponential, T>::ExponentialBase;
 
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> T;
 };
 
 template<typename T>
@@ -145,8 +145,8 @@ class ExponentialFast final : public internal::ExponentialBase<ExponentialFast, 
 public:
     using internal::ExponentialBase<ExponentialFast, T>::ExponentialBase;
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> T;
 };
 
 template<typename T>

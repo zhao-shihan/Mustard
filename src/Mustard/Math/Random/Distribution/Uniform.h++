@@ -118,8 +118,8 @@ class UniformCompact final : public internal::UniformBase<UniformCompact, T> {
 public:
     using internal::UniformBase<UniformCompact, T>::UniformBase;
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T;
 };
 
 template<typename T, typename U>
@@ -152,8 +152,8 @@ class UniformReal final : public internal::UniformBase<Uniform, T> {
 public:
     using internal::UniformBase<Uniform, T>::UniformBase;
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T;
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T;
 };
 
 template<typename T, typename U>
