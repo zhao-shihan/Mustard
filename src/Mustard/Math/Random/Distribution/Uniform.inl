@@ -65,7 +65,13 @@ constexpr UniformBase<ADerived, T>::UniformBase(const typename Base::ParameterTy
 
 template<std::floating_point T>
 MUSTARD_ALWAYS_INLINE constexpr auto UniformCompact<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T {
-    const auto u{static_cast<T>(g() - g.Min()) / (g.Max() - g.Min())};
+    T u;
+    if constexpr (std::numeric_limits<T>::is_iec559 and std::same_as<T, double> and
+                  std::same_as<decltype(g()), std::uint64_t>) {
+        u = (g() >> 11) * 0x1.0p-53;
+    } else {
+        u = static_cast<T>(g() - g.Min()) / (g.Max() - g.Min());
+    }
     muc::assume(0 <= u and u <= 1);
     return p.Infimum() + u * (p.Supremum() - p.Infimum());
 }
