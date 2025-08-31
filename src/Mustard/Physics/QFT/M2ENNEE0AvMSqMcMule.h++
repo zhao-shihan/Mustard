@@ -45,16 +45,16 @@ public:
     MUSTARD_OPTIMIZE_FAST virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
 
 private:
-    MUSTARD_OPTIMIZE_FAST auto OneBorn(double s12, double s13, double s14, double s23, double s24, double s34,
-                                       double m12, double m22, double) const -> double;
-    MUSTARD_OPTIMIZE_FAST auto OneBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
-                                          double m12, double m22, double,
-                                          double s2n, double s3n, double s4n) const -> double;
-    MUSTARD_OPTIMIZE_FAST auto TwoBorn(double s12, double s13, double s14, double s23, double s24, double s34,
-                                       double m12, double m22, double m32) const -> double;
-    MUSTARD_OPTIMIZE_FAST auto TwoBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
-                                          double m12, double m22, double m32,
-                                          double s2n, double s3n, double s4n) const -> double;
+    MUSTARD_OPTIMIZE_FAST static auto OneBorn(double s12, double s13, double s14, double s23, double s24, double s34,
+                                              double m12, double m22, double) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto OneBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
+                                                 double m12, double m22, double,
+                                                 double s2n, double s3n, double s4n) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto TwoBorn(double s12, double s13, double s14, double s23, double s24, double s34,
+                                              double m12, double m22, double m32) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto TwoBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
+                                                 double m12, double m22, double m32,
+                                                 double s2n, double s3n, double s4n) -> double;
 };
 
 } // namespace Mustard::inline Physics::QFT

@@ -78,7 +78,7 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::operator()(const InitialStateMom
 }
 
 MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::OneBorn(double s12, double s13, double s14, double s23, double s24, double s34,
-                                                        double m12, double m22, double) const -> double {
+                                                        double m12, double m22, double) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_1l_onetrace.opt.f95, FUNCTION bornPol
@@ -741,7 +741,7 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::OneBorn(double s12, double s13, 
 
 MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::OneBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
                                                            double m12, double m22, double,
-                                                           double s2n, double s3n, double s4n) const -> double {
+                                                           double s2n, double s3n, double s4n) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_1l_onetrace.opt.f95, FUNCTION bornPol
@@ -1266,7 +1266,7 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::OneBornPol(double s12, double s1
 }
 
 MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::TwoBorn(double s12, double s13, double s14, double s23, double s24, double s34,
-                                                        double m12, double m22, double m32) const -> double {
+                                                        double m12, double m22, double m32) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_1l_twotrace.opt.f95, FUNCTION born
@@ -2291,7 +2291,7 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::TwoBorn(double s12, double s13, 
 
 MUSTARD_OPTIMIZE_FAST auto M2ENNEE0AvMSqMcMule::TwoBornPol(double s12, double s13, double s14, double s23, double s24, double s34,
                                                            double m12, double m22, double m32,
-                                                           double s2n, double s3n, double s4n) const -> double {
+                                                           double s2n, double s3n, double s4n) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_1l_twotrace.opt.f95, FUNCTION bornPol
