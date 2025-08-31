@@ -72,7 +72,7 @@ template<int M, int N, int D>
     requires(M >= 1 and N >= 1 and (D == -1 or D >= 3 * N - 4))
 auto EventGenerator<M, N, D>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
     RandomState u;
-    rng.flatArray(D, u.data());
+    rng.flatArray(u.size(), u.data());
     return (*this)(u, std::move(pI));
 }
 

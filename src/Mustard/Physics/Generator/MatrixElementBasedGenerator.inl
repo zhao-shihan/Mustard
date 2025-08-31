@@ -100,15 +100,6 @@ auto MatrixElementBasedGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& 
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::PhaseSpace(CLHEP::HepRandomEngine& rng) {
-    if constexpr (M == 1) {
-        return fGENBOD(rng, fISMomenta);
-    } else {
-        return fGENBOD(rng, muc::ranges::reduce(fISMomenta));
-    }
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization() const -> CLHEP::Hep3Vector
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
     return fMatrixElement.InitialStatePolarization();

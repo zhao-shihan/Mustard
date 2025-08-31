@@ -135,7 +135,7 @@ protected:
     /// @brief Generate an event on phase space
     /// @param rng Reference to CLHEP random engine
     /// @return An event from phase space
-    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto;
+    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fISMomenta); }
 
     /// @brief Get polarization vector
     /// @note This overload is only enabled for polarized decay

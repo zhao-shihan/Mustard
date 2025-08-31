@@ -144,7 +144,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
     // find phase space
     muc::ranges::iota(fMarkovChain.state.pID, 0);
     while (true) {
-        std::ranges::generate(fMarkovChain.state.u, [&rng] { return rng.flat(); });
+        rng.flatArray(fMarkovChain.state.u.size(), fMarkovChain.state.u.data());
         const auto event{DirectPhaseSpace(fMarkovChain.state.u)};
         if (not this->IRSafe(event.p)) {
             continue;
