@@ -23,6 +23,8 @@
 #include "Mustard/Math/internal/FastLogOn01.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
+#include "CLHEP/Random/RandomEngine.h"
+
 #include "muc/concepts"
 
 #include <cmath>
@@ -119,8 +121,14 @@ class Exponential final : public internal::ExponentialBase<Exponential, T> {
 public:
     using internal::ExponentialBase<Exponential, T>::ExponentialBase;
 
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
+
+private:
+    MUSTARD_ALWAYS_INLINE static auto Impl(auto& g, const ExponentialParameter<T>& p) -> T;
 };
 
 template<typename T>
@@ -145,8 +153,14 @@ class ExponentialFast final : public internal::ExponentialBase<ExponentialFast, 
 public:
     using internal::ExponentialBase<ExponentialFast, T>::ExponentialBase;
 
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const ExponentialFastParameter<T>& p) -> auto { return Impl(g, p); }
+
+private:
+    MUSTARD_ALWAYS_INLINE static constexpr auto Impl(auto& g, const ExponentialFastParameter<T>& p) -> T;
 };
 
 template<typename T>

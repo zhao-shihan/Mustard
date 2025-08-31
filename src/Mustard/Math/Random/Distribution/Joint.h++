@@ -23,6 +23,8 @@
 #include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
+#include "CLHEP/Random/RandomEngine.h"
+
 #include "muc/concepts"
 
 #include "gsl/gsl"
@@ -108,8 +110,11 @@ protected:
     constexpr ~JointInterface() = default;
 
 public:
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> T;
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g); }
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const AParameter& p) -> auto { return Impl(g, p); }
 
     constexpr auto Reset() -> void;
 
@@ -132,6 +137,9 @@ public:
     friend auto operator>>(std::basic_istream<AChar>& is, JointInterface& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
+    MUSTARD_ALWAYS_INLINE constexpr auto Impl(auto& g) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto Impl(auto& g, const AParameter& p) -> T;
+
     template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
     template<muc::character AChar>

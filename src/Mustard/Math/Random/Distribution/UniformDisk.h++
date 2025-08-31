@@ -25,6 +25,8 @@
 #include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
+#include "CLHEP/Random/RandomEngine.h"
+
 #include "muc/array"
 #include "muc/concepts"
 #include "muc/math"
@@ -146,8 +148,14 @@ class UniformCompactDisk final : public internal::UniformDiskBase<T, UniformComp
 public:
     using internal::UniformDiskBase<T, UniformCompactDisk>::UniformDiskBase;
 
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const UniformCompactDiskParameter<T>& p) -> auto { return Impl(g, p); }
+
+private:
+    MUSTARD_ALWAYS_INLINE static constexpr auto Impl(auto& g, const UniformCompactDiskParameter<T>& p) -> T;
 };
 
 template<typename VT, typename T>
@@ -168,8 +176,14 @@ class UniformDisk final : public internal::UniformDiskBase<T, UniformDisk> {
 public:
     using internal::UniformDiskBase<T, UniformDisk>::UniformDiskBase;
 
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const UniformDiskParameter<T>& p) -> auto { return Impl(g, p); }
+
+private:
+    MUSTARD_ALWAYS_INLINE static constexpr auto Impl(auto& g, const UniformDiskParameter<T>& p) -> T;
 };
 
 template<typename VT, typename T>

@@ -149,13 +149,19 @@ public:
 
     constexpr void Reset() { fSaved = false; }
 
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const Gaussian3DDiagnoalParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
     constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
 
     static constexpr auto Stateless() { return false; }
+
+private:
+    MUSTARD_ALWAYS_INLINE auto Impl(auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> T;
 
 private:
     bool fSaved{};
@@ -184,13 +190,19 @@ public:
 
     constexpr void Reset() { fSaved = false; }
 
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
     constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
 
     static constexpr auto Stateless() { return false; }
+
+private:
+    MUSTARD_ALWAYS_INLINE auto Impl(auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> T;
 
 private:
     bool fSaved{};

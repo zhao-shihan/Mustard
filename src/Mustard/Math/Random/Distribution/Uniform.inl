@@ -64,20 +64,27 @@ constexpr UniformBase<ADerived, T>::UniformBase(const typename Base::ParameterTy
 } // namespace internal
 
 template<std::floating_point T>
-MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto UniformCompact<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE constexpr auto UniformCompact<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T {
     const auto u{static_cast<T>(g() - g.Min()) / (g.Max() - g.Min())};
     muc::assume(0 <= u and u <= 1);
     return p.Infimum() + u * (p.Supremum() - p.Infimum());
 }
 
 template<std::floating_point T>
-MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto UniformReal<T>::operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T {
-    T u;
-    do {
-        static_assert(UniformCompact<T>::Stateless());
-        u = UniformCompact<T>{}(g);
+MUSTARD_ALWAYS_INLINE auto UniformCompact<T>::operator()(CLHEP::HepRandomEngine& g, const UniformCompactParameter<T>& p) -> T {
+    return p.Infimum() + g.flat() * (p.Supremum() - p.Infimum());
+}
+
+template<std::floating_point T>
+MUSTARD_ALWAYS_INLINE constexpr auto UniformReal<T>::Impl(auto& g, const UniformParameter<T>& p) -> T {
+    static_assert(UniformCompact<T>::Stateless());
+    auto Uni{UniformCompact<T>{}};
+    auto u{Uni(g)};
+    muc::assume(0 <= u and u <= 1);
+    while (u == 0 or u == 1) [[unlikely]] {
+        u = Uni(g);
         muc::assume(0 <= u and u <= 1);
-    } while (u == 0 or u == 1);
+    }
     return p.Infimum() + u * (p.Supremum() - p.Infimum());
 }
 

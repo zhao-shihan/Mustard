@@ -29,8 +29,7 @@ namespace Mustard::Math::Random {
 /// (the C++ named requirements UniformRandomBitGenerator).
 /// @tparam ADerived The finally derived class.
 /// @tparam AResult The output type of derived URBG.
-template<typename ADerived,
-         std::unsigned_integral AResult>
+template<typename ADerived, std::unsigned_integral AResult>
 class UniformRandomBitGeneratorBase {
 public:
     using ResultType = AResult;

@@ -98,12 +98,12 @@ constexpr UniformDiskBase<T, AUniformDisk>::UniformDiskBase(const typename Base:
     return r;
 
 template<Concept::NumericVector2Any T>
-MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto UniformCompactDisk<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE constexpr auto UniformCompactDisk<T>::Impl(auto& g, const UniformCompactDiskParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_UNIFORM_DISK_GENERATOR(r2 > 0.25)
 }
 
 template<Concept::NumericVector2Any T>
-MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto UniformDisk<T>::operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE constexpr auto UniformDisk<T>::Impl(auto& g, const UniformDiskParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_UNIFORM_DISK_GENERATOR(r2 >= 0.25)
 }
 

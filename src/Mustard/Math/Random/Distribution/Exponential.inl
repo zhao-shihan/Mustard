@@ -55,16 +55,18 @@ constexpr ExponentialBase<ADerived, T>::ExponentialBase(const typename Base::Par
 
 } // namespace internal
 
+#define MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(TheLog) \
+    static_assert(Uniform<T>::Stateless());                                    \
+    return -p.Expectation() * TheLog(Uniform<T>{}(g));
+
 template<std::floating_point T>
-MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto Exponential<T>::operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> T {
-    static_assert(Uniform<T>::Stateless());
-    return -p.Expectation() * std::log(Uniform<T>{}(g));
+MUSTARD_ALWAYS_INLINE auto Exponential<T>::Impl(auto& g, const ExponentialParameter<T>& p) -> T {
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(std::log)
 }
 
 template<std::floating_point T>
-MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto ExponentialFast<T>::operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> T {
-    static_assert(Uniform<T>::Stateless());
-    return -p.Expectation() * Math::internal::FastLogOn01(Uniform<T>{}(g));
+MUSTARD_ALWAYS_INLINE constexpr auto ExponentialFast<T>::Impl(auto& g, const ExponentialFastParameter<T>& p) -> T {
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
 }
 
 } // namespace Mustard::Math::Random::inline Distribution

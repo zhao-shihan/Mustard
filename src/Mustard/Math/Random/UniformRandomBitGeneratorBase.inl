@@ -18,11 +18,10 @@
 
 namespace Mustard::Math::Random {
 
-template<typename ADerived,
-         std::unsigned_integral AResult>
-constexpr UniformRandomBitGeneratorBase<ADerived,
-                                        AResult>::UniformRandomBitGeneratorBase() {
+template<typename ADerived, std::unsigned_integral AResult>
+constexpr UniformRandomBitGeneratorBase<ADerived, AResult>::UniformRandomBitGeneratorBase() {
     static_assert(UniformRandomBitGenerator<ADerived>);
+    static_assert(std::is_final_v<ADerived>);
 }
 
 } // namespace Mustard::Math::Random
