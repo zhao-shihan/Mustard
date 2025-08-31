@@ -64,10 +64,10 @@ private:
 
 private:
     using typename ExecutorImplBase<T>::StopwatchDuration;
-    using typename ExecutorImplBase<T>::ExecutionInfo;
+    using typename ExecutorImplBase<T>::ExecutionInfoType;
 
 private:
-    std::vector<ExecutionInfo> fExecutionInfoList;
+    std::vector<ExecutionInfoType> fExecutionInfoList;
 };
 
 } // namespace Mustard::inline Execution::internal

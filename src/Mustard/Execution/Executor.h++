@@ -20,6 +20,7 @@
 
 #include "Mustard/Execution/DefaultScheduler.h++"
 #include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Execution/internal/ExecutorImplBase.h++"
 #include "Mustard/Execution/internal/ParallelExecutorImpl.h++"
 #include "Mustard/Execution/internal/SequentialExecutorImpl.h++"
 
@@ -37,6 +38,7 @@ template<std::integral T>
 class Executor final {
 public:
     using Index = T;
+    using ExecutionInfoType = typename internal::ExecutorImplBase<T>::ExecutionInfoType;
 
 public:
     Executor(std::string_view scheduler = DefaultSchedulerCode());
@@ -69,6 +71,7 @@ public:
     auto operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto operator()(T size, std::invocable<T> auto&& F) -> T;
 
+    auto ExecutionInfo() const -> const ExecutionInfoType&;
     auto PrintExecutionSummary() const -> void;
 
 private:

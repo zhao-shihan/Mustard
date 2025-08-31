@@ -47,9 +47,9 @@ auto SequentialExecutorImpl<T>::operator()(struct Scheduler<T>::Task task, std::
     this->fExecutionBeginTime = std::chrono::system_clock::now();
     this->fStopwatch.reset();
     this->fProcessorStopwatch.reset();
-    fProgressBar.Start(nTask);
     this->PreLoopReport();
     // main loop
+    fProgressBar.Start(nTask);
     while (this->ExecutingTask() != this->Task().last) {
         this->fScheduler->PreTaskAction();
         const auto taskID{this->ExecutingTask()};
@@ -59,13 +59,13 @@ auto SequentialExecutorImpl<T>::operator()(struct Scheduler<T>::Task task, std::
         this->fScheduler->PostTaskAction();
         fProgressBar.Tick();
     }
+    fProgressBar.Complete();
     // finalize
-    this->fExecuting = false;
     this->fExecutionInfo.nExecutedTask = this->NLocalExecutedTask();
-    this->fExecutionInfo.time = this->fStopwatch.read();
+    this->fExecutionInfo.wallTime = this->fStopwatch.read();
     this->fExecutionInfo.processorTime = this->fProcessorStopwatch.read();
     this->fScheduler->PostLoopAction();
-    fProgressBar.Complete();
+    this->fExecuting = false;
     this->PostLoopReport();
     return this->NLocalExecutedTask();
 }

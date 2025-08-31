@@ -47,6 +47,16 @@ namespace Mustard::inline Execution::internal {
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 class ExecutorImplBase {
+protected:
+    using StopwatchDuration = muc::chrono::stopwatch::duration;
+
+public:
+    struct ExecutionInfoType {
+        T nExecutedTask;
+        StopwatchDuration wallTime;
+        StopwatchDuration processorTime;
+    };
+
 public:
     ExecutorImplBase(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
@@ -70,22 +80,14 @@ public:
     auto TaskName() const -> const auto& { return fTaskName; }
     auto TaskName(std::string name) -> void { fTaskName = std::move(name); }
 
+    auto ExecutionInfo() const -> const auto& { return fExecutionInfo; }
+
 protected:
     auto PreLoopReport() const -> void;
     auto PostLoopReport() const -> void;
 
 protected:
-    using StopwatchDuration = muc::chrono::stopwatch::duration;
-
-protected:
     static auto ToDayHrMinSecMs(StopwatchDuration s) -> std::string;
-
-protected:
-    struct ExecutionInfo {
-        T nExecutedTask;
-        StopwatchDuration time;
-        StopwatchDuration processorTime;
-    };
 
 protected:
     std::unique_ptr<Scheduler<T>> fScheduler;
@@ -102,7 +104,7 @@ protected:
     muc::chrono::stopwatch fStopwatch;
     muc::chrono::processor_stopwatch fProcessorStopwatch;
 
-    ExecutionInfo fExecutionInfo;
+    ExecutionInfoType fExecutionInfo;
 };
 
 } // namespace Mustard::inline Execution::internal

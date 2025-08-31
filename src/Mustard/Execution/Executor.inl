@@ -185,6 +185,14 @@ auto Executor<T>::operator()(T size, std::invocable<T> auto&& F) -> T {
 }
 
 template<std::integral T>
+auto Executor<T>::ExecutionInfo() const -> const ExecutionInfoType& {
+    return std::visit([&](auto&& impl) -> const auto& {
+        return impl.ExecutionInfo();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
 auto Executor<T>::PrintExecutionSummary() const -> void {
     std::visit([&](auto&& impl) {
         impl.PrintExecutionSummary();

@@ -64,28 +64,33 @@ auto ParallelExecutorImpl<T>::operator()(struct Scheduler<T>::Task task, std::in
         PostTaskReport(taskID);
     }
     // finalize
-    this->fExecuting = false;
-    const std::tuple localExecutionInfo{this->NLocalExecutedTask(), this->fStopwatch.read().count(), this->fProcessorStopwatch.read().count()};
-    std::vector<std::tuple<T, typename StopwatchDuration::rep, typename StopwatchDuration::rep>> executionInfoList(
-        worldComm.rank() == 0 ? worldComm.size() : 0);
-    auto gatherExecutionInfo{worldComm.igather(0, localExecutionInfo, executionInfoList.data())};
+    using ExecutionInfoTuple = std::tuple<T, typename StopwatchDuration::rep, typename StopwatchDuration::rep>;
+    std::tuple executionInfo{this->NLocalExecutedTask(), this->fStopwatch.read().count(), this->fProcessorStopwatch.read().count()};
+    std::vector<ExecutionInfoTuple> executionInfoList(worldComm.rank() == 0 ? worldComm.size() : 0);
+    auto gatherExecutionInfo{worldComm.igather(0, executionInfo, executionInfoList.data())};
     this->fScheduler->PostLoopAction();
     gatherExecutionInfo.wait(mplr::duty_ratio::preset::relaxed);
+    constexpr auto ToExecutionInfo{[](const ExecutionInfoTuple& t) -> ExecutionInfoType {
+        return {.nExecutedTask = get<0>(t),
+                .wallTime = StopwatchDuration{get<1>(t)},
+                .processorTime = StopwatchDuration{get<2>(t)}};
+    }};
     if (worldComm.rank() == 0) {
         fExecutionInfoList.resize(worldComm.size());
-        std::ranges::transform(executionInfoList, fExecutionInfoList.begin(),
-                               [](auto&& t) -> ExecutionInfo {
-                                   return {.nExecutedTask = get<0>(t),
-                                           .time = StopwatchDuration{get<1>(t)},
-                                           .processorTime = StopwatchDuration{get<2>(t)}};
-                               });
-        auto& [totalExecutedTask, maxTime, totalProcessorTime]{this->fExecutionInfo};
+        std::ranges::transform(executionInfoList, fExecutionInfoList.begin(), ToExecutionInfo);
+        auto& [totalExecutedTask, maxTime, totalProcessorTime]{executionInfo};
         totalExecutedTask = muc::ranges::transform_reduce(
             fExecutionInfoList, T{}, std::plus{}, [](auto&& a) { return a.nExecutedTask; });
-        maxTime = std::ranges::max_element(fExecutionInfoList, std::less{}, [](auto&& a) { return a.time; })->time;
+        maxTime = std::ranges::max_element(
+                      fExecutionInfoList, std::less{}, [](auto&& a) { return a.wallTime; })
+                      ->wallTime.count();
         totalProcessorTime = muc::ranges::transform_reduce(
-            fExecutionInfoList, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; });
+                                 fExecutionInfoList, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; })
+                                 .count();
     }
+    worldComm.ibcast(0, executionInfo).wait(mplr::duty_ratio::preset::relaxed);
+    this->fExecutionInfo = ToExecutionInfo(executionInfo);
+    this->fExecuting = false;
     this->PostLoopReport();
     return this->NLocalExecutedTask();
 }
