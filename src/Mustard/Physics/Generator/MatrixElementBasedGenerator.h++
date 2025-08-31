@@ -20,7 +20,8 @@
 
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Math/IntegrationUtility.h++"
+#include "Mustard/Math/Estimate.h++"
+#include "Mustard/Math/MCIntegrationUtility.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
@@ -43,12 +44,15 @@
 
 #include "fmt/core.h"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <concepts>
 #include <functional>
 #include <limits>
 #include <numbers>
+#include <stdexcept>
+#include <tuple>
 #include <typeinfo>
 #include <utility>
 
@@ -102,17 +106,18 @@ public:
     /// @brief Get currently set initial-state 4-momenta
     auto ISMomenta() const -> const auto& { return fISMomenta; }
 
-    /// @brief |M|² × bias integral divided by |M|² integral
-    /// Multiply event weights with the result to normalize weights to the number of generated events.
-    /// Essential for calculating total cross-section or decay width when bias function is set
+    /// @brief Compute |M|² × bias integral on phase space by Monte Carlo integration.
+    /// Useful for calculating total decay width or cross section
     /// @param executor An executor instance
     /// @param precisionGoal Target relative uncertainty (e.g. 0.01 for 1% rel. unc.)
-    /// @param integrationState Integration state for continuing normalization
+    /// @param integrationState Integration state for continuing integration
     /// @param rng Reference to CLHEP random engine
-    /// @return Estimated normalization factor and integration state
-    auto EstimateNormalizationFactor(Executor<unsigned long long>& executor, double precisionGoal,
-                                     std::array<Math::MCIntegrationState, 2> integrationState = {},
-                                     CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::pair<Math::MCIntegrationResult, std::array<Math::MCIntegrationState, 2>>;
+    /// @return (1) Monte Carlo integration result of |M|² × bias integral on phase space
+    ///         (2) Effective sample size
+    ///         (3) Current integration state
+    auto PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
+                            Math::MCIntegrationState integrationState = {},
+                            CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::tuple<Math::Estimate, double, Math::MCIntegrationState>;
 
 protected:
     /// @brief Set initial-state 4-momenta
@@ -191,15 +196,15 @@ protected:
 private:
     /// @brief Monte Carlo integration implementation
     auto Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                   Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> Math::MCIntegrationResult;
+                   Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Math::Estimate, double>;
 
 protected:
     GENBOD<M, N> fGENBOD; ///< Phase space generator
 
 private:
+    [[no_unique_address]] A fMatrixElement;     ///< Matrix element
     InitialStateMomenta fISMomenta;             ///< Initial-state 4-momenta
     CLHEP::Hep3Vector fBoostFromLabToCM;        ///< Boost from lab frame to c.m. frame
-    [[no_unique_address]] A fMatrixElement;     ///< Matrix element
     std::vector<std::pair<int, double>> fIRCut; ///< IR cuts
     BiasFunction fBias;                         ///< User bias function
 };
