@@ -21,7 +21,6 @@
 #include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/bit"
-#include "muc/numeric"
 
 #include <bit>
 #include <cassert>
@@ -37,7 +36,7 @@
 namespace Mustard::Math::internal {
 
 template<std::floating_point T>
-MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> auto {
+MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> auto {
     assert(0 < x and x <= 1);
     muc::assume(0 < x and x <= 1);
     if constexpr (std::numeric_limits<T>::is_iec559) {
@@ -53,14 +52,11 @@ MUSTARD_OPTIMIZE_FAST MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> a
         muc::assume(xBits > 0);
         muc::assume(xBits < ~(~static_cast<B>(0) >> 1));
         x = std::bit_cast<T>((xBits | ~static_cast<B>(0) << n) << 2 >> 2);
-        const auto r{muc::rational({1.00000000000000000000000000000000000L,
-                                    0.583383967700472856709787286973478877L},
-                                   {0.382629200453083135302003393260680748L,
-                                    1.03060337901870614323216255936183184L,
-                                    0.170537349167416694276401758784217301L},
-                                   x)};
-        return (x * r - r) +
-               (static_cast<int>(xBits >> n) - ((1 << (k - 1)) - 1)) * std::numbers::ln2_v<T>;
+        const auto r{(x - 1) * (static_cast<T>(1.71413692416283632961056338086598083L) + x) /
+                     (static_cast<T>(0.655878840759533266466456480292495690L) +
+                      x * (static_cast<T>(1.76659530614295075834353296149169646L) +
+                           x * static_cast<T>(0.292324367156719289353136917971432996L)))};
+        return r + (static_cast<int>(xBits >> n) - ((1 << (k - 1)) - 1)) * std::numbers::ln2_v<T>;
     } else {
         return std::log(x);
     }
