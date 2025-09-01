@@ -257,7 +257,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
     }};
     // Integration loop
     MasterPrintLn("Integration starts. Precision goal: {:.3}.", precisionGoal);
-    const auto initialBatchSize{muc::to_unsigned(muc::llround(10 * muc::pow(precisionGoal, -2)))};
+    const auto initialBatchSize{muc::to_unsigned(muc::llround(muc::pow(precisionGoal, -2)))};
     auto batchSize{std::max(1000000ull * executor.NProcess(), initialBatchSize)};
     unsigned long long maxBatchSize{};
     double nSamplePerMin{}; // just a very approximate value
