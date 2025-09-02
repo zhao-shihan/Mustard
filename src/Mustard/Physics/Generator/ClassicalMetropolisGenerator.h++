@@ -23,17 +23,13 @@
 
 #include "CLHEP/Random/RandomEngine.h"
 
-#include "muc/numeric"
-
-#include <array>
 #include <concepts>
 
 namespace Mustard::inline Physics::inline Generator {
 
-/// @class MultipleTryMetropolisGenerator
-/// @brief Multiple-try Metropolis (MTM) MCMC sampler for event generation,
-/// possibly with user-defined acceptance. MTM sampler can help resolve the
-/// curse of dimensionality.
+/// @class ClassicalMetropolisGenerator
+/// @brief Classical Metropolis-Hastings MCMC generator, possibly
+/// with user-defined acceptance.
 ///
 /// Generates events distributed according to |M|² × acceptance, and
 /// weight = 1 / acceptance.
@@ -46,7 +42,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// @tparam N Number of final-state particles
 /// @tparam A Matrix element of the process to be generated
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-class MultipleTryMetropolisGenerator : public NSRWMGenerator<M, N, A> {
+class ClassicalMetropolisGenerator : public NSRWMGenerator<M, N, A> {
 public:
     /// @brief Generated event type
     using typename NSRWMGenerator<M, N, A>::Event;
@@ -55,10 +51,10 @@ public:
     // Inherit constructor
     using NSRWMGenerator<M, N, A>::NSRWMGenerator;
     // Keep the class abstract
-    virtual ~MultipleTryMetropolisGenerator() override = 0;
+    virtual ~ClassicalMetropolisGenerator() override = 0;
 
 private:
-    /// @brief Advance Markov chain by one event using multiple-try Metropolis algorithm
+    /// @brief Advance Markov chain by one event using classical Metropolis-Hastings algorithm
     /// @param rng Reference to CLHEP random engine
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
     virtual auto NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event override;
@@ -66,4 +62,4 @@ private:
 
 } // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.inl"
+#include "Mustard/Physics/Generator/ClassicalMetropolisGenerator.inl"

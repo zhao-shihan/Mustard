@@ -18,22 +18,24 @@
 
 #pragma once
 
-#include "Mustard/Physics/Generator/NSRWMGenerator.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian.h++"
+#include "Mustard/Physics/Generator/MCMCGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 
 #include "CLHEP/Random/RandomEngine.h"
 
-#include "muc/numeric"
+#include "muc/math"
 
-#include <array>
+#include <algorithm>
+#include <cmath>
+#include <ranges>
 #include <concepts>
 
 namespace Mustard::inline Physics::inline Generator {
 
-/// @class MultipleTryMetropolisGenerator
-/// @brief Multiple-try Metropolis (MTM) MCMC sampler for event generation,
-/// possibly with user-defined acceptance. MTM sampler can help resolve the
-/// curse of dimensionality.
+/// @class NSRWMGenerator
+/// @brief Base class for normal symmetric random walk Metropolis (N-SRWM)
+/// generators, possibly with user-defined acceptance.
 ///
 /// Generates events distributed according to |M|² × acceptance, and
 /// weight = 1 / acceptance.
@@ -46,24 +48,28 @@ namespace Mustard::inline Physics::inline Generator {
 /// @tparam N Number of final-state particles
 /// @tparam A Matrix element of the process to be generated
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-class MultipleTryMetropolisGenerator : public NSRWMGenerator<M, N, A> {
-public:
-    /// @brief Generated event type
-    using typename NSRWMGenerator<M, N, A>::Event;
-
+class NSRWMGenerator : public MCMCGenerator<M, N, A> {
 public:
     // Inherit constructor
-    using NSRWMGenerator<M, N, A>::NSRWMGenerator;
-    // Keep the class abstract
-    virtual ~MultipleTryMetropolisGenerator() override = 0;
+    using MCMCGenerator<M, N, A>::MCMCGenerator;
 
-private:
-    /// @brief Advance Markov chain by one event using multiple-try Metropolis algorithm
+protected:
+    /// @brief Markov chain state container
+    using typename MCMCGenerator<M, N, A>::MarkovChain;
+
+protected:
+    /// @brief Normal symmetric proposal distribution
     /// @param rng Reference to CLHEP random engine
     /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    virtual auto NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event override;
+    /// @param state0 Initial state
+    /// @param state Proposed state (modified in-place)
+    auto NSRWMProposeState(CLHEP::HepRandomEngine& rng, double delta,
+                           const MarkovChain::State& state0, MarkovChain::State& state) -> void;
+
+private:
+    Math::Random::Gaussian<double> fGaussian; ///< Gaussian distribution
 };
 
 } // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.inl"
+#include "Mustard/Physics/Generator/NSRWMGenerator.inl"

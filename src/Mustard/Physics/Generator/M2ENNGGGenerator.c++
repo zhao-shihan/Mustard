@@ -34,7 +34,7 @@ using namespace PhysicalConstant;
 
 M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization, double irCut,
                                    std::optional<double> delta, std::optional<unsigned> discard) :
-    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, delta, discard} {
+    ClassicalMetropolisGenerator{{}, polarization, {}, {}, delta, discard} {
     Parent(parent);
     ParentMomentum(momentum);
     Mass({electron_mass_c2, 0, 0, 0, 0});
@@ -58,8 +58,8 @@ auto M2ENNGGGenerator::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
 }
 
 auto M2ENNGGGenerator::IRCut(double irCut) -> void {
-    MultipleTryMetropolisGenerator::IRCut(3, irCut);
-    MultipleTryMetropolisGenerator::IRCut(4, irCut);
+    ClassicalMetropolisGenerator::IRCut(3, irCut);
+    ClassicalMetropolisGenerator::IRCut(4, irCut);
 }
 
 } // namespace Mustard::inline Physics::inline Generator

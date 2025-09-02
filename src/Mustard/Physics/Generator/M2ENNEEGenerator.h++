@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.h++"
+#include "Mustard/Physics/Generator/ClassicalMetropolisGenerator.h++"
 #include "Mustard/Physics/QFT/M2ENNEE0AvMSqMcMule.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -32,7 +32,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// @brief MCMC generator for mu->ennee decays
 /// Kinematics: μ⁻ → e⁻ ν ν e⁺ e⁻
 ///             μ⁺ → e⁺ ν ν e⁻ e⁺
-class M2ENNEEGenerator : public MultipleTryMetropolisGenerator<1, 5, QFT::M2ENNEE0AvMSqMcMule> {
+class M2ENNEEGenerator : public ClassicalMetropolisGenerator<1, 5, QFT::M2ENNEE0AvMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
