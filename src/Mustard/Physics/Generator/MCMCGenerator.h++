@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Physics/Generator/MatrixElementBasedGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
@@ -28,10 +29,13 @@
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include "Eigen/Core"
+
 #include "mplr/mplr.hpp"
 
 #include "muc/algorithm"
 #include "muc/array"
+#include "muc/btree_map"
 #include "muc/chrono"
 #include "muc/math"
 #include "muc/numeric"
@@ -59,7 +63,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// Generates events distributed according to |M|² × acceptance, and
 /// weight = 1 / acceptance.
 ///
-/// The Markov chain requires burn-in after each change to
+/// The Markov chain requires reinitialize after each change to
 /// initial-state momenta. So this generator is unsuitable
 /// for case where frequent variation of initial-state momenta is required.
 ///
@@ -72,6 +76,17 @@ private:
     /// @brief The base class
     using Base = MatrixElementBasedGenerator<M, N, A>;
 
+protected:
+    /// @brief Markov chain state container
+    struct MarkovChain {
+        static constexpr int dim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
+        struct State {
+            GENBOD<M, N>::RandomState u; ///< Random state
+            std::array<int, N> pID;      ///< Particle ID mapping (for swapping identical particles)
+        } state;                         ///< State of the chain
+        double mSqAcceptanceDetJ;        ///< |M|² × acceptance × |J|
+    };
+
 public:
     /// @brief Initial-state 4-momentum (or container type when M>1)
     using typename Base::InitialStateMomenta;
@@ -81,45 +96,45 @@ public:
     using typename Base::Event;
     /// @brief User-defined acceptance function type
     using typename Base::AcceptanceFunction;
+    /// @brief Autocorrelation function (curve) type
+    using AutocorrelationFunction = muc::btree_map<unsigned, Eigen::Array<double, MarkovChain::dim, 1>>;
 
 public:
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// (optional here, but should be set no later than before generation)
-    /// @param discard Samples discarded between two events generated from the Markov chain
-    /// (optional here, but should be set no later than before generation)
+    /// @param stepSize Step scale of random walk (0--0.5, optional, use default value if not set)
+    /// @param thinningFactor Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     MCMCGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                  std::optional<double> delta = {}, std::optional<unsigned> discard = {});
+                  std::optional<double> stepSize = {}, std::optional<double> thinningFactor = {}, std::optional<unsigned> acfSampleSize = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// (optional here, but should be set no later than before generation)
-    /// @param discard Samples discarded between two events generated from the Markov chain
-    /// (optional here, but should be set no later than before generation)
+    /// @param stepSize Step scale of random walk (0--0.5, optional, use default value if not set)
+    /// @param thinningFactor Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
     MCMCGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                  std::optional<double> delta = {}, std::optional<unsigned> discard = {})
+                  std::optional<double> stepSize = {}, std::optional<double> thinningFactor = {}, std::optional<unsigned> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vectors
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// (optional here, but should be set no later than before generation)
-    /// @param discard Samples discarded between two events generated from the Markov chain
-    /// (optional here, but should be set no later than before generation)
+    /// @param stepSize Step scale of random walk (0--0.5, optional, use default value if not set)
+    /// @param thinningFactor Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized scattering
     MCMCGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                  std::optional<double> delta = {}, std::optional<unsigned> discard = {})
+                  std::optional<double> stepSize = {}, std::optional<double> thinningFactor = {}, std::optional<unsigned> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Get polarization vector
@@ -139,45 +154,56 @@ public:
     /// @brief Set polarization vector
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note This overload is only enabled for polarized decay
-    /// @warning The Markov chain requires burn-in if value changes
+    /// @warning The Markov chain requires reinitialize if value changes
     auto InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Set polarization for single initial particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note This overload is only enabled for polarized scattering
-    /// @warning The Markov chain requires burn-in if value changes
+    /// @warning The Markov chain requires reinitialize if value changes
     auto InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
     /// @brief Set all polarization vectors
     /// @param pol Array of polarization vectors for each initial particle (all |pol| ≤ 1)
     /// @note This overload is only enabled for polarized scattering
-    /// @warning The Markov chain requires burn-in if value changes
+    /// @warning The Markov chain requires reinitialize if value changes
     auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set user-defined acceptance function in PDF (PDF = |M|² × acceptance)
     /// @param Acceptance User-defined acceptance
-    /// @warning The Markov chain requires burn-in after set
+    /// @warning The Markov chain requires reinitialize after set
     auto Acceptance(AcceptanceFunction Acceptance) -> void;
 
     /// @brief Set MCMC step size
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    auto MCMCDelta(double delta) -> void;
-    /// @brief Set discard count between samples
-    /// @param discard Samples discarded between two events generated from the Markov chain
-    auto MCMCDiscard(unsigned n) -> void;
+    /// @param stepSize Step scale of random walk (0--0.5, optional, use default value if not set)
+    auto MCMCStepSize(double stepSize) -> void;
+    /// @brief Set thinning factor
+    /// Larger the thinning factor, more samples will be discarded,
+    /// and events generated will be more likely to be i.i.d.
+    /// @param value Thinning factor (between 0--1)
+    auto ThinningFactor(double value) -> void;
+    /// @brief Set sample size for estimation autocorrelation function (ACF)
+    /// @param n Sample size
+    auto ACFSampleSize(unsigned n) -> void;
 
+    /// @brief Return true if Markov chain initialized
+    /// @return true if initialized
+    auto MCMCInitialized() -> auto { return fMCMCInitialized; }
     /// @brief Initialize Markov chain
     /// @param rng Reference to CLHEP random engine
-    auto BurnIn(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> void;
+    auto MCMCInitialize(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> AutocorrelationFunction;
+    /// @brief Effective sample size (ESS) factor
+    /// Multiply this factor with generated sample size (N) to get the approximate ESS (N_eff).
+    /// @return The ESS factor
+    auto ESSFactor() -> double;
 
     /// @brief Generate event in c.m. frame
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     /// @warning Initial-state momenta passed to this function are ignored.
     /// Use `ISMomenta` to set initial-state momenta
-    /// @throws `std::logic_error` if neither fMCMCDelta nor MCMCDiscard has been set
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta) -> Event override;
     // Inherit operator() overloads
     using Base::operator();
@@ -185,37 +211,26 @@ public:
 protected:
     /// @brief Set initial-state 4-momenta
     /// @param pI initial-state 4-momenta
-    /// @warning The Markov chain requires burn-in if value changes
+    /// @warning The Markov chain requires reinitialize if value changes
     auto ISMomenta(const InitialStateMomenta& pI) -> void;
 
     /// @brief Set final-state masses
     /// @param mass Array of particle masses
-    /// @warning The Markov chain requires burn-in if value changes
+    /// @warning The Markov chain requires reinitialize if value changes
     auto Mass(const std::array<double, N>& mass) -> void;
 
     /// @brief Set IR cuts for single final state particle
     /// @param i Particle index (0 ≤ i < N)
     /// @param cut IR cut value
-    /// @warning The Markov chain requires burn-in after set
+    /// @warning The Markov chain requires reinitialize after set
     auto IRCut(int i, double cut) -> void;
     /// @brief Add an identical particle index set.
     /// @note Add the set is not necessary but recommended for reducing
     /// discrpancies between spectra of identical particles from MCMC.
     auto AddIdenticalSet(std::vector<int> set) -> void;
 
-    /// @brief Notify MCMC that (re)burn-in is required
-    auto BurnInRequired() -> void { fBurntIn = false; }
-
-protected:
-    /// @brief Markov chain state container
-    struct MarkovChain {
-        static constexpr int dim{std::tuple_size_v<typename GENBOD<M, N>::RandomState>};
-        struct State {
-            GENBOD<M, N>::RandomState u; ///< Random state
-            std::array<int, N> pID;      ///< Particle ID mapping (for swapping identical particles)
-        } state;                         ///< State of the chain
-        double mSqAcceptanceDetJ;        ///< |M|² × acceptance × |J|
-    };
+    /// @brief Notify MCMC that reinitialize is required
+    auto MCMCInitializeRequired() -> void;
 
     /// @brief Transform hypercube to phase space
     /// @param u A random state
@@ -236,20 +251,20 @@ protected:
 private:
     /// @brief Advance Markov chain by one event
     /// @param rng Reference to CLHEP random engine
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    virtual auto NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event = 0;
+    /// @param stepSize Step scale of random walk
+    virtual auto NextEvent(CLHEP::HepRandomEngine& rng, double stepSize) -> Event = 0;
 
 protected:
     std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
                                                  //
-    double fMCMCDelta;                           ///< Step scale along one direction in random state space
-    unsigned fMCMCDiscard;                       ///< Events discarded between 2 samples
+    double fMCMCStepSize;                        ///< Step scale along one direction in random state space
+    double fThinningFactor;                      ///< User-defined thinning factor
+    unsigned fACFSampleSize;                     ///< Sample size for estimating ACF
                                                  //
-    bool fBurntIn;                               ///< Burn-in completed flag
+    bool fMCMCInitialized;                       ///< Initialization completed flag
+    double fIntegratedAutocorrelation;           ///< Integrated autocorrelation 2*sum(rho_k,0,inf)-1
+    unsigned fThinningSize;                      ///< Samples discarded between two generated
     MarkovChain fMarkovChain;                    ///< Current Markov chain state
-
-    static constexpr double fgDefaultInvalidMCMCDelta{std::numeric_limits<double>::quiet_NaN()};
-    static constexpr unsigned fgDefaultInvalidMCMCDiscard{std::numeric_limits<unsigned>::max()};
 };
 
 } // namespace Mustard::inline Physics::inline Generator

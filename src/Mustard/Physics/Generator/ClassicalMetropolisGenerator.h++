@@ -34,7 +34,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// Generates events distributed according to |M|² × acceptance, and
 /// weight = 1 / acceptance.
 ///
-/// The Markov chain requires burn-in after each change to
+/// The Markov chain requires reinitialize after each change to
 /// initial-state momenta. So this generator is unsuitable
 /// for case where frequent variation of initial-state momenta is required.
 ///
@@ -56,8 +56,8 @@ public:
 private:
     /// @brief Advance Markov chain by one event using classical Metropolis-Hastings algorithm
     /// @param rng Reference to CLHEP random engine
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    virtual auto NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event override;
+    /// @param stepSize Step scale of random walk
+    virtual auto NextEvent(CLHEP::HepRandomEngine& rng, double stepSize) -> Event override;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

@@ -22,10 +22,10 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::~ClassicalMetropolisGenerator() = default;
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event {
+auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng, double stepSize) -> Event {
     struct NSRWMGenerator<M, N, A>::MarkovChain::State state;
     while (true) {
-        this->NSRWMProposeState(rng, delta, this->fMarkovChain.state, state);
+        this->NSRWMProposeState(rng, stepSize, this->fMarkovChain.state, state);
         auto event{this->PhaseSpace(state)};
         const auto& [detJ, _, pF]{event};
         if (not this->IRSafe(pF)) {

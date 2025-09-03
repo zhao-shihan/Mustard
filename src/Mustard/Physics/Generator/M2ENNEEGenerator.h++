@@ -38,12 +38,11 @@ public:
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param momentum Muon momentum
     /// @param polarization Muon polarization vector
-    /// @param delta Step scale along one direction in random state space (0 < delta < 0.5)
-    /// (optional here, but should be set no later than before generation)
-    /// @param discard Samples discarded between two events generated from the Markov chain
-    /// (optional here, but should be set no later than before generation)
+    /// @param stepSize Step scale of random walk (0--0.5, optional, use default value if not set)
+    /// @param thinningFactor Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     M2ENNEEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
-                     std::optional<double> delta = {}, std::optional<unsigned> discard = {});
+                     std::optional<double> stepSize = {}, std::optional<double> thinningFactor = {}, std::optional<unsigned> acfSampleSize = {});
 
     /// @brief Set parent particle
     /// @param parent "mu-" or "mu+"

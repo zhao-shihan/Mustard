@@ -20,36 +20,42 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                      std::optional<double> delta, std::optional<unsigned> discard) :
+                                      std::optional<double> stepSize, std::optional<double> thinningFactor, std::optional<unsigned> acfSampleSize) :
     Base{pI, pdgID, mass},
     fIdenticalSet{},
-    fMCMCDelta{fgDefaultInvalidMCMCDelta},
-    fMCMCDiscard{fgDefaultInvalidMCMCDiscard},
-    fBurntIn{},
+    fMCMCStepSize{0.001},
+    fThinningFactor{0.1},
+    fACFSampleSize{100000},
+    fMCMCInitialized{},
+    fIntegratedAutocorrelation{},
+    fThinningSize{},
     fMarkovChain{} {
-    if (delta) {
-        MCMCDelta(*delta);
+    if (stepSize) {
+        MCMCStepSize(*stepSize);
     }
-    if (discard) {
-        MCMCDiscard(*discard);
+    if (thinningFactor) {
+        ThinningFactor(*thinningFactor);
+    }
+    if (acfSampleSize) {
+        ACFSampleSize(*acfSampleSize);
     }
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
                                       const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                      std::optional<double> delta, std::optional<unsigned> discard) // clang-format off
+                                      std::optional<double> stepSize, std::optional<double> thinningFactor, std::optional<unsigned> acfSampleSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
-    MCMCGenerator{pI, pdgID, mass, std::move(delta), std::move(discard)} {
+    MCMCGenerator{pI, pdgID, mass, std::move(stepSize), std::move(thinningFactor), std::move(acfSampleSize)} {
     this->InitialStatePolarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                       const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                      std::optional<double> delta, std::optional<unsigned> discard) // clang-format off
+                                      std::optional<double> stepSize, std::optional<double> thinningFactor, std::optional<unsigned> acfSampleSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
-    MCMCGenerator{pI, pdgID, mass, std::move(delta), std::move(discard)} {
+    MCMCGenerator{pI, pdgID, mass, std::move(stepSize), std::move(thinningFactor), std::move(acfSampleSize)} {
     this->InitialStatePolarization(polarization);
 }
 
@@ -75,7 +81,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
     if (not pol.isNear(InitialStatePolarization(), muc::default_tolerance<double>)) {
-        BurnInRequired();
+        MCMCInitializeRequired();
     }
     Base::InitialStatePolarization(pol);
 }
@@ -84,7 +90,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     if (not pol.isNear(InitialStatePolarization(i), muc::default_tolerance<double>)) {
-        BurnInRequired();
+        MCMCInitializeRequired();
     }
     Base::InitialStatePolarization(i, pol);
 }
@@ -94,7 +100,7 @@ auto MCMCGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::He
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     if (not std::ranges::equal(pol, InitialStatePolarization(),
                                [](auto&& a, auto&& b) { return a.isNear(b, muc::default_tolerance<double>); })) {
-        BurnInRequired();
+        MCMCInitializeRequired();
     }
     Base::InitialStatePolarization(pol);
 }
@@ -102,39 +108,56 @@ auto MCMCGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::He
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Acceptance(AcceptanceFunction Acceptance) -> void {
     Base::Acceptance(Acceptance);
-    BurnInRequired();
+    MCMCInitializeRequired();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::MCMCDelta(double delta) -> void {
-    if (not std::isfinite(delta)) [[unlikely]] {
-        PrintError(fmt::format("Infinite MCMC delta (got {})", delta));
+auto MCMCGenerator<M, N, A>::MCMCStepSize(double stepSize) -> void {
+    if (not std::isfinite(stepSize)) [[unlikely]] {
+        PrintError(fmt::format("Infinite MCMC step size (got {})", stepSize));
     }
-    if (delta <= muc::default_tolerance<double> or 0.5 <= delta) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious MCMC delta (got {}, expects {} < delta < 0.5)", delta, muc::default_tolerance<double>));
+    if (stepSize <= muc::default_tolerance<double> or 0.5 <= stepSize) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5)", stepSize, muc::default_tolerance<double>));
     }
-    // Rescale delta
-    // E(distance in d-dim space) ~ sqrt(d), if delta = delta0 / sqrt(d) => E(step size) ~ delta0
-    fMCMCDelta = (2.38 / std::sqrt(MarkovChain::dim)) * delta;
+    // Rescale stepSize
+    // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
+    fMCMCStepSize = (2.38 / std::sqrt(MarkovChain::dim)) * stepSize;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::MCMCDiscard(unsigned n) -> void {
-    if (n == fgDefaultInvalidMCMCDiscard) [[unlikely]] {
-        PrintError(fmt::format("Invalid number of discarded MCMC samples (got {})", n));
+auto MCMCGenerator<M, N, A>::ThinningFactor(double value) -> void {
+    if (not std::isfinite(value)) [[unlikely]] {
+        PrintError(fmt::format("Infinite thinning factor (got {})", value));
     }
+    if (value < 0) [[unlikely]] {
+        PrintWarning(fmt::format("Negative thinning factor (got {}), setting to 0", value));
+        value = 0;
+    }
+    if (value > 1) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious thinning factor (got {}, should 0 <= thinning factor <= 1)", value));
+    }
+    fThinningFactor = value;
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MCMCGenerator<M, N, A>::ACFSampleSize(unsigned n) -> void {
     if (n >= std::numeric_limits<int>::max()) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious number of discarded MCMC samples (got {})", n));
+        PrintWarning(fmt::format("Suspicious ACF sample size (got {})", n));
     }
-    fMCMCDiscard = n;
+    fACFSampleSize = n;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
-    MasterPrintLn("Markov chain of {} burning in, please wait...", muc::try_demangle(typeid(*this).name()));
+auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction {
+    const auto thisName{muc::try_demangle(typeid(*this).name())};
+    MasterPrintLn("Initializing {}...", thisName);
     muc::chrono::stopwatch stopwatch;
 
+    // Reseed random engine for statistical safety
+    Parallel::ReseedRandomEngine(&rng);
+
     // find phase space
+    MasterPrintLn("Finding phase space...");
     muc::ranges::iota(fMarkovChain.state.pID, 0);
     while (true) {
         rng.flatArray(fMarkovChain.state.u.size(), fMarkovChain.state.u.data());
@@ -149,56 +172,134 @@ auto MCMCGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
             break;
         }
     }
-    // burning in
-    constexpr auto delta0{0.1};
+    MasterPrintLn("Phase space found.");
+
+    // Burning in
+    MasterPrintLn("Markov chain burning in...");
+    constexpr auto stepSize0{0.1};
     constexpr auto epsilon{1e-6};
     // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
     // nBurnIn should satisfy E(random walk displacement) ~ scale * E(distance in d-dim space),
     // so we solve nBurnIn from sqrt(random walk distance) = scale * sqrt(dimension) with some scale
     constexpr auto travelScale{10};
-    const auto nBurnIn{std::log(epsilon / delta0) / std::log(1 - delta0 / (muc::pow(travelScale, 2) * MarkovChain::dim))};
-    const auto factor{std::pow(epsilon / delta0, 1 / nBurnIn)};
-    for (auto delta{delta0}; delta > epsilon; delta *= factor) {
-        NextEvent(rng, delta);
+    const auto nBurnIn{std::log(epsilon / stepSize0) / std::log(1 - stepSize0 / (muc::pow(travelScale, 2) * MarkovChain::dim))};
+    const auto factor{std::pow(epsilon / stepSize0, 1 / nBurnIn)};
+    for (auto stepSize{stepSize0}; stepSize > epsilon; stepSize *= factor) {
+        NextEvent(rng, stepSize);
     }
-    fBurntIn = true;
+    MasterPrintLn("Markov chain burnt in.");
+
+    // Estimate autocorrelation and decide thinning
+    MasterPrintLn("Estimating autocorrelation and decide thinning...");
+    using ArrayDimMC = Eigen::Array<double, MarkovChain::dim, 1>;
+
+    std::vector<ArrayDimMC> sample(fACFSampleSize);
+    for (unsigned i{}; i < fACFSampleSize; ++i) {
+        NextEvent(rng, fMCMCStepSize);
+        std::ranges::copy(fMarkovChain.state.u, sample[i].begin());
+    }
+    ArrayDimMC sampleMean;
+    sampleMean.setZero();
+    for (auto&& x : sample) {
+        sampleMean += x;
+    }
+    sampleMean /= fACFSampleSize;
+    ArrayDimMC autocorrelationDenominator;
+    autocorrelationDenominator.setZero();
+    for (auto&& x : sample) {
+        const auto delta{(x - sampleMean).eval()};
+        autocorrelationDenominator += delta * delta;
+    }
+
+    const auto maxLag{fACFSampleSize / 2};
+    const auto deltaLag{std::max(1u, maxLag / 1000)};
+    AutocorrelationFunction autocorrelationFunction;
+    autocorrelationFunction.emplace(0, ArrayDimMC::Ones());
+    for (auto lag{deltaLag}; lag <= maxLag; lag += deltaLag) {
+        ArrayDimMC autocorrelationNumerator;
+        autocorrelationNumerator.setZero();
+        for (unsigned i{}; i < fACFSampleSize - lag; ++i) {
+            autocorrelationNumerator += (sample[i] - sampleMean) * (sample[i + lag] - sampleMean);
+        }
+        autocorrelationFunction.emplace(lag, autocorrelationNumerator / autocorrelationDenominator);
+    }
+
+    std::array<int, MarkovChain::dim> autocorrelationSwitchSign{};
+    ArrayDimMC sumAutocorrelation;
+    sumAutocorrelation.setZero();
+    auto lastAutocorrelation{&autocorrelationFunction.at(0)};
+    for (auto&& [lag, autocorrelation] : autocorrelationFunction) {
+        if (lag == 0) {
+            continue;
+        }
+        for (int k{}; k < MarkovChain::dim; ++k) {
+            autocorrelationSwitchSign[k] += std::signbit((*lastAutocorrelation)[k]) xor std::signbit(autocorrelation[k]);
+        }
+        sumAutocorrelation += (*lastAutocorrelation + autocorrelation) / 2 * deltaLag +
+                              (*lastAutocorrelation - autocorrelation) / 2; // approximate sum
+        lastAutocorrelation = &autocorrelation;
+    }
+    const auto converged{std::ranges::all_of(autocorrelationSwitchSign, [](auto n) { return n > 5; })};
+    if (not converged) {
+        PrintWarning(fmt::format("Autocorrelation not converged. Try increasing ACF sample size (current: {})", fACFSampleSize));
+    }
+
+    auto meanSumAutocorrelation{sumAutocorrelation.mean()};
+    if (mplr::available()) {
+        const auto worldComm{mplr::comm_world()};
+        worldComm.iallreduce(std::plus{}, meanSumAutocorrelation).wait(mplr::duty_ratio::preset::relaxed);
+        meanSumAutocorrelation /= worldComm.size();
+    }
+    // Here sumAutocorrelation = sum(rho_k,0,inf) = sum(rho_k,1,inf)+1,
+    // So N_eff = N/(1+2*sum(rho_k,1,inf)) = N/(2*sum(rho_k,0,inf)-1) => int. ac. = 2*sum(rho_k,0,inf)-1
+    fIntegratedAutocorrelation = 2 * meanSumAutocorrelation - 1;
+    MasterPrintLn("Mean integrated autocorrelation: {:.2f}.", fIntegratedAutocorrelation);
+    fThinningSize = fThinningFactor * fIntegratedAutocorrelation;
+    MasterPrintLn("Thinning Markov chain by 1/{}.", fThinningSize + 1);
+    fMCMCInitialized = true;
+    MasterPrintLn("A generated event will be statistically equivalent to {:.3} i.i.d. events.", ESSFactor());
 
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
     if (mplr::available()) {
         mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
     }
-    MasterPrintLn("Markov chain burnt in in {:.3f}s.", time);
+    MasterPrint("{} initialized in {:.3f}s.\n"
+                "\n",
+                thisName, time);
+    return autocorrelationFunction;
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MCMCGenerator<M, N, A>::ESSFactor() -> double {
+    if (not fMCMCInitialized) [[unlikely]] {
+        PrintWarning("Markov chain not initialized. ESS factor not available for now");
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    return (fThinningSize + 1) / fIntegratedAutocorrelation;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta) -> Event {
-    if (std::isnan(fMCMCDelta)) {
-        Throw<std::logic_error>("MCMC delta has not been set");
+    if (not fMCMCInitialized) [[unlikely]] {
+        PrintWarning("Markov chain not initialized. Initializing it");
+        MCMCInitialize(rng);
     }
-    if (fMCMCDiscard == fgDefaultInvalidMCMCDiscard) {
-        Throw<std::logic_error>("Number of discarded MCMC samples has not been set");
+    for (unsigned i{}; i < fThinningSize; ++i) {
+        NextEvent(rng, fMCMCStepSize);
     }
-
-    if (not fBurntIn) [[unlikely]] {
-        PrintWarning("Markov chain not burnt in. Burning it in");
-        BurnIn(rng);
-    }
-    for (unsigned i{}; i < fMCMCDiscard; ++i) {
-        NextEvent(rng, fMCMCDelta);
-    }
-    return NextEvent(rng, fMCMCDelta);
+    return NextEvent(rng, fMCMCStepSize);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& pI) -> void {
     if constexpr (M == 1) {
         if (pI.isNear(Base::ISMomenta(), muc::default_tolerance<double>)) {
-            BurnInRequired();
+            MCMCInitializeRequired();
         }
     } else {
         if (not std::ranges::equal(pI, Base::ISMomenta(),
                                    [](auto p, auto q) { return p.isNear(q, muc::default_tolerance<double>); })) {
-            BurnInRequired();
+            MCMCInitializeRequired();
         }
     }
     Base::ISMomenta(pI);
@@ -208,14 +309,14 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Mass(const std::array<double, N>& mass) -> void {
     if (not std::ranges::equal(mass, this->fGENBOD.Mass(),
                                [](auto a, auto b) { return muc::isclose(a, b); })) {
-        BurnInRequired();
+        MCMCInitializeRequired();
     }
     Base::Mass(mass);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::IRCut(int i, double cut) -> void {
-    BurnInRequired();
+    MCMCInitializeRequired();
     Base::IRCut(i, cut);
 }
 
@@ -238,6 +339,13 @@ auto MCMCGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
         }
     }
     fIdenticalSet.emplace_back(std::move(set));
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MCMCGenerator<M, N, A>::MCMCInitializeRequired() -> void {
+    fMCMCInitialized = false;
+    fIntegratedAutocorrelation = 0;
+    fThinningSize = 0;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>

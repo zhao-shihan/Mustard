@@ -33,8 +33,8 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization, double irCut,
-                                   std::optional<double> delta, std::optional<unsigned> discard) :
-    ClassicalMetropolisGenerator{{}, polarization, {}, {}, delta, discard} {
+                                   std::optional<double> stepSize, std::optional<double> thinningFactor, std::optional<unsigned> acfSampleSize) :
+    ClassicalMetropolisGenerator{{}, polarization, {}, {}, std::move(stepSize), std::move(thinningFactor), std::move(acfSampleSize)} {
     Parent(parent);
     ParentMomentum(momentum);
     Mass({electron_mass_c2, 0, 0, 0, 0});

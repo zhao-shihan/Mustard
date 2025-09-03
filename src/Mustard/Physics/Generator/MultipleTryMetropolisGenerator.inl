@@ -22,7 +22,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::~MultipleTryMetropolisGenerator() = default;
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng, double delta) -> Event {
+auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng, double stepSize) -> Event {
     // Multiple-try Metropolis sampler (Ref: Jun S. Liu et al (2000), https://doi.org/10.2307/2669532)
     using MarkovChain = struct NSRWMGenerator<M, N, A>::MarkovChain;
     constexpr auto kMTM{MarkovChain::dim};              // k
@@ -45,7 +45,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
     }};
     while (true) {
         for (int i{}; i < kMTM; ++i) {
-            this->NSRWMProposeState(rng, delta, this->fMarkovChain.state, stateY[i]); // Draw y_i from T(x, *)
+            this->NSRWMProposeState(rng, stepSize, this->fMarkovChain.state, stateY[i]); // Draw y_i from T(x, *)
             eventY[i] = this->PhaseSpace(stateY[i]);                                  // y_i -> event(y_i) = g(y_i)
             const auto& [detJ, _, pF]{eventY[i]};
             if (not this->IRSafe(pF)) {
@@ -60,7 +60,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
 
         auto sumPiX{this->fMarkovChain.mSqAcceptanceDetJ}; // pi(x_1) + ... + pi(x_k)
         for (int i{}; i < kMTM - 1; ++i) {
-            this->NSRWMProposeState(rng, delta, stateY[selected], stateX); // Draw x_i from T(Y, *)
+            this->NSRWMProposeState(rng, stepSize, stateY[selected], stateX); // Draw x_i from T(Y, *)
             const auto [detJ, _, pF]{this->PhaseSpace(stateX)};            // x_i -> event(x_i) = g(x_i)
             if (not this->IRSafe(pF)) {
                 continue;
