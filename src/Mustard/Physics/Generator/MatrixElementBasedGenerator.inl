@@ -55,6 +55,9 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
                 "\n",
                 muc::try_demangle(typeid(*this).name()));
 
+    // Reseed random engine for statistical safety
+    Parallel::ReseedRandomEngine(&rng);
+
     // Set task name
     auto originalExecutionName{executor.ExecutionName()};
     auto originalTaskName{executor.TaskName()};
@@ -64,9 +67,6 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
     })};
     executor.ExecutionName("Integration");
     executor.TaskName("Sample");
-
-    // Seeding random engine
-    Parallel::ReseedRandomEngine(&rng);
 
     // Start integration
     const auto Integrand{[this](const Event& event) {
