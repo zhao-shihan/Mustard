@@ -71,14 +71,14 @@ namespace {
         if (not what.empty() and what.ends_with('\n')) {
             what.remove_suffix(1);
         }
-        const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
+        const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::tomato)};
         Print<'E'>(ts | fmt::emphasis::blink, "***");
         Print<'E'>(ts, " terminate called after throwing an instance of '{}'\n", muc::try_demangle(typeid(e).name()));
         Print<'E'>(ts | fmt::emphasis::blink, "***");
         Print<'E'>(ts, "   what(): {}", what);
         Print<'E'>("\n");
     } catch (...) {
-        const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
+        const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::tomato)};
         Print<'E'>(ts | fmt::emphasis::blink, "***");
         if constexpr (requires { std::current_exception().__cxa_exception_type()->name(); }) {
             Print<'E'>(ts, " terminate called after throwing an instance of '{}'", muc::try_demangle(std::current_exception().__cxa_exception_type()->name()));
@@ -176,7 +176,7 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
             const auto lineHeader{mplr::available() ?
                                       fmt::format("MPI{}> ", mplr::comm_world().rank()) :
                                       ""};
-            const auto ts{fmt::emphasis::bold | fg(fmt::color::red)};
+            const auto ts{fmt::emphasis::bold | fg(fmt::color::tomato)};
             Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGFPE:

@@ -71,7 +71,7 @@ auto PrintWarning(std::string_view message, const std::source_location& location
 }
 
 auto PrintError(std::string_view message, const std::source_location& location) -> void {
-    const auto ts{fg(fmt::color::white) | bg(fmt::color::red)};
+    const auto ts{fg(fmt::color::white) | bg(fmt::color::tomato)};
     Print<'E'>(stderr, ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
     Print<'E'>(stderr, ts, " {}: ", internal::PrettyLogHead("Error from ", location));
     Print<'E'>(stderr, ts | fmt::emphasis::bold, "{}", message);
