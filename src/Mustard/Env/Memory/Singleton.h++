@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,15 +21,17 @@
 #include "Mustard/Env/Memory/Singletonified.h++"
 #include "Mustard/Env/Memory/internal/SingletonBase.h++"
 #include "Mustard/Env/Memory/internal/SingletonPool.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
+#include "muc/mutex"
 #include "muc/utility"
 
-#include "fmt/format.h"
+#include "fmt/core.h"
 
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <typeinfo>
 
@@ -45,22 +47,23 @@ public:
     MUSTARD_ALWAYS_INLINE static auto Instance() -> ADerived&;
     MUSTARD_ALWAYS_INLINE static auto EnsureInstantiation() -> void { Instance(); }
 
-    MUSTARD_ALWAYS_INLINE static auto NotInstantiated() -> bool { return UpdateInstance() == Status::NotInstantiated; }
-    MUSTARD_ALWAYS_INLINE static auto Available() -> bool { return UpdateInstance() == Status::Available; }
-    MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return UpdateInstance() == Status::Expired; }
+    MUSTARD_ALWAYS_INLINE static auto NotInstantiated() -> bool { return Status() == Status::NotInstantiated; }
+    MUSTARD_ALWAYS_INLINE static auto Available() -> bool { return Status() == Status::Available; }
+    MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return Status() == Status::Expired; }
     MUSTARD_ALWAYS_INLINE static auto Instantiated() -> bool { return not NotInstantiated(); }
 
 private:
     enum struct Status {
-        NotInstantiated,
         Available,
         Expired
     };
 
-    MUSTARD_ALWAYS_INLINE static auto UpdateInstance() -> Status;
+    MUSTARD_ALWAYS_INLINE static auto Status() -> enum Status;
+    MUSTARD_NOINLINE static auto LoadInstance() -> enum Status;
 
 private:
     static std::shared_ptr<void*> fgInstance;
+    static muc::spin_mutex fgSpinMutex;
 };
 
 class SingletonInstantiator final : public NonConstructibleBase {

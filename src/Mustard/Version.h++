@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,7 +19,7 @@
 #pragma once
 
 #if __cplusplus < 202002L
-#    error "Mustard need at least C++20"
+#    error "Mustard requires at least C++20"
 #endif
 
 #include "Mustard/Version.inl"

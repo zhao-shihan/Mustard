@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,16 +22,26 @@ template<char L>
     requires(L == 'E' or L == 'W' or L == 'I' or L == 'V')
 MUSTARD_ALWAYS_INLINE auto BasicEnv::VerboseLevelReach() const -> bool {
     // if constexpr (L == 'Q') { return fVerboseLevel >= VerboseLevel::Quiet; }
-    if constexpr (L == 'E') { return fVerboseLevel >= VerboseLevel::Error; }
-    if constexpr (L == 'W') { return fVerboseLevel >= VerboseLevel::Warning; }
-    if constexpr (L == 'I') { return fVerboseLevel >= VerboseLevel::Informative; }
-    if constexpr (L == 'V') { return fVerboseLevel >= VerboseLevel::Verbose; }
+    if constexpr (L == 'E') {
+        return fVerboseLevel >= VerboseLevel::Error;
+    }
+    if constexpr (L == 'W') {
+        return fVerboseLevel >= VerboseLevel::Warning;
+    }
+    if constexpr (L == 'I') {
+        return fVerboseLevel >= VerboseLevel::Informative;
+    }
+    if constexpr (L == 'V') {
+        return fVerboseLevel >= VerboseLevel::Verbose;
+    }
 }
 
 template<char L>
     requires(L == 'E' or L == 'W' or L == 'I' or L == 'V')
 MUSTARD_ALWAYS_INLINE auto VerboseLevelReach() -> bool {
-    if (not BasicEnv::Available()) [[unlikely]] { return true; }
+    if (not BasicEnv::Available()) [[unlikely]] {
+        return true;
+    }
     return BasicEnv::Instance().VerboseLevelReach<L>();
 }
 

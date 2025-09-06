@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -24,6 +24,7 @@
 #include "Mustard/Utility/VectorValueType.h++"
 
 #include "muc/array"
+#include "muc/concepts"
 
 #include <array>
 #include <concepts>
@@ -61,15 +62,15 @@ public:
     constexpr auto MuZ(VT muZ) -> void { fMuZ = muZ; }
     constexpr auto SigmaZ(VT sigmaZ) -> void { fSigmaZ = sigmaZ; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicGaussian3DDiagnoalParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicGaussian3DDiagnoalParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -118,9 +119,9 @@ public:
     constexpr auto MuZ(VT muZ) -> void { fParameter.MuZ(muZ); }
     constexpr auto SigmaZ(VT sigmaZ) -> void { fParameter.SigmaZ(sigmaZ); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const Gaussian3DDiagnoalBase& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, Gaussian3DDiagnoalBase& self) -> auto& { return is >> self.fParameter; }
 
 protected:
@@ -148,8 +149,11 @@ public:
 
     constexpr void Reset() { fSaved = false; }
 
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const Gaussian3DDiagnoalParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
     constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
@@ -157,8 +161,11 @@ public:
     static constexpr auto Stateless() { return false; }
 
 private:
-    bool fSaved = false;
-    VT fSavedValue;
+    MUSTARD_ALWAYS_INLINE auto Impl(auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> T;
+
+private:
+    bool fSaved{};
+    VT fSavedValue{};
 };
 
 template<typename T, typename U, typename V>
@@ -183,8 +190,11 @@ public:
 
     constexpr void Reset() { fSaved = false; }
 
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
     constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
@@ -192,8 +202,11 @@ public:
     static constexpr auto Stateless() { return false; }
 
 private:
-    bool fSaved = false;
-    VT fSavedValue;
+    MUSTARD_ALWAYS_INLINE auto Impl(auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> T;
+
+private:
+    bool fSaved{};
+    VT fSavedValue{};
 };
 
 template<typename T, typename U, typename V>

@@ -1,10 +1,25 @@
+# Copyright (C) 2020-2025  The Mustard development team
+#
+# This file is part of Mustard, an offline software framework for HEP experiments.
+#
+# Mustard is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Mustard. If not, see <https://www.gnu.org/licenses/>.
+
 @PACKAGE_INIT@
 
 # set(Mustard_VERSION @MUSTARD_VERSION@)
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(MPI @MUSTARD_MPI_MINIMUM_REQUIRED@ REQUIRED $MUSTARD_MPI_REQUIRED_COMPONENTS$)
 find_dependency(Eigen3 @MUSTARD_EIGEN_MINIMUM_REQUIRED@ REQUIRED)
 find_dependency(Geant4 @MUSTARD_G4_MINIMUM_REQUIRED@ REQUIRED @MUSTARD_G4_REQUIRED_COMPONENTS@)
 find_dependency(ROOT @MUSTARD_ROOT_MINIMUM_REQUIRED@ REQUIRED @MUSTARD_ROOT_REQUIRED_COMPONENTS@)
@@ -16,6 +31,7 @@ find_dependency(envparse @MUSTARD_ENVPARSE_MINIMUM_REQUIRED@)
 find_dependency(fmt @MUSTARD_FMT_MINIMUM_REQUIRED@)
 find_dependency(indicators @MUSTARD_INDICATORS_MINIMUM_REQUIRED@.0)
 find_dependency(Microsoft.GSL @MUSTARD_MSGSL_MINIMUM_REQUIRED@)
+find_dependency(mplr @MUSTARD_MPLR_MINIMUM_REQUIRED@)
 find_dependency(muc @MUSTARD_MUC_MINIMUM_REQUIRED@)
 find_dependency(yaml-cpp @MUSTARD_YAML_CPP_MINIMUM_REQUIRED@)
 

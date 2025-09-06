@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,9 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Concept/InputVector.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "Eigen/Core"
@@ -81,11 +80,11 @@ public:
     constexpr auto Variance() const -> auto { return CentralMoment<2>(); }
     auto StdDev() const -> auto { return std::sqrt(Variance()); }
 
-    auto Skewness() const -> auto { return CentralMoment<3>() / muc::pow<3>(StdDev()); }
+    auto Skewness() const -> auto { return CentralMoment<3>() / muc::pow(StdDev(), 3); }
 
-    constexpr auto Kurtosis() const -> auto { return CentralMoment<4>() / muc::pow<2>(Variance()); }
+    constexpr auto Kurtosis() const -> auto { return CentralMoment<4>() / muc::pow(Variance(), 2); }
 
-    constexpr auto EffectiveN() const -> auto { return muc::pow<2>(fSumW) / fSumW2; }
+    constexpr auto EffectiveN() const -> auto { return muc::pow(fSumW, 2) / fSumW2; }
     constexpr auto VarianceOfMean() const -> auto { return Variance() / EffectiveN(); }
     auto StdDevOfMean() const -> auto { return std::sqrt(VarianceOfMean()); }
 
@@ -170,13 +169,13 @@ public:
     auto StdDev() const -> auto { return Variance().cwiseSqrt().eval(); }
     auto Covariance() const -> auto { return Mixed2ndCentralMoment(); }
 
-    auto Skewness(int i) const -> auto { return CentralMoment<3>(i) / muc::pow<3>(StdDev(i)); }
+    auto Skewness(int i) const -> auto { return CentralMoment<3>(i) / muc::pow(StdDev(i), 3); }
     auto Skewness() const -> Eigen::Vector<double, N>;
 
-    auto Kurtosis(int i) const -> auto { return CentralMoment<4>(i) / muc::pow<2>(Variance(i)); }
+    auto Kurtosis(int i) const -> auto { return CentralMoment<4>(i) / muc::pow(Variance(i), 2); }
     auto Kurtosis() const -> Eigen::Vector<double, N>;
 
-    constexpr auto EffectiveN() const -> auto { return muc::pow<2>(fSumW) / fSumW2; }
+    constexpr auto EffectiveN() const -> auto { return muc::pow(fSumW, 2) / fSumW2; }
     constexpr auto VarianceOfMean(int i) const -> auto { return Variance(i) / EffectiveN(); }
     constexpr auto VarianceOfMean() const -> auto { return (Variance() / EffectiveN()).eval(); }
     constexpr auto CovarianceOfMean(int i, int j) const -> auto { return Covariance(i, j) / EffectiveN(); }

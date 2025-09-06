@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -37,7 +37,7 @@ constexpr BasicGaussian3DDiagnoalParameter<T, AGaussian3DDiagnoal>::BasicGaussia
     fSigmaZ{pZ.second} {}
 
 template<Concept::NumericVector3FloatingPoint T, template<typename> typename AGaussian3DDiagnoal>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussian3DDiagnoalParameter<T, AGaussian3DDiagnoal>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<VectorValueType<T>>::max_digits10)};
     return os << fMuX << ' ' << fSigmaX << ' '
@@ -47,7 +47,7 @@ auto BasicGaussian3DDiagnoalParameter<T, AGaussian3DDiagnoal>::StreamOutput(std:
 }
 
 template<Concept::NumericVector3FloatingPoint T, template<typename> typename AGaussian3DDiagnoal>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussian3DDiagnoalParameter<T, AGaussian3DDiagnoal>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >>
            fMuX >> fSigmaX >>
@@ -84,12 +84,12 @@ constexpr Gaussian3DDiagnoalBase<ADerived, T>::Gaussian3DDiagnoalBase(const type
     }
 
 template<Concept::NumericVector3FloatingPoint T>
-MUSTARD_STRONG_INLINE auto Gaussian3DDiagnoal<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE auto Gaussian3DDiagnoal<T>::Impl(auto& g, const Gaussian3DDiagnoalParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_3D_DIAGNOAL_GENERATOR_SNIPPET()
 }
 
 template<Concept::NumericVector3FloatingPoint T>
-MUSTARD_STRONG_INLINE auto Gaussian3DDiagnoalFast<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE auto Gaussian3DDiagnoalFast<T>::Impl(auto& g, const Gaussian3DDiagnoalFastParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_3D_DIAGNOAL_GENERATOR_SNIPPET(Fast)
 }
 

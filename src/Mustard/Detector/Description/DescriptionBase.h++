@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,8 +21,8 @@
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/Memory/Singleton.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include "yaml-cpp/yaml.h"
 
@@ -42,7 +42,7 @@ template<typename... Ts>
 class DescriptionBase;
 
 template<>
-class DescriptionBase<> : public NonMoveableBase {
+class DescriptionBase<> : public NonCopyableBase {
 protected:
     DescriptionBase(std::string name);
     ~DescriptionBase() = default;

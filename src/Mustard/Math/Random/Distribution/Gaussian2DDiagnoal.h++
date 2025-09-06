@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,12 +20,13 @@
 
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/Distribution/UniformRectangle.h++"
-#include "Mustard/Math/Random/Distribution/internal/FastLogForOpen01.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Math/internal/FastLogOn01.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
 #include "muc/array"
+#include "muc/concepts"
 #include "muc/math"
 
 #include <array>
@@ -60,15 +61,15 @@ public:
     constexpr auto MuY(VT muY) -> void { fMuY = muY; }
     constexpr auto SigmaY(VT sigmaY) -> void { fSigmaY = sigmaY; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicGaussian2DDiagnoalParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicGaussian2DDiagnoalParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -111,9 +112,9 @@ public:
     constexpr auto MuY(VT muY) -> void { fParameter.MuY(muY); }
     constexpr auto SigmaY(VT sigmaY) -> void { fParameter.SigmaY(sigmaY); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const Gaussian2DDiagnoalBase& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, Gaussian2DDiagnoalBase& self) -> auto& { return is >> self.fParameter; }
 
 protected:
@@ -141,13 +142,19 @@ public:
 
     constexpr void Reset() {}
 
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const Gaussian2DDiagnoalParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
     constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
 
     static constexpr auto Stateless() { return true; }
+
+private:
+    MUSTARD_ALWAYS_INLINE static auto Impl(auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> T;
 };
 
 template<typename T, typename U>
@@ -172,13 +179,19 @@ public:
 
     constexpr void Reset() {}
 
-    auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    auto operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> auto { return Impl(g, p); }
 
-    MUSTARD_STRONG_INLINE constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
-    MUSTARD_STRONG_INLINE constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> auto { return Impl(g, p); }
+
+    constexpr auto Min() const -> T { return {std::numeric_limits<VT>::lowest(), std::numeric_limits<VT>::lowest()}; }
+    constexpr auto Max() const -> T { return {std::numeric_limits<VT>::max(), std::numeric_limits<VT>::max()}; }
 
     static constexpr auto Stateless() { return true; }
+
+private:
+    MUSTARD_ALWAYS_INLINE static auto Impl(auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T;
 };
 
 template<typename T, typename U>

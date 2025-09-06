@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Math/Random/UniformPseudoRandomBitGeneratorBase.h++"
+
+#include "muc/concepts"
 
 #include <random>
 
@@ -38,9 +39,9 @@ public:
     static constexpr auto Min() -> auto { return std::mt19937::min(); }
     static constexpr auto Max() -> auto { return std::mt19937::max(); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const MT1993732& self) -> decltype(auto) { return os << self.fMT; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, MT1993732& self) -> decltype(auto) { return is >> self.fMT; }
 
 private:

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,14 +18,11 @@
 
 namespace Mustard::Math::Random {
 
-template<typename ADerived,
-         std::unsigned_integral AResult,
-         std::unsigned_integral ASeed>
-constexpr UniformPseudoRandomBitGeneratorBase<ADerived,
-                                              AResult,
-                                              ASeed>::UniformPseudoRandomBitGeneratorBase() :
+template<typename ADerived, std::unsigned_integral AResult, std::unsigned_integral ASeed>
+constexpr UniformPseudoRandomBitGeneratorBase<ADerived, AResult, ASeed>::UniformPseudoRandomBitGeneratorBase() :
     UniformRandomBitGeneratorBase<ADerived, AResult>{} {
     static_assert(UniformPseudoRandomBitGenerator<ADerived>);
+    static_assert(std::is_final_v<ADerived>);
 }
 
 } // namespace Mustard::Math::Random

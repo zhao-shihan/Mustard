@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian2DDiagnoal.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
 
+#include "muc/concepts"
 #include "muc/utility"
 
 #include <array>
@@ -50,15 +50,15 @@ public:
     constexpr auto Mu(T mu) -> void { fMu = mu; }
     constexpr auto Sigma(T sigma) -> void { fSigma = sigma; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicGaussianParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicGaussianParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -92,15 +92,15 @@ public:
     constexpr auto Mu(T mu) const -> auto { return fParameter.Mu(mu); }
     constexpr auto Sigma(T sigma) const -> auto { return fParameter.Sigma(sigma); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const GaussianBase& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, GaussianBase& self) -> auto& { return is >> self.fParameter; }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 protected:
@@ -125,8 +125,11 @@ public:
 
     constexpr auto Reset() -> void { fSaved = false; }
 
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const GaussianParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> auto { return std::numeric_limits<T>::lowest(); }
     constexpr auto Max() const -> auto { return std::numeric_limits<T>::max(); }
@@ -134,8 +137,11 @@ public:
     static constexpr auto Stateless() -> bool { return false; }
 
 private:
+    MUSTARD_ALWAYS_INLINE auto Impl(auto& g, const GaussianParameter<T>& p) -> T;
+
+private:
     bool fSaved{};
-    T fSavedValue;
+    T fSavedValue{};
 };
 
 template<typename T, typename U>
@@ -163,8 +169,11 @@ public:
 
     constexpr auto Reset() -> void { fSaved = false; }
 
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianFastParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianFastParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const GaussianFastParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> auto { return std::numeric_limits<T>::lowest(); }
     constexpr auto Max() const -> auto { return std::numeric_limits<T>::max(); }
@@ -172,8 +181,11 @@ public:
     static constexpr auto Stateless() -> bool { return false; }
 
 private:
+    MUSTARD_ALWAYS_INLINE auto Impl(auto& g, const GaussianFastParameter<T>& p) -> T;
+
+private:
     bool fSaved{};
-    T fSavedValue;
+    T fSavedValue{};
 };
 
 template<typename T, typename U>

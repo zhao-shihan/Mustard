@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,20 +21,20 @@ namespace Mustard::Detector::Description {
 namespace internal {
 namespace {
 
-template<std::intmax_t i, typename T>
+template<gsl::index i, typename T>
 struct FillDescriptionArray {
     constexpr void operator()(std::array<DescriptionBase<>*, std::tuple_size_v<T>>& descriptions) const {
         std::get<i>(descriptions) = &std::tuple_element_t<i, T>::Instance();
     }
 };
 
-template<std::intmax_t Begin, std::intmax_t End,
-         template<std::intmax_t, typename...> typename, typename...>
+template<gsl::index Begin, gsl::index End,
+         template<gsl::index, typename...> typename, typename...>
     requires(Begin >= End)
 constexpr void StaticForEach(auto&&...) {}
 
-template<std::intmax_t Begin, std::intmax_t End,
-         template<std::intmax_t, typename...> typename AFunctor, typename... AFunctorArgs>
+template<gsl::index Begin, gsl::index End,
+         template<gsl::index, typename...> typename AFunctor, typename... AFunctorArgs>
     requires(Begin < End and std::default_initializable<AFunctor<Begin, AFunctorArgs...>>)
 constexpr void StaticForEach(auto&&... args) {
     AFunctor<Begin, AFunctorArgs...>()(std::forward<decltype(args)>(args)...);
@@ -166,17 +166,23 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlFile, const std:
 
     struct InvalidFile {};
     try {
-        if (yamlFile.empty()) { throw InvalidFile{}; }
+        if (yamlFile.empty()) {
+            throw InvalidFile{};
+        }
 
         std::ofstream yamlOut;
         try {
             const auto parent{yamlFile.parent_path()};
-            if (not parent.empty()) { std::filesystem::create_directories(parent); }
+            if (not parent.empty()) {
+                std::filesystem::create_directories(parent);
+            }
             yamlOut.open(yamlFile, std::ios::out);
         } catch (const std::filesystem::filesystem_error&) { throw InvalidFile{}; }
-        if (not yamlOut.is_open()) { throw InvalidFile{}; }
+        if (not yamlOut.is_open()) {
+            throw InvalidFile{};
+        }
 
-        Output(geomYaml, fileComment, yamlOut);
+        EmitYAML(geomYaml, fileComment, yamlOut);
     } catch (const InvalidFile&) {
         PrintError("Cannot open yaml file, export failed");
     }
@@ -192,7 +198,7 @@ auto DescriptionIO::IxportImpl(const std::filesystem::path& yamlFile, const std:
 }
 
 auto DescriptionIO::ParallelExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path {
-    auto truePath{MPIX::ParallelizePath(yamlFile)};
+    auto truePath{Parallel::ProcessSpecificPath(yamlFile)};
     ExportImpl(truePath, fileComment, descriptions);
     return truePath;
 }
@@ -218,7 +224,7 @@ auto DescriptionIO::ToStringImpl(const std::ranges::input_range auto& descriptio
     }
 
     std::ostringstream oss;
-    Output(geomYaml, {}, oss);
+    EmitYAML(geomYaml, {}, oss);
     return oss.str();
 }
 

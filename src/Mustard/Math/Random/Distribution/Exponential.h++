@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,11 +18,14 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
-#include "Mustard/Math/Random/Distribution/internal/FastLogForOpen01.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Math/internal/FastLogOn01.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
+
+#include "CLHEP/Random/RandomEngine.h"
+
+#include "muc/concepts"
 
 #include <cmath>
 #include <concepts>
@@ -48,15 +51,15 @@ public:
 
     constexpr auto Expectation(T expectation) -> void { fExpectation = expectation; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicExponentialParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicExponentialParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -94,9 +97,9 @@ public:
 
     static constexpr auto Stateless() -> bool { return true; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const ExponentialBase& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, ExponentialBase& self) -> auto& { return is >> self.fParameter; }
 
 protected:
@@ -118,8 +121,14 @@ class Exponential final : public internal::ExponentialBase<Exponential, T> {
 public:
     using internal::ExponentialBase<Exponential, T>::ExponentialBase;
 
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
+
+private:
+    MUSTARD_ALWAYS_INLINE static auto Impl(auto& g, const ExponentialParameter<T>& p) -> T;
 };
 
 template<typename T>
@@ -144,8 +153,14 @@ class ExponentialFast final : public internal::ExponentialBase<ExponentialFast, 
 public:
     using internal::ExponentialBase<ExponentialFast, T>::ExponentialBase;
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const ExponentialFastParameter<T>& p) -> auto { return Impl(g, p); }
+
+private:
+    MUSTARD_ALWAYS_INLINE static constexpr auto Impl(auto& g, const ExponentialFastParameter<T>& p) -> T;
 };
 
 template<typename T>

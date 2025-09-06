@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,21 +20,21 @@ namespace Mustard::Math::Random::inline Distribution {
 
 namespace internal {
 
-template<Concept::Arithmetic T, template<typename> typename AUniform>
+template<muc::arithmetic T, template<typename> typename AUniform>
 constexpr BasicUniformParameter<T, AUniform>::BasicUniformParameter() :
     BasicUniformParameter{0,
                           std::integral<T> ?
                               std::numeric_limits<T>::max() :
                               1} {}
 
-template<Concept::Arithmetic T, template<typename> typename AUniform>
+template<muc::arithmetic T, template<typename> typename AUniform>
 constexpr BasicUniformParameter<T, AUniform>::BasicUniformParameter(T inf, T sup) :
     DistributionParameterBase<BasicUniformParameter<T, AUniform>, AUniform<T>>(),
     fInfimum{inf},
     fSupremum{sup} {}
 
-template<Concept::Arithmetic T, template<typename> typename AUniform>
-template<Concept::Character AChar>
+template<muc::arithmetic T, template<typename> typename AUniform>
+template<muc::character AChar>
 auto BasicUniformParameter<T, AUniform>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     if constexpr (std::floating_point<T>) {
         const auto oldPrecision{os.precision(std::numeric_limits<T>::max_digits10)};
@@ -45,18 +45,18 @@ auto BasicUniformParameter<T, AUniform>::StreamOutput(std::basic_ostream<AChar>&
     }
 }
 
-template<Concept::Arithmetic T, template<typename> typename AUniform>
-template<Concept::Character AChar>
+template<muc::arithmetic T, template<typename> typename AUniform>
+template<muc::character AChar>
 auto BasicUniformParameter<T, AUniform>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fInfimum >> fSupremum;
 }
 
-template<template<typename> typename ADerived, Concept::Arithmetic T>
+template<template<typename> typename ADerived, muc::arithmetic T>
 constexpr UniformBase<ADerived, T>::UniformBase(T inf, T sup) :
     Base{},
     fParameter{inf, sup} {}
 
-template<template<typename> typename ADerived, Concept::Arithmetic T>
+template<template<typename> typename ADerived, muc::arithmetic T>
 constexpr UniformBase<ADerived, T>::UniformBase(const typename Base::ParameterType& p) :
     Base{},
     fParameter{p} {}
@@ -65,19 +65,32 @@ constexpr UniformBase<ADerived, T>::UniformBase(const typename Base::ParameterTy
 
 template<std::floating_point T>
 MUSTARD_ALWAYS_INLINE constexpr auto UniformCompact<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T {
-    const auto u{static_cast<T>(g() - g.Min()) / (g.Max() - g.Min())};
+    T u;
+    if constexpr (std::numeric_limits<T>::is_iec559 and std::same_as<T, double> and
+                  std::same_as<decltype(g()), std::uint64_t>) {
+        u = (g() >> 11) * 0x1.0p-53;
+    } else {
+        u = static_cast<T>(g() - g.Min()) / (g.Max() - g.Min());
+    }
     muc::assume(0 <= u and u <= 1);
     return p.Infimum() + u * (p.Supremum() - p.Infimum());
 }
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto UniformReal<T>::operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T {
-    T u;
-    do {
-        static_assert(UniformCompact<T>::Stateless());
-        u = UniformCompact<T>{}(g);
+MUSTARD_ALWAYS_INLINE auto UniformCompact<T>::operator()(CLHEP::HepRandomEngine& g, const UniformCompactParameter<T>& p) -> T {
+    return p.Infimum() + g.flat() * (p.Supremum() - p.Infimum());
+}
+
+template<std::floating_point T>
+MUSTARD_ALWAYS_INLINE constexpr auto UniformReal<T>::Impl(auto& g, const UniformParameter<T>& p) -> T {
+    static_assert(UniformCompact<T>::Stateless());
+    auto Uni{UniformCompact<T>{}};
+    auto u{Uni(g)};
+    muc::assume(0 <= u and u <= 1);
+    while (u == 0 or u == 1) [[unlikely]] {
+        u = Uni(g);
         muc::assume(0 <= u and u <= 1);
-    } while (u == 0 or u == 1);
+    }
     return p.Infimum() + u * (p.Supremum() - p.Infimum());
 }
 

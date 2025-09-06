@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,7 +19,7 @@
 #pragma once
 
 #include <chrono>
-#include <cstdint>
+#include <cstddef>
 #include <memory>
 
 namespace Mustard::inline Utility {
@@ -29,15 +29,18 @@ namespace Mustard::inline Utility {
 class ProgressBar {
 public:
     ProgressBar();
+    ProgressBar(ProgressBar&& other) noexcept;
     ~ProgressBar();
 
+    auto operator=(ProgressBar&& other) noexcept -> ProgressBar&;
+
     auto Start(std::size_t nTotal) -> void;
-    auto Tick(std::chrono::duration<double> printInterval = std::chrono::milliseconds{33}) -> void;
+    auto Tick(std::chrono::nanoseconds printInterval = std::chrono::milliseconds{33}) -> void;
     auto Complete() -> void;
     auto Stop() -> void;
 
 private:
-    auto Print(std::chrono::duration<double> timeElapsed) -> void;
+    auto Print(std::size_t progress) -> void;
 
 private:
     struct Impl;

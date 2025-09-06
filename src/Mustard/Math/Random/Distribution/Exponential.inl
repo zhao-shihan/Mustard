@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -30,7 +30,7 @@ constexpr BasicExponentialParameter<T, AExponential>::BasicExponentialParameter(
     fExpectation{expectation} {}
 
 template<std::floating_point T, template<typename> typename AExponential>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicExponentialParameter<T, AExponential>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<T>::max_digits10)};
     return os << fExpectation
@@ -38,7 +38,7 @@ auto BasicExponentialParameter<T, AExponential>::StreamOutput(std::basic_ostream
 }
 
 template<std::floating_point T, template<typename> typename AExponential>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicExponentialParameter<T, AExponential>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fExpectation;
 }
@@ -55,16 +55,18 @@ constexpr ExponentialBase<ADerived, T>::ExponentialBase(const typename Base::Par
 
 } // namespace internal
 
+#define MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(TheLog) \
+    static_assert(Uniform<T>::Stateless());                                    \
+    return -p.Expectation() * TheLog(Uniform<T>{}(g));
+
 template<std::floating_point T>
-MUSTARD_STRONG_INLINE constexpr auto Exponential<T>::operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> T {
-    static_assert(Uniform<T>::Stateless());
-    return -p.Expectation() * std::log(Uniform<T>{}(g));
+MUSTARD_ALWAYS_INLINE auto Exponential<T>::Impl(auto& g, const ExponentialParameter<T>& p) -> T {
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(std::log)
 }
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto ExponentialFast<T>::operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> T {
-    static_assert(Uniform<T>::Stateless());
-    return -p.Expectation() * internal::FastLogForOpen01(Uniform<T>{}(g));
+MUSTARD_ALWAYS_INLINE constexpr auto ExponentialFast<T>::Impl(auto& g, const ExponentialFastParameter<T>& p) -> T {
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
 }
 
 } // namespace Mustard::Math::Random::inline Distribution

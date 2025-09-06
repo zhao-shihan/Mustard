@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include "G4FieldManager.hh"
 #include "G4LogicalVolume.hh"
@@ -27,6 +27,7 @@
 #include "G4VSolid.hh"
 
 #include "muc/ceta_string"
+#include "muc/hash_map"
 #include "muc/ptrvec"
 #include "muc/utility"
 
@@ -34,7 +35,6 @@
 
 #include "fmt/core.h"
 
-#include <cassert>
 #include <concepts>
 #include <filesystem>
 #include <memory>
@@ -43,7 +43,6 @@
 #include <string_view>
 #include <typeindex>
 #include <typeinfo>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -53,7 +52,7 @@ class G4VSensitiveDetector;
 
 namespace Mustard::Detector::Definition {
 
-class DefinitionBase : public NonMoveableBase {
+class DefinitionBase : public NonCopyableBase {
 public:
     virtual ~DefinitionBase() = default;
 
@@ -144,14 +143,14 @@ private:
     muc::unique_ptrvec<G4LogicalVolume> fLogicalVolumeStore;
     muc::unique_ptrvec<G4VPhysicalVolume> fPhysicalVolumeStore;
 
-    std::unordered_map<std::string, std::vector<G4LogicalVolume*>> fLogicalVolumes;
+    muc::flat_hash_map<std::string, std::vector<G4LogicalVolume*>> fLogicalVolumes;
     const std::vector<G4LogicalVolume*>* fFirstLogicalVolumes{};
-    std::unordered_map<std::string, std::vector<G4VPhysicalVolume*>> fPhysicalVolumes;
+    muc::flat_hash_map<std::string, std::vector<G4VPhysicalVolume*>> fPhysicalVolumes;
     const std::vector<G4VPhysicalVolume*>* fFirstPhysicalVolumes{};
 
     muc::unique_ptrvec<G4FieldManager> fFieldStore;
 
-    std::unordered_map<std::type_index, std::unique_ptr<DefinitionBase>> fDaughters;
+    muc::flat_hash_map<std::type_index, std::unique_ptr<DefinitionBase>> fDaughters;
 };
 
 } // namespace Mustard::Detector::Definition

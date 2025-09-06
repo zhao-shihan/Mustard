@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -41,12 +41,16 @@ constexpr Statistic<1>::Statistic(const S& sample, const W& weight) :
 }
 
 constexpr auto Statistic<1>::Fill(double sample, double weight) -> void {
-    fSumWX += weight * sample;
-    fSumWX2 += weight * muc::pow<2>(sample);
-    fSumWX3 += weight * muc::pow<3>(sample);
-    fSumWX4 += weight * muc::pow<4>(sample);
+    const auto wx{weight * sample};
+    fSumWX += wx;
+    wx *= sample;
+    fSumWX2 += wx;
+    wx *= sample;
+    fSumWX3 += wx;
+    wx *= sample;
+    fSumWX4 += wx;
     fSumW += weight;
-    fSumW2 += muc::pow<2>(weight);
+    fSumW2 += muc::pow(weight, 2);
 }
 
 template<std::ranges::input_range S>
@@ -74,21 +78,41 @@ constexpr auto Statistic<1>::Fill(const S& sample, const W& weight) -> void {
 template<int K>
     requires(0 <= K and K <= 4)
 constexpr auto Statistic<1>::Moment() const -> double {
-    if constexpr (K == 0) { return 1; }
-    if constexpr (K == 1) { return fSumWX / fSumW; }
-    if constexpr (K == 2) { return fSumWX2 / fSumW; }
-    if constexpr (K == 3) { return fSumWX3 / fSumW; }
-    if constexpr (K == 4) { return fSumWX4 / fSumW; }
+    if constexpr (K == 0) {
+        return 1;
+    }
+    if constexpr (K == 1) {
+        return fSumWX / fSumW;
+    }
+    if constexpr (K == 2) {
+        return fSumWX2 / fSumW;
+    }
+    if constexpr (K == 3) {
+        return fSumWX3 / fSumW;
+    }
+    if constexpr (K == 4) {
+        return fSumWX4 / fSumW;
+    }
 }
 
 template<int K>
     requires(0 <= K and K <= 4)
 constexpr auto Statistic<1>::CentralMoment() const -> double {
-    if constexpr (K == 0) { return 1; }
-    if constexpr (K == 1) { return 0; }
-    if constexpr (K == 2) { return Moment<2>() - muc::pow<2>(Moment<1>()); }
-    if constexpr (K == 3) { return muc::polynomial({Moment<3>(), -3 * Moment<2>(), 0, 2}, Moment<1>()); }
-    if constexpr (K == 4) { return muc::polynomial({Moment<4>(), -4 * Moment<3>(), 6 * Moment<2>(), 0, -3}, Moment<1>()); }
+    if constexpr (K == 0) {
+        return 1;
+    }
+    if constexpr (K == 1) {
+        return 0;
+    }
+    if constexpr (K == 2) {
+        return Moment<2>() - muc::pow(Moment<1>(), 2);
+    }
+    if constexpr (K == 3) {
+        return muc::polynomial({Moment<3>(), -3 * Moment<2>(), 0, 2}, Moment<1>());
+    }
+    if constexpr (K == 4) {
+        return muc::polynomial({Moment<4>(), -4 * Moment<3>(), 6 * Moment<2>(), 0, -3}, Moment<1>());
+    }
 }
 
 template<int N>
@@ -132,7 +156,7 @@ auto Statistic<N>::Fill(const T& sample, double weight) -> void {
     wx = wx.cwiseProduct(x).eval();
     fSumWX4 += wx;
     fSumW += weight;
-    fSumW2 += muc::pow<2>(weight);
+    fSumW2 += muc::pow(weight, 2);
 }
 
 template<int N>
@@ -166,11 +190,21 @@ template<int N>
 template<int K>
     requires(0 <= K and K <= 4)
 auto Statistic<N>::Moment(int i) const -> double {
-    if constexpr (K == 0) { return 1; }
-    if constexpr (K == 1) { return fSumWX[i] / fSumW; }
-    if constexpr (K == 2) { return fSumWXX(i, i) / fSumW; }
-    if constexpr (K == 3) { return fSumWX3[i] / fSumW; }
-    if constexpr (K == 4) { return fSumWX4[i] / fSumW; }
+    if constexpr (K == 0) {
+        return 1;
+    }
+    if constexpr (K == 1) {
+        return fSumWX[i] / fSumW;
+    }
+    if constexpr (K == 2) {
+        return fSumWXX(i, i) / fSumW;
+    }
+    if constexpr (K == 3) {
+        return fSumWX3[i] / fSumW;
+    }
+    if constexpr (K == 4) {
+        return fSumWX4[i] / fSumW;
+    }
 }
 
 template<int N>
@@ -178,11 +212,21 @@ template<int N>
 template<int K>
     requires(0 <= K and K <= 4)
 auto Statistic<N>::Moment() const -> Eigen::Vector<double, N> {
-    if constexpr (K == 0) { return Eigen::Vector<double, N>::Constant(1); }
-    if constexpr (K == 1) { return fSumWX / fSumW; }
-    if constexpr (K == 2) { return fSumWXX.diagonal() / fSumW; }
-    if constexpr (K == 3) { return fSumWX3 / fSumW; }
-    if constexpr (K == 4) { return fSumWX4 / fSumW; }
+    if constexpr (K == 0) {
+        return Eigen::Vector<double, N>::Constant(1);
+    }
+    if constexpr (K == 1) {
+        return fSumWX / fSumW;
+    }
+    if constexpr (K == 2) {
+        return fSumWXX.diagonal() / fSumW;
+    }
+    if constexpr (K == 3) {
+        return fSumWX3 / fSumW;
+    }
+    if constexpr (K == 4) {
+        return fSumWX4 / fSumW;
+    }
 }
 
 template<int N>
@@ -190,11 +234,21 @@ template<int N>
 template<int K>
     requires(0 <= K and K <= 4)
 auto Statistic<N>::CentralMoment(int i) const -> double {
-    if constexpr (K == 0) { return 1; }
-    if constexpr (K == 1) { return 0; }
-    if constexpr (K == 2) { return Moment<2>(i) - muc::pow<2>(Moment<1>(i)); }
-    if constexpr (K == 3) { return muc::polynomial({Moment<3>(i), -3 * Moment<2>(i), 0, 2}, Moment<1>(i)); }
-    if constexpr (K == 4) { return muc::polynomial({Moment<4>(i), -4 * Moment<3>(i), 6 * Moment<2>(i), 0, -3}, Moment<1>(i)); }
+    if constexpr (K == 0) {
+        return 1;
+    }
+    if constexpr (K == 1) {
+        return 0;
+    }
+    if constexpr (K == 2) {
+        return Moment<2>(i) - muc::pow(Moment<1>(i), 2);
+    }
+    if constexpr (K == 3) {
+        return muc::polynomial({Moment<3>(i), -3 * Moment<2>(i), 0, 2}, Moment<1>(i));
+    }
+    if constexpr (K == 4) {
+        return muc::polynomial({Moment<4>(i), -4 * Moment<3>(i), 6 * Moment<2>(i), 0, -3}, Moment<1>(i));
+    }
 }
 
 template<int N>

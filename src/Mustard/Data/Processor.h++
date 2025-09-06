@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -24,14 +24,16 @@
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/ProcessorBase.h++"
-#include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/Execution/Executor.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/Execution/Executor.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "ROOT/RDataFrame.hxx"
 
+#include "mplr/mplr.hpp"
+
 #include "muc/concepts"
 #include "muc/ptrvec"
+#include "muc/utility"
 
 #include "gsl/gsl"
 
@@ -53,7 +55,7 @@ namespace Mustard::Data {
 
 /// @brief A distributed data processor.
 /// @tparam AExecutor Underlying MPI executor type.
-template<muc::instantiated_from<MPIX::Executor> AExecutor = MPIX::Executor<gsl::index>>
+template<muc::instantiated_from<Executor> AExecutor = Executor<gsl::index>>
 class Processor : public internal::ProcessorBase<typename AExecutor::Index> {
 private:
     using Base = internal::ProcessorBase<typename AExecutor::Index>;
@@ -67,10 +69,10 @@ public:
                  std::invocable<bool, std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index;
 
     template<TupleModelizable... Ts, std::integral AEventIDType>
-    auto Process(ROOT::RDF::RNode rdf, AEventIDType, std::string eventIDBranchName,
+    auto Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::string eventIDBranchName,
                  std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
     template<TupleModelizable... Ts, std::integral AEventIDType>
-    auto Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::index> eventSplit,
+    auto Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::vector<gsl::index> eventSplit,
                  std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index;
 
     auto Executor() const -> const auto& { return fExecutor; }

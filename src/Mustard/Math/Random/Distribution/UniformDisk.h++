@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,10 +22,13 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/Distribution/UniformRectangle.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
+#include "CLHEP/Random/RandomEngine.h"
+
 #include "muc/array"
+#include "muc/concepts"
 #include "muc/math"
 
 #include <array>
@@ -62,15 +65,15 @@ public:
     constexpr auto Center(VT x0, VT y0) -> void { CenterX(x0), CenterY(y0); }
     constexpr auto Center(T r0) -> void { Center(r0[0], r0[1]); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const BasicUniformDiskParameter& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, BasicUniformDiskParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 
 private:
@@ -120,9 +123,9 @@ public:
 
     static constexpr auto Stateless() -> bool { return true; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const UniformDiskBase<T, AUniformDisk>& self) -> auto& { return os << self.fParameter; }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, UniformDiskBase<T, AUniformDisk>& self) -> auto& { return is >> self.fParameter; }
 
 protected:
@@ -145,8 +148,14 @@ class UniformCompactDisk final : public internal::UniformDiskBase<T, UniformComp
 public:
     using internal::UniformDiskBase<T, UniformCompactDisk>::UniformDiskBase;
 
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const UniformCompactDiskParameter<T>& p) -> auto { return Impl(g, p); }
+
+private:
+    MUSTARD_ALWAYS_INLINE static constexpr auto Impl(auto& g, const UniformCompactDiskParameter<T>& p) -> T;
 };
 
 template<typename VT, typename T>
@@ -167,8 +176,14 @@ class UniformDisk final : public internal::UniformDiskBase<T, UniformDisk> {
 public:
     using internal::UniformDiskBase<T, UniformDisk>::UniformDiskBase;
 
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const UniformDiskParameter<T>& p) -> auto { return Impl(g, p); }
+
+private:
+    MUSTARD_ALWAYS_INLINE static constexpr auto Impl(auto& g, const UniformDiskParameter<T>& p) -> T;
 };
 
 template<typename VT, typename T>

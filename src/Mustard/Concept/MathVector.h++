@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Compatibility/CLHEPDefectFix/Hep2VectorDivisionAssignment.h++"
+#include "Mustard/CLHEPX/CLHEPDefectFix/Hep2VectorDivisionAssignment.h++"
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
@@ -41,8 +41,8 @@ concept ExtraRequirementsForMathVector =
         { -v } -> std::convertible_to<T>;
         { v + w } -> std::convertible_to<T>;
         { v - w } -> std::convertible_to<T>;
-        { c* v } -> std::convertible_to<T>;
-        { v* c } -> std::convertible_to<T>;
+        { c * v } -> std::convertible_to<T>;
+        { v * c } -> std::convertible_to<T>;
         { v / c } -> std::convertible_to<T>;
     };
 

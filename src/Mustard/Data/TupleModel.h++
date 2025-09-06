@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Data/Value.h++"
-#include "Mustard/Extension/gslx/index_sequence.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/ceta_string"
 #include "muc/concepts"

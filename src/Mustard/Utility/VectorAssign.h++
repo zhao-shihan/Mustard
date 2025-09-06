@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Concept/InputVector.h++"
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Utility/VectorDimension.h++"
@@ -81,11 +80,11 @@ auto VectorAssign(Concept::NumericVectorAny auto& lhs, auto&& rhs) -> auto& //
 }
 
 inline namespace VectorAssignOperator {
-    // clang-format off
+
 auto operator<<=(Concept::NumericVectorAny auto& lhs, auto&& rhs) -> auto& {
     return VectorAssign(lhs, std::forward<decltype(rhs)>(rhs));
 }
-    // clang-format on
-}
+
+} // namespace VectorAssignOperator
 
 } // namespace Mustard::inline Utility

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,15 +21,14 @@
 #include "indicators/block_progress_bar.hpp"
 #include "indicators/cursor_control.hpp"
 
-#include "muc/time"
-
-#include "gsl/gsl"
+#include "muc/chrono"
 
 #include "fmt/core.h"
 
 #include <cmath>
 #include <functional>
 #include <future>
+#include <mutex>
 
 namespace Mustard::inline Utility {
 
@@ -44,42 +43,64 @@ struct ProgressBar::Impl {
                     indicators::option::MaxProgress{nTotal}},
         progress{},
         total{nTotal},
-        wallTimeStopWatch{},
-        lastPrintTime{},
+        runStopWatch{},
+        printStopWatch{},
         asyncPrint{} {}
 
     indicators::BlockProgressBar progressBar;
     std::size_t progress;
     std::size_t total;
-    muc::wall_time_stopwatch<> wallTimeStopWatch;
-    std::chrono::duration<double> lastPrintTime;
+    muc::chrono::stopwatch runStopWatch;
+    muc::chrono::stopwatch printStopWatch;
     std::future<void> asyncPrint;
 };
 
 ProgressBar::ProgressBar() = default;
 
+ProgressBar::ProgressBar(ProgressBar&& other) noexcept {
+    if (other.fImpl) {
+        other.fImpl->asyncPrint.wait();
+        fImpl = std::move(other.fImpl);
+    }
+}
+
 ProgressBar::~ProgressBar() {
-    if (fImpl) { Stop(); }
+    if (fImpl) {
+        Stop();
+    }
+}
+
+auto ProgressBar::operator=(ProgressBar&& other) noexcept -> ProgressBar& {
+    if (this != &other and other.fImpl) {
+        if (fImpl) {
+            Stop();
+        }
+        other.fImpl->asyncPrint.wait();
+        fImpl = std::move(other.fImpl);
+    }
+    return *this;
 }
 
 auto ProgressBar::Start(std::size_t nTotal) -> void {
     fImpl = std::make_unique<Impl>(nTotal);
-    fImpl->asyncPrint = std::async(std::launch::async, [this] {
-        indicators::show_console_cursor(false);
+    fImpl->asyncPrint = std::async([this, progress{fImpl->progress}] {
+        // indicators::show_console_cursor(false);
         fImpl->progressBar.set_option(indicators::option::PostfixText{
-            fmt::format("{}/{}", fImpl->progress, fImpl->total)});
-        fImpl->progressBar.set_progress(fImpl->progress);
+            fmt::format("{}/{}", progress, fImpl->total)});
+        fImpl->progressBar.set_progress(progress);
     });
+    fImpl->runStopWatch.reset();
+    fImpl->printStopWatch.reset();
 }
 
-auto ProgressBar::Tick(std::chrono::duration<double> printInterval) -> void {
+auto ProgressBar::Tick(std::chrono::nanoseconds printInterval) -> void {
     ++fImpl->progress;
-    const std::chrono::duration<double> timeElapsed{fImpl->wallTimeStopWatch.s_elapsed()};
-    if (timeElapsed - fImpl->lastPrintTime < printInterval) { return; }
-    fImpl->lastPrintTime = timeElapsed;
+    if (fImpl->printStopWatch.read() < printInterval) {
+        return;
+    }
     fImpl->asyncPrint.get();
-    fImpl->asyncPrint = std::async(std::launch::async, std::mem_fn(&ProgressBar::Print),
-                                   this, timeElapsed);
+    fImpl->asyncPrint = std::async(std::mem_fn(&ProgressBar::Print), this, fImpl->progress);
+    fImpl->printStopWatch.reset();
 }
 
 auto ProgressBar::Complete() -> void {
@@ -89,16 +110,17 @@ auto ProgressBar::Complete() -> void {
 
 auto ProgressBar::Stop() -> void {
     fImpl->asyncPrint.get();
-    Print(std::chrono::duration<double>{fImpl->wallTimeStopWatch.s_elapsed()});
+    Print(fImpl->progress);
     fImpl->progressBar.mark_as_completed();
-    indicators::show_console_cursor(true);
-    fImpl = nullptr;
+    // indicators::show_console_cursor(true);
+    fImpl.reset();
 }
 
-auto ProgressBar::Print(std::chrono::duration<double> timeElapsed) -> void {
+auto ProgressBar::Print(std::size_t progress) -> void {
+    const muc::chrono::seconds<double> secondsElapsed{fImpl->runStopWatch.read()};
     fImpl->progressBar.set_option(indicators::option::PostfixText{
-        fmt::format("{}/{} ({:.3}/s)", fImpl->progress, fImpl->total, fImpl->progress / timeElapsed.count())});
-    fImpl->progressBar.set_progress(fImpl->progress);
+        fmt::format("{}/{} ({:.3}/s)", progress, fImpl->total, progress / secondsElapsed.count())});
+    fImpl->progressBar.set_progress(progress);
 }
 
 } // namespace Mustard::inline Utility

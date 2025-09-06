@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,12 +20,13 @@
 
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/Value.h++"
-#include "Mustard/Extension/gslx/index_sequence.h++"
-#include "Mustard/Utility/InlineMacro.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
+#include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/ceta_string"
 #include "muc/concepts"
+#include "muc/hash_map"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -39,7 +40,6 @@
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
-#include <unordered_map>
 #include <utility>
 
 namespace Mustard::Data {

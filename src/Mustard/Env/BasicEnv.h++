@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,11 +18,13 @@
 
 #pragma once
 
-#include "Mustard/Env/CLI/CLI.h++"
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
 #include "Mustard/Env/VerboseLevel.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
+
+#include "muc/optional"
 
 #include "fmt/format.h"
 
@@ -37,14 +39,14 @@ protected:
     struct NoBanner {};
 
 protected:
-    BasicEnv(NoBanner, int argc, char* argv[],
-             std::optional<std::reference_wrapper<CLI::CLI<>>> cli,
+    BasicEnv(NoBanner, int& argc, char**& argv,
+             muc::optional_ref<CLI::CLI<>> cli,
              enum VerboseLevel verboseLevel,
              bool showBannerHint);
 
 public:
     BasicEnv(int argc, char* argv[],
-             std::optional<std::reference_wrapper<CLI::CLI<>>> cli = {},
+             muc::optional_ref<CLI::CLI<>> cli = {},
              enum VerboseLevel verboseLevel = {},
              bool showBannerHint = true);
 

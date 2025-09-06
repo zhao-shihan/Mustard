@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -31,12 +31,12 @@ concept ElectromagneticField =
     requires(const F f, muc::array3d x) {
         { f.B(x) } -> std::same_as<muc::array3d>;
         { f.E(x) } -> std::same_as<muc::array3d>;
-        { f.BE(x).B } -> std::same_as<muc::array3d&&>;
-        { f.BE(x).E } -> std::same_as<muc::array3d&&>;
+        { f.BE(x).B } -> std::same_as<muc::array3d &&>;
+        { f.BE(x).E } -> std::same_as<muc::array3d &&>;
         { f.template B<muc::array3d>({}) } -> std::same_as<muc::array3d>;
         { f.template E<muc::array3d>({}) } -> std::same_as<muc::array3d>;
-        { f.template BE<muc::array3d>({}).B } -> std::same_as<muc::array3d&&>;
-        { f.template BE<muc::array3d>({}).E } -> std::same_as<muc::array3d&&>;
+        { f.template BE<muc::array3d>({}).B } -> std::same_as<muc::array3d &&>;
+        { f.template BE<muc::array3d>({}).E } -> std::same_as<muc::array3d &&>;
     };
 
 } // namespace Mustard::Detector::Field

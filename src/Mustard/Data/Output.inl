@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,23 +21,26 @@ namespace Mustard::Data {
 template<TupleModelizable... Ts>
 Output<Ts...>::Output(const std::string& name, const std::string& title,
                       bool enableTimedAutoSave, Second timedAutoSavePeriod) :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fEntry{},
-    fDirectory{},
     fTree{},
     fTimedAutoSaveEnabled{enableTimedAutoSave},
     fTimedAutoSavePeriod{timedAutoSavePeriod},
-    fTimedAutoSaveStopwatch{},
+    fAutoSaveStopwatch{},
     fBranchHelper{fEntry} {
     if (const auto iSlash{name.find_last_of('/')};
         iSlash == std::string::npos) {
-        fDirectory = gDirectory->GetPath();
-        fTree = new TTree{name.c_str(), title.c_str()};
+        fTree.emplace(name.c_str(), title.c_str());
     } else {
         const auto iName{iSlash + 1};
-        const auto directory{gDirectory->mkdir(name.substr(0, iName).c_str(), "", true)};
-        fDirectory = directory->GetPath();
-        fTree = new TTree{name.substr(iName, -1).c_str(), title.c_str(), 99, directory};
+        const auto dirName{name.substr(0, iName)};
+        const auto treeName{name.substr(iName, -1)};
+        TDirectory* pwd{gDirectory};
+        pwd->mkdir(dirName.c_str());
+        pwd->cd(dirName.c_str());
+        fTree.emplace(treeName.c_str(), title.c_str());
+        fTree->GetDirectory()->Remove(&*fTree);
+        gDirectory = pwd;
     }
     [this]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         (...,
@@ -65,7 +68,7 @@ auto Output<Ts...>::Fill(T&& tuple) -> std::size_t {
 template<TupleModelizable... Ts>
 template<std::ranges::input_range R>
     requires std::assignable_from<Tuple<Ts...>&, std::ranges::range_reference_t<R>> or
-                 ProperSubTuple<Tuple<Ts...>, std::ranges::range_value_t<R>>
+             ProperSubTuple<Tuple<Ts...>, std::ranges::range_value_t<R>>
 auto Output<Ts...>::Fill(R&& data) -> std::size_t {
     std::size_t nByte{};
     for (auto&& tuple : std::forward<R>(data)) {
@@ -78,8 +81,8 @@ auto Output<Ts...>::Fill(R&& data) -> std::size_t {
 template<TupleModelizable... Ts>
 template<std::ranges::input_range R>
     requires std::indirectly_readable<std::ranges::range_reference_t<R>> and
-                 (std::assignable_from<Tuple<Ts...>&, std::iter_reference_t<std::ranges::range_value_t<R>>> or
-                  ProperSubTuple<Tuple<Ts...>, std::iter_value_t<std::ranges::range_value_t<R>>>)
+             (std::assignable_from<Tuple<Ts...>&, std::iter_reference_t<std::ranges::range_value_t<R>>> or
+              ProperSubTuple<Tuple<Ts...>, std::iter_value_t<std::ranges::range_value_t<R>>>)
 auto Output<Ts...>::Fill(R&& data) -> std::size_t {
     std::size_t nByte{};
     for (auto&& i : std::forward<R>(data)) {
@@ -91,10 +94,10 @@ auto Output<Ts...>::Fill(R&& data) -> std::size_t {
 
 template<TupleModelizable... Ts>
 auto Output<Ts...>::Write(int option, int bufferSize) const -> std::size_t {
-    const std::string cwd{gDirectory->GetPath()};
-    gDirectory->cd(fDirectory.c_str());
+    TDirectory* pwd{gDirectory};
+    gDirectory = fTree->GetDirectory();
     const auto nByte{fTree->Write(nullptr, option, bufferSize)};
-    gDirectory->cd(cwd.c_str());
+    gDirectory = pwd;
     return nByte;
 }
 
@@ -116,9 +119,13 @@ auto Output<Ts...>::FillImpl(T&& tuple) -> std::size_t {
 
 template<TupleModelizable... Ts>
 auto Output<Ts...>::TimedAutoSaveIfNecessary() -> std::size_t {
-    if (not fTimedAutoSaveEnabled) { return 0; }
-    if (Second{fTimedAutoSaveStopwatch.s_elapsed()} < fTimedAutoSavePeriod) { return 0; }
-    fTimedAutoSaveStopwatch.reset();
+    if (not fTimedAutoSaveEnabled) {
+        return 0;
+    }
+    if (fAutoSaveStopwatch.read() < fTimedAutoSavePeriod) {
+        return 0;
+    }
+    fAutoSaveStopwatch.reset();
     return fTree->AutoSave("SaveSelf");
 }
 

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -27,7 +27,7 @@ constexpr BasicGaussianParameter<T, AGaussian>::BasicGaussianParameter(T mu, T s
     fSigma{sigma} {}
 
 template<std::floating_point T, template<typename> typename AGaussian>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussianParameter<T, AGaussian>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<T>::max_digits10)};
     return os << fMu << ' ' << fSigma
@@ -35,7 +35,7 @@ auto BasicGaussianParameter<T, AGaussian>::StreamOutput(std::basic_ostream<AChar
 }
 
 template<std::floating_point T, template<typename> typename AGaussian>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussianParameter<T, AGaussian>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fMu >> fSigma;
 }
@@ -63,12 +63,12 @@ constexpr GaussianBase<T, AGaussian>::GaussianBase(const typename Base::Paramete
     }
 
 template<std::floating_point T>
-MUSTARD_STRONG_INLINE auto Gaussian<T>::operator()(UniformRandomBitGenerator auto& g, const GaussianParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE auto Gaussian<T>::Impl(auto& g, const GaussianParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET()
 }
 
 template<std::floating_point T>
-MUSTARD_STRONG_INLINE auto GaussianFast<T>::operator()(UniformRandomBitGenerator auto& g, const GaussianFastParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE auto GaussianFast<T>::Impl(auto& g, const GaussianFastParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET(Fast)
 }
 

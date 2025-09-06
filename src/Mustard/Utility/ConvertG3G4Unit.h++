@@ -22,8 +22,10 @@ template<muc::ceta_string ACategory, muc::general_arithmetic U>
 constexpr auto ToG3(const U& x) -> U {
     constexpr auto L{TGeoUnit::mm};
     constexpr auto T{TGeoUnit::ns};
-    constexpr auto Q{TGeoUnit::eplus};
     constexpr auto E{TGeoUnit::MeV};
+    static_assert(CLHEP::eplus == 1);
+    static_assert(TGeoUnit::eplus == 1);
+    constexpr auto Q{TGeoUnit::eplus};
     using muc::pow;
     if constexpr (ACategory == "Length") {
         return x * L;
@@ -31,40 +33,38 @@ constexpr auto ToG3(const U& x) -> U {
         return x * (TGeoUnit::radian / CLHEP::radian);
     } else if constexpr (ACategory == "Time") {
         return x * T;
-    } else if constexpr (ACategory == "Electric charge") {
-        return x * Q;
     } else if constexpr (ACategory == "Energy") {
         return x * E;
     } else if constexpr (ACategory == "Mass") {
-        return x * (E * pow<2>(T) * pow<-2>(L));
+        return x * (E * pow(T, 2) * pow(L, -2));
     } else if constexpr (ACategory == "Power") {
-        return x * (E * pow<-1>(T));
+        return x * (E * pow(T, -1));
     } else if constexpr (ACategory == "Force") {
-        return x * (E * pow<-1>(L));
+        return x * (E * pow(L, -1));
     } else if constexpr (ACategory == "Pressure") {
-        return x * (E * pow<-3>(L));
+        return x * (E * pow(L, -3));
     } else if constexpr (ACategory == "Electric current") {
-        return x * (Q * pow<-1>(T));
+        return x * (Q * pow(T, -1));
     } else if constexpr (ACategory == "Electric potential") {
-        return x * (E * pow<-1>(Q));
+        return x * (E * pow(Q, -1));
     } else if constexpr (ACategory == "Electric resistance") {
-        return x * (E * T * pow<-2>(Q));
+        return x * (E * T * pow(Q, -2));
     } else if constexpr (ACategory == "Electric capacitance") {
-        return x * (pow<2>(Q) * pow<-1>(E));
+        return x * (pow(Q, 2) * pow(E, -1));
     } else if constexpr (ACategory == "Magnetic flux") {
-        return x * (T * E * pow<-1>(Q));
+        return x * (T * E * pow(Q, -1));
     } else if constexpr (ACategory == "Magnetic field") {
-        return x * (T * E * pow<-1>(Q) * pow<-2>(L));
+        return x * (T * E * pow(Q, -1) * pow(L, -2));
     } else if constexpr (ACategory == "Inductance") {
-        return x * (pow<2>(T) * E * pow<-2>(Q));
+        return x * (pow(T, 2) * E * pow(Q, -2));
     } else if constexpr (ACategory == "Temperature") {
         return x * (TGeoUnit::kelvin / CLHEP::kelvin);
     } else if constexpr (ACategory == "Amount of substance") {
         return x * (TGeoUnit::mole / CLHEP::mole);
     } else if constexpr (ACategory == "Activity") {
-        return x * pow<-1>(T);
+        return x * pow(T, -1);
     } else if constexpr (ACategory == "Absorbed dose") {
-        return x * (pow<2>(L) * pow<-2>(T));
+        return x * (pow(L, 2) * pow(T, -2));
     } else if constexpr (ACategory == "Luminous intensity") {
         return x * (TGeoUnit::candela / CLHEP::candela);
     } else if constexpr (ACategory == "Luminous flux") {
@@ -85,8 +85,10 @@ template<muc::ceta_string ACategory, muc::general_arithmetic U>
 constexpr auto ToG4(const U& x) -> U {
     constexpr auto L{CLHEP::cm};
     constexpr auto T{CLHEP::s};
-    constexpr auto Q{CLHEP::eplus};
     constexpr auto E{CLHEP::GeV};
+    static_assert(CLHEP::eplus == 1);
+    static_assert(TGeoUnit::eplus == 1);
+    constexpr auto Q{CLHEP::eplus};
     using muc::pow;
     if constexpr (ACategory == "Length") {
         return x * L;
@@ -94,40 +96,38 @@ constexpr auto ToG4(const U& x) -> U {
         return x * (CLHEP::radian / TGeoUnit::radian);
     } else if constexpr (ACategory == "Time") {
         return x * T;
-    } else if constexpr (ACategory == "Electric charge") {
-        return x * Q;
     } else if constexpr (ACategory == "Energy") {
         return x * E;
     } else if constexpr (ACategory == "Mass") {
-        return x * (E * pow<2>(T) * pow<-2>(L));
+        return x * (E * pow(T, 2) * pow(L, -2));
     } else if constexpr (ACategory == "Power") {
-        return x * (E * pow<-1>(T));
+        return x * (E * pow(T, -1));
     } else if constexpr (ACategory == "Force") {
-        return x * (E * pow<-1>(L));
+        return x * (E * pow(L, -1));
     } else if constexpr (ACategory == "Pressure") {
-        return x * (E * pow<-3>(L));
+        return x * (E * pow(L, -3));
     } else if constexpr (ACategory == "Electric current") {
-        return x * (Q * pow<-1>(T));
+        return x * (Q * pow(T, -1));
     } else if constexpr (ACategory == "Electric potential") {
-        return x * (E * pow<-1>(Q));
+        return x * (E * pow(Q, -1));
     } else if constexpr (ACategory == "Electric resistance") {
-        return x * (E * T * pow<-2>(Q));
+        return x * (E * T * pow(Q, -2));
     } else if constexpr (ACategory == "Electric capacitance") {
-        return x * (pow<2>(Q) * pow<-1>(E));
+        return x * (pow(Q, 2) * pow(E, -1));
     } else if constexpr (ACategory == "Magnetic Flux") {
-        return x * (T * E * pow<-1>(Q));
+        return x * (T * E * pow(Q, -1));
     } else if constexpr (ACategory == "Magnetic Field") {
-        return x * (T * E * pow<-1>(Q) * pow<-2>(L));
+        return x * (T * E * pow(Q, -1) * pow(L, -2));
     } else if constexpr (ACategory == "Inductance") {
-        return x * (pow<2>(T) * E * pow<-2>(Q));
+        return x * (pow(T, 2) * E * pow(Q, -2));
     } else if constexpr (ACategory == "Temperature") {
         return x * (CLHEP::kelvin / TGeoUnit::kelvin);
     } else if constexpr (ACategory == "Amount of substance") {
         return x * (CLHEP::mole / TGeoUnit::mole);
     } else if constexpr (ACategory == "Activity") {
-        return x * pow<-1>(T);
+        return x * pow(T, -1);
     } else if constexpr (ACategory == "Absorbed dose") {
-        return x * (pow<2>(L) * pow<-2>(T));
+        return x * (pow(L, 2) * pow(T, -2));
     } else if constexpr (ACategory == "Luminous intensity") {
         return x * (CLHEP::candela / TGeoUnit::candela);
     } else if constexpr (ACategory == "Luminous flux") {

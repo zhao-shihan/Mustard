@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,6 +20,8 @@ namespace Mustard::Env::Memory {
 
 template<typename ADerived>
 std::shared_ptr<void*> Singleton<ADerived>::fgInstance{};
+template<typename ADerived>
+muc::spin_mutex Singleton<ADerived>::fgSpinMutex{};
 
 template<typename ADerived>
 Singleton<ADerived>::Singleton() :
@@ -29,22 +31,13 @@ Singleton<ADerived>::Singleton() :
 
 template<typename ADerived>
 Singleton<ADerived>::~Singleton() {
-    UpdateInstance();
+    LoadInstance();
     *fgInstance = nullptr;
 }
 
 template<typename ADerived>
 MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Instance() -> ADerived& {
-    switch (UpdateInstance()) {
-    [[unlikely]] case Status::NotInstantiated: {
-        auto& pool{internal::SingletonPool::Instance()};
-        if (pool.Contains<ADerived>()) {
-            Throw<std::logic_error>(fmt::format("Trying to construct {} (environmental singleton) twice",
-                                                muc::try_demangle(typeid(ADerived).name())));
-        }
-        fgInstance = pool.Insert<ADerived>(SingletonInstantiator::New<ADerived>());
-        [[fallthrough]];
-    }
+    switch (Status()) {
     [[likely]] case Status::Available:
         return *static_cast<ADerived*>(*fgInstance);
     [[unlikely]] case Status::Expired:
@@ -55,19 +48,33 @@ MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Instance() -> ADerived& {
 }
 
 template<typename ADerived>
-MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::UpdateInstance() -> Status {
-    if (fgInstance == nullptr) [[unlikely]] {
-        if (const auto sharedNode{internal::SingletonPool::Instance().Find<ADerived>()};
-            sharedNode == nullptr) {
-            return Status::NotInstantiated;
-        } else {
+MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Status() -> enum Status {
+    std::scoped_lock lock{fgSpinMutex};
+    if (fgInstance and *fgInstance) [[likely]] {
+        return Status::Available;
+    }
+    return LoadInstance();
+}
+
+template<typename ADerived>
+MUSTARD_NOINLINE auto Singleton<ADerived>::LoadInstance() -> enum Status {
+    std::scoped_lock lock{internal::SingletonPool::Mutex()};
+    if (fgInstance == nullptr) {
+        if (const auto sharedNode{internal::SingletonPool::Instance().Find<ADerived>()}) {
             fgInstance = sharedNode;
+        } else {
+            auto& pool{internal::SingletonPool::Instance()};
+            if (pool.Contains<ADerived>()) {
+                Throw<std::logic_error>(fmt::format("Trying to construct {} (environmental singleton) twice",
+                                                    muc::try_demangle(typeid(ADerived).name())));
+            }
+            fgInstance = pool.Insert<ADerived>(SingletonInstantiator::New<ADerived>());
         }
     }
-    if (*fgInstance == nullptr) {
-        return Status::Expired;
-    } else {
+    if (*fgInstance) {
         return Status::Available;
+    } else {
+        return Status::Expired;
     }
 }
 

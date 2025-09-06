@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,7 +18,7 @@
 
 namespace Mustard::Data {
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 Processor<AExecutor>::Processor(AExecutor executor) :
     Base{},
     fExecutor{std::move(executor)} {
@@ -26,7 +26,7 @@ Processor<AExecutor>::Processor(AExecutor executor) :
     fExecutor.TaskName("Batch");
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 template<TupleModelizable... Ts>
 auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
                                    std::invocable<bool, std::shared_ptr<Tuple<Ts...>>> auto&& F) -> Index {
@@ -39,17 +39,17 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf,
     return ProcessImpl(asyncReader, nEntry, "entries", std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 template<TupleModelizable... Ts, std::integral AEventIDType>
-auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, AEventIDType, std::string eventIDColumnName,
+auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::string eventIDColumnName,
                                    std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 template<TupleModelizable... Ts, std::integral AEventIDType>
-auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::index> eventSplit,
+auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::vector<gsl::index> eventSplit,
                                    std::invocable<bool, muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     Expects(std::ranges::is_sorted(eventSplit));
 
@@ -69,7 +69,7 @@ auto Processor<AExecutor>::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vect
     return ProcessImpl(asyncReader, nEvent, "events", std::forward<decltype(F)>(F));
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 template<typename AData>
 auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n, std::string_view what,
                                        std::invocable<bool, typename AData::value_type> auto&& F) -> Index {
@@ -85,35 +85,41 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     std::future<void> asyncProcess;
 
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
-    const auto batch{this->CalculateBatchConfiguration(Env::MPIEnv::Instance().CommWorldSize(), n)};
-    fExecutor.Execute(
-        batch.nBatch,
-        [&](auto k) {                                      // k is batch index
-            if (byPassWillOccur and k >= n) [[unlikely]] { // by pass when there are too many processors
+    const auto worldComm{mplr::comm_world()};
+    const auto batch{this->CalculateBatchConfiguration(worldComm.size(), n)};
+    fExecutor(std::max(static_cast<Index>(worldComm.size()), batch.nBatch), [&](auto k) { // k is batch index
+        if (byPassWillOccur) [[unlikely]] {
+            if (k >= n) { // by pass when there are too many processes
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, typename AData::value_type{});
                 return;
             }
-            const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)};
-            if (asyncReader.Reading()) { batchData = asyncReader.Acquire(); }
-            asyncReader.Read(iFirst, iLast);
-            if (asyncProcess.valid()) { asyncProcess.get(); }
-            asyncProcess = std::async(std::launch::deferred, ProcessBatch);
-        });
+        }
+        const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)};
+        if (asyncReader.Reading()) {
+            batchData = asyncReader.Acquire();
+        }
+        asyncReader.Read(iFirst, iLast);
+        if (asyncProcess.valid()) {
+            asyncProcess.get();
+        }
+        asyncProcess = std::async(std::launch::deferred, ProcessBatch);
+    });
     batchData = asyncReader.Acquire();
-    if (not asyncReader.Exhausted()) { asyncReader.Exhaust(); }
     asyncProcess.get();
-    if (asyncReader.Reading()) { asyncReader.Acquire(); }
+    if (not asyncReader.Exhausted()) {
+        asyncReader.Exhaust();
+    }
 
     return nProcessed;
 }
 
-template<muc::instantiated_from<MPIX::Executor> AExecutor>
+template<muc::instantiated_from<Executor> AExecutor>
 auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what) -> bool {
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    const auto byPassWillOccur{static_cast<Index>(mpiEnv.CommWorldSize()) > n};
-    if (mpiEnv.OnCommWorldMaster() and byPassWillOccur) [[unlikely]] {
-        PrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
-                                 mpiEnv.CommWorldSize(), what, n));
+    const auto worldComm{mplr::comm_world()};
+    const auto byPassWillOccur{static_cast<Index>(worldComm.size()) > n};
+    if (byPassWillOccur) [[unlikely]] {
+        MasterPrintWarning(fmt::format("#processors ({}) are more than #{} ({})",
+                                       worldComm.size(), what, n));
     }
     return byPassWillOccur;
 }

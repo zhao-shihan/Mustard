@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,13 +18,13 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 namespace Mustard::Env::Memory::internal {
 
 /// @brief Implementation detail of Mustard::Env::Memory::WeakSingleton.
 /// Not API. Just a signature of mute singleton.
-class WeakSingletonBase : public NonMoveableBase {
+class WeakSingletonBase : public NonCopyableBase {
 protected:
     WeakSingletonBase() = default;
     ~WeakSingletonBase() = default;

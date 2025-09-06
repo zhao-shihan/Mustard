@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,6 +20,8 @@ namespace Mustard::Env::Memory {
 
 template<typename ADerived>
 std::shared_ptr<void*> WeakSingleton<ADerived>::fgInstance{};
+template<typename ADerived>
+muc::spin_mutex WeakSingleton<ADerived>::fgSpinMutex{};
 
 template<typename ADerived>
 [[deprecated]] WeakSingleton<ADerived>::WeakSingleton() :
@@ -29,6 +31,7 @@ template<typename ADerived>
 WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
     WeakSingletonBase{} {
     static_assert(WeakSingletonified<ADerived>);
+    std::scoped_lock lock{internal::WeakSingletonPool::Mutex()};
     if (auto& weakSingletonPool{internal::WeakSingletonPool::Instance()};
         not weakSingletonPool.Contains<ADerived>()) {
         fgInstance = weakSingletonPool.Insert<ADerived>(self);
@@ -40,24 +43,27 @@ WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
 
 template<typename ADerived>
 WeakSingleton<ADerived>::~WeakSingleton() {
-    UpdateInstance();
+    LoadInstance();
     *fgInstance = nullptr;
 }
 
 template<typename ADerived>
-MUSTARD_ALWAYS_INLINE auto WeakSingleton<ADerived>::UpdateInstance() -> Status {
-    if (not internal::WeakSingletonPool::Instantiated()) [[unlikely]] {
-        return Status::NotInstantiated;
+MUSTARD_ALWAYS_INLINE auto WeakSingleton<ADerived>::Status() -> enum Status {
+    std::scoped_lock lock{fgSpinMutex};
+    if (fgInstance and *fgInstance) [[likely]] {
+        return Status::Available;
     }
-    if (internal::WeakSingletonPool::Expired()) [[unlikely]] {
-        return Status::Expired;
-    }
-    if (fgInstance == nullptr) [[unlikely]] {
-        if (const auto sharedNode{internal::WeakSingletonPool::Instance().Find<ADerived>()};
-            sharedNode == nullptr) {
-            return Status::NotInstantiated;
-        } else {
+    return LoadInstance();
+}
+
+template<typename ADerived>
+MUSTARD_NOINLINE auto WeakSingleton<ADerived>::LoadInstance() -> enum Status {
+    std::scoped_lock lock{internal::WeakSingletonPool::Mutex()};
+    if (fgInstance == nullptr) {
+        if (const auto sharedNode{internal::WeakSingletonPool::Instance().Find<ADerived>()}) {
             fgInstance = sharedNode;
+        } else {
+            return Status::NotInstantiated;
         }
     }
     if (*fgInstance == nullptr) {

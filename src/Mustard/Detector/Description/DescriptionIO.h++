@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,10 +20,10 @@
 
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Detector/Description/DescriptionBase.h++"
-#include "Mustard/Extension/MPIX/ParallelizePath.h++"
-#include "Mustard/Utility/CreateTemporaryFile.h++"
+#include "Mustard/IO/CreateTemporaryFile.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "yaml-cpp/yaml.h"
 
@@ -95,7 +95,8 @@ private:
     static auto ParallelExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path;
     static auto ParallelIxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
     static auto ToStringImpl(const std::ranges::input_range auto& descriptions) -> std::string;
-    static auto Output(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void;
+    static auto EmitYAML(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void;
+    static auto EmitYAMLImpl(const YAML::Node& node, YAML::Emitter& emitter, bool inFlow = false) -> void;
 
 private:
     static std::set<gsl::not_null<DescriptionBase<>*>> fgInstanceSet;

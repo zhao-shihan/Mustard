@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,13 +18,11 @@
 
 #pragma once
 
-#include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/DataType.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "ROOT/RDataFrame.hxx"
 
-#include "mpi.h"
+#include "mplr/mplr.hpp"
 
 #include "muc/algorithm"
 #include "muc/hash_map"

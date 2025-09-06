@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -46,7 +46,7 @@ constexpr BasicUniformDiskParameter<T, AUniformDisk>::BasicUniformDiskParameter(
     fCenterY{0} {}
 
 template<Concept::NumericVector2Any T, template<typename> typename AUniformDisk>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicUniformDiskParameter<T, AUniformDisk>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<VectorValueType<T>>::max_digits10)};
     return os << fRadius << ' ' << fCenter[0] << ' ' << fCenter[1]
@@ -54,7 +54,7 @@ auto BasicUniformDiskParameter<T, AUniformDisk>::StreamOutput(std::basic_ostream
 }
 
 template<Concept::NumericVector2Any T, template<typename> typename AUniformDisk>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicUniformDiskParameter<T, AUniformDisk>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fRadius >> fCenter[0] >> fCenter[1];
 }
@@ -86,7 +86,7 @@ constexpr UniformDiskBase<T, AUniformDisk>::UniformDiskBase(const typename Base:
     VectorValueType<T> r2;                                                 \
     do {                                                                   \
         r = UniformCompactRectangle<T>({-0.5, 0.5}, {-0.5, 0.5})(g);       \
-        r2 = muc::hypot2(r[0], r[1]);                                      \
+        r2 = muc::hypot_sq(r[0], r[1]);                                    \
         muc::assume(0 <= r2 and r2 <= 0.5);                                \
     } while (rejection);                                                   \
     if constexpr (Concept::MathVector2Any<T>) {                            \
@@ -98,12 +98,12 @@ constexpr UniformDiskBase<T, AUniformDisk>::UniformDiskBase(const typename Base:
     return r;
 
 template<Concept::NumericVector2Any T>
-MUSTARD_STRONG_INLINE constexpr auto UniformCompactDisk<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE constexpr auto UniformCompactDisk<T>::Impl(auto& g, const UniformCompactDiskParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_UNIFORM_DISK_GENERATOR(r2 > 0.25)
 }
 
 template<Concept::NumericVector2Any T>
-MUSTARD_STRONG_INLINE constexpr auto UniformDisk<T>::operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE constexpr auto UniformDisk<T>::Impl(auto& g, const UniformDiskParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_UNIFORM_DISK_GENERATOR(r2 >= 0.25)
 }
 

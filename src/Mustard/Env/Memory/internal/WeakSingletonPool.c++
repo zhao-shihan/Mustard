@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -28,9 +28,10 @@ namespace Mustard::Env::Memory::internal {
 WeakSingletonPool* WeakSingletonPool::fgInstance{};
 bool WeakSingletonPool::fgInstantiated{};
 bool WeakSingletonPool::fgExpired{};
+std::mutex WeakSingletonPool::fgMutex{};
 
 WeakSingletonPool::WeakSingletonPool() :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fInstanceMap{} {
     if (not fgInstantiated) {
         fgInstance = this;

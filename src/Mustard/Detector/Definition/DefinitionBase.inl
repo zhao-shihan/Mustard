@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -59,10 +59,10 @@ auto DefinitionBase::Make(auto&&... args) -> gsl::not_null<ALogical*> {
             .get()};
     fLogicalVolumes[logic->GetName()].emplace_back(logic);
     if (fFirstLogicalVolumes == nullptr) {
-        assert(fLogicalVolumeStore.size() == 1);
-        assert(fLogicalVolumes.size() == 1);
+        Ensures(fLogicalVolumeStore.size() == 1);
+        Ensures(fLogicalVolumes.size() == 1);
         fFirstLogicalVolumes = &fLogicalVolumes.cbegin()->second;
-        assert(fFirstLogicalVolumes->size() == 1);
+        Ensures(fFirstLogicalVolumes->size() == 1);
     }
     return static_cast<ALogical*>(logic);
 }
@@ -76,10 +76,10 @@ auto DefinitionBase::Make(auto&&... args) -> gsl::not_null<APhysical*> {
             .get()};
     fPhysicalVolumes[physics->GetName()].emplace_back(physics);
     if (fFirstPhysicalVolumes == nullptr) {
-        assert(fPhysicalVolumeStore.size() == 1);
-        assert(fPhysicalVolumes.size() == 1);
+        Ensures(fPhysicalVolumeStore.size() == 1);
+        Ensures(fPhysicalVolumes.size() == 1);
         fFirstPhysicalVolumes = &fPhysicalVolumes.cbegin()->second;
-        assert(fFirstPhysicalVolumes->size() == 1);
+        Ensures(fFirstPhysicalVolumes->size() == 1);
     }
     return static_cast<APhysical*>(physics);
 }

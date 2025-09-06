@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,10 +20,10 @@
 #include "Mustard/Env/Memory/internal/SingletonPool.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Utility/FormatToLocalTime.h++"
 
 #include "muc/bit"
-#include "muc/time"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -37,12 +37,11 @@
 
 #if MUSTARD_SIGNAL_HANDLER
 
-#    include "Mustard/Env/MPIEnv.h++"
-#    include "Mustard/Utility/InlineMacro.h++"
-#    include "Mustard/Utility/Print.h++"
+#    include "Mustard/IO/Print.h++"
+#    include "Mustard/Utility/FunctionAttribute.h++"
 #    include "Mustard/Utility/PrintStackTrace.h++"
 
-#    include "fmt/chrono.h"
+#    include "mplr/mplr.hpp"
 
 #    include <chrono>
 #    include <cstdio>
@@ -69,7 +68,9 @@ namespace {
         }
     } catch (const std::exception& e) {
         std::string_view what{e.what()};
-        if (not what.empty() and what.ends_with('\n')) { what.remove_suffix(1); }
+        if (not what.empty() and what.ends_with('\n')) {
+            what.remove_suffix(1);
+        }
         const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::red)};
         Print<'E'>(ts | fmt::emphasis::blink, "***");
         Print<'E'>(ts, " terminate called after throwing an instance of '{}'\n", muc::try_demangle(typeid(e).name()));
@@ -93,7 +94,7 @@ namespace {
 
 extern "C" {
 
-auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
+auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
     std::signal(sig, SIG_DFL);
     if (static auto called{false};
         called) {
@@ -103,65 +104,65 @@ auto MUSTARD_SIGINT_SIGTERM_Handler(int sig) -> void {
     }
     static struct Handler {
         MUSTARD_ALWAYS_INLINE Handler(int sig) {
-            const auto now{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
-            const auto lineHeader{MPIEnv::Available() ?
-                                      fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
+            const auto now{std::chrono::system_clock::now()};
+            const auto lineHeader{mplr::available() ?
+                                      fmt::format("MPI{}> ", mplr::comm_world().rank()) :
                                       ""};
             const auto ts{fmt::emphasis::bold};
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGINT:
-                Print<'E'>(ts, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
                 break;
             case SIGTERM:
-                Print<'E'>(ts, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
                 break;
             }
-            if (MPIEnv::Available()) {
-                const auto& mpi{MPIEnv::Instance()};
-                Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+            if (mplr::available()) {
+                Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
+                           lineHeader, mplr::comm_world().rank(), mplr::processor_name());
             }
-            Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+            Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
             PrintStackTrace(64, 2, stderr, ts);
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGINT:
-                Print<'E'>(ts, "Ctrl-C has been pressed or an external interrupt received."); // no '\n' looks good for now
+                Print<'E'>(stderr, ts, "Ctrl-C pressed or an external interrupt received."); // no '\n' looks good for now
                 break;
             case SIGTERM:
-                Print<'E'>(ts, "The process is terminated.\n");
+                Print<'E'>(stderr, ts, "The process is terminated.\n");
                 break;
             }
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
             std::fflush(stderr);
             std::raise(sig);
         }
     } handler{sig};
 }
 
-[[noreturn]] auto MUSTARD_SIGABRT_Handler(int) -> void {
+[[noreturn]] auto Mustard_SIGABRT_Handler(int) -> void {
     std::signal(SIGABRT, SIG_DFL);
-    const auto now{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
-    const auto lineHeader{MPIEnv::Available() ?
-                              fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
+    const auto now{std::chrono::system_clock::now()};
+    const auto lineHeader{mplr::available() ?
+                              fmt::format("MPI{}> ", mplr::comm_world().rank()) :
                               ""};
     const auto ts{fmt::emphasis::bold | fg(fmt::color::orange)};
-    Print<'E'>("\n");
-    Print<'E'>(ts, "{}***** ABORT (SIGABRT) received\n", lineHeader);
-    if (MPIEnv::Available()) {
-        const auto& mpi{MPIEnv::Instance()};
-        Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+    Print<'E'>(stderr, "\n");
+    Print<'E'>(stderr, ts, "{}***** ABORT (SIGABRT) received\n", lineHeader);
+    if (mplr::available()) {
+        Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
+                   lineHeader, mplr::comm_world().rank(), mplr::processor_name());
     }
-    Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+    Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
     PrintStackTrace(64, 2, stderr, ts);
-    Print<'E'>("\n");
-    Print<'E'>(ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
-    Print<'E'>("\n");
+    Print<'E'>(stderr, "\n");
+    Print<'E'>(stderr, ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
+    Print<'E'>(stderr, "\n");
     std::fflush(stderr);
     std::abort();
 }
 
-auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
+auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
     std::signal(sig, SIG_DFL);
     if (static auto called{false};
         called) {
@@ -171,32 +172,32 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
     }
     static struct Handler {
         MUSTARD_ALWAYS_INLINE Handler(int sig) {
-            const auto now{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
-            const auto lineHeader{MPIEnv::Available() ?
-                                      fmt::format("MPI{}> ", MPIEnv::Instance().CommWorldRank()) :
+            const auto now{std::chrono::system_clock::now()};
+            const auto lineHeader{mplr::available() ?
+                                      fmt::format("MPI{}> ", mplr::comm_world().rank()) :
                                       ""};
             const auto ts{fmt::emphasis::bold | fg(fmt::color::red)};
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGFPE:
-                Print<'E'>(ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
                 break;
             case SIGILL:
-                Print<'E'>(ts, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
                 break;
             case SIGSEGV:
-                Print<'E'>(ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
                 break;
             }
-            if (MPIEnv::Available()) {
-                const auto& mpi{MPIEnv::Instance()};
-                Print<'E'>(ts, "{}***** in MPI process {} (node: {})\n", lineHeader, mpi.CommWorldRank(), mpi.LocalNode().name);
+            if (mplr::available()) {
+                Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
+                           lineHeader, mplr::comm_world().rank(), mplr::processor_name());
             }
-            Print<'E'>(ts, "{}***** at {:%FT%T%z}\n", lineHeader, muc::localtime(now));
+            Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
             PrintStackTrace(64, 2, stderr, ts);
-            Print<'E'>("\n");
-            Print<'E'>(ts, "It is likely that the program has one or more errors. Try using debugging tools to address this issue.\n");
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
+            Print<'E'>(stderr, ts, "It is likely that the program has one or more errors. Try seeking help from debugging tools.\n");
+            Print<'E'>(stderr, "\n");
             std::fflush(stderr);
             std::raise(sig);
         }
@@ -210,7 +211,7 @@ auto MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
 } // namespace
 
 EnvBase::EnvBase() :
-    NonMoveableBase{},
+    NonCopyableBase{},
     fWeakSingletonPool{},
     fSingletonPool{},
     fSingletonDeleter{} {
@@ -223,12 +224,12 @@ EnvBase::EnvBase() :
     std::set_terminate(internal::TerminateHandler);
 
 #if MUSTARD_SIGNAL_HANDLER
-    std::signal(SIGABRT, internal::MUSTARD_SIGABRT_Handler);
-    std::signal(SIGFPE, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGILL, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGINT, internal::MUSTARD_SIGINT_SIGTERM_Handler);
-    std::signal(SIGSEGV, internal::MUSTARD_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGTERM, internal::MUSTARD_SIGINT_SIGTERM_Handler);
+    std::signal(SIGABRT, internal::Mustard_SIGABRT_Handler);
+    std::signal(SIGFPE, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGILL, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGINT, internal::Mustard_SIGINT_SIGTERM_Handler);
+    std::signal(SIGSEGV, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGTERM, internal::Mustard_SIGINT_SIGTERM_Handler);
 #endif
 
     if (static bool gInstantiated{false};

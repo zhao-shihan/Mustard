@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -34,7 +34,7 @@ constexpr BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::BasicGaussia
     fSigmaY{pY.second} {}
 
 template<Concept::NumericVector2FloatingPoint T, template<typename> typename AGaussian2DDiagnoal>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<VectorValueType<T>>::max_digits10)};
     return os << fMuX << ' ' << fSigmaX << ' ' << fMuY << ' ' << fSigmaY
@@ -42,7 +42,7 @@ auto BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::StreamOutput(std:
 }
 
 template<Concept::NumericVector2FloatingPoint T, template<typename> typename AGaussian2DDiagnoal>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fMuX >> fSigmaX >> fMuY >> fSigmaY;
 }
@@ -65,7 +65,7 @@ constexpr Gaussian2DDiagnoalBase<ADerived, T>::Gaussian2DDiagnoalBase(const type
     do {                                                                                \
         static_assert(UniformCompactRectangle<T>::Stateless());                         \
         u = UniformCompactRectangle<T>({-0.5, 0.5}, {-0.5, 0.5})(g);                    \
-        x = muc::hypot2(u[0], u[1]);                                                    \
+        x = muc::hypot_sq(u[0], u[1]);                                                  \
         muc::assume(0 <= x and x < 0.5);                                                \
     } while (x == 0 or x > 0.25);                                                       \
     x = std::sqrt(-2 * (TheLog(x) + 2 * std::numbers::ln2_v<VT>) / x);                  \
@@ -74,13 +74,13 @@ constexpr Gaussian2DDiagnoalBase<ADerived, T>::Gaussian2DDiagnoalBase(const type
     return u;
 
 template<Concept::NumericVector2FloatingPoint T>
-MUSTARD_STRONG_INLINE auto Gaussian2DDiagnoal<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> T {
+MUSTARD_ALWAYS_INLINE auto Gaussian2DDiagnoal<T>::Impl(auto& g, const Gaussian2DDiagnoalParameter<T>& p) -> T {
     MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(std::log)
 }
 
 template<Concept::NumericVector2FloatingPoint T>
-MUSTARD_STRONG_INLINE auto Gaussian2DDiagnoalFast<T>::operator()(UniformRandomBitGenerator auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(internal::FastLogForOpen01)
+MUSTARD_ALWAYS_INLINE auto Gaussian2DDiagnoalFast<T>::Impl(auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T {
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
 }
 
 #undef MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET

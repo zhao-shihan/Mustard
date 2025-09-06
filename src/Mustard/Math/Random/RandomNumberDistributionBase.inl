@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,12 +21,14 @@ namespace Mustard::Math::Random {
 template<typename ADerived, typename ADistribution>
 constexpr DistributionParameterBase<ADerived, ADistribution>::DistributionParameterBase() {
     static_assert(DistributionParameterOf<ADerived, ADistribution>);
+    static_assert(std::is_final_v<ADerived>);
 }
 
 template<typename ADerived, typename AParameter, typename T>
     requires(std::is_arithmetic_v<T> or Concept::NumericVectorAny<T>)
 constexpr RandomNumberDistributionBase<ADerived, AParameter, T>::RandomNumberDistributionBase() {
     static_assert(RandomNumberDistribution<ADerived>);
+    static_assert(std::is_final_v<ADerived>);
 }
 
 } // namespace Mustard::Math::Random

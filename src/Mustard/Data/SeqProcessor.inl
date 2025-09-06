@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -31,14 +31,14 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf,
 }
 
 template<TupleModelizable... Ts, std::integral AEventIDType>
-auto SeqProcessor::Process(ROOT::RDF::RNode rdf, AEventIDType, std::string eventIDColumnName,
+auto SeqProcessor::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::string eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
 }
 
 template<TupleModelizable... Ts, std::integral AEventIDType>
-auto SeqProcessor::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::index> eventSplit,
+auto SeqProcessor::Process(ROOT::RDF::RNode rdf, muc::type_tag<AEventIDType>, std::vector<gsl::index> eventSplit,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts...>>> auto&& F) -> Index {
     Expects(std::ranges::is_sorted(eventSplit));
 
@@ -60,7 +60,7 @@ auto SeqProcessor::Process(ROOT::RDF::RNode rdf, AEventIDType, std::vector<gsl::
 
 template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           AEventIDType, std::string eventIDColumnName,
+                           muc::type_tag<AEventIDType>, std::string eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
     auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
@@ -68,7 +68,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
 
 template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           AEventIDType, std::vector<std::string> eventIDColumnName,
+                           muc::type_tag<AEventIDType>, std::vector<std::string> eventIDColumnName,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
     auto es{RDFEventSplit<AEventIDType>(rdf, std::move(eventIDColumnName))};
     return Process<Ts...>(std::move(rdf), AEventIDType{}, std::move(es), std::forward<decltype(F)>(F));
@@ -76,7 +76,7 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
 
 template<muc::instantiated_from<TupleModel>... Ts, std::integral AEventIDType>
 auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
-                           AEventIDType, const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
+                           muc::type_tag<AEventIDType>, const std::vector<std::array<RDFEntryRange, sizeof...(Ts)>>& eventSplit,
                            std::invocable<muc::shared_ptrvec<Tuple<Ts>>...> auto&& F) -> Index {
     const auto& es{eventSplit};
 
@@ -109,7 +109,9 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                 (...,
                  [&]<gsl::index I>(std::integral_constant<gsl::index, I>) {
                      const auto entryRange{es[i][I]};
-                     if (entryRange.last == 0) { return; }
+                     if (entryRange.last == 0) {
+                         return;
+                     }
                      std::ranges::subrange eventData{
                          get<I>(data).begin() + (entryRange.first - es[iFirst][I].first),
                          get<I>(data).begin() + (entryRange.last - es[iFirst][I].first)};
@@ -148,8 +150,10 @@ auto SeqProcessor::Process(std::array<ROOT::RDF::RNode, sizeof...(Ts)> rdf,
                                   From(rdf[Is].Range(takeRange[Is].first, takeRange[Is].last))...};
         }(gslx::make_index_sequence<nRDF>())};
         // async process
-        if (async.valid()) { async.get(); }
-        async = std::async(std::launch::async, ProcessBatch, iFirst, iLast, std::move(data));
+        if (async.valid()) {
+            async.get();
+        }
+        async = std::async(ProcessBatch, iFirst, iLast, std::move(data));
     }
     async.get();
     LoopEndAction();
@@ -175,9 +179,13 @@ auto SeqProcessor::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     LoopBeginAction(n);
     for (Index k{}; k < batch.nBatch; ++k) { // k is batch index
         const auto [iFirst, iLast]{CalculateIndexRange(k, batch)};
-        if (asyncReader.Reading()) { batchData = asyncReader.Acquire(); }
+        if (asyncReader.Reading()) {
+            batchData = asyncReader.Acquire();
+        }
         asyncReader.Read(iFirst, iLast);
-        if (asyncProcess.valid()) { asyncProcess.get(); }
+        if (asyncProcess.valid()) {
+            asyncProcess.get();
+        }
         asyncProcess = std::async(std::launch::deferred, ProcessBatch);
     }
     batchData = asyncReader.Acquire();

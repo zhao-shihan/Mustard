@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -54,7 +54,7 @@ MUSTARD_ALWAYS_INLINE constexpr auto Xoshiro512Base<ADerived>::Step() -> void {
 }
 
 template<typename ADerived>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto Xoshiro512Base<ADerived>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     return os << this->fState[0] << ' '
               << this->fState[1] << ' '
@@ -67,7 +67,7 @@ auto Xoshiro512Base<ADerived>::StreamOutput(std::basic_ostream<AChar>& os) const
 }
 
 template<typename ADerived>
-template<Concept::Character AChar>
+template<muc::character AChar>
 auto Xoshiro512Base<ADerived>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> this->fState[0] // clang-format off
               >> this->fState[1]

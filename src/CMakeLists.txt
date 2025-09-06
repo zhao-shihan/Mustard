@@ -1,3 +1,19 @@
+# Copyright (C) 2020-2025  The Mustard development team
+#
+# This file is part of Mustard, an offline software framework for HEP experiments.
+#
+# Mustard is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Mustard. If not, see <https://www.gnu.org/licenses/>.
+
 file(GLOB_RECURSE MUSTARD_SRC ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/*.c++)
 add_library(Mustard ${MUSTARD_SRC})
 add_library(Mustard::Mustard ALIAS Mustard)
@@ -23,17 +39,20 @@ target_link_libraries(Mustard PUBLIC muc::muc)
 # EFM
 target_link_libraries(Mustard PUBLIC EFM::EFM)
 
+# backward-cpp
+target_link_libraries(Mustard PUBLIC Backward::Interface)
+
 # argparse
 target_link_libraries(Mustard PUBLIC argparse::argparse)
 
 # indicators
 target_link_libraries(Mustard PUBLIC indicators::indicators)
 
+# MPLR
+target_link_libraries(Mustard PUBLIC mplr::mplr)
+
 # Microsoft.GSL
 target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
-
-# backward-cpp
-target_link_libraries(Mustard PUBLIC Backward::Interface)
 
 # fmt
 target_link_libraries(Mustard PUBLIC fmt::fmt)
@@ -44,11 +63,8 @@ target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
 # yaml-cpp
 target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
 
-# MPI
-target_link_libraries(Mustard PUBLIC MPI::MPI_C)
-
 # Geant4
 target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
 
 # ROOT
-target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Tree ROOT::MathCore ROOT::ROOTDataFrame ROOT::Geom)
+target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Thread ROOT::Tree ROOT::MathCore ROOT::ROOTDataFrame ROOT::Geom)

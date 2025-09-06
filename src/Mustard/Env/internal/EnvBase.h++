@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,23 +18,21 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include <memory>
 
 namespace Mustard::Env {
 
 namespace Memory::internal {
-
 class WeakSingletonPool;
 class SingletonDeleter;
 class SingletonPool;
-
 } // namespace Memory::internal
 
 namespace internal {
 
-class EnvBase : public NonMoveableBase {
+class EnvBase : public NonCopyableBase {
 protected:
     EnvBase();
     ~EnvBase();

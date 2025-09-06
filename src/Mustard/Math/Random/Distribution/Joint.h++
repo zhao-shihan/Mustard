@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,9 +19,13 @@
 #pragma once
 
 #include "Mustard/Concept/NumericVector.h++"
-#include "Mustard/Extension/gslx/index_sequence.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
+#include "Mustard/gslx/index_sequence.h++"
+
+#include "CLHEP/Random/RandomEngine.h"
+
+#include "muc/concepts"
 
 #include "gsl/gsl"
 
@@ -81,15 +85,15 @@ public:
     template<gsl::index I>
     constexpr auto Parameter(const std::tuple_element_t<I, std::tuple<typename Ds::ParameterType...>>& p) -> void { this->template Margin<I>() = p; }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const JointParameterInterface& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, JointParameterInterface& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 };
 
@@ -106,8 +110,11 @@ protected:
     constexpr ~JointInterface() = default;
 
 public:
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> T;
-    MUSTARD_STRONG_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g); }
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> auto { return Impl(g, p); }
+
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const AParameter& p) -> auto { return Impl(g, p); }
 
     constexpr auto Reset() -> void;
 
@@ -124,24 +131,27 @@ public:
 
     static constexpr auto Stateless() -> bool { return (... and Ds::Stateless()); }
 
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const JointInterface& self) -> decltype(os) { return self.StreamOutput(os); }
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     friend auto operator>>(std::basic_istream<AChar>& is, JointInterface& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    template<Concept::Character AChar>
+    MUSTARD_ALWAYS_INLINE constexpr auto Impl(auto& g) -> T;
+    MUSTARD_ALWAYS_INLINE constexpr auto Impl(auto& g, const AParameter& p) -> T;
+
+    template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
-    template<Concept::Character AChar>
+    template<muc::character AChar>
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 };
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
 class Joint;
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
 class JointParameter final : public JointParameterInterface<JointParameter<T, Ds...>,
                                                             Joint<T, Ds...>,
                                                             Ds...> {
@@ -152,7 +162,7 @@ template<typename... Ps>
 JointParameter(Ps...) -> JointParameter<std::array<std::common_type_t<typename Ps::DistributionType::ResultType...>, sizeof...(Ps)>, typename Ps::DistributionType...>;
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and Concept::Arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
 class Joint final : public JointInterface<Joint<T, Ds...>,
                                           JointParameter<T, Ds...>,
                                           T,

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,7 +20,7 @@ namespace Mustard::Env::Memory::internal {
 
 template<WeakSingletonified AWeakSingleton>
 [[nodiscard]] auto WeakSingletonPool::Find() -> std::shared_ptr<void*> {
-    if (const auto existed = fInstanceMap.find(typeid(AWeakSingleton));
+    if (const auto existed{fInstanceMap.find(typeid(AWeakSingleton))};
         existed == fInstanceMap.cend()) {
         return {};
     } else {

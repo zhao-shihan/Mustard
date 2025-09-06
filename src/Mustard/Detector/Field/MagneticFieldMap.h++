@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,14 +22,14 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/FieldMapSymmetry.h++"
 #include "Mustard/Detector/Field/MagneticFieldBase.h++"
-#include "Mustard/Utility/InlineMacro.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/VectorCast.h++"
-
-#include "EFM/FieldMap3D.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "Eigen/Core"
+
+#include "EFM/FieldMap3D.h++"
 
 #include "muc/functional"
 

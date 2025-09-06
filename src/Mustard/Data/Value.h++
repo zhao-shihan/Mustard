@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -40,11 +40,11 @@ namespace Mustard::Data {
 template<typename T>
 concept ValueAcceptable =
     [] {
-        if constexpr (Concept::ROOTFundamental<T>) {
+        if constexpr (ROOTX::Fundamental<T>) {
             return not std::same_as<std::decay_t<T>, gsl::zstring>;
         }
         if constexpr (internal::IsStdArray<T>{}) {
-            return Concept::ROOTFundamental<typename T::value_type> and
+            return ROOTX::Fundamental<typename T::value_type> and
                    not std::same_as<std::decay_t<typename T::value_type>, gsl::zstring>;
         }
         return std::is_class_v<T>;

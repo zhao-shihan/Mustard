@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,19 +18,22 @@
 
 #include "Mustard/Env/Memory/internal/SingletonPool.h++"
 
+#include "gsl/gsl"
+
 #include <algorithm>
-#include <cassert>
 
 namespace Mustard::Env::Memory::internal {
+
+std::mutex SingletonPool::fgMutex{};
 
 SingletonPool::SingletonPool() :
     PassiveSingleton<SingletonPool>{this} {}
 
 SingletonPool::~SingletonPool() {
-    for ([[maybe_unused]] auto&& [_, instanceInfo] : std::as_const(fInstanceMap)) {
-        [[maybe_unused]] auto&& [instance, __, ___]{instanceInfo};
-        assert(not instance.expired());
-        assert(*instance.lock() == nullptr);
+    for (auto&& [_1, instanceInfo] : std::as_const(fInstanceMap)) {
+        auto&& [instance, _2, _3]{instanceInfo};
+        Ensures(not instance.expired());
+        Ensures(*instance.lock() == nullptr);
     }
 }
 

@@ -1,5 +1,6 @@
 #include "Mustard/Application/SubprogramLauncher.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/CLI/internal/MakeDefaultArgParser.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "argparse/argparse.hpp"
 
@@ -23,7 +24,8 @@ struct SubprogramLauncher::State {
 };
 
 SubprogramLauncher::SubprogramLauncher() :
-    fState(new State{std::make_unique<argparse::ArgumentParser>("", "", argparse::default_arguments::help), {}}) {
+    fState{std::make_unique_for_overwrite<State>()} {
+    fState->command = CLI::internal::MakeDefaultArgParser();
 }
 
 SubprogramLauncher::~SubprogramLauncher() = default;

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,24 +18,49 @@
 
 #pragma once
 
+#include "Mustard/CLI/Module/MonteCarloModule.h++"
+
+#include "muc/optional"
+
 #include <memory>
 
 namespace Mustard::inline Utility {
 
-/// @brief Use Xoshiro random engine for CLHEP and ROOT, Xoshiro** for CLHEP and Xoshiro++ for ROOT.
-/// @tparam Xoshiro bit width.
-/// @note RAII style class. Random engines share lifetime with this class object.
+/// @brief Configures Xoshiro random engines for CLHEP and ROOT frameworks
+///
+/// RAII wrapper that sets Xoshiro** for CLHEP and Xoshiro++ for ROOT as their
+/// respective global random number engines. Manages engine lifetime and ensures
+/// proper initialization and cleanup.
+///
+/// @tparam ABitWidth Xoshiro variant bit width (256 or 512)
+///
+/// @note Features:
+///   - Sets CLHEP's global engine to Xoshiro**
+///   - Sets ROOT's global engine to Xoshiro++
+///   - Automatic engine lifetime management
+///   - Parallel computing reseeding support
+///   - CLI-based seeding option
+///
+/// @warning This class should be instantiated once at application startup
+/// @see CLHEPX::Random::Xoshiro256StarStar, CLHEPX::Random::Xoshiro512StarStar
+/// @see ROOTX::Math::Xoshiro256PlusPlus, ROOTX::Math::Xoshiro512PlusPlus
 template<unsigned ABitWidth>
 class UseXoshiro {
 public:
-    UseXoshiro();
+    /// @brief Initialize with automatic seeding
+    /// @param cli MonteCarloModule CLI interface for seed configuration (optional)
+    /// @note Also performs decorrelation between CLHEP and ROOT engines
+    ///       and parallel computing reseeding
+    explicit UseXoshiro(muc::optional_ref<const CLI::MonteCarloModule> cli = {});
+    /// @brief Clean up and reset global engine pointers
     ~UseXoshiro();
 
 private:
+    /// @brief Random engine storage
     struct Random;
 
 private:
-    std::unique_ptr<Random> fRandom;
+    std::unique_ptr<Random> fRandom; ///< Engine instances
 };
 
 } // namespace Mustard::inline Utility

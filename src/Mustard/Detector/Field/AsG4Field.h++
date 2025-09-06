@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,7 +21,6 @@
 #include "Mustard/Detector/Field/ElectricField.h++"
 #include "Mustard/Detector/Field/ElectromagneticField.h++"
 #include "Mustard/Detector/Field/MagneticField.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "G4ElectricField.hh"
@@ -48,8 +47,7 @@ public:
 } // namespace internal
 
 template<ElectromagneticField AField, bool AEMFieldChangeEnergy = true>
-class AsG4Field : public NonMoveableBase,
-                  public std::conditional_t<MagneticField<AField>,
+class AsG4Field : public std::conditional_t<MagneticField<AField>,
                                             G4MagneticField,
                                             std::conditional_t<ElectricField<AField>,
                                                                G4ElectricField,

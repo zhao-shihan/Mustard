@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,24 +18,34 @@
 
 #include "Mustard/Detector/Assembly/AssemblyBase.h++"
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
+
+#include "muc/hash_set"
 
 namespace Mustard::Detector::Assembly {
 
 auto AssemblyBase::Get(std::type_index definition) const -> const Definition::DefinitionBase& {
     for (auto&& [topType, top] : fTop) {
-        if (topType == definition) { return *top; }
+        if (topType == definition) {
+            return *top;
+        }
         const auto descendant{top->FindDescendant(definition)};
-        if (descendant) { return *descendant; }
+        if (descendant) {
+            return *descendant;
+        }
     }
     Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
 }
 
 auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase& {
     for (auto&& [topType, top] : fTop) {
-        if (topType == definition) { return *top; }
+        if (topType == definition) {
+            return *top;
+        }
         const auto descendant{top->FindDescendant(definition)};
-        if (descendant) { return *descendant; }
+        if (descendant) {
+            return *descendant;
+        }
     }
     Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
 }
@@ -48,7 +58,9 @@ auto AssemblyBase::TopComplete() -> void {
     // check not mother-daughter
     for (auto&& [topType, pTop] : fTop) {
         const auto& top{*pTop};
-        if (topType == typeid(top)) { continue; }
+        if (topType == typeid(top)) {
+            continue;
+        }
         for (auto&& [anotherTop, _] : fTop) {
             if (top.FindDaughter(anotherTop)) {
                 Throw<std::logic_error>(fmt::format("{} is mother of {}",
@@ -58,7 +70,8 @@ auto AssemblyBase::TopComplete() -> void {
         }
     }
     // check from same family
-    std::unordered_set<const Definition::DefinitionBase*> mother;
+    muc::flat_hash_set<const Definition::DefinitionBase*> mother;
+    mother.reserve(fTop.size());
     for (auto&& [_, top] : fTop) {
         const Definition::DefinitionBase* myMother{top.get()};
         while (not myMother->Topmost()) {

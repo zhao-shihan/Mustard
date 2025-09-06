@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,7 +22,7 @@
 #include "Mustard/Env/Memory/WeakSingleton.h++"
 #include "Mustard/Env/Memory/internal/PassiveSingletonBase.h++"
 #include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "muc/utility"
 
@@ -38,6 +38,9 @@ namespace Mustard::Env::Memory {
 template<typename ADerived>
 class PassiveSingleton : public internal::PassiveSingletonBase,
                          public WeakSingleton<ADerived> {
+private:
+    using Base = WeakSingleton<ADerived>;
+
 protected:
     [[deprecated]] PassiveSingleton() = default;
     PassiveSingleton(ADerived* self);
@@ -45,9 +48,6 @@ protected:
 
 public:
     MUSTARD_ALWAYS_INLINE static auto Instance() -> ADerived&;
-
-private:
-    using Base = WeakSingleton<ADerived>;
 };
 
 } // namespace Mustard::Env::Memory

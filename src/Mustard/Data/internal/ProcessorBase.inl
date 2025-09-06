@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -24,12 +24,10 @@ ProcessorBase<T>::ProcessorBase() :
 
 template<std::integral T>
 auto ProcessorBase<T>::CalculateBatchConfiguration(T nProcess, T nTotal) const -> BatchConfiguration {
-    const auto nBatchProposal{std::round(static_cast<double>(nTotal) / fBatchSizeProposal)};
-    const auto nBatchLowerBound{std::min(nProcess, nTotal)};
-    const auto nBatch{std::clamp(gsl::narrow<T>(nBatchProposal), nBatchLowerBound, nTotal)};
-    const auto nEPBQuot{nTotal / nBatch};
-    const auto nEPBRem{nTotal % nBatch};
-    return {nBatch, nEPBQuot, nEPBRem};
+    const auto nBatchProposal{std::llround(static_cast<double>(nTotal) / fBatchSizeProposal)};
+    const auto nBatch{std::clamp(gsl::narrow<T>(nBatchProposal), std::min(nProcess, nTotal), nTotal)};
+    const auto nEventPerBatch{muc::div(nTotal, nBatch)};
+    return {nBatch, nEventPerBatch.quot, nEventPerBatch.rem};
 }
 
 template<std::integral T>

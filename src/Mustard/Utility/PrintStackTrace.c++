@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -16,11 +16,12 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Utility/Print.h++"
+#include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/PrintStackTrace.h++"
 
 #include "backward.hpp"
+
+#include "mplr/mplr.hpp"
 
 #include <climits>
 #include <string>
@@ -35,8 +36,8 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const f
     backward::TraceResolver resolver;
     resolver.load_stacktrace(stack);
 
-    const auto lineHeader{Env::MPIEnv::Available() ?
-                              fmt::format("MPI{}> ", Env::MPIEnv::Instance().CommWorldRank()) :
+    const auto lineHeader{mplr::available() ?
+                              fmt::format("MPI{}> ", mplr::comm_world().rank()) :
                               ""};
     auto text{lineHeader + "Stack trace (most recent call last):\n"};
     backward::SnippetFactory snippetFactory;
@@ -49,7 +50,9 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const f
         if (auto&& src{trace.source};
             not src.filename.empty()) {
             text += fmt::format(" at {}:{}", src.filename, src.line);
-            if (src.col > 0) { text += fmt::format(":{}", src.col); }
+            if (src.col > 0) {
+                text += fmt::format(":{}", src.col);
+            }
             if (auto snippet{snippetFactory.get_snippet(src.filename, src.line, 1)};
                 not snippet.empty()) {
                 auto&& [line, content] = snippet.front();

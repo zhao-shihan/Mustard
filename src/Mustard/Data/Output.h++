@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,13 +21,13 @@
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/internal/BranchHelper.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
+#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include "TDirectory.h"
 #include "TLeaf.h"
 #include "TTree.h"
 
-#include "muc/time"
+#include "muc/chrono"
 #include "muc/utility"
 
 #include "fmt/format.h"
@@ -36,23 +36,24 @@
 #include <chrono>
 #include <concepts>
 #include <cstddef>
-#include <filesystem>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <ranges>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 namespace Mustard::Data {
 
 template<TupleModelizable... Ts>
-class Output : public NonMoveableBase {
+class Output : public NonCopyableBase {
 public:
     using Model = TupleModel<Ts...>;
 
 private:
-    using Second = std::chrono::duration<double>;
+    using Second = muc::chrono::seconds<double>;
 
 public:
     explicit Output(const std::string& name, const std::string& title = {},
@@ -72,13 +73,13 @@ public:
 
     template<std::ranges::input_range R = std::initializer_list<Tuple<Ts...>>>
         requires std::assignable_from<Tuple<Ts...>&, std::ranges::range_reference_t<R>> or
-                     ProperSubTuple<Tuple<Ts...>, std::ranges::range_value_t<R>>
+                 ProperSubTuple<Tuple<Ts...>, std::ranges::range_value_t<R>>
     auto Fill(R&& data) -> std::size_t;
 
     template<std::ranges::input_range R>
         requires std::indirectly_readable<std::ranges::range_reference_t<R>> and
-                     (std::assignable_from<Tuple<Ts...>&, std::iter_reference_t<std::ranges::range_value_t<R>>> or
-                      ProperSubTuple<Tuple<Ts...>, std::iter_value_t<std::ranges::range_value_t<R>>>)
+                 (std::assignable_from<Tuple<Ts...>&, std::iter_reference_t<std::ranges::range_value_t<R>>> or
+                  ProperSubTuple<Tuple<Ts...>, std::iter_value_t<std::ranges::range_value_t<R>>>)
     auto Fill(R&& data) -> std::size_t;
 
     auto Entry() -> auto { return OutputIterator{this}; }
@@ -98,7 +99,7 @@ private:
     auto TimedAutoSaveIfNecessary() -> std::size_t;
 
 private:
-    class OutputIterator final {
+    class OutputIterator {
     public:
         using difference_type = std::ptrdiff_t;
         using value_type = void;
@@ -122,13 +123,12 @@ private:
 
 private:
     Tuple<Ts...> fEntry;
-    std::string fDirectory;
-    TTree* fTree;
+    std::optional<TTree> fTree;
 
     bool fTimedAutoSaveEnabled;
     Second fTimedAutoSavePeriod;
 
-    muc::wall_time_stopwatch<double> fTimedAutoSaveStopwatch;
+    muc::chrono::stopwatch fAutoSaveStopwatch;
     internal::BranchHelper<Tuple<Ts...>> fBranchHelper;
 };
 

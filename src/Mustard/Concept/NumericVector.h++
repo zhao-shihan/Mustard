@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,7 +20,7 @@
 
 #include "Mustard/Concept/InputVector.h++"
 #include "Mustard/Concept/Subscriptable.h++"
-#include "Mustard/Extension/gslx/index_sequence.h++"
+#include "Mustard/gslx/index_sequence.h++"
 
 #include "gsl/gsl"
 

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,12 +18,14 @@
 
 #pragma once
 
-#include "Mustard/Concept/FundamentalType.h++"
 #include "Mustard/Concept/Subscriptable.h++"
+
+#include "muc/concepts"
 
 #include <concepts>
 #include <cstddef>
 #include <limits>
+#include <type_traits>
 
 namespace Mustard::Concept {
 
@@ -31,7 +33,7 @@ template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t
 concept InputVector =
     requires {
         requires(N >= 2);
-        requires Arithmetic<F>;
+        requires muc::arithmetic<F>;
         requires(std::is_class_v<T> and
                  std::default_initializable<T>) or
                     (std::is_pointer_v<T> or

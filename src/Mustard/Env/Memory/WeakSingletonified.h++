@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Concept/NonMoveable.h++"
+#include "Mustard/Concept/NonCopyable.h++"
 
 #include <concepts>
 #include <type_traits>
@@ -40,7 +40,7 @@ concept IndirectlyWeakSingletonified =
     requires {
         requires std::is_base_of_v<internal::WeakSingletonBase, T>;
         requires not std::is_base_of_v<internal::SingletonBase, T>;
-        requires Concept::NonMoveable<T>;
+        requires Concept::NonCopyable<T>;
     };
 
 template<typename T>

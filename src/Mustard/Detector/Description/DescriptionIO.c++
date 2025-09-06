@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2020-2024  The Mustard development team
+// Copyright (C) 2020-2025  The Mustard development team
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,15 +22,41 @@ namespace Mustard::Detector::Description {
 
 std::set<gsl::not_null<DescriptionBase<>*>> DescriptionIO::fgInstanceSet{};
 
-auto DescriptionIO::Output(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void {
+auto DescriptionIO::EmitYAML(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void {
     YAML::Emitter yamlEmitter{os};
-    yamlEmitter << YAML::Block;
     if (not fileComment.empty()) {
         yamlEmitter << YAML::Comment(fileComment)
                     << YAML::Newline;
     }
-    yamlEmitter << geomYaml
-                << YAML::Newline;
+    EmitYAMLImpl(geomYaml, yamlEmitter);
+    yamlEmitter << YAML::Newline;
+}
+
+auto DescriptionIO::EmitYAMLImpl(const YAML::Node& node, YAML::Emitter& emitter, bool inFlow) -> void {
+    if (not node.IsDefined() or node.IsNull()) {
+        emitter << YAML::Null;
+    } else if (node.IsSequence()) {
+        emitter << YAML::Flow;
+        emitter << YAML::BeginSeq;
+        for (auto&& child : node) {
+            EmitYAMLImpl(child, emitter, true);
+        }
+        emitter << YAML::EndSeq;
+    } else if (node.IsMap()) {
+        if (inFlow) { // if we are in flow, be in flow!
+            emitter << YAML::Flow;
+        }
+        emitter << YAML::BeginMap;
+        for (auto&& child : node) {
+            emitter << YAML::Key;
+            EmitYAMLImpl(child.first, emitter);
+            emitter << YAML::Value;
+            EmitYAMLImpl(child.second, emitter);
+        }
+        emitter << YAML::EndMap;
+    } else if (node.IsScalar()) {
+        emitter << node;
+    }
 }
 
 } // namespace Mustard::Detector::Description

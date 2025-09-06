@@ -1,7 +1,20 @@
-cmake_minimum_required(VERSION 3.21)
+# Copyright (C) 2020-2025  The Mustard development team
+#
+# This file is part of Mustard, an offline software framework for HEP experiments.
+#
+# Mustard is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)
+cmake_minimum_required(VERSION 3.21)
 
 # Enable MSVC_RUNTIME_LIBRARY target property
 # See https://cmake.org/cmake/help/latest/policy/CMP0091.html
@@ -18,11 +31,14 @@ endif()
 
 set(MUSTARD_VERSION_MAJOR 0)
 set(MUSTARD_VERSION_MINOR 25)
-set(MUSTARD_VERSION_PATCH 520)
+set(MUSTARD_VERSION_PATCH 831)
 set(MUSTARD_VERSION ${MUSTARD_VERSION_MAJOR}.${MUSTARD_VERSION_MINOR}.${MUSTARD_VERSION_PATCH})
 
 project(Mustard VERSION ${MUSTARD_VERSION}
                 LANGUAGES C CXX)
+
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 
 # =============================================================================
 # Variables
@@ -48,6 +64,7 @@ option(MUSTARD_BUILTIN_EFM "Use built-in EFM (network or pre-downloaded source i
 option(MUSTARD_BUILTIN_ENVPARSE "Use built-in envparse (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_FMT "Use built-in fmt (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_INDICATORS "Use built-in indicators (network or pre-downloaded source is required)." ON)
+option(MUSTARD_BUILTIN_MPLR "Use built-in MPLR (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_MSGSL "Use built-in Microsoft.GSL (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_MUC "Use built-in muc (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_YAML_CPP "Use built-in yaml-cpp (network or pre-downloaded source is required)." OFF)
@@ -71,8 +88,9 @@ set(MUSTARD_BUILTIN_EFM_VERSION 0.1.0 CACHE STRING "Set built-in EFM version (if
 set(MUSTARD_BUILTIN_ENVPARSE_VERSION 1.0.0 CACHE STRING "Set built-in envparse version (if required).")
 set(MUSTARD_BUILTIN_FMT_VERSION 11.2.0 CACHE STRING "Set built-in fmt version (if required).")
 set(MUSTARD_BUILTIN_INDICATORS_VERSION 2.3 CACHE STRING "Set built-in indicators version (if required).")
+set(MUSTARD_BUILTIN_MPLR_VERSION 0.25.730 CACHE STRING "Set built-in MPLR version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.2.0 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
-set(MUSTARD_BUILTIN_MUC_VERSION 0.25.520 CACHE STRING "Set built-in muc version (if required).")
+set(MUSTARD_BUILTIN_MUC_VERSION 0.25.827 CACHE STRING "Set built-in muc version (if required).")
 set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.8.0 CACHE STRING "Set built-in yaml-cpp version (if required).")
 set(MUSTARD_DEBUG_POSTFIX d CACHE STRING "Debug library postfix.")
 
@@ -101,8 +119,6 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/GlobalCompileConfig.cmake)
 
 # Required:
 
-# MPI
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMPI.cmake)
 # Eigen
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEigen.cmake)
 # Geant4
@@ -126,6 +142,8 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForFmt.cmake)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForIndicators.cmake)
 # Microsoft.GSL
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMicrosoftGSL.cmake)
+# MPLR
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMPLR.cmake)
 # muc
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMUC.cmake)
 # yaml-cpp
