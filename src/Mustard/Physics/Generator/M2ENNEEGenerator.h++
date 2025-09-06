@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Physics/Generator/ClassicalMetropolisGenerator.h++"
+#include "Mustard/Physics/Generator/AdaptiveMTMGenerator.h++"
 #include "Mustard/Physics/QFT/M2ENNEE0AvMSqMcMule.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -32,17 +32,16 @@ namespace Mustard::inline Physics::inline Generator {
 /// @brief MCMC generator for mu->ennee decays
 /// Kinematics: μ⁻ → e⁻ ν ν e⁺ e⁻
 ///             μ⁺ → e⁺ ν ν e⁻ e⁺
-class M2ENNEEGenerator : public ClassicalMetropolisGenerator<1, 5, QFT::M2ENNEE0AvMSqMcMule> {
+class M2ENNEEGenerator : public AdaptiveMTMGenerator<1, 5, QFT::M2ENNEE0AvMSqMcMule> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param momentum Muon momentum
     /// @param polarization Muon polarization vector
-    /// @param stepSize Step scale of random walk (0--0.5, optional, use default value if not set)
-    /// @param thinningFactor Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     M2ENNEEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
-                     std::optional<double> stepSize = {}, std::optional<double> thinningFactor = {}, std::optional<unsigned> acfSampleSize = {});
+                     std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {});
 
     /// @brief Set parent particle
     /// @param parent "mu-" or "mu+"

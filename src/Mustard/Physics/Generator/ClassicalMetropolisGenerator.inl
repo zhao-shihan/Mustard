@@ -19,28 +19,103 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                    std::optional<double> stepSize) :
+    Base{pI, pdgID, mass, std::move(thinningRatio), acfSampleSize.value_or(fgDefaultACFSampleSize)},
+    fGaussian{},
+    fStepSize{fgDefaultStepSize} {
+    if (stepSize) {
+        StepSize(*stepSize);
+    }
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+                                                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                    std::optional<double> stepSize) // clang-format off
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
+    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), acfSampleSize.value_or(fgDefaultACFSampleSize)},
+    fGaussian{},
+    fStepSize{fgDefaultStepSize} {
+    if (stepSize) {
+        StepSize(*stepSize);
+    }
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+                                                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                    std::optional<double> stepSize) // clang-format off
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
+    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), acfSampleSize.value_or(fgDefaultACFSampleSize)},
+    fGaussian{},
+    fStepSize{fgDefaultStepSize} {
+    if (stepSize) {
+        StepSize(*stepSize);
+    }
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::~ClassicalMetropolisGenerator() = default;
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng, double stepSize) -> Event {
-    struct NSRWMGenerator<M, N, A>::MarkovChain::State state;
-    while (true) {
-        this->NSRWMProposeState(rng, stepSize, this->fMarkovChain.state, state);
-        auto event{this->PhaseSpace(state)};
-        const auto& [detJ, _, pF]{event};
-        if (not this->IRSafe(pF)) {
-            continue;
-        }
-        const auto acceptance{this->ValidAcceptance(pF)};
-        const auto mSqAcceptanceDetJ{this->ValidMSqAcceptanceDetJ(pF, acceptance, detJ)};
-        if (mSqAcceptanceDetJ >= this->fMarkovChain.mSqAcceptanceDetJ or
-            mSqAcceptanceDetJ >= this->fMarkovChain.mSqAcceptanceDetJ * rng.flat()) {
-            this->fMarkovChain.state = state;
-            this->fMarkovChain.mSqAcceptanceDetJ = mSqAcceptanceDetJ;
-            event.weight = 1 / acceptance;
-            return event;
+auto ClassicalMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
+    if (not std::isfinite(stepSize)) [[unlikely]] {
+        PrintError(fmt::format("Infinite MCMC step size (got {})", stepSize));
+    }
+    if (stepSize <= muc::default_tolerance<double> or 0.5 <= stepSize) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5)", stepSize, muc::default_tolerance<double>));
+    }
+    // Rescale stepSize
+    // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
+    fStepSize = fgScalingFactor * stepSize;
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
+    // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
+    // so we try to ensure E(random walk displacement) >~ scale * E(distance in d-dim space) with some scale
+    // i.e. sqrt(random walk distance) >~ scale * sqrt(dimension)
+    constexpr auto travelScale{10};
+    double distance{};
+    while (distance > muc::pow(travelScale, 2) * MarkovChain::dim) {
+        if (NextEvent(rng)) {
+            distance += fStepSize;
         }
     }
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng) -> bool {
+    struct MarkovChain::State state;
+    // Walk random state
+    std::ranges::transform(this->fMC.state.u, state.u.begin(), [&](auto u0) {
+        return fGaussian(rng, {u0, fStepSize});
+    });
+    for (auto&& u : state.u) {
+        u = std::abs(muc::fmod(u, 2.)); // Reflection-
+        u = u > 1 ? 2 - u : u;          // boundary
+    }
+    // Walk particle mapping if necessary
+    this->ProposePID(rng, this->fMC.state.pID, state.pID);
+    auto [event, detJ]{this->PhaseSpace(state)};
+    bool accepted{};
+    if (this->IRSafe(event.p)) {
+        const auto acceptance{this->ValidAcceptance(event.p)};
+        const auto mSqAcceptanceDetJ{this->ValidMSqAcceptanceDetJ(event.p, acceptance, detJ)};
+        if (mSqAcceptanceDetJ >= this->fMC.mSqAcceptanceDetJ or
+            mSqAcceptanceDetJ > this->fMC.mSqAcceptanceDetJ * rng.flat()) {
+            this->fMC.state = std::move(state);
+            this->fMC.mSqAcceptanceDetJ = mSqAcceptanceDetJ;
+            this->fMC.event = std::move(event);
+            this->fMC.event.weight = 1 / acceptance;
+            accepted = true;
+        }
+    }
+    return accepted;
 }
 
 } // namespace Mustard::inline Physics::inline Generator
