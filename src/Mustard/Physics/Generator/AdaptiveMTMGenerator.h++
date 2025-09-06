@@ -135,7 +135,7 @@ private:
     static constexpr auto fgNTrial{5};                                            ///< Number of trial points
     static constexpr auto fgInitProposalStepSize{0.2};                            ///< Initial proposal step size
     static constexpr auto fgLearningRatePower{-0.6};                              ///< Learning rate decay power. Ref: Simon Fontaine, Mylène Bédard (2022), https://doi.org/10.3150/21-BEJ1408
-    static inline const auto fgScalingFactor{3.12 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor. Ref: of M. B´edard et al. SPA 122 (2012) 758–786 https://doi.org/10.1016/j.spa.2011.11.004
+    static inline const auto fgScalingFactor{2.98 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor. Ref: of M. B´edard et al. SPA 122 (2012) 758–786, https://doi.org/10.1016/j.spa.2011.11.004
 };
 
 } // namespace Mustard::inline Physics::inline Generator

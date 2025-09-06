@@ -150,8 +150,8 @@ auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, d
     }
 
     // accept/reject Y
-    const auto alphaMTM{std::min(1., sumPiY / sumPiX)};
-    const auto accepted{alphaMTM == 1 or rng.flat() < alphaMTM};
+    const auto accepted{sumPiY >= sumPiX or
+                        sumPiY > sumPiX * rng.flat()};
     if (accepted) {
         this->fMC.state = stateY[selected];
         this->fMC.mSqAcceptanceDetJ = piY[selected];
