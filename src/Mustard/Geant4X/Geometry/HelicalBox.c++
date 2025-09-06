@@ -29,7 +29,6 @@
 #include "muc/numeric"
 
 #include <cmath>
-#include <exception>
 #include <utility>
 
 namespace Mustard::Geant4X::inline Geometry {
@@ -42,8 +41,8 @@ HelicalBox::HelicalBox(std::string name,
                        double pitch,
                        double phi0,
                        double phiTotal,
-                       bool frontPlanar,
-                       bool backPlanar,
+                       bool frontClipped,
+                       bool backClipped,
                        double tolerance) :
     G4TessellatedSolid{std::move(name)},
     fRadius{radius},
@@ -51,8 +50,8 @@ HelicalBox::HelicalBox(std::string name,
     fPitch{pitch},
     fPhi0{phi0},
     fPhiTotal{phiTotal},
-    fFrontPlanar{frontPlanar},
-    fBackPlanar{backPlanar},
+    fFrontClipped{frontClipped},
+    fBackClipped{backClipped},
     fTolerance{tolerance},
     fTotalLength{},
     fZLength{},
@@ -65,10 +64,9 @@ HelicalBox::HelicalBox(std::string name,
     const auto tanA{sinA / cosA};
     const auto tanAR{radius * tanA};
     const auto zOffset{(phi0 + phiTotal / 2) * tanAR};
-    double tFront;
-    double tBack;
     fTotalLength = radius * phiTotal / cosA;
     fZLength = tanAR * phiTotal;
+
     // prepare uv mesh
     const auto deltaU0{std::sqrt(8 * tolerance) * cosA};
     const auto n{muc::llround(phiTotal / deltaU0) + 2};
@@ -99,6 +97,8 @@ HelicalBox::HelicalBox(std::string name,
     fBackEndNormal = EndFaceNormal(phiTotal).unit();
 
     // parameterized surface
+    double tFront;
+    double tBack;
     const auto MainPoint{
         [&](const auto& u, int j) -> G4Point3D {
             const auto u1{u + phi0};
@@ -113,25 +113,18 @@ HelicalBox::HelicalBox(std::string name,
             auto y{(radius + rCosV) * sinU - rSinVSinA * cosU};
             auto z{u1 * tanAR + rSinV * cosA - zOffset};
 
-            if (u == 0 and frontPlanar) {
-                const auto endZ = fFrontEndPosition.z();
-                double t{(endZ - z) / fFrontEndNormal.z()};
-                x += t * fFrontEndNormal.x();
-                y += t * fFrontEndNormal.y();
-                z += t * fFrontEndNormal.z();
-                tFront = t;
-                return {x, y, z};
-            } else if (std::abs(u - phiTotal) < 1e-15 and backPlanar) {
-                const auto endZ = fBackEndPosition.z();
-                double t{(endZ - z) / fBackEndNormal.z()};
-                x += t * fBackEndNormal.x();
-                y += t * fBackEndNormal.y();
-                z += t * fBackEndNormal.z();
-                tBack = t;
-                return {x, y, z};
-            } else {
-                return {x, y, z};
+            if (frontClipped and u == 0) {
+                tFront = (fFrontEndPosition.z() - z) / fFrontEndNormal.z();
+                x += tFront * fFrontEndNormal.x();
+                y += tFront * fFrontEndNormal.y();
+                z += tFront * fFrontEndNormal.z();
+            } else if (backClipped and muc::isclose(u, phiTotal)) {
+                tBack = (fBackEndPosition.z() - z) / fBackEndNormal.z();
+                x += tBack * fBackEndNormal.x();
+                y += tBack * fBackEndNormal.y();
+                z += tBack * fBackEndNormal.z();
             }
+            return {x, y, z};
         }};
     Eigen::MatrixX<G4Point3D> x(n, 5); // main grid
     for (auto i{0ll}; i < n; ++i) {
@@ -143,15 +136,15 @@ HelicalBox::HelicalBox(std::string name,
     }
 
     for (int j{}; j < 4; j++) {
-        if (frontPlanar) {
-            double t0{(fFrontEndPosition.z() - x(1, j).z()) / fFrontEndNormal.z()};
-            if (std::abs(tFront) > std::abs(t0)) {
-                Mustard::Throw<std::runtime_error>("the back end can not be planar!");
+        if (frontClipped) {
+            const auto t0{(fFrontEndPosition.z() - x(1, j).z()) / fFrontEndNormal.z()};
+            if (tFront >= t0) {
+                Mustard::PrintError("Back end cannot be clipped. Solid will not close properly");
             }
-        } else if (backPlanar) {
-            double t0{(fBackEndPosition.z() - x(n - 2, j).z()) / fBackEndNormal.z()};
-            if (std::abs(tBack) > std::abs(t0)) {
-                Mustard::Throw<std::runtime_error>("the front end can not be planar!");
+        } else if (backClipped) {
+            const auto t0{(fBackEndPosition.z() - x(n - 2, j).z()) / fBackEndNormal.z()};
+            if (tBack <= t0) {
+                Mustard::PrintError("Front end cannot be clipped. Solid will not close properly");
             }
         }
     }
