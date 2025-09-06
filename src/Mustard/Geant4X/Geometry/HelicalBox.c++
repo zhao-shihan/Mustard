@@ -138,13 +138,13 @@ HelicalBox::HelicalBox(std::string name,
     for (int j{}; j < 4; j++) {
         if (frontClipped) {
             const auto t0{(fFrontEndPosition.z() - x(1, j).z()) / fFrontEndNormal.z()};
-            if (tFront >= t0) {
-                Mustard::PrintError("Back end cannot be clipped. Solid will not close properly");
+            if (tFront <= t0) {
+                Mustard::PrintError("Front end cannot be clipped. Solid will not close properly");
             }
         } else if (backClipped) {
             const auto t0{(fBackEndPosition.z() - x(n - 2, j).z()) / fBackEndNormal.z()};
             if (tBack <= t0) {
-                Mustard::PrintError("Front end cannot be clipped. Solid will not close properly");
+                Mustard::PrintError("Back end cannot be clipped. Solid will not close properly");
             }
         }
     }
