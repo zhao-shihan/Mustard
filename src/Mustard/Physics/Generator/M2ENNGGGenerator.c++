@@ -34,7 +34,7 @@ using namespace PhysicalConstant;
 
 M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization, double irCut,
                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) :
-    AdaptiveMTMGenerator{{}, polarization, {}, {}, std::move(thinningRatio), std::move(acfSampleSize)} {
+    AdaptiveMTMGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(100000)} {
     Parent(parent);
     ParentMomentum(momentum);
     Mass({electron_mass_c2, 0, 0, 0, 0});

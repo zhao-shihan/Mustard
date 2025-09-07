@@ -22,7 +22,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                     std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                                                     std::optional<double> stepSize) :
-    Base{pI, pdgID, mass, std::move(thinningRatio), acfSampleSize.value_or(fgDefaultACFSampleSize)},
+    Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
     fStepSize{fgDefaultStepSize} {
     if (stepSize) {
@@ -36,7 +36,7 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
                                                                     std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                                                     std::optional<double> stepSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
-    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), acfSampleSize.value_or(fgDefaultACFSampleSize)},
+    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
     fStepSize{fgDefaultStepSize} {
     if (stepSize) {
@@ -50,7 +50,7 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
                                                                     std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                                                     std::optional<double> stepSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
-    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), acfSampleSize.value_or(fgDefaultACFSampleSize)},
+    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
     fStepSize{fgDefaultStepSize} {
     if (stepSize) {

@@ -121,7 +121,6 @@ private:
     Math::Random::Gaussian<double> fGaussian; ///< Gaussian distribution
     double fStepSize;                         ///< Step scale along one direction in random state space
 
-    static constexpr auto fgDefaultACFSampleSize{100000};                         ///< Default ACF sample size
     static constexpr auto fgDefaultStepSize{0.05};                                ///< Initial proposal step size
     static inline const auto fgScalingFactor{2.38 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor
 };

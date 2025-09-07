@@ -35,6 +35,7 @@
 #include <array>
 #include <cmath>
 #include <concepts>
+#include <numbers>
 #include <optional>
 #include <utility>
 
@@ -131,10 +132,9 @@ private:
     Eigen::Matrix<double, MarkovChain::dim, MarkovChain::dim> fProposalCovariance; ///< Proposal covariance
     Eigen::Matrix<double, MarkovChain::dim, MarkovChain::dim> fProposalSigma;      ///< Proposal standard deviation
 
-    static constexpr auto fgDefaultACFSampleSize{20000};                          ///< Default ACF sample size
     static constexpr auto fgNTrial{5};                                            ///< Number of trial points
     static constexpr auto fgInitProposalStepSize{0.2};                            ///< Initial proposal step size
-    static constexpr auto fgLearningRatePower{-0.6};                              ///< Learning rate decay power. Ref: Simon Fontaine, Mylène Bédard (2022), https://doi.org/10.3150/21-BEJ1408
+    static constexpr auto fgLearningRatePower{-std::numbers::inv_sqrtpi};         ///< Learning rate decay power
     static inline const auto fgScalingFactor{2.98 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor. Ref: of M. B´edard et al. SPA 122 (2012) 758–786, https://doi.org/10.1016/j.spa.2011.11.004
 };
 
