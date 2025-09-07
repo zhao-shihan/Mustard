@@ -29,11 +29,13 @@ namespace Mustard::Geant4X::inline Geometry {
 class HelicalBox : public G4TessellatedSolid {
 public:
     HelicalBox(std::string name,
-               double radius,             /* mm */
-               double width,              /* mm */
-               double pitch,              /* rad */
-               double phi0,               /* rad */
-               double phiTotal,           /* rad */
+               double radius,   /* mm */
+               double width,    /* mm */
+               double pitch,    /* rad */
+               double phi0,     /* rad */
+               double phiTotal, /* rad */
+               bool frontClipped = false,
+               bool backClipped = false,
                double tolerance = 0.001); /* 1 */
 
     auto Radius() const -> auto { return fRadius; }
@@ -41,6 +43,8 @@ public:
     auto Pitch() const -> auto { return fPitch; }
     auto Phi0() const -> auto { return fPhi0; }
     auto PhiTotal() const -> auto { return fPhiTotal; }
+    auto FrontClipped() const -> auto { return fFrontClipped; }
+    auto BackClipped() const -> auto { return fBackClipped; }
     auto Tolerance() const -> auto { return fTolerance; }
 
     auto TotalLength() const -> auto { return fTotalLength; }
@@ -56,6 +60,8 @@ private:
     double fPitch;
     double fPhi0;
     double fPhiTotal;
+    bool fFrontClipped;
+    bool fBackClipped;
     double fTolerance;
 
     double fTotalLength;
