@@ -18,15 +18,12 @@
 
 #pragma once
 
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
 #include "Mustard/Physics/Generator/MCMCGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
-#include "Mustard/Utility/VectorAssign.h++"
-#include "Mustard/Utility/VectorCast.h++"
 
 #include "CLHEP/Random/RandomEngine.h"
-
-#include "Eigen/Cholesky"
 
 #include "muc/math"
 #include "muc/numeric"
@@ -35,21 +32,22 @@
 #include <array>
 #include <cmath>
 #include <concepts>
+#include <limits>
 #include <optional>
+#include <stdexcept>
 #include <utility>
 
 namespace Mustard::inline Physics::inline Generator {
 
-/// @class AdaptiveMTMGenerator
-/// @brief Adaptive Multiple-try Metropolis (aMTM) MCMC event generator,
+/// @class MultipleTryMetropolisGenerator
+/// @brief Multiple-try Metropolis (MTM) MCMC event generator,
 /// possibly with user-defined acceptance.
 ///
 /// Generates events distributed according to |M|² × acceptance, and
 /// weight = 1 / acceptance.
 ///
 /// Advanced MCMC sampler that uses multiple trial points per iteration to
-/// improve sampling efficiency in high-dimensional spaces. Implements adaptive
-/// covariance estimation to optimize proposal distributions.
+/// improve sampling efficiency in high-dimensional spaces.
 ///
 /// The Markov chain requires reinitialize after each change to
 /// initial-state momenta. So this generator is unsuitable
@@ -59,7 +57,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// @tparam N Number of final-state particles
 /// @tparam A Matrix element of the process to be generated
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-class AdaptiveMTMGenerator : public MCMCGenerator<M, N, A> {
+class MultipleTryMetropolisGenerator : public MCMCGenerator<M, N, A> {
 private:
     /// @brief The base class
     using Base = MCMCGenerator<M, N, A>;
@@ -77,8 +75,10 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
-    AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                         std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {});
+    /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
+    MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
+                                   std::optional<double> stepSize = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector
@@ -86,10 +86,12 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
-    AdaptiveMTMGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
-                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                         std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
+    MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
+                                   std::optional<double> stepSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
@@ -98,14 +100,20 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized scattering
-    AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
-                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                         std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
+    MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
+                                   std::optional<double> stepSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     // Keep the class abstract
-    virtual ~AdaptiveMTMGenerator() override = 0;
+    virtual ~MultipleTryMetropolisGenerator() override = 0;
+
+    /// @brief Set MCMC step size
+    /// @param stepSize Step size (proposal sigma) for proposal increment distribution
+    auto StepSize(double stepSize) -> void;
 
 private:
     /// @brief Markov chain burn in stage
@@ -114,29 +122,16 @@ private:
     /// @brief Advance Markov chain by one event
     /// @param rng Reference to CLHEP random engine
     /// @return true if proposal accepted, false if not
-    virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override { return NextEventImpl(rng); }
-
-    /// @brief Advance Markov chain by one event using
-    /// adaptive multiple-try Metropolis (aMTM) algorithm
-    /// @param rng Reference to CLHEP random engine
-    /// @param burnInStepSize Step scale of random walk during burn in stage
-    /// @return true if proposal accepted, false if not
-    auto NextEventImpl(CLHEP::HepRandomEngine& rng, double burnInStepSize = 0) -> bool;
+    virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override;
 
 private:
-    Math::Random::Gaussian<double> fGaussian;                                      ///< Gaussian distribution
-    unsigned long long fIteration;                                                 ///< Current iteration count
-    double fLearningRate;                                                          ///< Learning rate for adaptation
-    Eigen::Vector<double, MarkovChain::dim> fRunningMean;                          ///< Running mean of states
-    Eigen::Matrix<double, MarkovChain::dim, MarkovChain::dim> fProposalCovariance; ///< Proposal covariance
-    Eigen::Matrix<double, MarkovChain::dim, MarkovChain::dim> fProposalSigma;      ///< Proposal standard deviation
+    Math::Random::Gaussian<double> fGaussian; ///< Gaussian distribution
+    double fStepSize;                         ///< Step scale along one direction in random state space
 
     static constexpr auto fgNTrial{5};                                            ///< Number of trial points
-    static constexpr auto fgInitProposalStepSize{0.2};                            ///< Initial proposal step size
-    static constexpr auto fgLearningRatePower{-0.3};                              ///< Learning rate decay power
-    static inline const auto fgScalingFactor{2.98 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor. Ref: of M. B´edard et al. SPA 122 (2012) 758–786, https://doi.org/10.1016/j.spa.2011.11.004
+    static inline const auto fgScalingFactor{3.12 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor. Ref: of M. B´edard et al. SPA 122 (2012) 758–786, https://doi.org/10.1016/j.spa.2011.11.004
 };
 
 } // namespace Mustard::inline Physics::inline Generator
 
-#include "Mustard/Physics/Generator/AdaptiveMTMGenerator.inl"
+#include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.inl"

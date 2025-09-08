@@ -18,18 +18,20 @@
 
 #pragma once
 
+#include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Physics/Generator/MatrixElementBasedGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
+#include "Mustard/Utility/VectorCast.h++"
 
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Eigen/Core"
+#include "Eigen/Dense"
 
 #include "mplr/mplr.hpp"
 
@@ -42,7 +44,7 @@
 
 #include "gsl/gsl"
 
-#include "fmt/core.h"
+#include "fmt/ranges.h"
 
 #include <algorithm>
 #include <array>

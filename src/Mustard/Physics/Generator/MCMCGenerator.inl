@@ -151,13 +151,18 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
         if (not this->IRSafe(event.p)) {
             continue;
         }
-        if (const auto acceptance{this->ValidAcceptance(event.p)};
-            acceptance > std::numeric_limits<double>::epsilon()) {
-            fMC.mSqAcceptanceDetJ = this->ValidMSqAcceptanceDetJ(event.p, acceptance, detJ);
-            fMC.event = std::move(event);
-            fMC.event.weight = 1 / acceptance;
-            break;
+        const auto acceptance{this->ValidAcceptance(event.p)};
+        if (acceptance <= std::numeric_limits<double>::min()) {
+            continue;
         }
+        const auto mSqAcceptanceDetJ{this->ValidMSqAcceptanceDetJ(event.p, acceptance, detJ)};
+        if (mSqAcceptanceDetJ <= std::numeric_limits<double>::min()) {
+            continue;
+        }
+        fMC.mSqAcceptanceDetJ = mSqAcceptanceDetJ;
+        fMC.event = std::move(event);
+        fMC.event.weight = 1 / acceptance;
+        break;
     }
     MasterPrintLn("Phase space found.");
 
@@ -165,6 +170,35 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     MasterPrintLn("Markov chain burning in...");
     BurnIn(rng);
     MasterPrintLn("Markov chain burnt in.");
+
+    if (Env::VerboseLevelReach<'I'>()) {
+        struct {
+            Eigen::Vector<double, MarkovChain::dim> u;
+            Eigen::Matrix<double, MarkovChain::dim, MarkovChain::dim> uuT;
+        } mean;
+        mean.u.setZero();
+        mean.uuT.setZero();
+        double sumMSqAcceptanceDetJ{};
+        for (unsigned i{}; i < 100 * fACFSampleSize; ++i) {
+            Eigen::Vector<double, MarkovChain::dim> u;
+            rng.flatArray(u.size(), u.data());
+            auto [event, detJ]{DirectPhaseSpace(VectorCast<RandomState>(u))};
+            if (not this->IRSafe(event.p)) {
+                continue;
+            }
+            const auto acceptance{this->ValidAcceptance(event.p)};
+            const auto mSqAcceptanceDetJ{this->ValidMSqAcceptanceDetJ(event.p, acceptance, detJ)};
+            const auto uMSqAcceptanceDetJ{(mSqAcceptanceDetJ * u).eval()};
+            mean.u += uMSqAcceptanceDetJ;
+            mean.uuT += uMSqAcceptanceDetJ * u.transpose();
+            sumMSqAcceptanceDetJ += mSqAcceptanceDetJ;
+        }
+        mean.u /= sumMSqAcceptanceDetJ;
+        mean.uuT /= sumMSqAcceptanceDetJ;
+        const auto covariance{(mean.uuT - mean.u * mean.u.transpose()).eval()};
+        const auto sqrtDiagCov{Eigen::SelfAdjointEigenSolver<decltype(covariance)>{covariance}.eigenvalues().array().sqrt()};
+        PrintInfo(fmt::format("Sqrt(diag(covariance)): {}", sqrtDiagCov));
+    }
 
     // Estimate autocorrelation and decide thinning
     MasterPrintLn("Estimating autocorrelation and decide thinning...");
@@ -189,7 +223,7 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     }
 
     const auto maxLag{fACFSampleSize / 2};
-    const auto deltaLag{std::max(1u, maxLag / 10000)};
+    const auto deltaLag{std::max(1u, maxLag / 1000)};
     AutocorrelationFunction autocorrelationFunction;
     autocorrelationFunction.reserve(maxLag / deltaLag + 2);
     autocorrelationFunction.emplace_back(0, ArrayDimMC::Ones());
@@ -202,42 +236,28 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
         autocorrelationFunction.emplace_back(lag, autocorrelationNumerator / autocorrelationDenominator);
     }
 
-    std::array<int, MarkovChain::dim> autocorrelationSwitchSignCount{};
+    ArrayDimMC sumAutocorrelation;
+    sumAutocorrelation.setZero();
+    std::array<bool, MarkovChain::dim> autocorrelationConverged{};
     auto lastAutocorrelation{&autocorrelationFunction.front().second};
     for (auto&& [lag, autocorrelation] : autocorrelationFunction) {
         if (lag == 0) {
             continue;
         }
         for (int k{}; k < MarkovChain::dim; ++k) {
-            autocorrelationSwitchSignCount[k] += std::signbit((*lastAutocorrelation)[k]) xor std::signbit(autocorrelation[k]);
-        }
-    }
-    if (not std::ranges::all_of(autocorrelationSwitchSignCount, [](auto n) { return n > 5; })) {
-        PrintWarning(fmt::format("Autocorrelation not fully converged. Try increasing ACF sample size (current: {})", fACFSampleSize));
-    }
-
-    ArrayDimMC sumAutocorrelation;
-    sumAutocorrelation.setZero();
-    std::array<bool, MarkovChain::dim> autocorrelationSignSwitched{};
-    lastAutocorrelation = &autocorrelationFunction.front().second;
-    for (auto&& [lag, autocorrelation] : autocorrelationFunction) {
-        if (lag == 0) {
-            continue;
-        }
-        for (int k{}; k < MarkovChain::dim; ++k) {
-            if (autocorrelationSignSwitched[k]) {
+            if (autocorrelationConverged[k]) {
                 continue;
             }
             if (autocorrelation[k] < 0) {
-                autocorrelationSignSwitched[k] = true;
+                autocorrelationConverged[k] = true;
             }
             sumAutocorrelation[k] += ((*lastAutocorrelation)[k] + autocorrelation[k]) / 2 * deltaLag +
                                      ((*lastAutocorrelation)[k] - autocorrelation[k]) / 2; // approximate sum
         }
         lastAutocorrelation = &autocorrelation;
     }
-    if (not std::ranges::all_of(autocorrelationSignSwitched, [](auto c) { return c; })) {
-        Throw<std::runtime_error>(fmt::format("Autocorrelation not converged at all. Try increasing ACF sample size (current: {})", fACFSampleSize));
+    if (not std::ranges::all_of(autocorrelationConverged, [](auto c) { return c; })) {
+        PrintWarning(fmt::format("Autocorrelation not converged. Try increasing ACF sample size (current: {})", fACFSampleSize));
     }
 
     auto meanSumAutocorrelation{sumAutocorrelation.mean()};

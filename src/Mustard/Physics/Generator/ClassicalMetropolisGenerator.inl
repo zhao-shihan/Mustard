@@ -24,7 +24,7 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
                                                                     std::optional<double> stepSize) :
     Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
-    fStepSize{fgDefaultStepSize} {
+    fStepSize{std::numeric_limits<double>::quiet_NaN()} {
     if (stepSize) {
         StepSize(*stepSize);
     }
@@ -38,7 +38,7 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
-    fStepSize{fgDefaultStepSize} {
+    fStepSize{std::numeric_limits<double>::quiet_NaN()} {
     if (stepSize) {
         StepSize(*stepSize);
     }
@@ -52,7 +52,7 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
-    fStepSize{fgDefaultStepSize} {
+    fStepSize{std::numeric_limits<double>::quiet_NaN()} {
     if (stepSize) {
         StepSize(*stepSize);
     }
@@ -90,6 +90,9 @@ auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) 
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng) -> bool {
+    if (std::isnan(fStepSize)) {
+        Throw<std::logic_error>("Step size not set");
+    }
     struct MarkovChain::State state;
     // Walk random state
     std::ranges::transform(this->fMC.state.u, state.u.begin(), [&](auto u0) {

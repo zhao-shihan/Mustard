@@ -30,8 +30,12 @@
 
 #include "fmt/core.h"
 
+#include <algorithm>
 #include <cmath>
 #include <concepts>
+#include <limits>
+#include <optional>
+#include <stdexcept>
 #include <utility>
 
 namespace Mustard::inline Physics::inline Generator {
@@ -69,7 +73,7 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
-    /// @param stepSize Step size (proposal sigma) for CMH proposal increment distribution (optional, use default value if not set)
+    /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                  std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                                  std::optional<double> stepSize = {});
@@ -80,7 +84,7 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
-    /// @param stepSize Step size (proposal sigma) for CMH proposal increment distribution (optional, use default value if not set)
+    /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
     ClassicalMetropolisGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
                                  const std::array<int, N>& pdgID, const std::array<double, N>& mass,
@@ -94,7 +98,7 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
-    /// @param stepSize Step size (proposal sigma) for CMH proposal increment distribution (optional, use default value if not set)
+    /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized scattering
     ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
                                  const std::array<int, N>& pdgID, const std::array<double, N>& mass,
@@ -106,6 +110,7 @@ public:
     virtual ~ClassicalMetropolisGenerator() override = 0;
 
     /// @brief Set MCMC step size
+    /// @param stepSize Step size (proposal sigma) for proposal increment distribution
     auto StepSize(double stepSize) -> void;
 
 private:
@@ -121,7 +126,6 @@ private:
     Math::Random::Gaussian<double> fGaussian; ///< Gaussian distribution
     double fStepSize;                         ///< Step scale along one direction in random state space
 
-    static constexpr auto fgDefaultStepSize{0.05};                                ///< Initial proposal step size
     static inline const auto fgScalingFactor{2.38 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor
 };
 

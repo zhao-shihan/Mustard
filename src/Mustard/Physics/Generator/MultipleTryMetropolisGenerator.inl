@@ -19,73 +19,82 @@
 namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) :
+MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                                        std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                        std::optional<double> stepSize) :
     Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
-    fIteration{},
-    fLearningRate{},
-    fRunningMean{},
-    fProposalCovariance{},
-    fProposalSigma{} {}
+    fStepSize{std::numeric_limits<double>::quiet_NaN()} {
+    if (stepSize) {
+        StepSize(*stepSize);
+    }
+}
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
-                                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
+MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+                                                                        const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                                        std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                        std::optional<double> stepSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
-    fIteration{},
-    fLearningRate{},
-    fRunningMean{},
-    fProposalCovariance{},
-    fProposalSigma{} {}
+    fStepSize{std::numeric_limits<double>::quiet_NaN()} {
+    if (stepSize) {
+        StepSize(*stepSize);
+    }
+}
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
-                                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
+MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+                                                                        const std::array<int, N>& pdgID, const std::array<double, N>& mass,
+                                                                        std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                        std::optional<double> stepSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
-    fIteration{},
-    fLearningRate{},
-    fRunningMean{},
-    fProposalCovariance{},
-    fProposalSigma{} {}
+    fStepSize{std::numeric_limits<double>::quiet_NaN()} {
+    if (stepSize) {
+        StepSize(*stepSize);
+    }
+}
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-AdaptiveMTMGenerator<M, N, A>::~AdaptiveMTMGenerator() = default;
+MultipleTryMetropolisGenerator<M, N, A>::~MultipleTryMetropolisGenerator() = default;
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto AdaptiveMTMGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
+auto MultipleTryMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
+    if (not std::isfinite(stepSize)) [[unlikely]] {
+        PrintError(fmt::format("Infinite MCMC step size (got {})", stepSize));
+    }
+    if (stepSize <= muc::default_tolerance<double> or 0.5 <= stepSize) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5)", stepSize, muc::default_tolerance<double>));
+    }
+    // Rescale stepSize
+    // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
+    fStepSize = fgScalingFactor * stepSize;
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
     // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
     // so we try to ensure E(random walk displacement) >~ scale * E(distance in d-dim space) with some scale
     // i.e. sqrt(random walk distance) >~ scale * sqrt(dimension)
     constexpr auto travelScale{10};
     double distance{};
     while (distance > muc::pow(travelScale, 2) * MarkovChain::dim) {
-        if (NextEventImpl(rng, fgInitProposalStepSize)) {
-            distance += fgInitProposalStepSize;
+        if (NextEvent(rng)) {
+            distance += fStepSize;
         }
     }
-    // Then let's learn for a while
-    fIteration = 1;
-    std::ranges::copy(this->fMC.state.u, fRunningMean.begin());
-    fProposalCovariance.setIdentity();
-    fProposalCovariance *= muc::pow(fgInitProposalStepSize, 2);
-    fProposalSigma.setIdentity();
-    fProposalSigma *= fgScalingFactor * fgInitProposalStepSize;
-    do {
-        NextEvent(rng);
-    } while (-fgLearningRatePower * fLearningRate > 1e-6 * fIteration); // delta fLearningRate > 1e-6
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, double burnInStepSize) -> bool {
-    // Adaptive multiple-try Metropolis sampler (Ref: Simon Fontaine, Mylène Bédard (2022), https://doi.org/10.3150/21-BEJ1408)
-    // see also: Jun S. Liu et al (2000), https://doi.org/10.2307/2669532
+auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng) -> bool {
+    if (std::isnan(fStepSize)) {
+        Throw<std::logic_error>("Step size not set");
+    }
+
+    // Multiple-try Metropolis sampler (Jun S. Liu et al (2000), https://doi.org/10.2307/2669532)
     std::array<struct MarkovChain::State, fgNTrial> stateY; // y_1, ..., y_k
     std::array<struct Base::Event, fgNTrial> eventY;        // Event at y_1, ..., y_k
     std::array<double, fgNTrial> acceptanceY;               // Acceptance function value at y_1, ..., y_k
@@ -94,31 +103,20 @@ auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, d
     // Symmetric T(x, y)
     const auto ProposeState{[&](const struct MarkovChain::State& state0, struct MarkovChain::State& state) {
         // Walk random state
-        if (burnInStepSize) {
-            std::ranges::transform(state0.u, state.u.begin(), [&](auto u0) {
-                return fGaussian(rng, {u0, burnInStepSize});
-            });
-        } else {
-            Eigen::Vector<double, MarkovChain::dim> vector;
-            std::ranges::generate(vector, [&] { return fGaussian(rng); });
-            vector = VectorCast<decltype(vector)>(state0.u) + fProposalSigma * vector;
-            state.u <<= vector;
+        std::ranges::transform(state0.u, state.u.begin(), [&](auto u0) {
+            return fGaussian(rng, {u0, fStepSize});
+        });
+        for (auto&& u : state.u) {
+            u = std::abs(muc::fmod(u, 2.)); // Reflection-
+            u = u > 1 ? 2 - u : u;          // boundary
         }
-        if (std::ranges::any_of(state.u, [](auto u) { return u <= 0 or 1 <= u; })) { // "Xian's half-hearted suggestion"
-            state.pID = state0.pID;
-            return false;
-        } else { // Walk particle mapping if necessary
-            this->ProposePID(rng, state0.pID, state.pID);
-            return true;
-        }
+        // Walk particle mapping if necessary
+        this->ProposePID(rng, state0.pID, state.pID);
     }};
 
     // y_1, ..., y_k
     for (int i{}; i < fgNTrial; ++i) {
-        if (not ProposeState(this->fMC.state, stateY[i])) { // Draw y_i from T(x, *)
-            piY[i] = 0;
-            continue;
-        }
+        ProposeState(this->fMC.state, stateY[i]); // Draw y_i from T(x, *)
         double detJ;
         std::tie(eventY[i], detJ) = this->PhaseSpace(stateY[i]); // y_i -> event(y_i) = g(y_i), also get |J|(g(y_i))
         if (not this->IRSafe(eventY[i].p)) {
@@ -144,9 +142,7 @@ auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, d
     // x_1, ..., x_k (note that x_k = x)
     auto sumPiX{this->fMC.mSqAcceptanceDetJ}; // pi(x_1) + ... + pi(x_k)
     for (int i{}; i < fgNTrial - 1; ++i) {
-        if (not ProposeState(stateY[selected], stateX)) { // Draw x_i from T(Y, *)
-            continue;
-        }
+        ProposeState(stateY[selected], stateX);             // Draw x_i from T(Y, *)
         const auto [event, detJ]{this->PhaseSpace(stateX)}; // x_i -> event(x_i) = g(x_i), also get |J|(g(x_i))
         if (not this->IRSafe(event.p)) {
             continue;
@@ -156,27 +152,15 @@ auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, d
     }
 
     // accept/reject Y
-    const auto accepted{sumPiY >= sumPiX or
-                        sumPiY > sumPiX * rng.flat()};
-    if (accepted) {
+    if (sumPiY >= sumPiX or
+        sumPiY > sumPiX * rng.flat()) {
         this->fMC.state = stateY[selected];
         this->fMC.mSqAcceptanceDetJ = piY[selected];
         this->fMC.event = std::move(eventY[selected]);
         this->fMC.event.weight = 1 / acceptanceY[selected];
+        return true;
     }
-
-    // Adaptation
-    if (not burnInStepSize) {
-        ++fIteration;
-        fLearningRate = std::pow(fIteration, fgLearningRatePower);
-        const auto deltaMu{(VectorCast<decltype(fRunningMean)>(this->fMC.state.u) - fRunningMean).eval()};
-        fRunningMean += fLearningRate * deltaMu;
-        fProposalCovariance += fLearningRate * (deltaMu * deltaMu.transpose() - fProposalCovariance);
-        fProposalSigma = Eigen::LDLT<decltype(fProposalCovariance)>{fProposalCovariance}.matrixL();
-        fProposalSigma *= fgScalingFactor;
-    }
-
-    return accepted;
+    return false;
 }
 
 } // namespace Mustard::inline Physics::inline Generator
