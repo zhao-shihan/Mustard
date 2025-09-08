@@ -52,8 +52,6 @@
 
 namespace Mustard::Env::internal {
 
-namespace {
-
 [[noreturn]] auto TerminateHandler() -> void {
     try {
         const auto exception{std::current_exception()};
@@ -207,8 +205,6 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
 } // extern "C"
 
 #endif
-
-} // namespace
 
 EnvBase::EnvBase() :
     NonCopyableBase{},
