@@ -27,7 +27,6 @@
 #include "G4VSolid.hh"
 
 #include "muc/ceta_string"
-#include "muc/hash_map"
 #include "muc/ptrvec"
 #include "muc/utility"
 
@@ -43,6 +42,7 @@
 #include <string_view>
 #include <typeindex>
 #include <typeinfo>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -143,14 +143,14 @@ private:
     muc::unique_ptrvec<G4LogicalVolume> fLogicalVolumeStore;
     muc::unique_ptrvec<G4VPhysicalVolume> fPhysicalVolumeStore;
 
-    muc::flat_hash_map<std::string, std::vector<G4LogicalVolume*>> fLogicalVolumes;
+    std::unordered_map<std::string, std::vector<G4LogicalVolume*>> fLogicalVolumes;
     const std::vector<G4LogicalVolume*>* fFirstLogicalVolumes{};
-    muc::flat_hash_map<std::string, std::vector<G4VPhysicalVolume*>> fPhysicalVolumes;
+    std::unordered_map<std::string, std::vector<G4VPhysicalVolume*>> fPhysicalVolumes;
     const std::vector<G4VPhysicalVolume*>* fFirstPhysicalVolumes{};
 
     muc::unique_ptrvec<G4FieldManager> fFieldStore;
 
-    muc::flat_hash_map<std::type_index, std::unique_ptr<DefinitionBase>> fDaughters;
+    std::unordered_map<std::type_index, std::unique_ptr<DefinitionBase>> fDaughters;
 };
 
 } // namespace Mustard::Detector::Definition
