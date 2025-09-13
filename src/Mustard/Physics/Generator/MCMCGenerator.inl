@@ -260,7 +260,11 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
         PrintWarning(fmt::format("Autocorrelation not converged. Try increasing ACF sample size (current: {})", fACFSampleSize));
     }
 
-    auto meanSumAutocorrelation{sumAutocorrelation.mean()};
+    double meanSumAutocorrelation{};
+    for (auto&& rho : std::as_const(sumAutocorrelation)) {
+        meanSumAutocorrelation += muc::pow(rho, 2);
+    }
+    meanSumAutocorrelation = std::sqrt(meanSumAutocorrelation / sumAutocorrelation.size());
     if (mplr::available()) {
         const auto worldComm{mplr::comm_world()};
         worldComm.iallreduce(std::plus{}, meanSumAutocorrelation).wait(mplr::duty_ratio::preset::relaxed);
