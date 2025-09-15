@@ -42,7 +42,6 @@ private:
     using Base = WeakSingleton<ADerived>;
 
 protected:
-    [[deprecated]] PassiveSingleton() = default;
     PassiveSingleton(ADerived* self);
     ~PassiveSingleton() = default;
 

@@ -24,10 +24,6 @@ template<typename ADerived>
 muc::spin_mutex WeakSingleton<ADerived>::fgSpinMutex{};
 
 template<typename ADerived>
-[[deprecated]] WeakSingleton<ADerived>::WeakSingleton() :
-    WeakSingleton{static_cast<ADerived*>(this)} {}
-
-template<typename ADerived>
 WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
     WeakSingletonBase{} {
     static_assert(WeakSingletonified<ADerived>);

@@ -26,7 +26,6 @@ namespace Mustard::Simulation {
 template<typename ADerived, muc::ceta_string AAppName>
 class AnalysisBase : public Env::Memory::PassiveSingleton<ADerived> {
 public:
-    [[deprecated]] AnalysisBase();
     AnalysisBase(ADerived* self);
     virtual ~AnalysisBase() = default;
 

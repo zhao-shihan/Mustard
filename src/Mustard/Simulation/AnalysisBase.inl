@@ -1,10 +1,6 @@
 namespace Mustard::Simulation {
 
 template<typename ADerived, muc::ceta_string AAppName>
-[[deprecated]] AnalysisBase<ADerived, AAppName>::AnalysisBase() :
-    AnalysisBase{static_cast<ADerived*>(this)} {}
-
-template<typename ADerived, muc::ceta_string AAppName>
 AnalysisBase<ADerived, AAppName>::AnalysisBase(ADerived* self) :
     Env::Memory::PassiveSingleton<ADerived>{self},
     fFilePath{fmt::format("{}_untitled", AAppName.sv())},
