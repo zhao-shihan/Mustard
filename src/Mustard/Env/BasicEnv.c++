@@ -34,7 +34,7 @@
 
 namespace Mustard::Env {
 
-BasicEnv::BasicEnv(NoBanner, int& argc, char**& argv,
+BasicEnv::BasicEnv(NoBanner, int argc, char* argv[],
                    muc::optional_ref<CLI::CLI<>> cli,
                    enum VerboseLevel verboseLevel,
                    bool showBannerHint) :
@@ -48,8 +48,7 @@ BasicEnv::BasicEnv(NoBanner, int& argc, char**& argv,
     if (cli) {
         const auto pCLI{&cli->get()};
         pCLI->ParseArgs(argc, argv);
-        const auto basicCLI{dynamic_cast<const CLI::BasicModule*>(pCLI)};
-        if (basicCLI) {
+        if (const auto basicCLI{dynamic_cast<const CLI::BasicModule*>(pCLI)}) {
             fVerboseLevel = basicCLI->VerboseLevel().value_or(verboseLevel);
             fShowBanner = basicCLI->ShowBanner();
         }

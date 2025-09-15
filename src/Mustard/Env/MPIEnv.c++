@@ -47,18 +47,17 @@
 
 namespace Mustard::Env {
 
-MPIEnv::MPIEnv(NoBanner, int& argc, char**& argv,
+MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                muc::optional_ref<CLI::CLI<>> cli,
                enum VerboseLevel verboseLevel,
                bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
+    mplr::environment{argc, argv},
     PassiveSingleton<MPIEnv>{this},
     fIntraNodeComm{},
     fInterNodeComm{},
     fLocalNodeID{},
     fNodeList{} {
-    mplr::init(argc, argv);
-
     const auto worldComm{mplr::comm_world()};
     fIntraNodeComm = mplr::communicator{mplr::communicator::split_shared_memory, worldComm};
     enum struct IntraNodeColor { Leader = 0,

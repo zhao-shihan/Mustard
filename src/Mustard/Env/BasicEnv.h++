@@ -33,13 +33,13 @@
 
 namespace Mustard::Env {
 
-class BasicEnv : public virtual internal::EnvBase,
+class BasicEnv : virtual public internal::EnvBase,
                  public Memory::PassiveSingleton<BasicEnv> {
 protected:
     struct NoBanner {};
 
 protected:
-    BasicEnv(NoBanner, int& argc, char**& argv,
+    BasicEnv(NoBanner, int argc, char* argv[],
              muc::optional_ref<CLI::CLI<>> cli,
              enum VerboseLevel verboseLevel,
              bool showBannerHint);

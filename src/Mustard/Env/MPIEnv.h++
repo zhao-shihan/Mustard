@@ -35,10 +35,11 @@
 
 namespace Mustard::Env {
 
-class MPIEnv : public virtual BasicEnv,
+class MPIEnv : virtual public BasicEnv,
+               public mplr::environment,
                public Memory::PassiveSingleton<MPIEnv> {
 protected:
-    MPIEnv(NoBanner, int& argc, char**& argv,
+    MPIEnv(NoBanner, int argc, char* argv[],
            muc::optional_ref<CLI::CLI<>> cli,
            enum VerboseLevel verboseLevel,
            bool showBannerHint);
