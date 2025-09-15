@@ -60,30 +60,26 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::operator()(const InitialStateMom
     const auto den5{-(s16 * (s15 + s16 - s56))};
     const auto den6{s16 * s25};
 
-    double pm2ennggav{};
+    auto pm2ennggav{Unpolarized(mm2, me2, s12, s15, s16, s25, s26, s56,
+                                den1, den2, den3, den4, den5, den6)};
     if (InitialStatePolarization() != CLHEP::Hep3Vector{}) {
         const CLHEP::HepLorentzVector pol1{InitialStatePolarization()};
-        pm2ennggav += s(pol1, p2) *
-                      MSqPolarizedS2n(mm2, me2, s12, s15, s16, s25, s26, s56,
-                                      den1, den2, den3, den4, den5, den6);
-        pm2ennggav += s(pol1, p5) *
-                      MSqPolarizedS5n(mm2, me2, s12, s15, s16, s25, s26, s56,
-                                      den1, den2, den3, den4, den5, den6);
-        pm2ennggav += s(pol1, p6) *
-                      MSqPolarizedS6n(mm2, me2, s12, s15, s16, s25, s26, s56,
-                                      den1, den2, den3, den4, den5, den6);
+        pm2ennggav += s(pol1, p2) * PolarizedS2n(mm2, me2, s12, s15, s16, s25, s26, s56,
+                                                 den1, den2, den3, den4, den5, den6);
+        pm2ennggav += s(pol1, p5) * PolarizedS5n(mm2, me2, s12, s15, s16, s25, s26, s56,
+                                                 den1, den2, den3, den4, den5, den6);
+        pm2ennggav += s(pol1, p6) * PolarizedS6n(mm2, me2, s12, s15, s16, s25, s26, s56,
+                                                 den1, den2, den3, den4, den5, den6);
         pm2ennggav *= std::sqrt(mm2);
     }
-    pm2ennggav += MSqUnpolarized(mm2, me2, s12, s15, s16, s25, s26, s56,
-                                 den1, den2, den3, den4, den5, den6);
-    pm2ennggav *= -4. / 3;
+    pm2ennggav *= -4 / 3.;
 
     constexpr auto constant{4 * muc::pow(reduced_fermi_constant, 2) * muc::pow(4 * pi * fine_structure_const, 2)};
     return constant * pm2ennggav;
 }
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::MSqUnpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                               double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::Unpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                            double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -1474,8 +1470,8 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::MSqUnpolarized(double mm2, doubl
                 if56 / (den5 * den6));
 }
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::MSqPolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                                double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::PolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                             double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -1915,8 +1911,8 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::MSqPolarizedS2n(double mm2, doub
                 if56 / (den5 * den6));
 }
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::MSqPolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                                double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::PolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                             double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -2335,8 +2331,8 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::MSqPolarizedS5n(double mm2, doub
                 if56 / (den5 * den6));
 }
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::MSqPolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                                double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::PolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                             double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95

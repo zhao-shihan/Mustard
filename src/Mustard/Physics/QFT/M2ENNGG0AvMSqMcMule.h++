@@ -42,14 +42,14 @@ public:
     MUSTARD_OPTIMIZE_FAST virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
 
 private:
-    MUSTARD_OPTIMIZE_FAST static auto MSqUnpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                     double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    MUSTARD_OPTIMIZE_FAST static auto MSqPolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                      double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    MUSTARD_OPTIMIZE_FAST static auto MSqPolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                      double den1, double den2, double den3, double den4, double den5, double den6) -> double;
-    MUSTARD_OPTIMIZE_FAST static auto MSqPolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                      double den1, double den2, double den3, double den4, double den5, double den6) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto Unpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                  double den1, double den2, double den3, double den4, double den5, double den6) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto PolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                   double den1, double den2, double den3, double den4, double den5, double den6) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto PolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                   double den1, double den2, double den3, double den4, double den5, double den6) -> double;
+    MUSTARD_OPTIMIZE_FAST static auto PolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                   double den1, double den2, double den3, double den4, double den5, double den6) -> double;
 };
 
 } // namespace Mustard::inline Physics::QFT
