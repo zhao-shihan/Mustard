@@ -18,14 +18,9 @@ AnalysisBase<ADerived, AAppName>::AnalysisBase(ADerived* self) :
 template<typename ADerived, muc::ceta_string AAppName>
 auto AnalysisBase<ADerived, AAppName>::RunBeginAction(int runID) -> void {
     // open ROOT file
-    auto fullFilePath{Mustard::Parallel::ProcessSpecificPath(fFilePath).replace_extension(".root").generic_string()};
-    const auto filePathChanged{fullFilePath != fLastUsedFullFilePath};
-    fFile = TFile::Open(fullFilePath.c_str(), filePathChanged ? fFileMode.c_str() : "UPDATE",
-                        "", ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose);
-    if (fFile == nullptr) {
-        Throw<std::runtime_error>(fmt::format("Cannot open file '{}' with mode '{}'", fullFilePath, fFileMode));
-    }
-    fLastUsedFullFilePath = std::move(fullFilePath);
+    const auto filePathChanged{fFilePath != fLastUsedFullFilePath};
+    fFile.emplace(fFilePath, filePathChanged ? fFileMode : "UPDATE");
+    fLastUsedFullFilePath = fFilePath;
     // save geometry
     if (filePathChanged and mplr::comm_world().rank() == 0) {
         Mustard::Geant4X::ConvertGeometryToTMacro(fmt::format("{}_gdml", AAppName.sv()),
@@ -45,7 +40,7 @@ template<typename ADerived, muc::ceta_string AAppName>
 auto AnalysisBase<ADerived, AAppName>::RunEndAction(int runID) -> void {
     RunEndUserAction(runID);
     // close file
-    delete fFile;
+    fFile.reset();
 }
 
 } // namespace Mustard::Simulation

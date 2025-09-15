@@ -56,14 +56,21 @@ public:
         Heterogeneous ///< Per-process accesses its unique file
     };
 
-public:
-    virtual ~File() = 0;
-
 protected:
-    /// @brief Adjust file path based on access mode
+    /// @brief Construct base class
     /// @param option Homogeneous/Heterogeneous
-    /// @param filePath File path to modify
-    static auto UpdatePathByOption(Option option, std::filesystem::path& filePath) -> void;
+    /// @param filePath File path
+    File(Option option, std::filesystem::path filePath);
+
+public:
+    /// @brief Default d'tor
+    virtual ~File() = default;
+
+    /// @brief Get the file path
+    auto Path() const -> const auto& { return fPath; }
+
+private:
+    std::filesystem::path fPath; ///< Exact file path (may different from c'tor parameter)
 };
 
 /// @brief Specialization for `std::FILE`
@@ -88,14 +95,18 @@ public:
     /// @warning Construct with heterogeneous option is an MPI collective operation
     File(Option option, std::filesystem::path filePath, gsl::czstring mode);
 
-    auto operator*() -> auto& { return *fFile; }
-    auto operator*() const -> const auto& { return *fFile; }
+    /// @brief Check the file is opened or not
+    /// @return true if file opened, false if not
+    auto Opened() const -> bool { return fFile.get(); }
 
-    auto operator->() -> auto* { return fFile.get(); }
-    auto operator->() const -> const auto* { return fFile.get(); }
+    auto operator*() -> auto* { return Get(); }
+    auto operator*() const -> const auto* { return Get(); }
 
-    operator std::FILE&() { return **this; }
-    operator const std::FILE&() const { return **this; }
+    operator std::FILE*() { return Get(); }
+    operator const std::FILE*() const { return Get(); }
+
+private:
+    auto Get() const -> std::FILE*;
 
 private:
     struct CloseFile {
@@ -123,14 +134,21 @@ protected:
     FStream(Option option, std::filesystem::path filePath, F::openmode mode);
 
 public:
-    auto operator*() -> F& { return *fFile; }
-    auto operator*() const -> const F& { return *fFile; }
+    /// @brief Check the file is opened or not
+    /// @return true if file opened, false if not
+    auto Opened() const -> bool { return fFile.get(); }
 
-    auto operator->() -> F* { return fFile.get(); }
-    auto operator->() const -> const F* { return fFile.get(); }
+    auto operator*() -> auto& { return Get(); }
+    auto operator*() const -> const auto& { return Get(); }
 
-    operator F&() { return **this; }
-    operator const F&() const { return **this; }
+    auto operator->() -> auto* { return &Get(); }
+    auto operator->() const -> const auto* { return &Get(); }
+
+    operator F&() { return Get(); }
+    operator const F&() const { return Get(); }
+
+private:
+    auto Get() const -> F&;
 
 private:
     std::unique_ptr<F> fFile;
@@ -214,9 +232,6 @@ public:
 
     operator TFile&() { return **this; }
     operator const TFile&() const { return **this; }
-
-private:
-    auto Open(Option option, std::filesystem::path filePath, std::string mode, int compress, int netOpt) -> void;
 
 private:
     std::unique_ptr<TFile> fFile;

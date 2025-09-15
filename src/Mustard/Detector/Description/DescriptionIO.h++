@@ -21,8 +21,8 @@
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Detector/Description/DescriptionBase.h++"
 #include "Mustard/IO/CreateTemporaryFile.h++"
+#include "Mustard/IO/File.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
 
 #include "yaml-cpp/yaml.h"
@@ -36,7 +36,6 @@
 #include <algorithm>
 #include <array>
 #include <concepts>
-#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <ranges>
@@ -55,28 +54,20 @@ namespace Mustard::Detector::Description {
 class DescriptionIO final : public NonConstructibleBase {
 public:
     template<Description... Ds>
-    static auto Import(const std::filesystem::path& yamlFile) -> void;
+    static auto Import(const std::filesystem::path& yamlPath) -> void;
     template<Description... Ds>
-    static auto Export(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> void;
+    static auto Export(const std::filesystem::path& yamlPath, const std::string& fileComment = {}) -> std::filesystem::path;
     template<Description... Ds>
-    static auto Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
-    template<Description... Ds>
-    static auto ParallelExport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::filesystem::path;
-    template<Description... Ds>
-    static auto ParallelIxport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    static auto Emport(const std::filesystem::path& yamlPath, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
     template<Description... Ds>
     static auto ToString() -> std::string;
 
     template<muc::tuple_like T>
-    static auto Import(const std::filesystem::path& yamlFile) -> void;
+    static auto Import(const std::filesystem::path& yamlPath) -> void;
     template<muc::tuple_like T>
-    static auto Export(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> void;
+    static auto Export(const std::filesystem::path& yamlPath, const std::string& fileComment = {}) -> std::filesystem::path;
     template<muc::tuple_like T>
-    static auto Ixport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
-    template<muc::tuple_like T>
-    static auto ParallelExport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::filesystem::path;
-    template<muc::tuple_like T>
-    static auto ParallelIxport(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    static auto Emport(const std::filesystem::path& yamlPath, const std::string& fileComment = {}) -> std::pair<std::filesystem::path, std::filesystem::path>;
     template<muc::tuple_like T>
     static auto ToString() -> std::string;
 
@@ -84,16 +75,14 @@ public:
     static auto Import(const std::ranges::range auto& yamlText) -> void
         requires std::convertible_to<typename std::decay_t<decltype(yamlText)>::value_type, std::string>;
 
-    static auto AddInstance(gsl::not_null<DescriptionBase<>*> instance) -> void { fgInstanceSet.emplace(instance); }
-    static auto ImportInstantiated(const std::filesystem::path& yamlFile) -> void { ImportImpl(yamlFile, fgInstanceSet); }
-    static auto ExportInstantiated(const std::filesystem::path& yamlFile, const std::string& fileComment = {}) -> void { ExportImpl(yamlFile, fileComment, fgInstanceSet); }
+    static auto AddInstance(gsl::not_null<DescriptionBase<>*> instance) -> void;
+    static auto ImportInstantiated(const std::filesystem::path& yamlPath) -> void;
+    static auto ExportInstantiated(const std::filesystem::path& yamlPath, const std::string& fileComment = {}) -> std::filesystem::path;
 
 private:
-    static auto ImportImpl(const std::filesystem::path& yamlFile, std::ranges::input_range auto& descriptions) -> void;
-    static auto ExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> void;
-    static auto IxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
-    static auto ParallelExportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path;
-    static auto ParallelIxportImpl(const std::filesystem::path& yamlFile, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
+    static auto ImportImpl(const std::filesystem::path& yamlPath, std::ranges::input_range auto& descriptions) -> void;
+    static auto ExportImpl(const std::filesystem::path& yamlPath, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::filesystem::path;
+    static auto EmportImpl(const std::filesystem::path& yamlPath, const std::string& fileComment, const std::ranges::input_range auto& descriptions) -> std::pair<std::filesystem::path, std::filesystem::path>;
     static auto ToStringImpl(const std::ranges::input_range auto& descriptions) -> std::string;
     static auto EmitYAML(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void;
     static auto EmitYAMLImpl(const YAML::Node& node, YAML::Emitter& emitter, bool inFlow = false) -> void;

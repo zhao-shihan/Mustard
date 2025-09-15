@@ -104,17 +104,13 @@ auto RegisterField(gsl::not_null<G4LogicalVolume*> logic, gsl::not_null<G4FieldM
     logic->SetFieldManager(fieldManager, forceToAllDaughters);
 }
 
-auto Export(std::filesystem::path gdmlFile, gsl::not_null<G4LogicalVolume*> logic) -> void {
+auto Export(std::filesystem::path gdmlPath, gsl::not_null<G4LogicalVolume*> logic) -> std::filesystem::path {
     G4GDMLParser gdml;
     gdml.SetAddPointerToName(true);
     gdml.SetOutputFileOverwrite(true);
-    gdml.Write(gdmlFile.generic_string(), logic);
-}
-
-auto ParallelExport(std::filesystem::path gdmlFile, gsl::not_null<G4LogicalVolume*> logic) -> std::filesystem::path {
-    auto truePath{Parallel::ProcessSpecificPath(std::move(gdmlFile))};
-    Export(truePath, logic);
-    return truePath;
+    auto path{Parallel::ProcessSpecificPath(std::move(gdmlPath))};
+    gdml.Write(path.generic_string(), logic);
+    return path;
 }
 
 } // namespace
@@ -275,32 +271,18 @@ auto DefinitionBase::RegisterField(std::string_view logicalVolumeName, gsl::inde
     fFieldStore.emplace_back(std::move(fieldManager));
 }
 
-auto DefinitionBase::Export(std::filesystem::path gdmlFile, gsl::index iPhysicalVolume) const -> void {
-    if (not Ready<"warning">()) {
-        return;
-    }
-    internal::Export(std::move(gdmlFile), LogicalVolume(iPhysicalVolume));
-}
-
-auto DefinitionBase::Export(std::filesystem::path gdmlFile, std::string_view physicalVolumeName, gsl::index iPhysicalVolume) const -> void {
-    if (not Ready<"warning">()) {
-        return;
-    }
-    internal::Export(std::move(gdmlFile), LogicalVolume(physicalVolumeName, iPhysicalVolume));
-}
-
-auto DefinitionBase::ParallelExport(std::filesystem::path gdmlFile, gsl::index iPhysicalVolume) const -> std::filesystem::path {
+auto DefinitionBase::Export(std::filesystem::path gdmlPath, gsl::index iPhysicalVolume) const -> std::filesystem::path {
     if (not Ready<"warning">()) {
         return {};
     }
-    return internal::ParallelExport(std::move(gdmlFile), LogicalVolume(iPhysicalVolume));
+    return internal::Export(std::move(gdmlPath), LogicalVolume(iPhysicalVolume));
 }
 
-auto DefinitionBase::ParallelExport(std::filesystem::path gdmlFile, std::string_view physicalVolumeName, gsl::index iPhysicalVolume) const -> std::filesystem::path {
+auto DefinitionBase::Export(std::filesystem::path gdmlPath, std::string_view physicalVolumeName, gsl::index iPhysicalVolume) const -> std::filesystem::path {
     if (not Ready<"warning">()) {
         return {};
     }
-    return internal::ParallelExport(std::move(gdmlFile), LogicalVolume(physicalVolumeName, iPhysicalVolume));
+    return internal::Export(std::move(gdmlPath), LogicalVolume(physicalVolumeName, iPhysicalVolume));
 }
 
 auto DefinitionBase::LogicalVolumes() const -> const std::vector<G4LogicalVolume*>& {

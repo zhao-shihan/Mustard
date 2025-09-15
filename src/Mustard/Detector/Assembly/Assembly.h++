@@ -30,8 +30,8 @@ template<typename T>
 concept Assembly =
     requires {
         requires std::derived_from<T, AssemblyBase>;
-        typename T::DescriptionInUse;
-        requires muc::tuple_like<typename T::DescriptionInUse>;
+        typename T::ProminentDescription;
+        requires muc::tuple_like<typename T::ProminentDescription>;
     };
 
 } // namespace Mustard::Detector::Assembly

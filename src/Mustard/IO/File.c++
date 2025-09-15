@@ -35,15 +35,13 @@
 namespace Mustard::inline IO {
 
 template<>
-File<>::~File() = default;
-
-template<>
-auto File<>::UpdatePathByOption(Option option, std::filesystem::path& filePath) -> void {
+File<>::File(Option option, std::filesystem::path filePath) :
+    fPath{std::move(filePath)} {
     switch (option) {
     case Option::Homogeneous:
         break;
     case Option::Heterogeneous:
-        filePath = Parallel::ProcessSpecificPath(filePath);
+        fPath = Parallel::ProcessSpecificPath(fPath);
         break;
     default:
         Throw<std::invalid_argument>("Invalid option");
@@ -57,13 +55,16 @@ File<std::FILE>::File(std::filesystem::path filePath, gsl::czstring mode) :
          std::move(filePath), mode} {}
 
 File<std::FILE>::File(Option option, std::filesystem::path filePath, gsl::czstring mode) :
-    File<>{},
+    File<>{option, std::move(filePath)},
     fFile{} {
-    UpdatePathByOption(option, filePath);
-    fFile = {std::fopen(filePath.generic_string().c_str(), mode), CloseFile{}};
-    if (not fFile) {
-        Throw<std::runtime_error>(fmt::format("Cannot open file '{}' in '{}' mode", filePath, mode));
+    fFile = {std::fopen(Path().generic_string().c_str(), mode), CloseFile{}};
+}
+
+auto File<std::FILE>::Get() const -> std::FILE* {
+    if (not Opened()) {
+        Throw<std::runtime_error>(fmt::format("Cannot open file '{}'", Path()));
     }
+    return fFile.get();
 }
 
 namespace internal {
@@ -77,14 +78,28 @@ FStream<F>::FStream(std::filesystem::path filePath, F::openmode mode) :
 
 template<std::derived_from<std::ios_base> F>
 FStream<F>::FStream(Option option, std::filesystem::path filePath, F::openmode mode) :
-    File<>{},
+    File<>{option, std::move(filePath)},
     fFile{} {
-    UpdatePathByOption(option, filePath);
-    fFile = std::make_unique<F>(filePath, mode);
-    if (not fFile->is_open()) {
-        Throw<std::runtime_error>(fmt::format("Cannot open file '{}' in {:#b} mode", filePath, muc::to_underlying(mode)));
+    fFile = std::make_unique<F>(Path(), mode);
+    if (fFile->fail()) {
+        fFile.reset();
     }
 }
+
+template<std::derived_from<std::ios_base> F>
+auto FStream<F>::Get() const -> F& {
+    if (not Opened()) {
+        Throw<std::runtime_error>(fmt::format("Cannot open file '{}'", Path()));
+    }
+    return *fFile;
+}
+
+template class FStream<std::ifstream>;
+template class FStream<std::wifstream>;
+template class FStream<std::ofstream>;
+template class FStream<std::wofstream>;
+template class FStream<std::fstream>;
+template class FStream<std::wfstream>;
 
 } // namespace internal
 
@@ -122,28 +137,20 @@ template class File<std::fstream>;
 template class File<std::wfstream>;
 
 File<TFile>::File(std::filesystem::path filePath, std::string mode, int compress, int netOpt) :
-    File<>{} {
-    std::ranges::transform(mode, mode.begin(), muc::toupper);
-    const auto option{muc::ranges::contains_subrange(mode, "READ") ?
-                          Option::Homogeneous :
-                          Option::Heterogeneous};
-    Open(option, std::move(filePath), std::move(mode), compress, netOpt);
-}
+    File{(std::ranges::transform(mode, mode.begin(), muc::toupper),
+          muc::ranges::contains_subrange(mode, "READ") ?
+              Option::Homogeneous :
+              Option::Heterogeneous),
+         std::move(filePath), mode, compress, netOpt} {}
 
 File<TFile>::File(Option option, std::filesystem::path filePath, std::string mode, int compress, int netOpt) :
-    File<>{},
-    fFile{} {
-    Open(option, std::move(filePath), std::move(mode), compress, netOpt);
+    File<>{option, std::move(filePath)},
+    fFile{TFile::Open(Path().generic_string().c_str(), mode.c_str(), "", compress, netOpt)} {
+    if (not fFile) {
+        Throw<std::runtime_error>(fmt::format("Cannot open file '{}' in '{}' mode", Path(), mode));
+    }
 }
 
 File<TFile>::~File() = default;
-
-auto File<TFile>::Open(Option option, std::filesystem::path filePath, std::string mode, int compress, int netOpt) -> void {
-    UpdatePathByOption(option, filePath);
-    fFile.reset(TFile::Open(filePath.generic_string().c_str(), mode.c_str(), "", compress, netOpt));
-    if (not fFile) {
-        Throw<std::runtime_error>(fmt::format("Cannot open file '{}' in '{}' mode", filePath, mode));
-    }
-}
 
 } // namespace Mustard::inline IO

@@ -49,24 +49,22 @@ auto Wrap<PRBG>::setSeeds(const long* seeds, int) -> void {
 
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::saveStatus(gsl::czstring filename) const -> void {
-    std::ofstream os(filename, std::ios::out);
-    if (os.is_open()) {
-        put(os);
-    } else {
-        PrintError(fmt::format("Cannot open '{}', nothing was done. (Wrap<PRBG>::name(): {})",
-                               filename, name()));
+    File<std::ofstream> os{filename};
+    if (not os.Opened()) [[unlikely]] {
+        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {})",
+                               os.Path(), name()));
     }
+    put(os);
 }
 
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::restoreStatus(gsl::czstring filename) -> void {
-    std::ifstream is(filename, std::ios::in);
-    if (is.is_open()) {
-        get(is);
-    } else {
-        PrintError(fmt::format("Cannot open '{}', nothing was done. (Wrap<PRBG>::name(): {})",
-                               filename, name()));
+    File<std::ifstream> is{filename};
+    if (not is.Opened()) [[unlikely]] {
+        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {})",
+                               is.Path(), name()));
     }
+    get(is);
 }
 
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>

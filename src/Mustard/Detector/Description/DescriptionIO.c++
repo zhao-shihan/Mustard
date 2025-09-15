@@ -22,6 +22,18 @@ namespace Mustard::Detector::Description {
 
 std::set<gsl::not_null<DescriptionBase<>*>> DescriptionIO::fgInstanceSet{};
 
+auto DescriptionIO::AddInstance(gsl::not_null<DescriptionBase<>*> instance) -> void {
+    fgInstanceSet.emplace(instance);
+}
+
+auto DescriptionIO::ImportInstantiated(const std::filesystem::path& yamlPath) -> void {
+    ImportImpl(yamlPath, fgInstanceSet);
+}
+
+auto DescriptionIO::ExportInstantiated(const std::filesystem::path& yamlPath, const std::string& fileComment) -> std::filesystem::path {
+    return ExportImpl(yamlPath, fileComment, fgInstanceSet);
+}
+
 auto DescriptionIO::EmitYAML(const YAML::Node& geomYaml, const std::string& fileComment, std::ostream& os) -> void {
     YAML::Emitter yamlEmitter{os};
     if (not fileComment.empty()) {

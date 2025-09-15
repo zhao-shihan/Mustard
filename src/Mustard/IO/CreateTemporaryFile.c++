@@ -55,8 +55,8 @@ auto CreateTemporaryFile(std::string_view signature, std::filesystem::path exten
             break;
         }
     }
-    if (file == nullptr) {
-        Throw<std::runtime_error>("Failed to create a temporary file");
+    if (not file) {
+        Throw<std::runtime_error>("Failed to create temporary file");
     }
     std::fclose(file);
 

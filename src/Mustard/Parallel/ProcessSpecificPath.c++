@@ -22,7 +22,7 @@
 
 #include "mplr/mplr.hpp"
 
-#include "fmt/format.h"
+#include "fmt/std.h"
 
 #include <cstddef>
 #include <exception>
@@ -35,9 +35,12 @@ auto ProcessSpecificPath(const std::filesystem::path& path) -> std::filesystem::
         Throw<std::invalid_argument>("Empty file name");
     }
     if (stem == "." or stem == "..") {
-        Throw<std::invalid_argument>(fmt::format("Invalid file name '{}'", stem.c_str()));
+        Throw<std::invalid_argument>(fmt::format("Invalid file name '{}'", stem));
     }
 
+    if (not mplr::available()) {
+        return path;
+    }
     const auto worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return path;

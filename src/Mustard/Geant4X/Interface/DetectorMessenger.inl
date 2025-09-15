@@ -19,50 +19,52 @@
 namespace Mustard::Geant4X::inline Interface {
 
 template<typename ADerived, std::derived_from<G4VUserDetectorConstruction> ADetectorConstruction, muc::ceta_string AAppName>
+    requires requires { typename ADetectorConstruction::ProminentDescription; }
 DetectorMessenger<ADerived, ADetectorConstruction, AAppName>::DetectorMessenger() :
     Geant4X::SingletonMessenger<ADerived>{},
     fDirectory{},
     fImportDescription{},
     fExportDescription{},
-    fIxportDescription{} {
+    fEmportDescription{} {
     static_assert(std::derived_from<ADerived, DetectorMessenger<ADerived, ADetectorConstruction, AAppName>>);
 
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Detector/");
 
     fImportDescription = std::make_unique<G4UIcmdWithAString>("/Mustard/Detector/Description/Import", this);
-    fImportDescription->SetGuidance("Import geometry descriptions required by this program from a yaml file.");
+    fImportDescription->SetGuidance("Import detector description required by this program from a yaml file.");
     fImportDescription->SetParameterName("yaml", false);
     fImportDescription->AvailableForStates(G4State_PreInit);
 
     fExportDescription = std::make_unique<G4UIcmdWithAString>("/Mustard/Detector/Description/Export", this);
-    fExportDescription->SetGuidance("Export geometry descriptions used by this program to a yaml file.");
+    fExportDescription->SetGuidance("Export detector description used by this program to a yaml file.");
     fExportDescription->SetParameterName("yaml", false);
     fExportDescription->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    fIxportDescription = std::make_unique<G4UIcmdWithAString>("/Mustard/Detector/Description/Ixport", this);
-    fIxportDescription->SetGuidance("Export, Import, then export geometry descriptions used by this program. "
+    fEmportDescription = std::make_unique<G4UIcmdWithAString>("/Mustard/Detector/Description/Emport", this);
+    fEmportDescription->SetGuidance("Export, Import, then export detector description used by this program. "
                                     "Exported files have '.prev' (previous) or '.curr' (current) suffix, respectively.");
-    fIxportDescription->SetParameterName("yaml", false);
-    fIxportDescription->AvailableForStates(G4State_PreInit);
+    fEmportDescription->SetParameterName("yaml", false);
+    fEmportDescription->AvailableForStates(G4State_PreInit);
 }
 
 template<typename ADerived, std::derived_from<G4VUserDetectorConstruction> ADetectorConstruction, muc::ceta_string AAppName>
+    requires requires { typename ADetectorConstruction::ProminentDescription; }
 auto DetectorMessenger<ADerived, ADetectorConstruction, AAppName>::SetNewValue(G4UIcommand* command, G4String value) -> void {
-    using DescriptionInUse = ADetectorConstruction::DescriptionInUse;
+    using ProminentDescription = ADetectorConstruction::ProminentDescription;
     using Detector::Description::DescriptionIO;
     const auto annotation{[] {
         if constexpr (AAppName) {
-            return fmt::format("{}: geometry description", AAppName.sv());
+            return fmt::format("{}: detector description", AAppName.sv());
         } else {
             return std::string{};
         }
     }()};
     if (command == fImportDescription.get()) {
-        DescriptionIO::Import<DescriptionInUse>(std::string_view{value});
+        DescriptionIO::Import<ProminentDescription>(std::string_view{value});
     } else if (command == fExportDescription.get()) {
-        DescriptionIO::ParallelExport<DescriptionInUse>(std::string_view{value}, annotation);
-    } else if (command == fIxportDescription.get()) {
-        DescriptionIO::ParallelIxport<DescriptionInUse>(std::string_view{value}, annotation);
+        DescriptionIO::Export<ProminentDescription>(std::string_view{value}, annotation);
+    } else if (command == fEmportDescription.get()) {
+        DescriptionIO::Emport<ProminentDescription>(std::string_view{value}, annotation);
     }
 }
 

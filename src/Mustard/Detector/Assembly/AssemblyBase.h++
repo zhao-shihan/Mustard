@@ -41,7 +41,7 @@ namespace Assembly {
 
 /// @brief Represents a set of `Detector::Definition`.
 /// This is Basically a wrapper on multiple `Detector::Definition` objects that
-/// have the same mother, but requires to have a type `DescriptionInUse`
+/// have the same mother, but requires to have a type `ProminentDescription`
 /// including all affective Detector::Description type (see concept `Assembly`).
 /// This provides a *pimpl* tool for complex geometries.
 class AssemblyBase {

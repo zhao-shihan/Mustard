@@ -103,10 +103,8 @@ public:
     auto RegisterField(gsl::index iLogicalVolume, std::unique_ptr<G4FieldManager> fieldManager, bool forceToAllDaughters) -> void;
     auto RegisterField(std::string_view logicalVolumeName, gsl::index iLogicalVolume, std::unique_ptr<G4FieldManager> fieldManager, bool forceToAllDaughters) -> void;
 
-    auto Export(std::filesystem::path gdmlFile, gsl::index iPhysicalVolume = 0) const -> void;
-    auto Export(std::filesystem::path gdmlFile, std::string_view physicalVolumeName, gsl::index iPhysicalVolume = 0) const -> void;
-    auto ParallelExport(std::filesystem::path gdmlFile, gsl::index iPhysicalVolume = 0) const -> std::filesystem::path;
-    auto ParallelExport(std::filesystem::path gdmlFile, std::string_view physicalVolumeName, gsl::index iPhysicalVolume = 0) const -> std::filesystem::path;
+    auto Export(std::filesystem::path gdmlPath, gsl::index iPhysicalVolume = 0) const -> std::filesystem::path;
+    auto Export(std::filesystem::path gdmlPath, std::string_view physicalVolumeName, gsl::index iPhysicalVolume = 0) const -> std::filesystem::path;
 
     auto LogicalVolumes() const -> const std::vector<G4LogicalVolume*>&;
     auto LogicalVolumes(std::string_view name) const -> const std::vector<G4LogicalVolume*>&;

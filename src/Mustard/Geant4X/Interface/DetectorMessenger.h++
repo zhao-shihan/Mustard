@@ -39,6 +39,7 @@
 namespace Mustard::Geant4X::inline Interface {
 
 template<typename ADerived, std::derived_from<G4VUserDetectorConstruction> ADetectorConstruction, muc::ceta_string AAppName = nullptr>
+    requires requires { typename ADetectorConstruction::ProminentDescription; }
 class DetectorMessenger : public Geant4X::SingletonMessenger<ADerived> {
 protected:
     DetectorMessenger();
@@ -50,7 +51,7 @@ private:
     std::unique_ptr<G4UIdirectory> fDirectory;
     std::unique_ptr<G4UIcmdWithAString> fImportDescription;
     std::unique_ptr<G4UIcmdWithAString> fExportDescription;
-    std::unique_ptr<G4UIcmdWithAString> fIxportDescription;
+    std::unique_ptr<G4UIcmdWithAString> fEmportDescription;
 };
 
 } // namespace Mustard::Geant4X::inline Interface
