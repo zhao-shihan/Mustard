@@ -27,7 +27,8 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
     fBoostFromLabToCM{},
     fIRCut{},
     fAcceptance{[](auto&&) { return 1; }},
-    fAcceptanceGt1Counter{} {
+    fAcceptanceGt1Counter{},
+    fNegativeMSqCounter{} {
     ISMomenta(pI);
 }
 
@@ -197,11 +198,14 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidAcceptance(const FinalStateMomen
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::ValidMSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double {
+    Expects(acceptance >= 0);
+    Expects(detJ > 0);
     if (acceptance <= std::numeric_limits<double>::epsilon()) {
         return 0;
     }
-    const auto value{fMatrixElement(fISMomenta, pF) * acceptance * detJ}; // |M|² × acceptance × |J|
-    const auto Where{[&] {
+    const auto mSq{fMatrixElement(fISMomenta, pF)};
+    const auto result{mSq * acceptance * detJ}; // |M|² × acceptance × |J|
+    constexpr auto Format{[](const FinalStateMomenta& pF, double acceptance, double detJ) {
         auto where{fmt::format("({})", detJ)};
         for (auto&& p : pF) {
             where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
@@ -209,13 +213,21 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidMSqAcceptanceDetJ(const FinalSta
         where += fmt::format(" Acceptance={}", acceptance);
         return where;
     }};
-    if (not std::isfinite(value)) {
-        Throw<std::runtime_error>(fmt::format("Infinite |M|^2 x (Acceptance) x |J| found (got {} at {})", value, Where()));
+    if (mSq < 0) [[unlikely]] {
+        constexpr std::int8_t maxIncidentReport{10};
+        if (fNegativeMSqCounter < maxIncidentReport) {
+            ++fNegativeMSqCounter;
+            PrintWarning(fmt::format("Negative |M|^2 (got {} at {}, incident: {}, this warning will be suppressed after {} incidents)",
+                                     mSq, Format(pF, acceptance, detJ), fNegativeMSqCounter, maxIncidentReport));
+            if (fNegativeMSqCounter == maxIncidentReport) {
+                PrintWarning("Warning of negative |M|^2 suppressed");
+            }
+        }
     }
-    if (value < 0) {
-        Throw<std::runtime_error>(fmt::format("Negative |M|^2 x (Acceptance) x |J| PDF found (got {} at {})", value, Where()));
+    if (not std::isfinite(result)) {
+        Throw<std::runtime_error>(fmt::format("Infinite |M|^2 x (Acceptance) x |J| found (got {} at {})", result, Format(pF, acceptance, detJ)));
     }
-    return value;
+    return result;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>

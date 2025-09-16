@@ -210,6 +210,7 @@ private:
     std::vector<std::pair<int, double>> fIRCut; ///< IR cuts
     AcceptanceFunction fAcceptance;             ///< User acceptance function
     mutable std::int8_t fAcceptanceGt1Counter;  ///< Counter of acceptance > 1 warning
+    mutable std::int8_t fNegativeMSqCounter;    ///< Counter of negative |M|² warning
 };
 
 } // namespace Mustard::inline Physics::inline Generator
