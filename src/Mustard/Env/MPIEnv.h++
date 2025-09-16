@@ -36,7 +36,6 @@
 namespace Mustard::Env {
 
 class MPIEnv : virtual public BasicEnv,
-               public mplr::environment,
                public Memory::PassiveSingleton<MPIEnv> {
 protected:
     MPIEnv(NoBanner, int argc, char* argv[],

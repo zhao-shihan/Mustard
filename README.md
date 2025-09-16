@@ -47,6 +47,6 @@ Required, built-in if not found (network or pre-downloaded source is required):
 5. [fmt (A modern formatting library)](https://github.com/fmtlib/fmt) (≥ 11.2.0, built-in if not found)
 6. [indicators (Activity Indicators for Modern C++)](https://github.com/p-ranav/indicators) (≥ 2.3, built-in if not found)
 7. [Microsoft.GSL](https://github.com/Microsoft/GSL) ([ISO C++ guidelines support library](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#gsl-guidelines-support-library)) (≥ 4.2.0, built-in if not found)
-8. [MPLR (A C++17 message passing library based on MPI)](https://github.com/zhao-shihan/mplr) (≥ 0.25.915, built-in if not found)
+8. [MPLR (A C++17 message passing library based on MPI)](https://github.com/zhao-shihan/mplr) (≥ 0.25.916, built-in if not found)
 9. [muc (A standard non-standard C++ library)](https://github.com/zhao-shihan/muc) (≥ 0.25.903, built-in if not found)
 10. [yaml-cpp (A YAML parser and emitter in C++)](https://github.com/jbeder/yaml-cpp) (≥ 0.8.0, built-in if not found)

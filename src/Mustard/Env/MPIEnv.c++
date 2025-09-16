@@ -22,27 +22,16 @@
 
 #include "TROOT.h"
 
-#include "muc/algorithm"
-#include "muc/numeric"
-#include "muc/utility"
-
 #include "gsl/gsl"
 
 #include "fmt/format.h"
 
 #include <algorithm>
 #include <array>
-#include <chrono>
-#include <cstddef>
-#include <cstdint>
 #include <cstdio>
-#include <cstring>
-#include <iomanip>
 #include <iterator>
-#include <memory>
-#include <stdexcept>
+#include <string>
 #include <string_view>
-#include <thread>
 #include <utility>
 
 namespace Mustard::Env {
@@ -52,12 +41,13 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                enum VerboseLevel verboseLevel,
                bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
-    mplr::environment{argc, argv},
     PassiveSingleton<MPIEnv>{this},
     fIntraNodeComm{},
     fInterNodeComm{},
     fLocalNodeID{},
     fNodeList{} {
+    mplr::init(argc, argv);
+
     const auto worldComm{mplr::comm_world()};
     fIntraNodeComm = mplr::communicator{mplr::communicator::split_shared_memory, worldComm};
     enum struct IntraNodeColor { Leader = 0,
