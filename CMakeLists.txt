@@ -119,35 +119,34 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/GlobalCompileConfig.cmake)
 
 # Required:
 
+# argparse (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForArgparse.cmake)
+# envparse (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEnvparse.cmake)
+# fmt (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForFmt.cmake)
+# indicators (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForIndicators.cmake)
+# Microsoft.GSL (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMicrosoftGSL.cmake)
+# muc (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMUC.cmake)
+
+# yaml-cpp (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForYamlCpp.cmake)
+# backward-cpp (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForBackward.cmake)
+# MPLR (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMPLR.cmake)
+
 # Eigen
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEigen.cmake)
 # Geant4
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForGeant4.cmake)
 # ROOT
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForROOT.cmake)
-
-# Required, built-in if not found:
-
-# argparse
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForArgparse.cmake)
-# backward-cpp
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForBackward.cmake)
-# EFM
+# EFM (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEFM.cmake)
-# envparse
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEnvparse.cmake)
-# fmt
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForFmt.cmake)
-# indicators
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForIndicators.cmake)
-# Microsoft.GSL
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMicrosoftGSL.cmake)
-# MPLR
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMPLR.cmake)
-# muc
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMUC.cmake)
-# yaml-cpp
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForYamlCpp.cmake)
 
 # =============================================================================
 # Let's dive in...
