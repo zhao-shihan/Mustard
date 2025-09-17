@@ -56,8 +56,8 @@ include(CMakeDependentOption)
 
 # Basic
 # Options (ON/OFF)
+option(BUILD_TESTING "Enable tests" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option(MUSTARD_BUILD_TEST "Build Mustard with tests." ${PROJECT_IS_TOP_LEVEL})
 option(MUSTARD_BUILTIN_ARGPARSE "Use built-in argparse (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_BACKWARD "Use built-in backward-cpp (network or pre-downloaded source is required)." ON)
 option(MUSTARD_BUILTIN_EFM "Use built-in EFM (network or pre-downloaded source is required)." OFF)
@@ -156,7 +156,7 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEFM.cmake)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/MustardCompileConfig.cmake)
 
 add_subdirectory(src)
-if(MUSTARD_BUILD_TEST)
+if(BUILD_TESTING)
     add_subdirectory(test)
 endif()
 
