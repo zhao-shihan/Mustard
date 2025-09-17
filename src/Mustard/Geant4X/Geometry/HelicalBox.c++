@@ -29,6 +29,7 @@
 #include "muc/numeric"
 
 #include <cmath>
+#include <limits>
 #include <utility>
 
 namespace Mustard::Geant4X::inline Geometry {
@@ -97,8 +98,8 @@ HelicalBox::HelicalBox(std::string name,
     fBackEndNormal = EndFaceNormal(phiTotal).unit();
 
     // parameterized surface
-    double tFront;
-    double tBack;
+    double tFront{std::numeric_limits<double>::quiet_NaN()};
+    double tBack{std::numeric_limits<double>::quiet_NaN()};
     const auto MainPoint{
         [&](const auto& u, int j) -> G4Point3D {
             const auto u1{u + phi0};
