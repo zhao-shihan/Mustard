@@ -20,7 +20,7 @@ namespace Mustard::inline Execution {
 
 template<std::integral T>
 auto MakeCodedScheduler(std::string_view scheduler) -> std::unique_ptr<Scheduler<T>> {
-    static const std::map<std::string_view, std::function<auto()->std::unique_ptr<Scheduler<T>>>> schedulerMap{
+    static const muc::flat_hash_map<std::string_view, std::function<auto()->std::unique_ptr<Scheduler<T>>>> schedulerMap{
         {"clmw", [] { return std::make_unique<ClusterAwareMasterWorkerScheduler<T>>(); }},
         {"mw",   [] { return std::make_unique<MasterWorkerScheduler<T>>(); }            },
         {"seq",  [] { return std::make_unique<SequentialScheduler<T>>(); }              },
@@ -32,6 +32,7 @@ auto MakeCodedScheduler(std::string_view scheduler) -> std::unique_ptr<Scheduler
     } catch (const std::out_of_range&) {
         std::vector<std::string_view> available(schedulerMap.size());
         std::ranges::transform(schedulerMap, available.begin(), [](auto&& s) { return s.first; });
+        muc::timsort(available);
         Throw<std::out_of_range>(fmt::format("Scheduler '{}' not found, available are {}", scheduler, available));
     }
 }

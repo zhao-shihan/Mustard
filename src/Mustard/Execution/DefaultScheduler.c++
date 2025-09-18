@@ -23,6 +23,8 @@
 
 #include "envparse/parse.h++"
 
+#include <algorithm>
+
 namespace Mustard::inline Execution {
 
 auto DefaultSchedulerCode() -> std::string {
@@ -41,7 +43,8 @@ auto DefaultSchedulerCode() -> std::string {
     if (mpiEnv.ClusterSize() == 1) {
         return "shm";
     }
-    if (worldComm.size() <= 128) {
+    if (worldComm.size() <= 128 or
+        std::ranges::all_of(mpiEnv.NodeList(), [](auto&& n) { return n.size <= 8; })) {
         return "mw";
     }
     return "clmw";

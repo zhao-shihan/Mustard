@@ -25,12 +25,14 @@
 #include "Mustard/Execution/SharedMemoryScheduler.h++"
 #include "Mustard/Execution/StaticScheduler.h++"
 
+#include "muc/algorithm"
+#include "muc/hash_map"
+
 #include "fmt/ranges.h"
 
 #include <algorithm>
 #include <concepts>
 #include <functional>
-#include <map>
 #include <memory>
 #include <string>
 #include <string_view>
