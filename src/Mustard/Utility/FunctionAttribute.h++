@@ -59,12 +59,8 @@
 // It can prevents inlining inside the function body, so only use on function with direct + - * / operation.
 // Use with profile and with care. If you're not sure what you're doing, don't use it.
 //
-#ifdef NDEBUG
-#    if defined __GNUC__ or defined __clang__
-#        define MUSTARD_OPTIMIZE_FAST __attribute__((optimize("Ofast")))
-#    else
-#        define MUSTARD_OPTIMIZE_FAST
-#    endif
+#if defined NDEBUG and defined __GNUC__
+#    define MUSTARD_OPTIMIZE_FAST [[gnu::optimize("Ofast")]]
 #else
 #    define MUSTARD_OPTIMIZE_FAST
 #endif
