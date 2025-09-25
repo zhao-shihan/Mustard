@@ -21,13 +21,12 @@ namespace Mustard::inline Execution {
 template<std::integral T>
 MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
     fS{s},
-    fSemaphoreRecv{},
     fRecv{},
     fTaskIDSend{},
     fSend{} {
     const auto commSize{fS->fComm.size()};
     for (int src{}; src < commSize; ++src) {
-        fRecv.push(fS->fComm.recv_init(fSemaphoreRecv, src));
+        fRecv.push(fS->fComm.recv_init(src));
     }
     fTaskIDSend.reserve(commSize);
     for (int dest{}; dest < commSize; ++dest) {
@@ -68,7 +67,6 @@ MasterWorkerScheduler<T>::MasterWorkerScheduler() :
     fBatchSize{},
     fMaster{},
     fMasterThread{},
-    fSemaphoreSend{},
     fSend{},
     fTaskIDRecv{},
     fRecv{},
@@ -82,7 +80,7 @@ MasterWorkerScheduler<T>::MasterWorkerScheduler() :
     if (fComm.rank() == 0) {
         fMaster = std::make_unique<Master>(this);
     }
-    fSend = fComm.rsend_init(fSemaphoreSend, 0);
+    fSend = fComm.rsend_init(0);
     fRecv = fComm.recv_init(fTaskIDRecv, 0);
 }
 

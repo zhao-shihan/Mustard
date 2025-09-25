@@ -57,7 +57,6 @@ private:
     private:
         ClusterAwareMasterWorkerScheduler<T>* fS;
 
-        std::byte fSemaphoreRecvFromNM;
         mplr::prequest_pool fRecvFromNM;
         std::vector<T> fTaskIDSendToNM;
         mplr::prequest_pool fSendToNM;
@@ -77,12 +76,10 @@ private:
         std::unique_ptr<ClusterMaster> fClusterMaster;
         std::jthread fClusterMasterThread;
 
-        std::byte fSemaphoreSendToCM;
         mplr::prequest fSendToCM;
         T fTaskIDRecvFromCM;
         mplr::prequest fRecvFromCM;
 
-        std::byte fSemaphoreRecvFromW;
         mplr::prequest_pool fRecvFromW;
         std::vector<T> fTaskIDSendToW;
         mplr::prequest_pool fSendToW;
@@ -110,7 +107,6 @@ private:
     std::unique_ptr<NodeMaster> fNodeMaster;
     std::jthread fNodeMasterThread;
 
-    std::byte fSemaphoreSendToNM;
     mplr::prequest fSendToNM;
     T fTaskIDRecvFromNM;
     mplr::prequest fRecvFromNM;

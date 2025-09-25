@@ -49,7 +49,6 @@ private:
 
     private:
         MasterWorkerScheduler<T>* fS;
-        std::byte fSemaphoreRecv;
         mplr::prequest_pool fRecv;
         std::vector<T> fTaskIDSend;
         mplr::prequest_pool fSend;
@@ -71,7 +70,6 @@ private:
     std::unique_ptr<Master> fMaster;
     std::jthread fMasterThread;
 
-    std::byte fSemaphoreSend;
     mplr::prequest fSend;
     T fTaskIDRecv;
     mplr::prequest fRecv;

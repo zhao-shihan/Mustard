@@ -21,13 +21,12 @@ namespace Mustard::inline Execution {
 template<std::integral T>
 ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::ClusterMaster(ClusterAwareMasterWorkerScheduler<T>* s) :
     fS{s},
-    fSemaphoreRecvFromNM{},
     fRecvFromNM{},
     fTaskIDSendToNM{},
     fSendToNM{} {
     const auto commSize{s->fInterNodeComm.size()};
     for (int src{}; src < commSize; ++src) {
-        fRecvFromNM.push(s->fInterNodeComm.recv_init(fSemaphoreRecvFromNM, src));
+        fRecvFromNM.push(s->fInterNodeComm.recv_init(src));
     }
     fTaskIDSendToNM.reserve(commSize);
     for (int dest{}; dest < commSize; ++dest) {
@@ -66,17 +65,15 @@ ClusterAwareMasterWorkerScheduler<T>::NodeMaster::NodeMaster(ClusterAwareMasterW
     fS{s},
     fClusterMaster{s->fInterNodeComm.rank() == 0 ? std::make_unique<ClusterMaster>(s) : nullptr},
     fClusterMasterThread{},
-    fSemaphoreSendToCM{},
-    fSendToCM{s->fInterNodeComm.rsend_init(fSemaphoreSendToCM, 0)},
+    fSendToCM{s->fInterNodeComm.rsend_init(0)},
     fTaskIDRecvFromCM{},
     fRecvFromCM{s->fInterNodeComm.recv_init(fTaskIDRecvFromCM, 0)},
-    fSemaphoreRecvFromW{},
     fRecvFromW{},
     fTaskIDSendToW{},
     fSendToW{} {
     const auto nodeSize{s->fIntraNodeComm.size()};
     for (int src{}; src < nodeSize; ++src) {
-        fRecvFromW.push(s->fIntraNodeComm.recv_init(fSemaphoreRecvFromW, src));
+        fRecvFromW.push(s->fIntraNodeComm.recv_init(src));
     }
     fTaskIDSendToW.reserve(nodeSize);
     for (int dest{}; dest < nodeSize; ++dest) {
@@ -152,7 +149,6 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
     fInterNodeBatchSize{},
     fNodeMaster{},
     fNodeMasterThread{},
-    fSemaphoreSendToNM{},
     fSendToNM{},
     fTaskIDRecvFromNM{},
     fRecvFromNM{},
@@ -169,7 +165,7 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
         fNodeMaster = std::make_unique<NodeMaster>(this);
     }
     fInterNodeBatchSize.resize(mpiEnv.ClusterSize());
-    fSendToNM = fIntraNodeComm.rsend_init(fSemaphoreSendToNM, 0);
+    fSendToNM = fIntraNodeComm.rsend_init(0);
     fRecvFromNM = fIntraNodeComm.recv_init(fTaskIDRecvFromNM, 0);
 }
 
