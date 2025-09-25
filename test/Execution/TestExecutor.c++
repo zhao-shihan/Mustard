@@ -86,7 +86,7 @@ auto main(int argc, char* argv[]) -> int {
 
     std::this_thread::sleep_for(1s);
 
-    const auto bigN{std::min<long long>(1000000ll * n, std::numeric_limits<int>::max() / 2)};
+    const auto bigN{std::min<long long>(1000ll * n, std::numeric_limits<int>::max() / 2)};
     localIndexList.clear();
     executor.PrintProgress(true);
     executor(bigN, [&](auto i) { localIndexList.emplace_back(i); });
