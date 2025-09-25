@@ -16,7 +16,7 @@
 
 message(STATUS "Looking for yaml-cpp")
 
-set(MUSTARD_YAML_CPP_MINIMUM_REQUIRED 0.8.0)
+set(MUSTARD_YAML_CPP_MINIMUM_REQUIRED 0.8.1)
 
 if(NOT MUSTARD_BUILTIN_YAML_CPP)
     find_package(yaml-cpp ${MUSTARD_YAML_CPP_MINIMUM_REQUIRED})
@@ -35,7 +35,7 @@ if(MUSTARD_BUILTIN_YAML_CPP)
     endif()
     # set download dest and URL
     set(MUSTARD_BUILTIN_YAML_CPP_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/yaml-cpp-${MUSTARD_BUILTIN_YAML_CPP_VERSION}")
-    set(MUSTARD_BUILTIN_YAML_CPP_URL "https://github.com/jbeder/yaml-cpp/archive/refs/tags/${MUSTARD_BUILTIN_YAML_CPP_VERSION}.tar.gz")
+    set(MUSTARD_BUILTIN_YAML_CPP_URL "https://github.com/zhao-shihan/yaml-cpp/archive/refs/tags/${MUSTARD_BUILTIN_YAML_CPP_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_YAML_CPP_SRC_DIR}/CMakeLists.txt")
