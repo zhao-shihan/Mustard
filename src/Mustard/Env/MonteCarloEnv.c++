@@ -16,6 +16,12 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/CLI/Module/MonteCarloModule.h++"
+#include "Mustard/Env/MonteCarloEnv.h++"
+#include "Mustard/IO/PrettyLog.h++"
+
+#include "mplr/mplr.hpp"
+
 namespace Mustard::Env {
 
 template<unsigned AXoshiroWidth>
@@ -24,12 +30,25 @@ MonteCarloEnv<AXoshiroWidth>::MonteCarloEnv(NoBanner, int argc, char* argv[], CL
                                             bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     PassiveSingleton<MonteCarloEnv>{this},
-    fXoshiro{cli} {}
+    fXoshiro{cli} {
+    if (not dynamic_cast<CLI::MonteCarloModule*>(&cli)) {
+        Mustard::MasterPrintWarning("Monte Carlo CLI module (Mustard::CLI::MonteCarloModule) not found");
+    }
+}
 
 template<unsigned AXoshiroWidth>
 MonteCarloEnv<AXoshiroWidth>::MonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
                                             enum VerboseLevel verboseLevel,
                                             bool showBannerHint) :
-    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {}
+    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
+    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
+        PrintStartBannerSplitLine();
+        PrintStartBannerBody(argc, argv);
+        PrintStartBannerSplitLine();
+    }
+}
+
+template class MonteCarloEnv<256>;
+template class MonteCarloEnv<512>;
 
 } // namespace Mustard::Env

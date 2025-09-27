@@ -24,6 +24,8 @@
 
 #include "TThread.h"
 
+#include "mplr/mplr.hpp"
+
 #include "fmt/chrono.h"
 #include "fmt/color.h"
 
@@ -63,7 +65,7 @@ BasicEnv::BasicEnv(int argc, char* argv[],
                    enum VerboseLevel verboseLevel,
                    bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
-    if (fShowBanner) {
+    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();
@@ -71,7 +73,7 @@ BasicEnv::BasicEnv(int argc, char* argv[],
 }
 
 BasicEnv::~BasicEnv() {
-    if (fShowBanner) {
+    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
         PrintExitBanner();
     }
     fShowBanner = false;
