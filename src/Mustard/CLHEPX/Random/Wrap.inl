@@ -49,7 +49,7 @@ auto Wrap<PRBG>::setSeeds(const long* seeds, int) -> void {
 
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::saveStatus(gsl::czstring filename) const -> void {
-    File<std::ofstream> os{filename};
+    ProcessSpecificFile<std::ofstream> os{filename};
     if (not os.Opened()) [[unlikely]] {
         PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {})",
                                os.Path(), name()));
@@ -59,7 +59,7 @@ auto Wrap<PRBG>::saveStatus(gsl::czstring filename) const -> void {
 
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::restoreStatus(gsl::czstring filename) -> void {
-    File<std::ifstream> is{filename};
+    ProcessSpecificFile<std::ifstream> is{filename};
     if (not is.Opened()) [[unlikely]] {
         PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {})",
                                is.Path(), name()));

@@ -25,10 +25,30 @@ auto main(int argc, char* argv[]) -> int {
 
     std::vector<std::unique_ptr<Mustard::File<>>> file;
     file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(argv[1], "w"));
-    file.emplace_back(std::make_unique<Mustard::File<std::fstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(argv[1], "r"));
+    file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(argv[1], "a"));
     file.emplace_back(std::make_unique<Mustard::File<std::ifstream>>(argv[1]));
     file.emplace_back(std::make_unique<Mustard::File<std::ofstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::File<std::fstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::File<std::wifstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::File<std::wofstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::File<std::wfstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::File<TFile>>(argv[1], "READ"));
+    file.emplace_back(std::make_unique<Mustard::File<TFile>>(argv[1], "UPDATE"));
     file.emplace_back(std::make_unique<Mustard::File<TFile>>(argv[1], "RECREATE"));
+
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(argv[1], "w"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(argv[1], "r"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(argv[1], "a"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::ifstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::ofstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::fstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wifstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wofstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wfstream>>(argv[1]));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(argv[1], "READ"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(argv[1], "UPDATE"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(argv[1], "RECREATE"));
 
     return EXIT_SUCCESS;
 }

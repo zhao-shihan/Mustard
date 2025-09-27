@@ -46,7 +46,7 @@ private:
     std::string fFileMode;
 
     std::filesystem::path fLastUsedFullFilePath;
-    std::optional<File<TFile>> fFile;
+    std::optional<ProcessSpecificFile<TFile>> fFile;
 
     AnalysisBaseMessenger<ADerived>::template Register<ADerived> fMessengerRegister;
 };

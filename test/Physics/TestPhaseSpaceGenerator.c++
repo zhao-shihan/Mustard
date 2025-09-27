@@ -39,7 +39,7 @@ auto main(int argc, char* argv[]) -> int {
     Mustard::Env::MPIEnv env{argc, argv, cli};
     Mustard::UseXoshiro<256> random;
 
-    Mustard::File<TFile> file{cli->get("--output"), cli->get("--output-mode")};
+    Mustard::ProcessSpecificFile<TFile> file{cli->get("--output"), cli->get("--output-mode")};
 
     const auto nEvent{cli->get<unsigned long long>("n")};
     const auto nBin{gsl::narrow<int>(muc::llround(std::sqrt(nEvent / 100000)))};

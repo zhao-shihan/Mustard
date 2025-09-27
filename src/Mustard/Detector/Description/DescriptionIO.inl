@@ -100,18 +100,18 @@ auto DescriptionIO::ToString() -> std::string {
 template<typename... ArgsOfImport>
 auto DescriptionIO::Import(const std::ranges::range auto& yamlText) -> void
     requires std::convertible_to<typename std::decay_t<decltype(yamlText)>::value_type, std::string> {
-    const auto yamlPath{CreateTemporaryFile("geom", ".yaml")};
+    const auto tempYAMLPath{CreateTemporaryFile("geom", ".yaml")};
     const auto _{gsl::finally([&] {
         std::error_code muteRemoveError;
-        std::filesystem::remove(yamlPath, muteRemoveError);
+        std::filesystem::remove(tempYAMLPath, muteRemoveError);
     })};
     {
-        File<std::FILE> yamlFile{yamlPath, "w"};
+        File<std::FILE> tempYAMLFile{tempYAMLPath, "w"};
         for (auto&& line : yamlText) {
-            fmt::println(yamlFile, "{}", line);
+            fmt::println(tempYAMLFile, "{}", line);
         }
     }
-    Import<ArgsOfImport...>(yamlPath);
+    Import<ArgsOfImport...>(tempYAMLPath);
 }
 
 auto DescriptionIO::ImportImpl(const std::filesystem::path& yamlPath, std::ranges::input_range auto& descriptions) -> void {
@@ -134,7 +134,7 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlPath, const std:
         description->Export(geomYaml);
     }
 
-    File<std::ofstream> yamlOut{yamlPath};
+    ProcessSpecificFile<std::ofstream> yamlOut{yamlPath};
     if (not yamlOut.Opened()) [[unlikely]] {
         PrintError("Cannot open yaml file, export failed");
         return {};

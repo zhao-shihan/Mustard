@@ -35,7 +35,13 @@ class TFile;
 
 namespace Mustard::inline IO {
 
-/// @brief MPI-aware file wrapper with heterogeneous/homogeneous access modes
+/// @brief File path options
+enum struct FilePathOption {
+    Direct,         ///< Open file according to passed path unchanged
+    ProcessSpecific ///< Open file according to path modified by Mustard::Parallel::ProcessSpecificPath
+};
+
+/// @brief Useful and MPI-aware file wrapper
 ///
 /// Provides unified interface for various file types with automatic
 /// MPI process-specific path handling if necessary.
@@ -43,24 +49,19 @@ namespace Mustard::inline IO {
 /// @tparam F File type to wrap (default (void) for base, specific types for specializations)
 ///
 /// @note Key features:
-///   - Homogeneous mode: All processes access same file
-///   - Heterogeneous mode: Per-process accesess its unique file
+///   - Direct mode: Open file according to passed path unchanged
+///   - ProcessSpecific mode: Open file according to path
+///     modified by Mustard::Parallel::ProcessSpecificPath
 ///
-/// @warning Construct with Option::Heterogeneous is an collective operation (must be called by all processes)
+/// @warning Open file with FilePathOption::ProcessSpecific is
+/// an MPI collective operation (must be called by all processes)
 template<typename F = void>
 class File {
-public:
-    /// @brief File access mode options
-    enum struct Option {
-        Homogeneous,  ///< All processes access same file
-        Heterogeneous ///< Per-process accesses its unique file
-    };
-
 protected:
     /// @brief Construct base class
-    /// @param option Homogeneous/Heterogeneous
+    /// @param pathOption Direct/ProcessSpecific
     /// @param filePath File path
-    File(Option option, std::filesystem::path filePath);
+    File(FilePathOption pathOption, std::filesystem::path filePath);
 
 public:
     /// @brief Default d'tor
@@ -73,6 +74,12 @@ private:
     std::filesystem::path fPath; ///< Exact file path (may different from c'tor parameter)
 };
 
+/// @brief MPI-aware process-specific file.
+/// Just a wrapper of `File` with FilePathOption::ProcessSpecific
+/// @warning Open process-specific file is an MPI collective operation
+template<typename>
+class ProcessSpecificFile;
+
 /// @brief Specialization for `std::FILE`
 template<>
 class File<std::FILE> : public File<> {
@@ -80,20 +87,16 @@ public:
     using Type = std::FILE; ///< Wrapped file type
 
 public:
-    /// @brief Open file with automatic access option
+    /// @brief Open file with FilePathOption::Direct
     /// @param filePath File path
     /// @param mode fopen-style mode string
-    /// @note Access option:
-    ///   - With 'w' or 'a': Heterogeneous
-    ///   - Otherwise: Homogeneous
-    /// @warning Construct with heterogeneous option is an MPI collective operation
     File(std::filesystem::path filePath, gsl::czstring mode);
-    /// @brief Open file with explicit access option
-    /// @param option Homogeneous/Heterogeneous selection
+    /// @brief Open file with explicit path option
+    /// @param pathOption Direct/ProcessSpecific
     /// @param filePath File path
     /// @param mode fopen-style mode string
-    /// @warning Construct with heterogeneous option is an MPI collective operation
-    File(Option option, std::filesystem::path filePath, gsl::czstring mode);
+    /// @warning Open file with FilePathOption::ProcessSpecific is an MPI collective operation
+    File(FilePathOption pathOption, std::filesystem::path filePath, gsl::czstring mode);
 
     /// @brief Check the file is opened or not
     /// @return true if file opened, false if not
@@ -117,6 +120,18 @@ private:
     std::unique_ptr<std::FILE, CloseFile> fFile;
 };
 
+/// @brief Specialization for `std::FILE`
+/// @warning Open process-specific file is an MPI collective operation
+template<>
+class ProcessSpecificFile<std::FILE> : public File<std::FILE> {
+public:
+    /// @brief Open file with FilePathOption::ProcessSpecific
+    /// @param filePath File path
+    /// @param mode fopen-style mode string
+    /// @warning Open process-specific file is an MPI collective operation
+    ProcessSpecificFile(std::filesystem::path filePath, gsl::czstring mode);
+};
+
 namespace internal {
 
 /// @internal
@@ -125,13 +140,16 @@ namespace internal {
 template<std::derived_from<std::ios_base> F>
 class FStream : public File<> {
 protected:
-    /// @brief Open file with automatic access option
-    /// @note Writing mode -> Heterogeneous
-    /// @warning Construct with heterogeneous option is an MPI collective operation
+    /// @brief Open file with FilePathOption::Direct
+    /// @param filePath File path
+    /// @param mode file stream open mode
     FStream(std::filesystem::path filePath, F::openmode mode);
-    /// @brief Construct with explicit access mode
-    /// @warning Construct with heterogeneous option is an MPI collective operation
-    FStream(Option option, std::filesystem::path filePath, F::openmode mode);
+    /// @brief Open file with explicit path option
+    /// @param pathOption Direct/ProcessSpecific
+    /// @param filePath File path
+    /// @param mode file stream open mode
+    /// @warning Open file with FilePathOption::ProcessSpecific is an MPI collective operation
+    FStream(FilePathOption pathOption, std::filesystem::path filePath, F::openmode mode);
 
 public:
     /// @brief Check the file is opened or not
@@ -161,16 +179,35 @@ private:
 template<muc::character C>
 class File<std::basic_ifstream<C>> : public internal::FStream<std::basic_ifstream<C>> {
 public:
-    using typename File<>::Option;
     using Type = std::basic_ifstream<C>; ///< Wrapped file type
 
 public:
-    /// @brief Open input file (homogeneous by default)
-    /// @warning Construct with heterogeneous option is an MPI collective operation
+    /// @brief Open input file with FilePathOption::Direct
+    /// @param filePath File path
+    /// @param mode file stream open mode
     File(std::filesystem::path filePath, Type::openmode mode = Type::in);
-    /// @brief Construct with explicit access mode
-    /// @warning Construct with heterogeneous option is an MPI collective operation
-    File(Option option, std::filesystem::path filePath, Type::openmode mode = Type::in);
+    /// @brief Open file with explicit path option
+    /// @param pathOption Direct/ProcessSpecific
+    /// @param filePath File path
+    /// @param mode file stream open mode
+    /// @warning Open file with FilePathOption::ProcessSpecific is an MPI collective operation
+    File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode = Type::in);
+};
+
+/// @brief Specialization for `std::basic_ifstream`
+/// @tparam C Character type (char, wchar_t)
+/// @warning Open process-specific file is an MPI collective operation
+template<muc::character C>
+class ProcessSpecificFile<std::basic_ifstream<C>> : public File<std::basic_ifstream<C>> {
+public:
+    using typename File<std::basic_ifstream<C>>::Type;
+
+public:
+    /// @brief Open file with FilePathOption::ProcessSpecific
+    /// @param filePath File path
+    /// @param mode file stream open mode
+    /// @warning Open process-specific file is an MPI collective operation
+    ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode = Type::in);
 };
 
 /// @brief Specialization for `std::basic_ofstream`
@@ -178,16 +215,35 @@ public:
 template<muc::character C>
 class File<std::basic_ofstream<C>> : public internal::FStream<std::basic_ofstream<C>> {
 public:
-    using typename File<>::Option;
     using Type = std::basic_ofstream<C>; ///< Wrapped file type
 
 public:
-    /// @brief Open output file (heterogeneous by default)
-    /// @warning Construct with heterogeneous option is an MPI collective operation
+    /// @brief Open output file with FilePathOption::Direct
+    /// @param filePath File path
+    /// @param mode file stream open mode
     File(std::filesystem::path filePath, Type::openmode mode = Type::out);
-    /// @brief Construct with explicit access mode
-    /// @warning Construct with heterogeneous option is an MPI collective operation
-    File(Option option, std::filesystem::path filePath, Type::openmode mode = Type::out);
+    /// @brief Open file with explicit path option
+    /// @param pathOption Direct/ProcessSpecific
+    /// @param filePath File path
+    /// @param mode file stream open mode
+    /// @warning Open file with FilePathOption::ProcessSpecific is an MPI collective operation
+    File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode = Type::out);
+};
+
+/// @brief Specialization for `std::basic_ofstream`
+/// @tparam C Character type (char, wchar_t)
+/// @warning Open process-specific file is an MPI collective operation
+template<muc::character C>
+class ProcessSpecificFile<std::basic_ofstream<C>> : public File<std::basic_ofstream<C>> {
+public:
+    using typename File<std::basic_ofstream<C>>::Type;
+
+public:
+    /// @brief Open file with FilePathOption::ProcessSpecific
+    /// @param filePath File path
+    /// @param mode file stream open mode
+    /// @warning Open process-specific file is an MPI collective operation
+    ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode = Type::out);
 };
 
 /// @brief Specialization for `std::basic_fstream`
@@ -195,31 +251,48 @@ public:
 template<muc::character C>
 class File<std::basic_fstream<C>> : public internal::FStream<std::basic_fstream<C>> {
 public:
-    using typename File<>::Option;
     using Type = std::basic_fstream<C>; ///< Wrapped file type
 
 public:
-    /// @brief Open file with automatic access option
-    /// @note Writing mode -> Heterogeneous
-    /// @warning Construct with heterogeneous option is an MPI collective operation
+    /// @brief Open file with FilePathOption::Direct
+    /// @param filePath File path
+    /// @param mode file stream open mode
     File(std::filesystem::path filePath, Type::openmode mode = Type::in | Type::out);
-    /// @brief Construct with explicit access mode
-    /// @warning Construct with heterogeneous option is an MPI collective operation
-    File(Option option, std::filesystem::path filePath, Type::openmode mode = Type::in | Type::out);
+    /// @brief Open file with explicit path option
+    /// @param pathOption Direct/ProcessSpecific
+    /// @param filePath File path
+    /// @param mode file stream open mode
+    /// @warning Open file with FilePathOption::ProcessSpecific is an MPI collective operation
+    File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode = Type::in | Type::out);
 };
 
-/// @brief Specialization for TFile
+/// @brief Specialization for `std::basic_fstream`
+/// @tparam C Character type (char, wchar_t)
+/// @warning Open process-specific file is an MPI collective operation
+template<muc::character C>
+class ProcessSpecificFile<std::basic_fstream<C>> : public File<std::basic_fstream<C>> {
+public:
+    using typename File<std::basic_fstream<C>>::Type;
+
+public:
+    /// @brief Open file with FilePathOption::ProcessSpecific
+    /// @param filePath File path
+    /// @param mode file stream open mode
+    /// @warning Open process-specific file is an MPI collective operation
+    ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode = Type::in | Type::out);
+};
+
+/// @brief Specialization for `TFile`
 template<>
 class File<TFile> : public File<> {
 public:
-    /// @brief Open ROOT file with automatic mode detection
-    /// @note Mode contains "READ": homogeneous, otherwise Heterogeneous
+    /// @brief Open ROOT file with FilePathOption::Direct
     File(std::filesystem::path filePath, std::string mode = "READ",
          int compress = muc::to_underlying(ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose),
          int netOpt = 0);
-    /// @brief Construct with explicit access mode
-    /// @warning Construct with heterogeneous option is an MPI collective operation
-    File(Option option, std::filesystem::path filePath, std::string mode = "READ",
+    /// @brief Open file with explicit path option
+    /// @warning Open file with FilePathOption::ProcessSpecific is an MPI collective operation
+    File(FilePathOption pathOption, std::filesystem::path filePath, std::string mode = "READ",
          int compress = muc::to_underlying(ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose),
          int netOpt = 0);
     ~File();
@@ -235,6 +308,18 @@ public:
 
 private:
     std::unique_ptr<TFile> fFile;
+};
+
+/// @brief Specialization for `TFile`
+/// @warning Open process-specific file is an MPI collective operation
+template<>
+class ProcessSpecificFile<TFile> : public File<TFile> {
+public:
+    /// @brief Open ROOT file with FilePathOption::ProcessSpecific
+    /// @warning Open process-specific file is an MPI collective operation
+    ProcessSpecificFile(std::filesystem::path filePath, std::string mode = "READ",
+                        int compress = muc::to_underlying(ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose),
+                        int netOpt = 0);
 };
 
 } // namespace Mustard::inline IO

@@ -35,27 +35,24 @@
 namespace Mustard::inline IO {
 
 template<>
-File<>::File(Option option, std::filesystem::path filePath) :
+File<>::File(FilePathOption pathOption, std::filesystem::path filePath) :
     fPath{std::move(filePath)} {
-    switch (option) {
-    case Option::Homogeneous:
+    switch (pathOption) {
+    case FilePathOption::Direct:
         break;
-    case Option::Heterogeneous:
+    case FilePathOption::ProcessSpecific:
         fPath = Parallel::ProcessSpecificPath(fPath);
         break;
     default:
-        Throw<std::invalid_argument>("Invalid option");
+        Throw<std::invalid_argument>("Invalid path option");
     }
 }
 
 File<std::FILE>::File(std::filesystem::path filePath, gsl::czstring mode) :
-    File{std::string_view{mode}.find_first_of("wa") == std::string_view::npos ?
-             Option::Homogeneous :
-             Option::Heterogeneous,
-         std::move(filePath), mode} {}
+    File{FilePathOption::Direct, std::move(filePath), mode} {}
 
-File<std::FILE>::File(Option option, std::filesystem::path filePath, gsl::czstring mode) :
-    File<>{option, std::move(filePath)},
+File<std::FILE>::File(FilePathOption pathOption, std::filesystem::path filePath, gsl::czstring mode) :
+    File<>{pathOption, std::move(filePath)},
     fFile{} {
     fFile = {std::fopen(Path().generic_string().c_str(), mode), CloseFile{}};
 }
@@ -67,18 +64,18 @@ auto File<std::FILE>::Get() const -> std::FILE* {
     return fFile.get();
 }
 
+ProcessSpecificFile<std::FILE>::ProcessSpecificFile(std::filesystem::path filePath, gsl::czstring mode) :
+    File{FilePathOption::ProcessSpecific, std::move(filePath), mode} {}
+
 namespace internal {
 
 template<std::derived_from<std::ios_base> F>
 FStream<F>::FStream(std::filesystem::path filePath, F::openmode mode) :
-    FStream{mode & F::out ?
-                Option::Heterogeneous :
-                Option::Homogeneous,
-            std::move(filePath), mode} {}
+    FStream{FilePathOption::Direct, std::move(filePath), mode} {}
 
 template<std::derived_from<std::ios_base> F>
-FStream<F>::FStream(Option option, std::filesystem::path filePath, F::openmode mode) :
-    File<>{option, std::move(filePath)},
+FStream<F>::FStream(FilePathOption pathOption, std::filesystem::path filePath, F::openmode mode) :
+    File<>{pathOption, std::move(filePath)},
     fFile{} {
     fFile = std::make_unique<F>(Path(), mode);
     if (fFile->fail()) {
@@ -108,43 +105,60 @@ File<std::basic_ifstream<C>>::File(std::filesystem::path filePath, Type::openmod
     internal::FStream<std::basic_ifstream<C>>{std::move(filePath), mode} {}
 
 template<muc::character C>
-File<std::basic_ifstream<C>>::File(Option option, std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_ifstream<C>>{option, std::move(filePath), mode} {}
+File<std::basic_ifstream<C>>::File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode) :
+    internal::FStream<std::basic_ifstream<C>>{pathOption, std::move(filePath), mode} {}
 
 template class File<std::ifstream>;
 template class File<std::wifstream>;
+
+template<muc::character C>
+ProcessSpecificFile<std::basic_ifstream<C>>::ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode) :
+    File<std::basic_ifstream<C>>{FilePathOption::ProcessSpecific, std::move(filePath), mode} {}
+
+template class ProcessSpecificFile<std::ifstream>;
+template class ProcessSpecificFile<std::wifstream>;
 
 template<muc::character C>
 File<std::basic_ofstream<C>>::File(std::filesystem::path filePath, Type::openmode mode) :
     internal::FStream<std::basic_ofstream<C>>{std::move(filePath), mode} {}
 
 template<muc::character C>
-File<std::basic_ofstream<C>>::File(Option option, std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_ofstream<C>>{option, std::move(filePath), mode} {}
+File<std::basic_ofstream<C>>::File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode) :
+    internal::FStream<std::basic_ofstream<C>>{pathOption, std::move(filePath), mode} {}
 
 template class File<std::ofstream>;
 template class File<std::wofstream>;
+
+template<muc::character C>
+ProcessSpecificFile<std::basic_ofstream<C>>::ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode) :
+    File<std::basic_ofstream<C>>{FilePathOption::ProcessSpecific, std::move(filePath), mode} {}
+
+template class ProcessSpecificFile<std::ofstream>;
+template class ProcessSpecificFile<std::wofstream>;
 
 template<muc::character C>
 File<std::basic_fstream<C>>::File(std::filesystem::path filePath, Type::openmode mode) :
     internal::FStream<std::basic_fstream<C>>{std::move(filePath), mode} {}
 
 template<muc::character C>
-File<std::basic_fstream<C>>::File(Option option, std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_fstream<C>>{option, std::move(filePath), mode} {}
+File<std::basic_fstream<C>>::File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode) :
+    internal::FStream<std::basic_fstream<C>>{pathOption, std::move(filePath), mode} {}
 
 template class File<std::fstream>;
 template class File<std::wfstream>;
 
-File<TFile>::File(std::filesystem::path filePath, std::string mode, int compress, int netOpt) :
-    File{(std::ranges::transform(mode, mode.begin(), muc::toupper),
-          muc::ranges::contains_subrange(mode, "READ") ?
-              Option::Homogeneous :
-              Option::Heterogeneous),
-         std::move(filePath), mode, compress, netOpt} {}
+template<muc::character C>
+ProcessSpecificFile<std::basic_fstream<C>>::ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode) :
+    File<std::basic_fstream<C>>{FilePathOption::ProcessSpecific, std::move(filePath), mode} {}
 
-File<TFile>::File(Option option, std::filesystem::path filePath, std::string mode, int compress, int netOpt) :
-    File<>{option, std::move(filePath)},
+template class ProcessSpecificFile<std::fstream>;
+template class ProcessSpecificFile<std::wfstream>;
+
+File<TFile>::File(std::filesystem::path filePath, std::string mode, int compress, int netOpt) :
+    File{FilePathOption::Direct, std::move(filePath), mode, compress, netOpt} {}
+
+File<TFile>::File(FilePathOption pathOption, std::filesystem::path filePath, std::string mode, int compress, int netOpt) :
+    File<>{pathOption, std::move(filePath)},
     fFile{TFile::Open(Path().generic_string().c_str(), mode.c_str(), "", compress, netOpt)} {
     if (not fFile) {
         Throw<std::runtime_error>(fmt::format("Cannot open file '{}' in '{}' mode", Path(), mode));
@@ -152,5 +166,8 @@ File<TFile>::File(Option option, std::filesystem::path filePath, std::string mod
 }
 
 File<TFile>::~File() = default;
+
+ProcessSpecificFile<TFile>::ProcessSpecificFile(std::filesystem::path filePath, std::string mode, int compress, int netOpt) :
+    File{FilePathOption::ProcessSpecific, std::move(filePath), mode, compress, netOpt} {}
 
 } // namespace Mustard::inline IO
