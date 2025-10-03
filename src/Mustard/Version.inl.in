@@ -20,7 +20,14 @@
 // This file is auto generated, any modification to it will lost. DO NOT EDIT.
 // ===========================================================================
 
-#define MUSTARD_VERSION_MAJOR @MUSTARD_VERSION_MAJOR@
-#define MUSTARD_VERSION_MINOR @MUSTARD_VERSION_MINOR@
-#define MUSTARD_VERSION_PATCH @MUSTARD_VERSION_PATCH@
-#define MUSTARD_VERSION_STRING "@MUSTARD_VERSION@"
+namespace Mustard {
+
+enum struct Version : int {
+    Major = @MUSTARD_VERSION_MAJOR@,
+    Minor = @MUSTARD_VERSION_MINOR@,
+    Patch = @MUSTARD_VERSION_PATCH@
+};
+
+constexpr inline const char versionString[]{"@MUSTARD_VERSION@"};
+
+} // namespace Mustard

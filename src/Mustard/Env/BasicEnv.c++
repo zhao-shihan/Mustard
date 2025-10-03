@@ -106,8 +106,9 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
           " ___   |/  /___  __________  /______ _____________  /\n"
           " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
           " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n"
-          " /_/  /_/  \\____/ /____/ \\__/ \\____/ /_/    \\____/   " MUSTARD_VERSION_STRING "\n"
-          "\n");
+          " /_/  /_/  \\____/ /____/ \\__/ \\____/ /_/    \\____/   {}\n"
+          "\n",
+          versionString);
     Print(fmt::emphasis::bold | fmt::emphasis::italic,
           " An offline software framework for HEP experiments\n");
     Print(fmt::emphasis::bold,

@@ -26,7 +26,7 @@
 namespace Mustard::CLI::internal {
 
 auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
-    auto argParser{std::make_unique<argparse::ArgumentParser>("", MUSTARD_VERSION_STRING, argparse::default_arguments::none)};
+    auto argParser{std::make_unique<argparse::ArgumentParser>("", versionString, argparse::default_arguments::none)};
     argParser
         ->add_argument("--help")
         .help("Show this help and exit.")
@@ -40,7 +40,7 @@ auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
         .help("Show Mustard version information and exit.")
         .nargs(0)
         .action([](auto&&) {
-            fmt::print("Mustard v" MUSTARD_VERSION_STRING "\n"
+            fmt::print("Mustard v{}\n"
                        "Copyright (C) 2020-2025  The Mustard development team\n"
                        "This program is free software: you can redistribute it and/or modify it under "
                        "the terms of the GNU General Public License as published by the Free Software "
@@ -51,7 +51,8 @@ auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
                        "FOR A PARTICULAR PURPOSE. See the GNU General Public License for more "
                        "details.\n"
                        "You should have received a copy of the GNU General Public License along with "
-                       "this program. If not, see <https://www.gnu.org/licenses/>.\n");
+                       "this program. If not, see <https://www.gnu.org/licenses/>.\n",
+                       versionString);
             std::exit(EXIT_SUCCESS);
         });
     argParser
@@ -59,7 +60,7 @@ auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
         .help("Print Mustard version and exit.")
         .nargs(0)
         .action([](auto&&) {
-            fmt::println(MUSTARD_VERSION_STRING);
+            fmt::println(versionString);
             std::exit(EXIT_SUCCESS);
         });
     return argParser;
