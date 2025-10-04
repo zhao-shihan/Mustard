@@ -30,4 +30,7 @@ enum struct Version : int {
 
 constexpr inline const char versionString[]{"@MUSTARD_VERSION@"};
 
+constexpr inline const char compilerIDString[]{"@CMAKE_CXX_COMPILER_ID@"};
+constexpr inline const char compilerVersionString[]{"@CMAKE_CXX_COMPILER_VERSION@"};
+
 } // namespace Mustard

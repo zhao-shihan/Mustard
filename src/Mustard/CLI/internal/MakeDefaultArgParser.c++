@@ -40,7 +40,7 @@ auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
         .help("Show Mustard version information and exit.")
         .nargs(0)
         .action([](auto&&) {
-            fmt::print("Mustard v{}\n"
+            fmt::print("Mustard v{} (complied by {} C++ compiler {})\n"
                        "Copyright (C) 2020-2025  The Mustard development team\n"
                        "This program is free software: you can redistribute it and/or modify it under "
                        "the terms of the GNU General Public License as published by the Free Software "
@@ -52,7 +52,7 @@ auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
                        "details.\n"
                        "You should have received a copy of the GNU General Public License along with "
                        "this program. If not, see <https://www.gnu.org/licenses/>.\n",
-                       versionString);
+                       versionString, compilerIDString, compilerVersionString);
             std::exit(EXIT_SUCCESS);
         });
     argParser

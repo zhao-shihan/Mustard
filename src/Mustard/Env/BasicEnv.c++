@@ -114,8 +114,10 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     Print(fmt::emphasis::bold,
           " Copyright (C) 2020-2025  The Mustard development team\n"
           "\n"
+          " Compiled by {} C++ compiler {}\n"
           " Start at {}\n"
           " Exe: {}",
+          compilerIDString, compilerVersionString,
           FormatToLocalTime(std::chrono::system_clock::now()),
           exe);
     for (auto i{1}; i < argc; ++i) {
