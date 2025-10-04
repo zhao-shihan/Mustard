@@ -21,8 +21,6 @@
 #include "Mustard/Geant4X/Physics/DecayPhysicsBase.h++"
 #include "Mustard/Geant4X/Physics/MuonNLODecayPhysicsMessenger.h++"
 
-#include "muc/math"
-
 #include "gsl/gsl"
 
 class G4DecayTable;
@@ -34,8 +32,7 @@ class MuoniumNLODecayPhysics : public DecayPhysicsBase {
 public:
     MuoniumNLODecayPhysics(G4int verbose);
 
-    auto RadiativeDecayBR(double br) -> void { fRadiativeDecayBR = muc::clamp<"[]">(br, 0., 1.); }
-    auto ICDecayBR(double br) -> void { fICDecayBR = muc::clamp<"[]">(br, 0., 1.); }
+    auto RadiativeDecayBR(double b) -> void { fRadiativeDecayBR = b; }
 
     virtual auto UpdateDecayBR() -> void override;
     virtual auto ResetDecayBR() -> void override;
@@ -49,7 +46,6 @@ protected:
 
 protected:
     double fRadiativeDecayBR;
-    double fICDecayBR;
 
 private:
     MuonNLODecayPhysicsMessenger::Register<MuoniumNLODecayPhysics> fMessengerRegister;

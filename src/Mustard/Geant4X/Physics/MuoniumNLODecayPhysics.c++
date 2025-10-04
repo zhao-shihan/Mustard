@@ -18,7 +18,6 @@
 
 #include "Mustard/Geant4X/Decay/ExtendedDecayWithSpin.h++"
 #include "Mustard/Geant4X/DecayChannel/MuoniumDecayChannelWithSpin.h++"
-#include "Mustard/Geant4X/DecayChannel/MuoniumInternalConversionDecayChannel.h++"
 #include "Mustard/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
 #include "Mustard/Geant4X/Particle/Antimuonium.h++"
 #include "Mustard/Geant4X/Particle/Muonium.h++"
@@ -34,7 +33,6 @@ namespace Mustard::Geant4X::inline Physics {
 MuoniumNLODecayPhysics::MuoniumNLODecayPhysics(G4int verbose) :
     DecayPhysicsBase{"MuoniumNLODecayPhysics"},
     fRadiativeDecayBR{0.014},
-    fICDecayBR{3.6054e-5}, // QED leading-order
     fMessengerRegister{this} {
     verboseLevel = verbose;
 }
@@ -90,19 +88,16 @@ auto MuoniumNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl:
     // sort by initial BR! we firstly write random BRs in decrease order...
     decay->Insert(new MuoniumDecayChannelWithSpin{parentName, 1e-1, verboseLevel});
     decay->Insert(new MuoniumRadiativeDecayChannelWithSpin{parentName, 1e-2, verboseLevel});
-    decay->Insert(new MuoniumInternalConversionDecayChannel{parentName, 1e-3, verboseLevel});
 }
 
 auto MuoniumNLODecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // set BR here
     decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
-    decay->GetDecayChannel(2)->SetBR(fICDecayBR);
 }
 
 auto MuoniumNLODecayPhysics::ResetMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // reset BR here
     decay->GetDecayChannel(1)->SetBR(0.014);
-    decay->GetDecayChannel(2)->SetBR(3.6054e-5);
 }
 
 } // namespace Mustard::Geant4X::inline Physics

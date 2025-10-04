@@ -31,7 +31,6 @@ MuonNLODecayPhysicsMessenger::MuonNLODecayPhysicsMessenger() :
     SingletonMessenger{},
     fDirectory{},
     fRadiativeDecayBR{},
-    fICDecayBR{},
     fUpdateDecayBR{},
     fResetDecayBR{} {
 
@@ -43,12 +42,6 @@ MuonNLODecayPhysicsMessenger::MuonNLODecayPhysicsMessenger() :
     fRadiativeDecayBR->SetParameterName("BR", false);
     fRadiativeDecayBR->SetRange("0 <= BR && BR <= 1");
     fRadiativeDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
-
-    fICDecayBR = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuonDecay/ICDecay/BR", this);
-    fICDecayBR->SetGuidance("Set branching ratio for muon(ium) internal pair production decay channel.");
-    fICDecayBR->SetParameterName("BR", false);
-    fICDecayBR->SetRange("0 <= BR && BR <= 1");
-    fICDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     fUpdateDecayBR = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuonDecay/UpdateDecayBR", this);
     fUpdateDecayBR->SetGuidance("Update decay branching ratios.");
@@ -65,10 +58,6 @@ auto MuonNLODecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String va
     if (command == fRadiativeDecayBR.get()) {
         Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
             r.RadiativeDecayBR(fRadiativeDecayBR->GetNewDoubleValue(value));
-        });
-    } else if (command == fICDecayBR.get()) {
-        Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
-            r.ICDecayBR(fICDecayBR->GetNewDoubleValue(value));
         });
     } else if (command == fUpdateDecayBR.get()) {
         Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
