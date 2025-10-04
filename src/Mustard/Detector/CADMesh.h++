@@ -72,19 +72,6 @@ namespace Mustard::Detector {
 
 namespace CADMesh {
 
-class BuiltInReader;
-class CADMeshTemplate;
-class Mesh;
-class STLReader;
-class ASSIMPReader;
-class PLYReader;
-class OBJReader;
-class Exceptions;
-class TetrahedralMesh;
-class Reader;
-class Lexer;
-class TessellatedMesh;
-
 namespace File {
 
 enum Type {
