@@ -28,7 +28,7 @@
 #include "G4UImanager.hh"
 #include "G4VisExecutive.hh"
 
-#include "muc/tuple"
+#include "muc/type_traits"
 
 #include <algorithm>
 #include <concepts>
@@ -46,10 +46,10 @@ public:
     MPIExecutive();
 
     template<std::derived_from<CLI::ModuleBase>... Ms>
-        requires muc::tuple_contains_v<std::tuple<Ms...>, CLI::Geant4Module>
+        requires muc::is_contained_in_v<CLI::Geant4Module, Ms...>
     auto StartSession(const CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) const -> void;
     template<std::derived_from<CLI::ModuleBase>... Ms, typename T>
-        requires muc::tuple_contains_v<std::tuple<Ms...>, CLI::Geant4Module>
+        requires muc::is_contained_in_v<CLI::Geant4Module, Ms...>
     auto StartSession(const CLI::CLI<Ms...>& cli, std::initializer_list<T> cmdList = {}) const -> void;
 
     auto StartSession(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
@@ -66,7 +66,7 @@ public:
 
 private:
     template<std::derived_from<CLI::ModuleBase>... Ms>
-        requires muc::tuple_contains_v<std::tuple<Ms...>, CLI::Geant4Module>
+        requires muc::is_contained_in_v<CLI::Geant4Module, Ms...>
     auto StartSessionImpl(const CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) const -> void;
     auto StartSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
     auto StartInteractiveSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;

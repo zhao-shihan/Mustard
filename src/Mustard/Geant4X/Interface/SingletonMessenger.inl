@@ -25,7 +25,7 @@ SingletonMessenger<ADerived, ARecipients...>::SingletonMessenger() :
     fDelivering{},
     fRecipientSetTuple{} {
     static_assert(std::derived_from<ADerived, SingletonMessenger<ADerived, ARecipients...>>);
-    static_assert((... and muc::tuple_contains_unique_v<std::tuple<ARecipients...>, ARecipients>));
+    static_assert((... and muc::is_uniquely_contained_in_v<ARecipients, ARecipients...>));
 }
 
 template<typename ADerived, typename... ARecipients>
@@ -33,7 +33,7 @@ template<typename ARecipient>
 SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::Register(gsl::not_null<ARecipient*> recipient) :
     NonCopyableBase{},
     fRecipient{recipient} {
-    static_assert(muc::tuple_contains_unique_v<std::tuple<ARecipients...>, ARecipient>);
+    static_assert(muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>);
     get<muc::flat_hash_set<ARecipient*>>(SingletonMessenger::Instance().fRecipientSetTuple).emplace(fRecipient);
 }
 
@@ -53,7 +53,7 @@ SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::~Register() 
 
 template<typename ADerived, typename... ARecipients>
 template<typename ARecipient>
-    requires muc::tuple_contains_unique_v<std::tuple<ARecipients...>, ARecipient>
+    requires muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>
 auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& Action) const -> void {
     const auto& recipientSet{get<muc::flat_hash_set<ARecipient*>>(fRecipientSetTuple)};
     if (recipientSet.empty()) {
@@ -70,7 +70,7 @@ auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecip
 template<typename ADerived, typename... ARecipients>
 template<typename... Rs, typename F>
     requires(sizeof...(Rs) >= 2 and
-             (... and (std::invocable<F &&, Rs&> and muc::tuple_contains_unique_v<std::tuple<ARecipients...>, Rs>)))
+             (... and (std::invocable<F &&, Rs&> and muc::is_uniquely_contained_in_v<Rs, ARecipients...>)))
 auto SingletonMessenger<ADerived, ARecipients...>::Deliver(F&& Action) const -> void {
     (..., Deliver<Rs>(std::forward<F>(Action)));
 }

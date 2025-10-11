@@ -26,7 +26,7 @@
 #include "G4UImessenger.hh"
 
 #include "muc/hash_set"
-#include "muc/tuple"
+#include "muc/type_traits"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -81,7 +81,7 @@ protected:
     /// @param Action Callable object accepting ARecipient& parameter
     /// @note Requires ARecipient to be in the template recipient list
     template<typename ARecipient>
-        requires muc::tuple_contains_unique_v<std::tuple<ARecipients...>, ARecipient>
+        requires muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>
     auto Deliver(std::invocable<ARecipient&> auto&& Action) const -> void;
     /// @brief Deliver action to multiple recipient types simultaneously
     /// @tparam Rs Two or more recipient types to target
@@ -89,7 +89,7 @@ protected:
     /// @note All Rs types must be in the template recipient list
     template<typename... Rs, typename F>
         requires(sizeof...(Rs) >= 2 and
-                 (... and (std::invocable<F &&, Rs&> and muc::tuple_contains_unique_v<std::tuple<ARecipients...>, Rs>)))
+                 (... and (std::invocable<F &&, Rs&> and muc::is_uniquely_contained_in_v<Rs, ARecipients...>)))
     auto Deliver(F&& Action) const -> void;
 
 private:
