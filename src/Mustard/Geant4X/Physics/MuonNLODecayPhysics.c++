@@ -35,7 +35,7 @@ namespace Mustard::Geant4X::inline Physics {
 
 MuonNLODecayPhysics::MuonNLODecayPhysics(G4int verbose) :
     DecayPhysicsBase{"MuonNLODecayPhysics"},
-    fRadiativeDecayBR{0.014},
+    fRadiativeDecayBR{},
     fMessengerRegister{this} {
     verboseLevel = verbose;
 }
@@ -88,19 +88,23 @@ auto MuonNLODecayPhysics::ConstructProcess() -> void {
 }
 
 auto MuonNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
+    if (parentName != "mu-" and parentName != "mu+") {
+        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}", parentName));
+    }
     // sort by initial BR! we firstly write random BRs in decrease order...
-    decay->Insert(new G4MuonDecayChannelWithSpin{parentName, 1e-1}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
-    decay->Insert(new G4MuonRadiativeDecayChannelWithSpin{parentName, 1e-2}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
+    G4VDecayChannel* ch;
+    ch = new G4MuonDecayChannelWithSpin{parentName, 1e-1}, ch->SetVerboseLevel(verboseLevel), decay->Insert(ch);
+    ch = new G4MuonRadiativeDecayChannelWithSpin{parentName, 1e-2}, ch->SetVerboseLevel(verboseLevel), decay->Insert(ch);
+}
+
+auto MuonNLODecayPhysics::ResetMinorDecayBR() -> void {
+    // reset BR here
+    fRadiativeDecayBR = 0.014;
 }
 
 auto MuonNLODecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // set BR here
     decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
-}
-
-auto MuonNLODecayPhysics::ResetMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
-    // reset BR here
-    decay->GetDecayChannel(1)->SetBR(0.014);
 }
 
 } // namespace Mustard::Geant4X::inline Physics

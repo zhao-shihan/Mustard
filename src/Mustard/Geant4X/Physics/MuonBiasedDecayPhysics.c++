@@ -74,7 +74,7 @@ auto MuonBiasedDecayPhysics::ConstructProcess() -> void {
 
 auto MuonBiasedDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
     // sort by initial BR! we firstly write random BRs in decrease order...
-    decay->Insert(new MuonBiasedDecayChannelWithSpin{parentName, 1}), decay->GetDecayChannel(0)->SetVerboseLevel(verboseLevel);
+    decay->Insert(new MuonBiasedDecayChannelWithSpin{parentName, 1, verboseLevel});
 }
 
 } // namespace Mustard::Geant4X::inline Physics

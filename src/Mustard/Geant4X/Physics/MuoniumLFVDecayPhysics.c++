@@ -16,32 +16,40 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/DecayChannel/MuoniumDecayChannelWithSpin.h++"
-#include "Mustard/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
-#include "Mustard/Geant4X/Particle/Muonium.h++"
-#include "Mustard/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
-#include "Mustard/Geant4X/Physics/MuoniumSMAndLFVDecayPhysics.h++"
+#include "Mustard/Geant4X/DecayChannel/MuoniumNeutrinolessDoubleRadiativeDecayChannel.h++"
+#include "Mustard/Geant4X/Physics/MuoniumLFVDecayPhysics.h++"
 
 #include "G4DecayTable.hh"
 #include "G4PhaseSpaceDecayChannel.hh"
 
 namespace Mustard::Geant4X::inline Physics {
 
-MuoniumSMAndLFVDecayPhysics::MuoniumSMAndLFVDecayPhysics(G4int verbose) :
+MuoniumLFVDecayPhysics::MuoniumLFVDecayPhysics(G4int verbose) :
     MuoniumNLODecayPhysics{verbose},
     fDoubleRadiativeDecayBR{},
+    fAnnihilativeDecayBR{},
     fElectronPairDecayBR{},
-    fMessengerRegister{this} {}
+    fMuonLFVDecayPhysicsMessengerRegister{this},
+    fMuoniumLFVDecayPhysicsMessengerRegister{this} {}
 
-auto MuoniumSMAndLFVDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
+auto MuoniumLFVDecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
     MuoniumNLODecayPhysics::InsertDecayChannel(parentName, decay);
+    decay->Insert(new MuoniumNeutrinolessDoubleRadiativeDecayChannel{parentName, 1e-3, verboseLevel});
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-4, 2, "gamma", "gamma"});
     decay->Insert(new G4PhaseSpaceDecayChannel{parentName, 1e-5, 2, "e+", "e-"});
 }
 
-auto MuoniumSMAndLFVDecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
+auto MuoniumLFVDecayPhysics::ResetMinorDecayBR() -> void {
+    MuoniumNLODecayPhysics::ResetMinorDecayBR();
+    fDoubleRadiativeDecayBR = 0;
+    fAnnihilativeDecayBR = 0;
+    fElectronPairDecayBR = 0;
+}
+
+auto MuoniumLFVDecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     MuoniumNLODecayPhysics::AssignMinorDecayBR(decay);
-    decay->GetDecayChannel(3)->SetBR(fDoubleRadiativeDecayBR);
+    decay->GetDecayChannel(2)->SetBR(fDoubleRadiativeDecayBR);
+    decay->GetDecayChannel(3)->SetBR(fAnnihilativeDecayBR);
     decay->GetDecayChannel(4)->SetBR(fElectronPairDecayBR);
 }
 

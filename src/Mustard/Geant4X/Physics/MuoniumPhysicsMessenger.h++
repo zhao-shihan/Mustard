@@ -42,9 +42,9 @@ class MuoniumTransport;
 } // namespace Process
 
 template<TargetForMuoniumPhysics ATarget>
-class MuoniumPhysicsMessenger final : public Geant4X::SingletonMessenger<MuoniumPhysicsMessenger<ATarget>,
-                                                                         MuoniumFormation<ATarget>,
-                                                                         MuoniumTransport<ATarget>> {
+class MuoniumPhysicsMessenger final : public SingletonMessenger<MuoniumPhysicsMessenger<ATarget>,
+                                                                MuoniumFormation<ATarget>,
+                                                                MuoniumTransport<ATarget>> {
     friend Env::Memory::SingletonInstantiator;
 
 private:

@@ -85,19 +85,22 @@ auto MuoniumNLODecayPhysics::ConstructProcess() -> void {
 }
 
 auto MuoniumNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
+    if (parentName != "muonium" and parentName != "anti_muonium") {
+        Throw<std::invalid_argument>(fmt::format("Parent particle is not muonium or anti_muonium but {}", parentName));
+    }
     // sort by initial BR! we firstly write random BRs in decrease order...
     decay->Insert(new MuoniumDecayChannelWithSpin{parentName, 1e-1, verboseLevel});
     decay->Insert(new MuoniumRadiativeDecayChannelWithSpin{parentName, 1e-2, verboseLevel});
 }
 
+auto MuoniumNLODecayPhysics::ResetMinorDecayBR() -> void {
+    // reset BR here
+    fRadiativeDecayBR = 0.014;
+}
+
 auto MuoniumNLODecayPhysics::AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
     // set BR here
     decay->GetDecayChannel(1)->SetBR(fRadiativeDecayBR);
-}
-
-auto MuoniumNLODecayPhysics::ResetMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void {
-    // reset BR here
-    decay->GetDecayChannel(1)->SetBR(0.014);
 }
 
 } // namespace Mustard::Geant4X::inline Physics

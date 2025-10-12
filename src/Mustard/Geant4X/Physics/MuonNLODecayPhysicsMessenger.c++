@@ -30,18 +30,11 @@ namespace Mustard::Geant4X::inline Physics {
 MuonNLODecayPhysicsMessenger::MuonNLODecayPhysicsMessenger() :
     SingletonMessenger{},
     fDirectory{},
-    fRadiativeDecayBR{},
     fUpdateDecayBR{},
-    fResetDecayBR{} {
-
+    fResetDecayBR{},
+    fRadiativeDecayBR{} {
     fDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuonDecay/");
-    fDirectory->SetGuidance("About muon(ium) decay channel and decay generators.");
-
-    fRadiativeDecayBR = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuonDecay/RadiativeDecay/BR", this);
-    fRadiativeDecayBR->SetGuidance("Set branching ratio for muon(ium) internal pair production decay channel.");
-    fRadiativeDecayBR->SetParameterName("BR", false);
-    fRadiativeDecayBR->SetRange("0 <= BR && BR <= 1");
-    fRadiativeDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
+    fDirectory->SetGuidance("About muon(ium) decay channels.");
 
     fUpdateDecayBR = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuonDecay/UpdateDecayBR", this);
     fUpdateDecayBR->SetGuidance("Update decay branching ratios.");
@@ -50,22 +43,28 @@ MuonNLODecayPhysicsMessenger::MuonNLODecayPhysicsMessenger() :
     fResetDecayBR = std::make_unique<G4UIcmdWithoutParameter>("/Mustard/Physics/MuonDecay/ResetDecayBR", this);
     fResetDecayBR->SetGuidance("Reset decay branching ratios.");
     fResetDecayBR->AvailableForStates(G4State_Idle);
+
+    fRadiativeDecayBR = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuonDecay/RadiativeDecay/BR", this);
+    fRadiativeDecayBR->SetGuidance("Set branching ratio for muon(ium) internal pair production decay channel.");
+    fRadiativeDecayBR->SetParameterName("BR", false);
+    fRadiativeDecayBR->SetRange("0 <= BR && BR <= 1");
+    fRadiativeDecayBR->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 MuonNLODecayPhysicsMessenger::~MuonNLODecayPhysicsMessenger() = default;
 
 auto MuonNLODecayPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
-    if (command == fRadiativeDecayBR.get()) {
-        Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
-            r.RadiativeDecayBR(fRadiativeDecayBR->GetNewDoubleValue(value));
-        });
-    } else if (command == fUpdateDecayBR.get()) {
+    if (command == fUpdateDecayBR.get()) {
         Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
             r.UpdateDecayBR();
         });
     } else if (command == fResetDecayBR.get()) {
         Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
             r.ResetDecayBR();
+        });
+    } else if (command == fRadiativeDecayBR.get()) {
+        Deliver<MuonNLODecayPhysics, MuoniumNLODecayPhysics>([&](auto&& r) {
+            r.RadiativeDecayBR(fRadiativeDecayBR->GetNewDoubleValue(value));
         });
     }
 }

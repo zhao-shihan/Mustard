@@ -23,30 +23,25 @@
 #include <memory>
 
 class G4UIcmdWithADouble;
-class G4UIcmdWithoutParameter;
-class G4UIdirectory;
 
 namespace Mustard::Geant4X::inline Physics {
 
-class MuoniumSMAndLFVDecayPhysics;
+class MuoniumLFVDecayPhysics;
 
-class MuoniumSMAndLFVDecayPhysicsMessenger final : public Geant4X::SingletonMessenger<MuoniumSMAndLFVDecayPhysicsMessenger,
-                                                                                      MuoniumSMAndLFVDecayPhysics> {
+class MuoniumLFVDecayPhysicsMessenger final : public SingletonMessenger<MuoniumLFVDecayPhysicsMessenger,
+                                                                        MuoniumLFVDecayPhysics> {
     friend Env::Memory::SingletonInstantiator;
 
 private:
-    MuoniumSMAndLFVDecayPhysicsMessenger();
-    ~MuoniumSMAndLFVDecayPhysicsMessenger();
+    MuoniumLFVDecayPhysicsMessenger();
+    ~MuoniumLFVDecayPhysicsMessenger();
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
 
 private:
-    std::unique_ptr<G4UIdirectory> fDirectory;
-    std::unique_ptr<G4UIcmdWithADouble> fDoubleRadiativeDecayBR;
+    std::unique_ptr<G4UIcmdWithADouble> fAnnihilativeDecayBR;
     std::unique_ptr<G4UIcmdWithADouble> fElectronPairDecayBR;
-    std::unique_ptr<G4UIcmdWithoutParameter> fUpdateDecayBR;
-    std::unique_ptr<G4UIcmdWithoutParameter> fResetDecayBR;
 };
 
 } // namespace Mustard::Geant4X::inline Physics

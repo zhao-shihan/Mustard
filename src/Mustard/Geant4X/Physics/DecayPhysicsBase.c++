@@ -48,7 +48,8 @@ auto DecayPhysicsBase::UpdateDecayBRFor(const G4ParticleDefinition* particle) ->
 auto DecayPhysicsBase::ResetDecayBRFor(const G4ParticleDefinition* particle) -> void {
     const auto decay{particle->GetDecayTable()};
     // reset rare decay mode first
-    ResetMinorDecayBR(decay);
+    ResetMinorDecayBR();
+    AssignMinorDecayBR(decay);
     // then reset main decay mode
     double mainDecayBR{1};
     for (auto i{1}; i < decay->entries(); ++i) {

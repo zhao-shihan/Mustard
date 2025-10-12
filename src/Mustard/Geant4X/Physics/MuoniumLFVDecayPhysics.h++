@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Physics/DecayPhysicsBase.h++"
-#include "Mustard/Geant4X/Physics/MuonNLODecayPhysicsMessenger.h++"
+#include "Mustard/Geant4X/Physics/MuonLFVDecayPhysicsMessenger.h++"
+#include "Mustard/Geant4X/Physics/MuoniumLFVDecayPhysicsMessenger.h++"
+#include "Mustard/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
 
 #include "gsl/gsl"
 
@@ -28,16 +29,13 @@ class G4String;
 
 namespace Mustard::Geant4X::inline Physics {
 
-class MuonNLODecayPhysics : public DecayPhysicsBase {
+class MuoniumLFVDecayPhysics : public MuoniumNLODecayPhysics {
 public:
-    MuonNLODecayPhysics(G4int verbose);
+    MuoniumLFVDecayPhysics(G4int verbose);
 
-    auto RadiativeDecayBR(double b) -> void { fRadiativeDecayBR = b; }
-
-    virtual auto UpdateDecayBR() -> void override;
-    virtual auto ResetDecayBR() -> void override;
-    virtual auto ConstructParticle() -> void override;
-    virtual auto ConstructProcess() -> void override;
+    auto DoubleRadiativeDecayBR(double b) -> void { fDoubleRadiativeDecayBR = b; }
+    auto AnnihilativeDecayBR(double b) -> void { fAnnihilativeDecayBR = b; }
+    auto ElectronPairDecayBR(double b) -> void { fElectronPairDecayBR = b; }
 
 protected:
     virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void override;
@@ -45,10 +43,13 @@ protected:
     virtual auto AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void override;
 
 protected:
-    double fRadiativeDecayBR;
+    double fDoubleRadiativeDecayBR;
+    double fAnnihilativeDecayBR;
+    double fElectronPairDecayBR;
 
 private:
-    MuonNLODecayPhysicsMessenger::Register<MuonNLODecayPhysics> fMessengerRegister;
+    MuonLFVDecayPhysicsMessenger::Register<MuoniumLFVDecayPhysics> fMuonLFVDecayPhysicsMessengerRegister;
+    MuoniumLFVDecayPhysicsMessenger::Register<MuoniumLFVDecayPhysics> fMuoniumLFVDecayPhysicsMessengerRegister;
 };
 
 } // namespace Mustard::Geant4X::inline Physics

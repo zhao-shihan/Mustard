@@ -18,32 +18,31 @@
 
 #pragma once
 
-#include "G4VPhysicsConstructor.hh"
+#include "Mustard/Geant4X/Interface/SingletonMessenger.h++"
 
-#include "gsl/gsl"
+#include <memory>
 
-class G4DecayTable;
-class G4ParticleDefinition;
-class G4String;
+class G4UIcmdWithADouble;
 
 namespace Mustard::Geant4X::inline Physics {
 
-class DecayPhysicsBase : public G4VPhysicsConstructor {
+class MuonLFVDecayPhysics;
+class MuoniumLFVDecayPhysics;
+
+class MuonLFVDecayPhysicsMessenger final : public SingletonMessenger<MuonLFVDecayPhysicsMessenger,
+                                                                     MuonLFVDecayPhysics,
+                                                                     MuoniumLFVDecayPhysics> {
+    friend Mustard::Env::Memory::SingletonInstantiator;
+
+private:
+    MuonLFVDecayPhysicsMessenger();
+    ~MuonLFVDecayPhysicsMessenger();
+
 public:
-    using G4VPhysicsConstructor::G4VPhysicsConstructor;
+    auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
 
-    virtual auto UpdateDecayBR() -> void = 0;
-    virtual auto ResetDecayBR() -> void = 0;
-    virtual auto ConstructParticle() -> void = 0;
-    virtual auto ConstructProcess() -> void = 0;
-
-protected:
-    auto UpdateDecayBRFor(const G4ParticleDefinition* particle) -> void;
-    auto ResetDecayBRFor(const G4ParticleDefinition* particle) -> void;
-
-    virtual auto InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void = 0;
-    virtual auto ResetMinorDecayBR() -> void = 0;
-    virtual auto AssignMinorDecayBR(gsl::not_null<G4DecayTable*> decay) -> void = 0;
+private:
+    std::unique_ptr<G4UIcmdWithADouble> fDoubleRadiativeDecayBR;
 };
 
 } // namespace Mustard::Geant4X::inline Physics

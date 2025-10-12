@@ -28,7 +28,6 @@ MuoniumPhysicsMessenger<ATarget>::MuoniumPhysicsMessenger() :
     fConversionProbability{},
     fTransportProcessDirectory{},
     fManipulateAllSteps{} {
-
     fMuoniumPhysicsDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumPhysics/");
     fMuoniumPhysicsDirectory->SetGuidance("Physics of muonium and anti-muonium.");
 

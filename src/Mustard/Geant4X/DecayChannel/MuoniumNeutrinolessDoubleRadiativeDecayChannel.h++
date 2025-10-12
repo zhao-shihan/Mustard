@@ -16,31 +16,14 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/DecayChannel/MuonBiasedDecayChannelWithSpin.h++"
-#include "Mustard/Utility/PhysicalConstant.h++"
+#pragma once
 
-#include "G4DecayProducts.hh"
-#include "G4MuonDecayChannelWithSpin.hh"
+#include "Mustard/Geant4X/DecayChannel/AsMuoniumDecayChannel.h++"
+#include "Mustard/Geant4X/DecayChannel/MuonNeutrinolessDoubleRadiativeDecayChannel.h++"
 
 namespace Mustard::Geant4X::inline DecayChannel {
 
-using namespace PhysicalConstant;
-
-MuonBiasedDecayChannelWithSpin::MuonBiasedDecayChannelWithSpin(const G4String& parentName, G4double br, G4int verbose) :
-    G4MuonDecayChannelWithSpin{parentName, br},
-    fEnergyCut{},
-    fMessengerRegister{this} {
-    SetVerboseLevel(verbose);
-}
-auto MuonBiasedDecayChannelWithSpin::DecayIt(G4double mass) -> G4DecayProducts* {
-    while (true) {
-        const auto products{G4MuonDecayChannelWithSpin::DecayIt(mass)};
-        const auto positron{(*products)[0]};
-        if (positron->GetKineticEnergy() > fEnergyCut) {
-            return products;
-        }
-        delete products;
-    }
-}
+using MuoniumNeutrinolessDoubleRadiativeDecayChannel = AsMuoniumDecayChannel<MuonNeutrinolessDoubleRadiativeDecayChannel,
+                                                                             "MuoniumNeutrinolessDoubleRadiativeDecayChannel">;
 
 } // namespace Mustard::Geant4X::inline DecayChannel

@@ -16,30 +16,27 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/DecayChannel/MuonBiasedDecayChannelWithSpin.h++"
-#include "Mustard/Utility/PhysicalConstant.h++"
+#include "Mustard/Geant4X/DecayChannel/MuonNeutrinolessDoubleRadiativeDecayChannel.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
-#include "G4DecayProducts.hh"
-#include "G4MuonDecayChannelWithSpin.hh"
+#include "fmt/core.h"
+
+#include <stdexcept>
 
 namespace Mustard::Geant4X::inline DecayChannel {
 
-using namespace PhysicalConstant;
-
-MuonBiasedDecayChannelWithSpin::MuonBiasedDecayChannelWithSpin(const G4String& parentName, G4double br, G4int verbose) :
-    G4MuonDecayChannelWithSpin{parentName, br},
-    fEnergyCut{},
-    fMessengerRegister{this} {
+MuonNeutrinolessDoubleRadiativeDecayChannel::MuonNeutrinolessDoubleRadiativeDecayChannel(const G4String& parentName, G4double br, G4int verbose) :
+    G4PhaseSpaceDecayChannel{parentName, br, 3, DaughterLeptonName(parentName), "gamma", "gamma"} {
     SetVerboseLevel(verbose);
 }
-auto MuonBiasedDecayChannelWithSpin::DecayIt(G4double mass) -> G4DecayProducts* {
-    while (true) {
-        const auto products{G4MuonDecayChannelWithSpin::DecayIt(mass)};
-        const auto positron{(*products)[0]};
-        if (positron->GetKineticEnergy() > fEnergyCut) {
-            return products;
-        }
-        delete products;
+
+auto MuonNeutrinolessDoubleRadiativeDecayChannel::DaughterLeptonName(const G4String& parentName) -> G4String {
+    if (parentName == "mu-") {
+        return "e-";
+    } else if (parentName == "mu+") {
+        return "e+";
+    } else {
+        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}", parentName));
     }
 }
 

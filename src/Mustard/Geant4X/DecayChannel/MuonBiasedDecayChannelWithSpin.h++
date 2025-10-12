@@ -26,7 +26,7 @@ namespace Mustard::Geant4X::inline DecayChannel {
 
 class MuonBiasedDecayChannelWithSpin : public G4MuonDecayChannelWithSpin {
 public:
-    MuonBiasedDecayChannelWithSpin(const G4String& parentName, G4double br);
+    MuonBiasedDecayChannelWithSpin(const G4String& parentName, G4double br, G4int verbose = 1);
 
     auto EnergyCut() const -> auto { return fEnergyCut; }
     auto EnergyCut(double cut) -> void { fEnergyCut = cut; }

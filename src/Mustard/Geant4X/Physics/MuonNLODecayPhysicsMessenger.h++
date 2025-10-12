@@ -45,9 +45,9 @@ public:
 
 private:
     std::unique_ptr<G4UIdirectory> fDirectory;
-    std::unique_ptr<G4UIcmdWithADouble> fRadiativeDecayBR;
     std::unique_ptr<G4UIcmdWithoutParameter> fUpdateDecayBR;
     std::unique_ptr<G4UIcmdWithoutParameter> fResetDecayBR;
+    std::unique_ptr<G4UIcmdWithADouble> fRadiativeDecayBR;
 };
 
 } // namespace Mustard::Geant4X::inline Physics
