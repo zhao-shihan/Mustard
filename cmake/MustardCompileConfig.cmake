@@ -81,9 +81,9 @@ set(MUSTARD_PUBLIC_COMPILE_DEFINITIONS "")
 # =============================================================================
 
 # More warnings
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")
     list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros -Wno-gnu-zero-variadic-macro-arguments)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS /W4)
@@ -91,9 +91,9 @@ endif()
 
 # Surpress some, if required
 if(NOT MUSTARD_SHOW_MORE_COMPILER_WARNINGS)
-    if(CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         # nothing for now
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")
         # nothing for now
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # TODO: below is ancient; need update.
@@ -114,9 +114,9 @@ if(NOT MUSTARD_SHOW_MORE_COMPILER_WARNINGS)
     endif()
 # Even more warnings, if required
 elseif(MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS)
-    if(CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Weffc++)
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")
         list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Weverything)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /Wall)
