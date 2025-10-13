@@ -271,7 +271,6 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
     MasterPrintLn("Integration starts. Precision goal: {:.3}.", precisionGoal);
     const auto initialBatchSize{muc::to_unsigned(muc::llround(muc::pow(precisionGoal, -2)))};
     auto batchSize{std::max(1000000ull * executor.NProcess(), initialBatchSize)};
-    unsigned long long maxBatchSize{};
     double nSamplePerMin{}; // just a very approximate value
     for (int checkpoint{};; ++checkpoint) {
         if (state.n == 0) {
@@ -294,14 +293,10 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         MasterPrint("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} not reached.\n"
                     "\n",
                     precision, nEff, precisionGoal);
-        // Determine throughput if batch size is the largest (largest batch size => most precise timing)
-        if (batchSize >= maxBatchSize) {
-            maxBatchSize = batchSize;
-            const muc::chrono::minutes<double> wallTime{executor.ExecutionInfo().wallTime};
-            nSamplePerMin = batchSize / wallTime.count();
-        }
+        // Estimate throughput
+        nSamplePerMin = batchSize / muc::chrono::minutes<double>{executor.ExecutionInfo().wallTime}.count();
         // Increase total sample size adaptively
-        constexpr auto zFactor{1.5}; // decrease z sigma to increase stability
+        constexpr auto zFactor{1}; // decrease z sigma to increase stability
         const auto counterFactor{1 - zFactor / std::sqrt(nEff)};
         const auto factor{std::max(0., counterFactor * muc::pow(precision / precisionGoal, 2) - 1)};
         if (std::isfinite(factor)) {
@@ -310,7 +305,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
             batchSize *= 10;
         }
         // Batch size should not be too samll,
-        const auto batchSizeLowerBound{std::max<long long>(executor.NProcess(), std::llround(0.25 * nSamplePerMin))};
+        const auto batchSizeLowerBound{std::max<long long>(executor.NProcess(), std::llround(nSamplePerMin))};
         // and not too large
         const auto batchSizeUpperBound{std::llround(15 * nSamplePerMin)};
         batchSize = std::clamp<unsigned long long>(batchSize, batchSizeLowerBound, batchSizeUpperBound);
