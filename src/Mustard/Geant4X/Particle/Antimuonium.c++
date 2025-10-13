@@ -42,7 +42,7 @@ Antimuonium::Antimuonium() :
                          "lepton",                       // particle type
                          0,                              // lepton number
                          0,                              // baryon number
-                         -990013111,                     // PDG encoding
+                         -9913110,                       // PDG encoding
                          false,                          // stable
                          muonium_lifetime,               // lifetime
                          nullptr,                        // decay table
