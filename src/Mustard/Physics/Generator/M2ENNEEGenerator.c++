@@ -34,8 +34,11 @@ using namespace PhysicalConstant;
 
 M2ENNEEGenerator::M2ENNEEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
-                                                                        std::optional<double> stepSize) :
+                                   std::optional<double> stepSize, std::optional<QFT::MSqM2ENNEE::Ver> mSqVer) :
     MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(40000), stepSize.value_or(0.1)} {
+    if (mSqVer) {
+        MSqVersion(*mSqVer);
+    }
     Parent(parent);
     ParentMomentum(momentum);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2, electron_mass_c2});

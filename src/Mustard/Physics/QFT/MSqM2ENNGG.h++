@@ -23,13 +23,13 @@
 
 namespace Mustard::inline Physics::QFT {
 
-/// @class M2ENNGG0AvMSqMcMule
+/// @class MSqM2ENNGG
 /// @brief Matrix element squared for μ⁻ → e⁻ννγγ and μ⁺ → e⁺ννγγ decays.
 /// Neutrino energies are averaged over.
 ///
 /// Implements polarized matrix element calculation for double radiative muon decay
 /// referenceing McMule's analytical formula.
-class M2ENNGG0AvMSqMcMule : public PolarizedMatrixElement<1, 5> {
+class MSqM2ENNGG : public PolarizedMatrixElement<1, 5> {
 public:
     using PolarizedMatrixElement::PolarizedMatrixElement;
 
@@ -39,7 +39,7 @@ public:
     /// @return |M|² value in CLHEP unit system
     ///
     /// @note Implementation based on McMule's analytical expressions
-    MUSTARD_OPTIMIZE_FAST virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
+    virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
 
 private:
     MUSTARD_OPTIMIZE_FAST static auto Unpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.h++"
-#include "Mustard/Physics/QFT/M2ENNGG0AvMSqMcMule.h++"
+#include "Mustard/Physics/QFT/MSqM2ENNGG.h++"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -32,7 +32,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// @brief MCMC generator for mu->enngg decays
 /// Kinematics: μ⁻ → e⁻ ν ν γ γ
 ///             μ⁺ → e⁺ ν ν γ γ
-class M2ENNGGGenerator : public MultipleTryMetropolisGenerator<1, 5, QFT::M2ENNGG0AvMSqMcMule> {
+class M2ENNGGGenerator : public MultipleTryMetropolisGenerator<1, 5, QFT::MSqM2ENNGG> {
 public:
     /// @brief Construct generator for specific parent
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)

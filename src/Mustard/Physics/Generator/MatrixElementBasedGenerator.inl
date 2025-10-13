@@ -21,8 +21,8 @@ namespace Mustard::inline Physics::inline Generator {
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass) :
     EventGenerator<M, N>{},
-    fGENBOD{pdgID, mass},
     fMatrixElement{},
+    fGENBOD{pdgID, mass},
     fISMomenta{},
     fBoostFromLabToCM{},
     fIRCut{},

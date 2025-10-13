@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Physics/QFT/M2ENNGG0AvMSqMcMule.h++"
+#include "Mustard/Physics/QFT/MSqM2ENNGG.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
@@ -31,7 +31,7 @@ namespace Mustard::inline Physics::QFT {
 using namespace PhysicalConstant;
 using namespace MathConstant;
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
+auto MSqM2ENNGG::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
     const auto& p1{pI};
     const auto& [p2, _1, _2, p5, p6]{pF};
 
@@ -78,8 +78,8 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::operator()(const InitialStateMom
     return constant * pm2ennggav;
 }
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::Unpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                            double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto MSqM2ENNGG::Unpolarized(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                   double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -1470,8 +1470,8 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::Unpolarized(double mm2, double m
                 if56 / (den5 * den6));
 }
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::PolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                             double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto MSqM2ENNGG::PolarizedS2n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                    double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -1911,8 +1911,8 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::PolarizedS2n(double mm2, double 
                 if56 / (den5 * den6));
 }
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::PolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                             double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto MSqM2ENNGG::PolarizedS5n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                    double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95
@@ -2331,8 +2331,8 @@ MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::PolarizedS5n(double mm2, double 
                 if56 / (den5 * den6));
 }
 
-MUSTARD_OPTIMIZE_FAST auto M2ENNGG0AvMSqMcMule::PolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
-                                                             double den1, double den2, double den3, double den4, double den5, double den6) -> double {
+MUSTARD_OPTIMIZE_FAST auto MSqM2ENNGG::PolarizedS6n(double mm2, double me2, double s12, double s15, double s16, double s25, double s26, double s56,
+                                                    double den1, double den2, double den3, double den4, double den5, double den6) -> double {
     using muc::pow;
 
     // Adapt from McMule v0.5.1, mudec/mudec_pm2ennggav.f95

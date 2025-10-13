@@ -201,10 +201,10 @@ private:
                    Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Math::Estimate, double>;
 
 protected:
-    GENBOD<M, N> fGENBOD; ///< Phase space generator
+    [[no_unique_address]] A fMatrixElement; ///< Matrix element
+    GENBOD<M, N> fGENBOD;                   ///< Phase space generator
 
 private:
-    [[no_unique_address]] A fMatrixElement;     ///< Matrix element
     InitialStateMomenta fISMomenta;             ///< Initial-state 4-momenta
     CLHEP::Hep3Vector fBoostFromLabToCM;        ///< Boost from lab frame to c.m. frame
     std::vector<std::pair<int, double>> fIRCut; ///< IR cuts
