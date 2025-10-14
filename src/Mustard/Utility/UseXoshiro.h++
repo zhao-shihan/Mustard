@@ -23,6 +23,7 @@
 #include "muc/optional"
 
 #include <memory>
+#include <type_traits>
 
 namespace Mustard::inline Utility {
 
@@ -56,11 +57,24 @@ public:
     ~UseXoshiro();
 
 private:
+    /// @brief Xoshiro 256 random engine storage
+    struct Random256;
+    /// @brief Xoshiro 512 random engine storage
+    struct Random512;
     /// @brief Random engine storage
-    struct Random;
+    using Random = std::conditional_t<
+        ABitWidth == 256,
+        Random256,
+        std::conditional_t<
+            ABitWidth == 512,
+            Random512,
+            void>>;
 
 private:
     std::unique_ptr<Random> fRandom; ///< Engine instances
 };
+
+extern template class UseXoshiro<256>;
+extern template class UseXoshiro<512>;
 
 } // namespace Mustard::inline Utility

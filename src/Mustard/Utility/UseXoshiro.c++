@@ -35,41 +35,43 @@
 
 namespace Mustard::inline Utility {
 
-#define MUSTARD_UTILITY_USE_XOSHIRO_DEFINITION(NBit)                                             \
-                                                                                                 \
-    template<>                                                                                   \
-    struct UseXoshiro<NBit>::Random {                                                            \
-        CLHEPX::Random::Xoshiro##NBit##StarStar clhep;                                           \
-        ROOTX::Math::Xoshiro##NBit##PlusPlus root;                                               \
-    };                                                                                           \
-                                                                                                 \
-    template<>                                                                                   \
-    UseXoshiro<NBit>::UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli) :                      \
-        fRandom{std::make_unique<Random>()} {                                                    \
-        /* Set random engines */                                                                 \
-        CLHEP::HepRandom::setTheEngine(&fRandom->clhep);                                         \
-        delete gRandom, gRandom = &fRandom->root;                                                \
-        try {                                                                                    \
-            /* Seed random engines from CLI (if option set) */                                   \
-            dynamic_cast<const CLI::MonteCarloModule&>(cli.value().get()).SeedRandomIfFlagged(); \
-        } catch (const std::exception&) {                                                        \
-            /* Default seeding. Try to decorrelate Xoshiro++ from Xoshiro** */                   \
-            gRandom->SetSeed(std::mt19937_64{std::bit_cast<std::uint64_t>(                       \
-                muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}());         \
-        }                                                                                        \
-        /* Reseed in parallel computing */                                                       \
-        Parallel::ReseedRandomEngine();                                                          \
-    }                                                                                            \
-                                                                                                 \
-    template<>                                                                                   \
-    UseXoshiro<NBit>::~UseXoshiro() {                                                            \
-        CLHEP::HepRandom::setTheEngine(nullptr);                                                 \
-        gRandom = nullptr;                                                                       \
+template<unsigned ABitWidth>
+struct UseXoshiro<ABitWidth>::Random256 {
+    CLHEPX::Random::Xoshiro256StarStar clhep;
+    ROOTX::Math::Xoshiro256PlusPlus root;
+};
+
+template<unsigned ABitWidth>
+struct UseXoshiro<ABitWidth>::Random512 {
+    CLHEPX::Random::Xoshiro512StarStar clhep;
+    ROOTX::Math::Xoshiro512PlusPlus root;
+};
+
+template<unsigned ABitWidth>
+UseXoshiro<ABitWidth>::UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli) :
+    fRandom{} {
+    // Set random engines
+    CLHEP::HepRandom::setTheEngine(&fRandom->clhep);
+    delete gRandom, gRandom = &fRandom->root;
+    try {
+        // Seed random engines from CLI (if option set)
+        dynamic_cast<const CLI::MonteCarloModule&>(cli.value().get()).SeedRandomIfFlagged();
+    } catch (const std::exception&) {
+        // Default seeding. Try to decorrelate Xoshiro++ from Xoshiro**
+        gRandom->SetSeed(std::mt19937_64{std::bit_cast<std::uint64_t>(
+            muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}());
     }
+    // Reseed in parallel computing
+    Parallel::ReseedRandomEngine();
+}
 
-MUSTARD_UTILITY_USE_XOSHIRO_DEFINITION(256)
-MUSTARD_UTILITY_USE_XOSHIRO_DEFINITION(512)
+template<unsigned ABitWidth>
+UseXoshiro<ABitWidth>::~UseXoshiro() {
+    CLHEP::HepRandom::setTheEngine(nullptr);
+    gRandom = nullptr;
+}
 
-#undef MUSTARD_UTILITY_USE_XOSHIRO_DEFINITION
+template class UseXoshiro<256>;
+template class UseXoshiro<512>;
 
 } // namespace Mustard::inline Utility

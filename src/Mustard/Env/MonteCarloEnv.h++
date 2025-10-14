@@ -49,4 +49,7 @@ private:
     UseXoshiro<AXoshiroWidth> fXoshiro;
 };
 
+extern template class MonteCarloEnv<256>;
+extern template class MonteCarloEnv<512>;
+
 } // namespace Mustard::Env

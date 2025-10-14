@@ -172,6 +172,13 @@ private:
     std::unique_ptr<F> fFile;
 };
 
+extern template class FStream<std::ifstream>;
+extern template class FStream<std::wifstream>;
+extern template class FStream<std::ofstream>;
+extern template class FStream<std::wofstream>;
+extern template class FStream<std::fstream>;
+extern template class FStream<std::wfstream>;
+
 } // namespace internal
 
 /// @brief Specialization for `std::basic_ifstream`
@@ -194,6 +201,9 @@ public:
     File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode = Type::in);
 };
 
+extern template class File<std::ifstream>;
+extern template class File<std::wifstream>;
+
 /// @brief Specialization for `std::basic_ifstream`
 /// @tparam C Character type (char, wchar_t)
 /// @warning Open process-specific file is an MPI collective operation
@@ -209,6 +219,9 @@ public:
     /// @warning Open process-specific file is an MPI collective operation
     ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode = Type::in);
 };
+
+extern template class ProcessSpecificFile<std::ifstream>;
+extern template class ProcessSpecificFile<std::wifstream>;
 
 /// @brief Specialization for `std::basic_ofstream`
 /// @tparam C Character type (char, wchar_t)
@@ -230,6 +243,9 @@ public:
     File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode = Type::out);
 };
 
+extern template class File<std::ofstream>;
+extern template class File<std::wofstream>;
+
 /// @brief Specialization for `std::basic_ofstream`
 /// @tparam C Character type (char, wchar_t)
 /// @warning Open process-specific file is an MPI collective operation
@@ -245,6 +261,9 @@ public:
     /// @warning Open process-specific file is an MPI collective operation
     ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode = Type::out);
 };
+
+extern template class ProcessSpecificFile<std::ofstream>;
+extern template class ProcessSpecificFile<std::wofstream>;
 
 /// @brief Specialization for `std::basic_fstream`
 /// @tparam C Character type (char, wchar_t)
@@ -266,6 +285,9 @@ public:
     File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode = Type::in | Type::out);
 };
 
+extern template class File<std::fstream>;
+extern template class File<std::wfstream>;
+
 /// @brief Specialization for `std::basic_fstream`
 /// @tparam C Character type (char, wchar_t)
 /// @warning Open process-specific file is an MPI collective operation
@@ -281,6 +303,9 @@ public:
     /// @warning Open process-specific file is an MPI collective operation
     ProcessSpecificFile(std::filesystem::path filePath, Type::openmode mode = Type::in | Type::out);
 };
+
+extern template class ProcessSpecificFile<std::fstream>;
+extern template class ProcessSpecificFile<std::wfstream>;
 
 /// @brief Specialization for `TFile`
 template<>
