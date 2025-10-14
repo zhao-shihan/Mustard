@@ -32,7 +32,7 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum,
+M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, double irCut,
                                  std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                  std::optional<double> stepSize, std::optional<QFT::MSqM2ENNE::Ver> mSqVer) :
     MultipleTryMetropolisGenerator{{}, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(40000), stepSize.value_or(0.1)} {
@@ -42,6 +42,7 @@ M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, CLHEP::Hep3Vector mome
     Parent(parent);
     ParentMomentum(momentum);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2});
+    IRCut(irCut);
 }
 
 auto M2ENNEGenerator::Parent(std::string_view parent) -> void {
@@ -57,6 +58,10 @@ auto M2ENNEGenerator::Parent(std::string_view parent) -> void {
 auto M2ENNEGenerator::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
     const auto energy{std::sqrt(momentum.mag2() + muc::pow(muonium_mass_c2, 2))};
     ISMomenta({energy, momentum});
+}
+
+auto M2ENNEGenerator::IRCut(double irCut) -> void {
+    MultipleTryMetropolisGenerator::IRCut(3, irCut);
 }
 
 } // namespace Mustard::inline Physics::inline Generator
