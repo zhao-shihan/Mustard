@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/ModuleBase.h++"
 
 #include "gsl/gsl"
