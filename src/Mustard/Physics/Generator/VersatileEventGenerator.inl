@@ -49,7 +49,7 @@ constexpr auto VersatileEventGenerator<M, N, D>::Mass(int i, double mass) -> voi
 template<int M, int N, int D>
 MUSTARD_ALWAYS_INLINE auto VersatileEventGenerator<M, N, D>::CheckCMEnergy(double cmE, const std::source_location& location) const -> void {
     if (cmE <= fSumMass) {
-        Throw<std::domain_error>(fmt::format("C.m. energy ({}) <= sum of final state masses ({})", cmE, fSumMass), location);
+        Throw<std::domain_error>(fmt::format("C.m. energy ({}) <= sum of final-state masses ({})", cmE, fSumMass), location);
     }
 }
 

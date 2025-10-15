@@ -65,7 +65,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// although final states are massless. RAMBO is recommended for
 /// generating unweighted massless final states.
 ///
-/// @tparam N Number of final state particles (N >= 2)
+/// @tparam N Number of final-state particles (N >= 2)
 template<int M, int N>
     requires(N >= 2)
 class GENBOD : public VersatileEventGenerator<M, N, 3 * N - 4> {

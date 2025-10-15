@@ -168,7 +168,7 @@ protected:
     auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
-    /// @brief Set IR cuts for single final state particle
+    /// @brief Set IR cuts for single final-state particle
     /// @param i Particle index (0 ≤ i < N)
     /// @param cut IR cut value
     auto IRCut(int i, double cut) -> void;

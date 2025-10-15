@@ -217,7 +217,7 @@ protected:
     /// @warning The Markov chain requires reinitialize if value changes
     auto Mass(const std::array<double, N>& mass) -> void;
 
-    /// @brief Set IR cuts for single final state particle
+    /// @brief Set IR cuts for single final-state particle
     /// @param i Particle index (0 ≤ i < N)
     /// @param cut IR cut value
     /// @warning The Markov chain requires reinitialize after set
