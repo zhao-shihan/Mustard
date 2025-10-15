@@ -49,7 +49,7 @@ struct UseXoshiro<ABitWidth>::Random512 {
 
 template<unsigned ABitWidth>
 UseXoshiro<ABitWidth>::UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli) :
-    fRandom{} {
+    fRandom{std::make_unique<Random>()} {
     // Set random engines
     CLHEP::HepRandom::setTheEngine(&fRandom->clhep);
     delete gRandom, gRandom = &fRandom->root;
