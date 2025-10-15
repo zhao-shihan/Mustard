@@ -27,7 +27,7 @@ template<typename ADerived>
 WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
     WeakSingletonBase{} {
     static_assert(WeakSingletonified<ADerived>);
-    std::scoped_lock lock{internal::WeakSingletonPool::Mutex()};
+    std::scoped_lock lock{internal::WeakSingletonPool::RecursiveMutex()};
     if (auto& weakSingletonPool{internal::WeakSingletonPool::Instance()};
         not weakSingletonPool.Contains<ADerived>()) {
         fgInstance = weakSingletonPool.Insert<ADerived>(self);
@@ -54,7 +54,7 @@ MUSTARD_ALWAYS_INLINE auto WeakSingleton<ADerived>::Status() -> enum Status {
 
 template<typename ADerived>
 MUSTARD_NOINLINE auto WeakSingleton<ADerived>::LoadInstance() -> enum Status {
-    std::scoped_lock lock{internal::WeakSingletonPool::Mutex()};
+    std::scoped_lock lock{internal::WeakSingletonPool::RecursiveMutex()};
     if (fgInstance == nullptr) {
         if (const auto sharedNode{internal::WeakSingletonPool::Instance().Find<ADerived>()}) {
             fgInstance = sharedNode;

@@ -58,7 +58,7 @@ public:
     template<WeakSingletonified AWeakSingleton>
     [[nodiscard]] auto Insert(gsl::not_null<AWeakSingleton*> instance) -> std::shared_ptr<void*>;
 
-    static auto Mutex() -> auto& { return fgMutex; }
+    static auto RecursiveMutex() -> auto& { return fgRecursiveMutex; }
 
 private:
     muc::flat_hash_map<std::type_index, const std::weak_ptr<void*>> fInstanceMap;
@@ -66,7 +66,7 @@ private:
     static WeakSingletonPool* fgInstance;
     static bool fgInstantiated;
     static bool fgExpired;
-    static std::mutex fgMutex;
+    static std::recursive_mutex fgRecursiveMutex;
 };
 
 } // namespace Mustard::Env::Memory::internal

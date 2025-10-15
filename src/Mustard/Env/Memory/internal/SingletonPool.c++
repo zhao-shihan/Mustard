@@ -24,7 +24,7 @@
 
 namespace Mustard::Env::Memory::internal {
 
-std::mutex SingletonPool::fgMutex{};
+std::recursive_mutex SingletonPool::fgRecursiveMutex{};
 
 SingletonPool::SingletonPool() :
     PassiveSingleton<SingletonPool>{this} {}

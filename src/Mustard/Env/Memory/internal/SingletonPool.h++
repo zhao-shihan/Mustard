@@ -58,12 +58,12 @@ public:
     [[nodiscard]] auto Insert(gsl::not_null<ASingleton*> instance) -> std::shared_ptr<void*>;
     auto GetUndeletedInReverseInsertionOrder() const -> std::vector<gsl::owner<const SingletonBase*>>;
 
-    static auto Mutex() -> auto& { return fgMutex; }
+    static auto RecursiveMutex() -> auto& { return fgRecursiveMutex; }
 
 private:
     muc::flat_hash_map<std::type_index, const std::tuple<std::weak_ptr<void*>, gsl::index, gsl::owner<const SingletonBase*>>> fInstanceMap;
 
-    static std::mutex fgMutex;
+    static std::recursive_mutex fgRecursiveMutex;
 };
 
 } // namespace Mustard::Env::Memory::internal
