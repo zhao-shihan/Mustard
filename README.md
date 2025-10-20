@@ -69,7 +69,7 @@ The following dependencies are optional. If they are not found on your system du
 Mustard has been used as the framework for the following projects:
 
 - [**MACESW**](https://github.com/zhao-shihan/MACESW): Muonium-to-Antimuonium Conversion Experiment (MACE) offline software
-- [**MusAirS**](https://github.com/zhao-shihan/MACESW): An air shower simulation tool
+- [**MusAirS**](https://github.com/zhao-shihan/MusAirS): An air shower simulation tool
 
 They are also examples demonstrating the usage of Mustard.
 
