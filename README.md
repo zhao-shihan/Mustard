@@ -12,7 +12,7 @@
 - **Unified geometry:** A consistent interface for handling experimental geometries.
 - **Data model framework:** High-level data models abstractions to simplify simulation and analysis workflows.
 - **Physics:** An event generator framework and a set of Geant4 physics and processes.
-- **Many utilities:** Useful functions, classes, wrappers and etc. to speed up developement and improve runtime performance.
+- **Many utilities:** Useful functions, classes, wrappers and etc. to speed up development and improve runtime performance.
 
 This framework serves as the core component of the [**MACE offline software (MACESW)**](https://github.com/zhao-shihan/MACESW) and was originally developed as part of that project.
 
