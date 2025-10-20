@@ -52,18 +52,18 @@ Mustard requires the following external libraries to be installed on your system
 
 The following dependencies are optional. If they are not found on your system during configuration, CMake will automatically download and build them.
 
-| Library                                                                     | Min version | Description                               |
-| :-------------------------------------------------------------------------- | :---------- | :---------------------------------------- |
-| [**argparse**](https://github.com/p-ranav/argparse)                         | 3.2         | Argument parsing for modern C++           |
-| [**zhao-shihan/backward-cpp**](https://github.com/zhao-shihan/backward-cpp) | 1.6.1       | Beautiful stack trace printing            |
-| [**EFM**](https://github.com/zhao-shihan/EFM)                               | 0.1.0       | Generic bi/trilinear interpolation        |
-| [**envparse**](https://github.com/zhao-shihan/envparse)                     | 1.0.0       | Header-only environment variable parser   |
-| [**fmt**](https://github.com/fmtlib/fmt)                                    | 11.2.0      | Modern formatting library                 |
-| [**indicators**](https://github.com/p-ranav/indicators)                     | 2.3         | Activity indicators for C++               |
-| [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.0       | C++ Core Guidelines Support Library       |
-| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.25.1003   | C++17 message passing library (MPI-based) |
-| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.25.1011   | Standard non-standard C++ utilities       |
-| [**zhao-shihan/yaml-cpp**](https://github.com/zhao-shihan/yaml-cpp)         | 0.8.2       | YAML parser and emitter for C++           |
+| Library                                                                     | Min version | Description                                              |
+| :-------------------------------------------------------------------------- | :---------- | :------------------------------------------------------- |
+| [**argparse**](https://github.com/p-ranav/argparse)                         | 3.2         | Argument parsing for modern C++                          |
+| [**zhao-shihan/backward-cpp**](https://github.com/zhao-shihan/backward-cpp) | 1.6.1       | A beautiful stack trace pretty printer for C++           |
+| [**EFM**](https://github.com/zhao-shihan/EFM)                               | 0.1.0       | A generic bilinear/trilinear interpolator                |
+| [**envparse**](https://github.com/zhao-shihan/envparse)                     | 1.0.0       | A simple, header-only environment variable parser in C++ |
+| [**fmt**](https://github.com/fmtlib/fmt)                                    | 11.2.0      | A modern formatting library                              |
+| [**indicators**](https://github.com/p-ranav/indicators)                     | 2.3         | Activity Indicators for Modern C++                       |
+| [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.0       | ISO C++ guidelines support library                       |
+| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.25.1003   | A C++17 message passing library based on MPI             |
+| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.25.1011   | A standard non-standard C++ library                      |
+| [**zhao-shihan/yaml-cpp**](https://github.com/zhao-shihan/yaml-cpp)         | 0.8.2       | A YAML parser and emitter in C++                         |
 
 ## Projects using this library
 
