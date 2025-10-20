@@ -32,9 +32,10 @@ This section guides you through building Mustard from source.
 ### Prerequisites
 
 #### Toolchain
-*   **C++ compiler:** GCC ≥ 13 or LLVM Clang ≥ 16 or equivalent
-*   **C++ standard library:** libstdc++ ≥ 13 or equivalent
-*   **Build system:** CMake ≥ 3.21, and GNU Make or Ninja or equivalent
+
+- **C++ compiler:** GCC ≥ 13 or LLVM Clang ≥ 16 or equivalent
+- **C++ standard library:** libstdc++ ≥ 13 or equivalent
+- **Build system:** CMake ≥ 3.21, and GNU Make or Ninja or equivalent
 
 #### Dependencies
 
@@ -77,9 +78,9 @@ If you are aware of other projects using this library, please let me know by ema
 
 ## Citation
 
-If you use Mustard in your research, please cite the following paper:
+If you use Mustard in your research, please cite the following papers:
 
-> **BAI Ai-Yu, CAI Hanjie, CHEN Chang-Lin, et al (MACE working group).**  
-> **Conceptual Design of the Muonium-to-Antimuonium Conversion Experiment (MACE) [DB/OL].**  
-> *arXiv preprint*, 2024: 2410.18817 [hep-ex].  
-> https://arxiv.org/abs/2410.18817.
+**BAI Ai-Yu, CAI Hanjie, CHEN Chang-Lin, et al (MACE working group).**  
+**Conceptual Design of the Muonium-to-Antimuonium Conversion Experiment (MACE) [DB/OL].**  
+*arXiv preprint*, 2024: 2410.18817 [hep-ex].  
+https://arxiv.org/abs/2410.18817.
