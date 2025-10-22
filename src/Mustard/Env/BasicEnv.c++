@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  The Mustard development team
+// Copyright (C) 2020-2025  Mustard developers
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -112,7 +112,7 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     Print(fmt::emphasis::bold | fmt::emphasis::italic,
           " An offline software framework for HEP experiments\n");
     Print(fmt::emphasis::bold,
-          " Copyright (C) 2020-2025  The Mustard development team\n"
+          " Copyright (C) 2020-2025  Mustard developers\n"
           "\n"
           " Compiled by {} C++ compiler {}\n"
           " Start at {}\n"

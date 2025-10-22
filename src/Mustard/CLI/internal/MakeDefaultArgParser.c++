@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  The Mustard development team
+// Copyright (C) 2020-2025  Mustard developers
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -41,7 +41,7 @@ auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
         .nargs(0)
         .action([](auto&&) {
             fmt::print("Mustard v{} (complied by {} C++ compiler {})\n"
-                       "Copyright (C) 2020-2025  The Mustard development team\n"
+                       "Copyright (C) 2020-2025  Mustard developers\n"
                        "This program is free software: you can redistribute it and/or modify it under "
                        "the terms of the GNU General Public License as published by the Free Software "
                        "Foundation, either version 3 of the License, or (at your option) any later "
