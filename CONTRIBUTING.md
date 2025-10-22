@@ -51,12 +51,13 @@ This document explains how to report issues, propose changes, and prepare contri
 
 ## Pull request checklist
 Before requesting review, ensure:
-- [ ] I have read the [contributing guideline](CONTRIBUTING.md)
+- [ ] I have read the [contributing guidelines](CONTRIBUTING.md)
 - [ ] The PR targets the `main` branch.
 - [ ] I linked related issues and provided context in the PR description.
 - [ ] My code follows the [coding style guide](STYLE_GUIDE.md) and linting rules.
 - [ ] I added/updated unit tests where applicable.
 - [ ] I updated relevant documentation (README, Doxygen, or design docs).
+- [ ] I ran the test-suite locally and all tests pass.
 - [ ] All CI checks pass.
 
 ## Reviewing and maintaining

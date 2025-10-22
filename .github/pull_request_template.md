@@ -20,12 +20,13 @@ Describe the testing performed:
 - If applicable, include links to CI runs
 
 ## Checklist before requesting review
-- [ ] I have read the [contributing guideline](https://github.com/zhao-shihan/Mustard/blob/main/CONTRIBUTING.md)
+- [ ] I have read the [contributing guidelines](https://github.com/zhao-shihan/Mustard/blob/main/CONTRIBUTING.md)
 - [ ] The PR targets the `main` branch.
 - [ ] I linked related issues and provided context in the PR description.
 - [ ] My code follows the [coding style guide](https://github.com/zhao-shihan/Mustard/blob/main/STYLE_GUIDE.md) and linting rules.
 - [ ] I added/updated unit tests where applicable.
 - [ ] I updated relevant documentation (README, Doxygen, or design docs).
+- [ ] I ran the test-suite locally and all tests pass.
 - [ ] All CI checks pass.
 
 ## Implementation details (optional)
