@@ -53,7 +53,7 @@ This document explains how to report issues, propose changes, and prepare contri
 Before requesting review, ensure:
 - [ ] The PR targets the `main` branch.
 - [ ] Documentation (README, Doxygen comment blocks) is updated if relevant.
-- [ ] The code is formatted and linted.
+- [ ] The code follows the [coding style guide](https://github.com/zhao-shihan/MACESW/STYLE_GUIDE.md) and linting rules.
 - [ ] Tests covering the change are added or updated.
 - [ ] All CI checks pass.
 - [ ] Descriptive PR title and body, with linked issues if any.
