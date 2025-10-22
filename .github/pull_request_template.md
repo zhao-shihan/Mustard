@@ -20,7 +20,7 @@ Describe the testing performed:
 - If applicable, include links to CI runs
 
 ## Checklist before requesting review
-- [ ] My code follows the project coding style and linting rules.
+- [ ] My code follows the [coding style guide](https://github.com/zhao-shihan/Mustard/STYLE_GUIDE.md) and linting rules.
 - [ ] I ran the full test-suite locally and all tests pass.
 - [ ] I added/updated unit tests where applicable.
 - [ ] I updated relevant documentation (README, Doxygen, or design docs).
