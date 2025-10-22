@@ -143,7 +143,7 @@ All files must begin with a standard copyright header:
 ```cpp
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  The Mustard development team
+// Copyright (C) 2020-2025  Mustard developers
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //

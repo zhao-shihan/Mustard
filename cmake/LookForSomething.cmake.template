@@ -10,7 +10,7 @@
 # 9. Add a find_dependency(<lib_cmake_name>) line to ${CMAKE_PROJECT_NAME}Config.cmake.in in need.
 # 10. Delete this guide text, and make other parts of this file prettier.
 
-# Copyright (C) 2020-2025  The Mustard development team
+# Copyright (C) 2020-2025  Mustard developers
 #
 # This file is part of Mustard, an offline software framework for HEP experiments.
 #
