@@ -36,7 +36,7 @@ This document explains how to report issues, propose changes, and prepare contri
   - How you tested the change and instructions to reproduce the test.
 
 ## Code style and tests
-- Follow the project's existing style. If the repository contains a linter or style guide, run it before submitting.
+- Follow the project's [coding style guide](STYLE_GUIDE.md). If the repository contains a linter, run it before submitting.
 - Add unit or integration tests for new features and bug fixes where applicable.
 - If the project uses a code formatter (black, clang-format, etc.), run it before committing.
 - Ensure all tests pass locally.
@@ -51,12 +51,13 @@ This document explains how to report issues, propose changes, and prepare contri
 
 ## Pull request checklist
 Before requesting review, ensure:
+- [ ] I have read the [contributing guideline](CONTRIBUTING.md)
 - [ ] The PR targets the `main` branch.
-- [ ] Documentation (README, Doxygen comment blocks) is updated if relevant.
-- [ ] The code follows the [coding style guide](https://github.com/zhao-shihan/MACESW/STYLE_GUIDE.md) and linting rules.
-- [ ] Tests covering the change are added or updated.
+- [ ] I linked related issues and provided context in the PR description.
+- [ ] My code follows the [coding style guide](STYLE_GUIDE.md) and linting rules.
+- [ ] I added/updated unit tests where applicable.
+- [ ] I updated relevant documentation (README, Doxygen, or design docs).
 - [ ] All CI checks pass.
-- [ ] Descriptive PR title and body, with linked issues if any.
 
 ## Reviewing and maintaining
 - Be responsive to review comments: update your branch, push changes, and add replies explaining choices.
