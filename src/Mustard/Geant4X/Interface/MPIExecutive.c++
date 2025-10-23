@@ -49,8 +49,9 @@ auto MPIExecutive::CheckSequential() const -> void {
 }
 
 auto MPIExecutive::Execute(const std::string& macro) const -> void {
-    G4UImanager::GetUIpointer()->ExecuteMacroFile(macro.c_str());
-    if (G4UImanager::GetUIpointer()->GetLastReturnCode() == fParameterUnreadable) {
+    const auto uiPtr{G4UImanager::GetUIpointer()};
+    uiPtr->ExecuteMacroFile(macro.c_str());
+    if (uiPtr->GetLastReturnCode() != fCommandSucceeded) {
         if (not fIsInteractive) {
             Throw<std::runtime_error>(fmt::format("Failed to execute file '{}'", macro));
         }
@@ -66,7 +67,7 @@ auto MPIExecutive::ExecuteCommand(const std::string& command) -> bool {
         PrintLn(G4cout, "{}", command);
         return true;
     }
-    if (const auto commandStatus = G4UImanager::GetUIpointer()->ApplyCommand(command);
+    if (const auto commandStatus{G4UImanager::GetUIpointer()->ApplyCommand(command)};
         commandStatus == fCommandSucceeded) [[likely]] {
         return true;
     } else {
