@@ -22,6 +22,8 @@
 
 #include "mplr/mplr.hpp"
 
+#include "fmt/core.h"
+
 #include <ostream>
 #include <source_location>
 #include <stdexcept>
@@ -50,7 +52,7 @@ auto MPIExecutive::Execute(const std::string& macro) -> void {
     G4UImanager::GetUIpointer()->ExecuteMacroFile(macro.c_str());
     if (G4UImanager::GetUIpointer()->GetLastReturnCode() == fParameterUnreadable) {
         if (not fIsInteractive) {
-            Throw<std::runtime_error>("Failed to execute file '{}'",macro);
+            Throw<std::runtime_error>(fmt::format("Failed to execute file '{}'", macro));
         }
     }
 }
