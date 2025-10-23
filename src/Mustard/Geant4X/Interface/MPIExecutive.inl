@@ -100,7 +100,7 @@ auto MPIExecutive::StartBatchSessionImpl(auto&& macFileOrCmdList) -> void {
     Execute(std::forward<decltype(macFileOrCmdList)>(macFileOrCmdList));
 }
 
-const auto MPIExecutive::Execute(const std::ranges::input_range auto& cmdList) -> void
+auto MPIExecutive::Execute(const std::ranges::input_range auto& cmdList) const -> void
     requires std::convertible_to<typename std::decay_t<decltype(cmdList)>::value_type, std::string> {
     for (auto&& command : cmdList) {
         if (const auto success{ExecuteCommand(std::forward<decltype(command)>(command))};

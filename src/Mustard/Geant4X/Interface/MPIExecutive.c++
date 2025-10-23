@@ -48,7 +48,7 @@ auto MPIExecutive::CheckSequential() const -> void {
     Throw<std::logic_error>("Interactive session must be sequential");
 }
 
-const auto MPIExecutive::Execute(const std::string& macro) -> void {
+auto MPIExecutive::Execute(const std::string& macro) const -> void {
     G4UImanager::GetUIpointer()->ExecuteMacroFile(macro.c_str());
     if (G4UImanager::GetUIpointer()->GetLastReturnCode() == fParameterUnreadable) {
         if (not fIsInteractive) {
