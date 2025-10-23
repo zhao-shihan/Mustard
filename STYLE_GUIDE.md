@@ -30,8 +30,8 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
     - [Using Directives](#using-directives)
     - [Anonymous Namespaces](#anonymous-namespaces)
   - [Class Structure](#class-structure)
-    - [General rules](#general-rules-1)
-    - [Typical declaration order](#typical-declaration-order)
+    - [General Rules](#general-rules-1)
+    - [Typical Declaration Order](#typical-declaration-order)
     - [Example Class Structure](#example-class-structure)
     - [Inheritance](#inheritance)
   - [Constant and Variable Declaration](#constant-and-variable-declaration)
@@ -457,7 +457,7 @@ class Class1 {
 
 ## Class Structure
 
-### General rules
+### General Rules
 - Declare all member functions before any member variables
 - Declare all member variables before any member constants
 - Declare all member constants and variables in the `protected` or `private` section at the end of the class
@@ -467,7 +467,7 @@ class Class1 {
 - Consider cache locality for frequently accessed members variables
 - Use `final` when a class should not be further derived
 
-### Typical declaration order
+### Typical Declaration Order
 1. Type aliases and nested types
 2. Constructors (can be private or protected)
 3. Destructor (can be private or protected)
