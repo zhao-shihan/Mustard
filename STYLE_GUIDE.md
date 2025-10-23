@@ -800,7 +800,7 @@ auto RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double
 - **Always prefer C++-style casts over C-style casts** for explicit intent.
 
 ### Casting Rules
-- Use `static_cast` instead of `dynamic_cast` for well-defined conversion
+- Use `static_cast` instead of `dynamic_cast` for conversions where the target type is guaranteed at compile time
 - Use `dynamic_cast` only for runtime type identification (RTTI) with check
 - Avoid `const_cast` unless really necessary
 - Avoid `reinterpret_cast`, consider `std::bit_cast` instead
@@ -808,16 +808,23 @@ auto RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double
 ```cpp
 const auto d{3.14};
 const auto i{static_cast<int>(d)};  // Better than (int)d
-// √ Good: Use static_cast if base references Derived object for sure
-const auto derived{static_cast<Derived&>(base)};
-// × Bad: Avoid use of dynamic_cast without check
-const auto derived{dynamic_cast<Derived&>(base)};
+// √ Good: Use static_cast when the base reference is guaranteed to refer to a Derived object
+auto GetDerivedAsBase() -> Derived& {
+    static Derived d;
+    Base& base{d}; // base is guaranteed to reference a Derived
+    return static_cast<Derived&>(base); // Safe static_cast
+}
+// × Bad: Avoid use of dynamic_cast to reference without `try` block
+const auto derived{dynamic_cast<Derived&>(base)}; // may throw `std::bad_cast` if base is not a Derived
+// × Bad: Avoid use of dynamic_cast to pointer without checking for nullptr
+const auto derivedPtr{dynamic_cast<Derived*>(&base)}; // derivedPtr may be nullptr if base is not a Derived
 ```
 ```cpp
 class Base { public: virtual ~Base() = default; };
 class Derived1 : public Base {};
 class Derived2 : public Base {};
 
+// √ Good: Use dynamic_cast for runtime type identification (RTTI) with check
 auto Function(Base& base) {
     if (const auto derived1Ptr{dynamic_cast<Derived1*>(&base)}) {
         // Use derived1Ptr
@@ -1366,7 +1373,7 @@ public:
 
 ### Type Conversions
 - [ ] Prefer C++-style casts over C-style casts
-- [ ] Use `static_cast` instead of `dynamic_cast` for well-defined conversion
+- [ ] Use `static_cast` instead of `dynamic_cast` for conversions where the target type is guaranteed at compile time
 - [ ] Use `dynamic_cast` only for runtime type identification (RTTI) with check
 - [ ] Avoid `const_cast` unless really necessary
 - [ ] Avoid `reinterpret_cast`, consider `std::bit_cast` instead
@@ -1434,19 +1441,18 @@ public:
 - [ ] Don't provide constructors/destructors if default ones are sufficient
 
 ### Code Review Focus Areas
+- [ ] Readability and maintainability
+- [ ] Performance considerations
+- [ ] Consistency with existing codebase
 - [ ] Naming convention compliance
 - [ ] Const correctness
 - [ ] Proper initialization
 - [ ] Memory management and ownership
-- [ ] Exception safety
-- [ ] Template constraints and concepts
-- [ ] Documentation quality
-- [ ] Consistency with existing codebase
 - [ ] Modern C++ feature usage
 - [ ] Error handling approach
-- [ ] Performance considerations
+- [ ] Exception safety (if applicable)
+- [ ] Template constraints and concepts
 - [ ] Testability and documentation
-- [ ] Readability and maintainability
 
 ## Maintainer
 [**@zhao-shihan**](https://github.com/zhao-shihan)
