@@ -75,8 +75,8 @@ private:
 
     auto CheckSequential() const -> void;
 
-    auto Execute(const std::string& macro) -> void;
-    auto Execute(const std::ranges::input_range auto& cmdList) -> void
+    const auto Execute(const std::string& macro) -> void;
+    const auto Execute(const std::ranges::input_range auto& cmdList) -> void
         requires std::convertible_to<typename std::decay_t<decltype(cmdList)>::value_type, std::string>;
 
     static auto ExecuteCommand(const std::string& command) -> bool;
