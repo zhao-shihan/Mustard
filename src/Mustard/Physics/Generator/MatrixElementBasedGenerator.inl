@@ -141,10 +141,6 @@ auto MatrixElementBasedGenerator<M, N, A>::IRCut(int i, double cut) -> void {
     if (cut <= 0) [[unlikely]] {
         PrintWarning(fmt::format("Non-positive IR cut for particle {} (got {})", i, cut));
     }
-    const auto cmE{this->CalculateCMEnergy(fISMomenta)};
-    if (muc::pow(fGENBOD.Mass(i) / cmE, 2) > muc::default_tolerance<double>) [[unlikely]] {
-        PrintWarning(fmt::format("IR cut set for massive particle {} (mass = {})", i, fGENBOD.Mass(i)));
-    }
     fIRCut.push_back({i, cut});
 }
 
