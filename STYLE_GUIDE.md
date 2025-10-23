@@ -64,6 +64,9 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
     - [Delegating Constructors](#delegating-constructors)
     - [Move Semantics in Initialization](#move-semantics-in-initialization)
     - [Local Variable Initialization](#local-variable-initialization)
+  - [Type Conversions](#type-conversions)
+    - [General Rules](#general-rules-2)
+    - [Casting Rules](#casting-rules)
   - [Modern C++ Features](#modern-c-features)
     - [Concepts and Requires Clauses](#concepts-and-requires-clauses)
     - [Auto Return Types](#auto-return-types)
@@ -107,7 +110,8 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
     - [Naming Conventions](#naming-conventions-1)
     - [Class Design](#class-design)
     - [Initialization](#initialization-1)
-    - [Functions and Methods](#functions-and-methods)
+    - [Functions](#functions-1)
+    - [Type Conversions](#type-conversions-1)
     - [Modern C++ Features](#modern-c-features-1)
     - [Templates](#templates)
     - [Namespaces](#namespaces-1)
@@ -790,6 +794,39 @@ auto RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double
 }
 ```
 
+## Type Conversions
+
+### General Rules
+- **Always prefer C++-style casts over C-style casts** for explicit intent.
+
+### Casting Rules
+- Use `static_cast` instead of `dynamic_cast` for well-defined conversion
+- Use `dynamic_cast` only for runtime type identification (RTTI) with check
+- Avoid `const_cast` unless really necessary
+- Avoid `reinterpret_cast`, consider `std::bit_cast` instead
+
+```cpp
+const auto d{3.14};
+const auto i{static_cast<int>(d)};  // Better than (int)d
+// √ Good: Use static_cast if base references Derived object for sure
+const auto derived{static_cast<Derived&>(base)};
+// × Bad: Avoid use of dynamic_cast without check
+const auto derived{dynamic_cast<Derived&>(base)};
+```
+```cpp
+class Base { public: virtual ~Base() = default; };
+class Derived1 : public Base {};
+class Derived2 : public Base {};
+
+auto Function(Base& base) {
+    if (const auto derived1Ptr{dynamic_cast<Derived1*>(&base)}) {
+        // Use derived1Ptr
+    } else if (const auto derived2Ptr{dynamic_cast<Derived2*>(&base)}) {
+        // Use derived2Ptr
+    }
+}
+```
+
 ## Modern C++ Features
 
 ### Concepts and Requires Clauses
@@ -1314,7 +1351,7 @@ public:
 - [ ] Use in-class initializers only for `constexpr` members
 - [ ] Prefer delegating constructors over code duplication
 
-### Functions and Methods
+### Functions
 - [ ] Always use trailing return type syntax (`auto ... -> Type`)
 - [ ] Use `const` for all non-modifying member functions
 - [ ] Mark getters as `const`
@@ -1326,6 +1363,13 @@ public:
 - [ ] Properly order trailing keywords: const → noexcept → override → final
 - [ ] Use `main(int argc, char* argv[]) -> int` signature
 - [ ] Always return explicit value from `main` function
+
+### Type Conversions
+- [ ] Prefer C++-style casts over C-style casts
+- [ ] Use `static_cast` instead of `dynamic_cast` for well-defined conversion
+- [ ] Use `dynamic_cast` only for runtime type identification (RTTI) with check
+- [ ] Avoid `const_cast` unless really necessary
+- [ ] Avoid `reinterpret_cast`, consider `std::bit_cast` instead
 
 ### Modern C++ Features
 - [ ] Use C++20 concepts extensively for template constraints
