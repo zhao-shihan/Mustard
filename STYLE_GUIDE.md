@@ -64,6 +64,9 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
     - [Delegating Constructors](#delegating-constructors)
     - [Move Semantics in Initialization](#move-semantics-in-initialization)
     - [Local Variable Initialization](#local-variable-initialization)
+  - [Type Conversions](#type-conversions)
+    - [General Rules](#general-rules-2)
+    - [Casting Rules](#casting-rules)
   - [Modern C++ Features](#modern-c-features)
     - [Concepts and Requires Clauses](#concepts-and-requires-clauses)
     - [Auto Return Types](#auto-return-types)
@@ -107,7 +110,8 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
     - [Naming Conventions](#naming-conventions-1)
     - [Class Design](#class-design)
     - [Initialization](#initialization-1)
-    - [Functions and Methods](#functions-and-methods)
+    - [Functions](#functions-1)
+    - [Type Conversions](#type-conversions-1)
     - [Modern C++ Features](#modern-c-features-1)
     - [Templates](#templates)
     - [Namespaces](#namespaces-1)
@@ -790,6 +794,46 @@ auto RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double
 }
 ```
 
+## Type Conversions
+
+### General Rules
+- **Always prefer C++-style casts over C-style casts** for explicit intent.
+
+### Casting Rules
+- Use `static_cast` instead of `dynamic_cast` for conversions where the target type is guaranteed at compile time
+- Use `dynamic_cast` only for runtime type identification (RTTI) with check
+- Avoid `const_cast` unless really necessary
+- Avoid `reinterpret_cast`, consider `std::bit_cast` instead
+
+```cpp
+const auto d{3.14};
+const auto i{static_cast<int>(d)};  // Better than (int)d
+// √ Good: Use static_cast when the base reference is guaranteed to refer to a Derived object
+auto GetDerivedAsBase() -> Derived& {
+    static Derived d;
+    Base& base{d}; // base is guaranteed to reference a Derived
+    return static_cast<Derived&>(base); // Safe static_cast
+}
+// × Bad: Avoid use of dynamic_cast to reference without `try` block
+const auto derived{dynamic_cast<Derived&>(base)}; // may throw `std::bad_cast` if base is not a Derived
+// × Bad: Avoid use of dynamic_cast to pointer without checking for nullptr
+const auto derivedPtr{dynamic_cast<Derived*>(&base)}; // derivedPtr may be nullptr if base is not a Derived
+```
+```cpp
+class Base { public: virtual ~Base() = default; };
+class Derived1 : public Base {};
+class Derived2 : public Base {};
+
+// √ Good: Use dynamic_cast for runtime type identification (RTTI) with check
+auto Function(Base& base) {
+    if (const auto derived1Ptr{dynamic_cast<Derived1*>(&base)}) {
+        // Use derived1Ptr
+    } else if (const auto derived2Ptr{dynamic_cast<Derived2*>(&base)}) {
+        // Use derived2Ptr
+    }
+}
+```
+
 ## Modern C++ Features
 
 ### Concepts and Requires Clauses
@@ -1314,7 +1358,7 @@ public:
 - [ ] Use in-class initializers only for `constexpr` members
 - [ ] Prefer delegating constructors over code duplication
 
-### Functions and Methods
+### Functions
 - [ ] Always use trailing return type syntax (`auto ... -> Type`)
 - [ ] Use `const` for all non-modifying member functions
 - [ ] Mark getters as `const`
@@ -1326,6 +1370,13 @@ public:
 - [ ] Properly order trailing keywords: const → noexcept → override → final
 - [ ] Use `main(int argc, char* argv[]) -> int` signature
 - [ ] Always return explicit value from `main` function
+
+### Type Conversions
+- [ ] Prefer C++-style casts over C-style casts
+- [ ] Use `static_cast` instead of `dynamic_cast` for conversions where the target type is guaranteed at compile time
+- [ ] Use `dynamic_cast` only for runtime type identification (RTTI) with check
+- [ ] Avoid `const_cast` unless really necessary
+- [ ] Avoid `reinterpret_cast`, consider `std::bit_cast` instead
 
 ### Modern C++ Features
 - [ ] Use C++20 concepts extensively for template constraints
@@ -1390,19 +1441,18 @@ public:
 - [ ] Don't provide constructors/destructors if default ones are sufficient
 
 ### Code Review Focus Areas
+- [ ] Readability and maintainability
+- [ ] Performance considerations
+- [ ] Consistency with existing codebase
 - [ ] Naming convention compliance
 - [ ] Const correctness
 - [ ] Proper initialization
 - [ ] Memory management and ownership
-- [ ] Exception safety
-- [ ] Template constraints and concepts
-- [ ] Documentation quality
-- [ ] Consistency with existing codebase
 - [ ] Modern C++ feature usage
 - [ ] Error handling approach
-- [ ] Performance considerations
+- [ ] Exception safety (if applicable)
+- [ ] Template constraints and concepts
 - [ ] Testability and documentation
-- [ ] Readability and maintainability
 
 ## Maintainer
 [**@zhao-shihan**](https://github.com/zhao-shihan)
