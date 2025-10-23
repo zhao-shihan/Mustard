@@ -23,6 +23,7 @@
 #include "Mustard/CLI/Module/ModuleBase.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/Memory/WeakSingleton.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
@@ -46,39 +47,42 @@ public:
     MPIExecutive();
 
     template<std::derived_from<CLI::ModuleBase>... Ms>
-        requires muc::is_contained_in_v<CLI::Geant4Module, Ms...>
-    auto StartSession(const CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) const -> void;
+        requires muc::tuple_contains_v<std::tuple<Ms...>, CLI::Geant4Module>
+    auto StartSession(const CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) -> void;
     template<std::derived_from<CLI::ModuleBase>... Ms, typename T>
-        requires muc::is_contained_in_v<CLI::Geant4Module, Ms...>
-    auto StartSession(const CLI::CLI<Ms...>& cli, std::initializer_list<T> cmdList = {}) const -> void;
+        requires muc::tuple_contains_v<std::tuple<Ms...>, CLI::Geant4Module>
+    auto StartSession(const CLI::CLI<Ms...>& cli, std::initializer_list<T> cmdList = {}) -> void;
 
-    auto StartSession(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
+    auto StartSession(int argc, char* argv[], auto&& macFileOrCmdList) -> void;
     template<typename T>
-    auto StartSession(int argc, char* argv[], std::initializer_list<T> cmdList = {}) const -> void;
+    auto StartSession(int argc, char* argv[], std::initializer_list<T> cmdList = {}) -> void;
 
-    auto StartInteractiveSession(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
+    auto StartInteractiveSession(int argc, char* argv[], auto&& macFileOrCmdList) -> void;
     template<typename T>
-    auto StartInteractiveSession(int argc, char* argv[], std::initializer_list<T> cmdList = {}) const -> void;
+    auto StartInteractiveSession(int argc, char* argv[], std::initializer_list<T> cmdList = {}) -> void;
 
-    auto StartBatchSession(auto&& macFileOrCmdList) const -> void;
+    auto StartBatchSession(auto&& macFileOrCmdList) -> void;
     template<typename T>
-    auto StartBatchSession(std::initializer_list<T> cmdList) const -> void;
+    auto StartBatchSession(std::initializer_list<T> cmdList) -> void;
 
 private:
     template<std::derived_from<CLI::ModuleBase>... Ms>
-        requires muc::is_contained_in_v<CLI::Geant4Module, Ms...>
-    auto StartSessionImpl(const CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) const -> void;
-    auto StartSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
-    auto StartInteractiveSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) const -> void;
-    auto StartBatchSessionImpl(auto&& macFileOrCmdList) const -> void;
+        requires muc::tuple_contains_v<std::tuple<Ms...>, CLI::Geant4Module>
+    auto StartSessionImpl(const CLI::CLI<Ms...>& cli, auto&& macFileOrCmdList) -> void;
+    auto StartSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) -> void;
+    auto StartInteractiveSessionImpl(int argc, char* argv[], auto&& macFileOrCmdList) -> void;
+    auto StartBatchSessionImpl(auto&& macFileOrCmdList) -> void;
 
     auto CheckSequential() const -> void;
 
+    auto Execute(const std::string& macro) const -> void;
+    auto Execute(const std::ranges::input_range auto& cmdList) const -> void
+        requires std::convertible_to<typename std::decay_t<decltype(cmdList)>::value_type, std::string>;
+
     static auto ExecuteCommand(const std::string& command) -> bool;
 
-    static auto Execute(const std::string& macro) -> void { G4UImanager::GetUIpointer()->ExecuteMacroFile(macro.c_str()); }
-    static auto Execute(const std::ranges::input_range auto& cmdList) -> void
-        requires std::convertible_to<typename std::decay_t<decltype(cmdList)>::value_type, std::string>;
+private:
+    bool fIsInteractive;
 };
 
 } // namespace Mustard::Geant4X::inline Interface

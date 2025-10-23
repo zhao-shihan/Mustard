@@ -22,6 +22,8 @@
 
 #include "mplr/mplr.hpp"
 
+#include "fmt/core.h"
+
 #include <ostream>
 #include <source_location>
 #include <stdexcept>
@@ -29,7 +31,8 @@
 namespace Mustard::Geant4X::inline Interface {
 
 MPIExecutive::MPIExecutive() :
-    WeakSingleton{this} {}
+    WeakSingleton{this},
+    fIsInteractive{} {}
 
 auto MPIExecutive::CheckSequential() const -> void {
     const auto worldComm{mplr::comm_world()};
@@ -45,6 +48,16 @@ auto MPIExecutive::CheckSequential() const -> void {
     Throw<std::logic_error>("Interactive session must be sequential");
 }
 
+auto MPIExecutive::Execute(const std::string& macro) const -> void {
+    const auto uiPtr{G4UImanager::GetUIpointer()};
+    uiPtr->ExecuteMacroFile(macro.c_str());
+    if (uiPtr->GetLastReturnCode() != fCommandSucceeded) {
+        if (not fIsInteractive) {
+            Throw<std::runtime_error>(fmt::format("Failed to execute file '{}'", macro));
+        }
+    }
+}
+
 auto MPIExecutive::ExecuteCommand(const std::string& command) -> bool {
     if (command.empty() or
         std::ranges::all_of(command.substr(0, command.find_first_of('#')),
@@ -54,7 +67,7 @@ auto MPIExecutive::ExecuteCommand(const std::string& command) -> bool {
         PrintLn(G4cout, "{}", command);
         return true;
     }
-    if (const auto commandStatus = G4UImanager::GetUIpointer()->ApplyCommand(command);
+    if (const auto commandStatus{G4UImanager::GetUIpointer()->ApplyCommand(command)};
         commandStatus == fCommandSucceeded) [[likely]] {
         return true;
     } else {
