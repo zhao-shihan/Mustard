@@ -149,7 +149,7 @@ auto MatrixElementBasedGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF) c
     for (auto&& [i, cut] : fIRCut) {
         auto p{pF[i]};
         p.boost(fBoostFromLabToCM);
-        if (p.e() <= cut) {
+        if (p.e() - p.m() <= cut) {
             return false;
         }
     }

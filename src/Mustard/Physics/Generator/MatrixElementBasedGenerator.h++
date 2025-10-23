@@ -170,7 +170,7 @@ protected:
 
     /// @brief Set IR cuts for single final-state particle
     /// @param i Particle index (0 ≤ i < N)
-    /// @param cut IR cut value
+    /// @param cut IR cut value (kinetic energy)
     auto IRCut(int i, double cut) -> void;
     /// @brief Check final-state momenta pass the IR cut
     /// @param pF Final states' 4-momenta
@@ -207,7 +207,7 @@ protected:
 private:
     InitialStateMomenta fISMomenta;             ///< Initial-state 4-momenta
     CLHEP::Hep3Vector fBoostFromLabToCM;        ///< Boost from lab frame to c.m. frame
-    std::vector<std::pair<int, double>> fIRCut; ///< IR cuts
+    std::vector<std::pair<int, double>> fIRCut; ///< IR cuts (kinetic energies)
     AcceptanceFunction fAcceptance;             ///< User acceptance function
     mutable std::int8_t fAcceptanceGt1Counter;  ///< Counter of acceptance > 1 warning
     mutable std::int8_t fNegativeMSqCounter;    ///< Counter of negative |M|² warning
