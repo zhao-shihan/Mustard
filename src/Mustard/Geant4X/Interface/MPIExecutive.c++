@@ -29,7 +29,8 @@
 namespace Mustard::Geant4X::inline Interface {
 
 MPIExecutive::MPIExecutive() :
-    WeakSingleton{this} {}
+    WeakSingleton{this},
+    fIsInteractive{} {}
 
 auto MPIExecutive::CheckSequential() const -> void {
     const auto worldComm{mplr::comm_world()};
@@ -43,6 +44,15 @@ auto MPIExecutive::CheckSequential() const -> void {
                     "Interactive session must be run with only 1 process.\nThrowing an instance of std::logic_error.");
     }
     Throw<std::logic_error>("Interactive session must be sequential");
+}
+
+auto MPIExecutive::Execute(const std::string& macro) -> void {
+    G4UImanager::GetUIpointer()->ExecuteMacroFile(macro.c_str());
+    if (G4UImanager::GetUIpointer()->GetLastReturnCode() == fParameterUnreadable) {
+        if (not fIsInteractive) {
+            Throw<std::runtime_error>("Executing macro file failed.");
+        }
+    }
 }
 
 auto MPIExecutive::ExecuteCommand(const std::string& command) -> bool {
