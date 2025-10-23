@@ -109,6 +109,7 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
     - [Formatting](#formatting)
     - [Naming Conventions](#naming-conventions-1)
     - [Class Design](#class-design)
+    - [Enumeration](#enumeration-1)
     - [Initialization](#initialization-1)
     - [Functions](#functions-1)
     - [Type Conversions](#type-conversions-1)
@@ -213,7 +214,7 @@ class ForwardDecl;
 
 ### Indentation
 - Use **4 spaces** for indentation (no tabs)
-- Use **Allman style** braces (braces on new lines)
+- Use **K&R style** braces (brace on the same line)
 - No hard limit on maximum line length, but recommend 240 characters or less
 
 ### Empty Lines
@@ -1309,7 +1310,7 @@ public:
 
 ### Formatting
 - [ ] Use 4 spaces for indentation (no tabs)
-- [ ] Follow Allman brace style (braces on new lines)
+- [ ] Follow K&R brace style (brace on the same line)
 - [ ] Use spaces around binary operators
 - [ ] No space between function name and opening parenthesis
 - [ ] Space after control statement keywords (`if`, `for`, `while`)
@@ -1337,17 +1338,21 @@ public:
 - [ ] Never use underscores except for structural binding placeholders
 
 ### Class Design
+- [ ] Place single base class on same line, multiple base classes on successive lines
+- [ ] Follow typical declaration order: types → constructors → destructor → functions → variables
 - [ ] Declare member functions before member variables
 - [ ] Group related functions and variables together
 - [ ] Order members by logical relationship, not type
-- [ ] Use `final` when classes shouldn't be further derived
-- [ ] Follow typical declaration order: types → constructors → destructor → functions → variables
 - [ ] Declare type aliases at top of public section
-- [ ] Place single base class on same line, multiple base classes on successive lines
+- [ ] Mark non-modifying member functions as `const`
+- [ ] Use `final` when classes shouldn't be further derived
 - [ ] Use `virtual` destructors in base classes when needed
 - [ ] Always use `override` for overridden virtual functions
-- [ ] Mark non-modifying member functions as `const`
+
+### Enumeration
 - [ ] Use scoped enumerations (`enum struct`) only
+- [ ] Use `enum struct` instead of `enum class`
+- [ ] Underlying type explicitly specified if necessary
 
 ### Initialization
 - [ ] Always use brace initialization `{}`
@@ -1416,8 +1421,7 @@ public:
 - [ ] Use `//` for implementation comments
 - [ ] Add `@brief`, `@param`, `@return` tags for documentation
 - [ ] Document parameters, return values, and exceptions
-- [ ] Use section dividers with multiple slashes for organization
-- [ ] Use placeholder comments `/* ... */` where needed
+- [ ] Use section dividers with multiple slashes for organization if necessary
 
 ### Error Handling
 - [ ] Use `Mustard::Throw<exception_type>()` instead of plain `throw`
