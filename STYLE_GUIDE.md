@@ -176,6 +176,7 @@ All files must begin with a standard copyright header:
   6. Namespace declarations
   7. Forward declarations (if needed)
   8. Code
+- No `#include` in `.inl` files
 
 ```cpp
 // -*- C++ -*-
@@ -1306,6 +1307,7 @@ public:
 - [ ] Use `#pragma once` instead of traditional include guards
 - [ ] Organize includes in correct order: project → framework → external → standard library
 - [ ] Use full paths relative to source root for project includes
+- [ ] No `#include` in `.inl` files
 - [ ] Use proper namespace structure with closing comments
 
 ### Formatting
