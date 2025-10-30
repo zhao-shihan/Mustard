@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Mustard/Concept/NumericVector.h++"
-#include "Mustard/Detector/Field/ElectricFieldBase.h++"
 #include "Mustard/Detector/Field/ElectromagneticFieldBase.h++"
 #include "Mustard/Detector/Field/MagneticField.h++"
 
