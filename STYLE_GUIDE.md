@@ -675,7 +675,7 @@ auto Name() const -> const auto& { return fName; }
 - **Always use `override` keyword for overridden virtual functions**
 - **Mark destructors `virtual` in base classes if its derived classes might be polymorphically destructed**
 - Mark `final` when a function should never be further overridden
-- To avoid redundancy, a virtual function is exclusively marked by one in `virtual`, `override`, or `final`.
+- To avoid redundancy, a virtual function is exclusively marked by one of `virtual`, `override`, or `final`.
 
 ## Enumeration
 
