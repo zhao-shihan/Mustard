@@ -37,7 +37,7 @@ set(CMAKE_CXX_EXTENSIONS OFF CACHE INTERNAL "Boolean specifying whether compiler
 # Unity build for Mustard
 # =============================================================================
 
-if(MUSTARD_ENABLE_UNITY_BUILD)
+if(MUSTARD_UNITY_BUILD)
     set(CMAKE_UNITY_BUILD ON)
     if(MUSTARD_FULL_UNITY_BUILD)
         set(CMAKE_UNITY_BUILD_BATCH_SIZE 0)
