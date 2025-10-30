@@ -58,7 +58,7 @@ The following dependencies are optional. If they are not found on your system du
 | [**zhao-shihan/backward-cpp**](https://github.com/zhao-shihan/backward-cpp) | 1.6.1       | A beautiful stack trace pretty printer for C++           |
 | [**EFM**](https://github.com/zhao-shihan/EFM)                               | 0.1.0       | A generic bilinear/trilinear interpolator                |
 | [**envparse**](https://github.com/zhao-shihan/envparse)                     | 1.0.0       | A simple, header-only environment variable parser in C++ |
-| [**fmt**](https://github.com/fmtlib/fmt)                                    | 11.2.0      | A modern formatting library                              |
+| [**fmt**](https://github.com/fmtlib/fmt)                                    | 12.1.0      | A modern formatting library                              |
 | [**indicators**](https://github.com/p-ranav/indicators)                     | 2.3         | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.0       | ISO C++ guidelines support library                       |
 | [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.25.1003   | A C++17 message passing library based on MPI             |
