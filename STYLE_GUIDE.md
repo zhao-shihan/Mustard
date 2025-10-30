@@ -176,6 +176,7 @@ All files must begin with a standard copyright header:
   6. Namespace declarations
   7. Forward declarations (if needed)
   8. Code
+- No `#include` in `.inl` files
 
 ```cpp
 // -*- C++ -*-
@@ -673,8 +674,8 @@ auto Name() const -> const auto& { return fName; }
 ### Virtual Functions and Override
 - **Always use `override` keyword for overridden virtual functions**
 - **Mark destructors `virtual` in base classes if its derived classes might be polymorphically destructed**
-- Mark `virtual` if a function can be further overridden, otherwise
-- Mark `final` when it should never be further overridden
+- Mark `final` when a function should never be further overridden
+- To avoid redundancy, a virtual function is exclusively marked by one of `virtual`, `override`, or `final`.
 
 ## Enumeration
 
@@ -1306,6 +1307,7 @@ public:
 - [ ] Use `#pragma once` instead of traditional include guards
 - [ ] Organize includes in correct order: project → framework → external → standard library
 - [ ] Use full paths relative to source root for project includes
+- [ ] No `#include` in `.inl` files
 - [ ] Use proper namespace structure with closing comments
 
 ### Formatting
