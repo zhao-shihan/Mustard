@@ -61,9 +61,9 @@ PackConstructorInitializers: Never
 PointerAlignment: Left
 ReferenceAlignment: Left
 ReflowComments: true
-RequiresClausePosition: OwnLineWithBrace
-RemoveEmptyLinesInUnwrappedLines: true
-RequiresExpressionIndentation: OuterScope
+# RequiresClausePosition: OwnLineWithBrace
+# RemoveEmptyLinesInUnwrappedLines: true
+# RequiresExpressionIndentation: OuterScope
 SeparateDefinitionBlocks: Leave
 ShortNamespaceLines: 0
 SortIncludes: CaseSensitive
