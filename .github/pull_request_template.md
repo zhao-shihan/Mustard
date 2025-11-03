@@ -1,5 +1,5 @@
 ## Summary
-Provide a short description of the change and the motivation.
+Provide a description of the change and the motivation. It is encouraged to use Copilot.
 
 Fixes: #<issue-number> (if applicable)
 
@@ -11,13 +11,6 @@ Fixes: #<issue-number> (if applicable)
 - Documentation update
 - CI / tooling
 - Other: describe
-
-## How was this tested?
-Describe the testing performed:
-- Build commands used (platforms/configs)
-- Unit tests run (commands and results)
-- Integration tests or manual test steps
-- If applicable, include links to CI runs
 
 ## Checklist before requesting review
 - [ ] I have read the [contributing guidelines](https://github.com/zhao-shihan/Mustard/blob/main/CONTRIBUTING.md)
