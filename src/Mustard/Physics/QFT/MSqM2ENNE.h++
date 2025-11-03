@@ -18,38 +18,22 @@
 
 #pragma once
 
-#include "Mustard/Physics/QFT/MSqME2ENNE.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 
 namespace Mustard::inline Physics::QFT {
 
 /// @class MSqM2ENNE
 /// @brief Matrix element squared for M(μ⁺e⁻) → e⁺ννe⁻ process.
-/// Implements unpolarized matrix element. Bound state effects are neglected
+/// Implements unpolarized matrix element.
+/// @note Ref: Mitrajyoti Ghosh et al., arXiv:2510.25828 [hep-ph].
+/// @warning Only applicable to decay with hard photon exchange.
 class MSqM2ENNE : public MatrixElement<1, 4> {
 public:
-    /// @brief Matrix element version
-    using Ver = enum MSqME2ENNE::Ver;
-
-public:
-    /// @brief The constructor
-    /// @param ver Matrix element version
-    MSqM2ENNE(Ver ver = Ver::QEDTree2D);
-
-    /// @brief Set matrix element version
-    /// @param ver The matrix element version
-    auto Version(Ver ver) -> void { fMSqME2ENNE.Version(ver); }
-
     /// @brief Calculate squared matrix element for internal conversion muon decay
     /// @param pI Muonium initial state 4-momenta
     /// @param pF Final state momenta: [e⁺, ν, ν, e⁻]
     /// @return |M|² value in CLHEP unit system
-    ///
-    /// @note Implementation based on McMule's analytical expressions
-    virtual auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
-
-private:
-    MSqME2ENNE fMSqME2ENNE;
+    auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
 };
 
 } // namespace Mustard::inline Physics::QFT
