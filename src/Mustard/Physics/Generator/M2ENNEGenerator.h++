@@ -40,7 +40,6 @@ public:
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
-    /// @param mSqVer The matrix element version
     M2ENNEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum,
                     std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                     std::optional<double> stepSize = {});

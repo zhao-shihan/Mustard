@@ -24,15 +24,15 @@ namespace Mustard::inline Physics::QFT {
 
 /// @class MSqM2ENNE
 /// @brief Matrix element squared for M(μ⁺e⁻) → e⁺ννe⁻ process.
-/// Implements unpolarized matrix element. Bound state effects are neglected
+/// Implements unpolarized matrix element.
+/// @note Ref: Mitrajyoti Ghosh et al., arXiv:2510.25828 [hep-ph].
+/// @warning Only applicable to decay with hard photon exchange.
 class MSqM2ENNE : public MatrixElement<1, 4> {
 public:
     /// @brief Calculate squared matrix element for internal conversion muon decay
     /// @param pI Muonium initial state 4-momenta
     /// @param pF Final state momenta: [e⁺, ν, ν, e⁻]
     /// @return |M|² value in CLHEP unit system
-    ///
-    /// @note Implementation based on McMule's analytical expressions
     auto operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double override;
 };
 
