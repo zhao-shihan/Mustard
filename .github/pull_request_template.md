@@ -1,5 +1,5 @@
 ## Summary
-Provide a description of the change and the motivation. It is encouraged to use Copilot.
+Provide a description of the change and the motivation. It is encouraged to use Copilot to help draft this description.
 
 Fixes: #<issue-number> (if applicable)
 
