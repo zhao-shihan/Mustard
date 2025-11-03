@@ -17,25 +17,20 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Physics/QFT/MSqM2ENNE.h++"
+#include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
-#include "CLHEP/Vector/LorentzVector.h"
+#include "muc/math"
 
 namespace Mustard::inline Physics::QFT {
 
 using namespace PhysicalConstant;
-
-MSqM2ENNE::MSqM2ENNE(Ver ver) :
-    MatrixElement{},
-    fMSqME2ENNE{ver} {}
+using namespace MathConstant;
 
 auto MSqM2ENNE::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
-    CLHEP::HepLorentzVector p1{muon_mass_c2};
-    CLHEP::HepLorentzVector p2{electron_mass_c2};
-    const auto beta{pI.boostVector()};
-    p1.boost(beta);
-    p2.boost(beta);
-    return muonium_decay_constant * fMSqME2ENNE({p1, p2}, pF);
+    const auto& [q1, q2, q3, q4]{pF};
+    return 512 * pi * muc::pow(reduced_fermi_constant, 2) * muc::pow(fine_structure_const, 3) *
+           (pI * q2) * (q3 * q4) / muc::hypot(q4.e(), Bohr_radius * (q1.vect() * q4.vect()));
 }
 
 } // namespace Mustard::inline Physics::QFT

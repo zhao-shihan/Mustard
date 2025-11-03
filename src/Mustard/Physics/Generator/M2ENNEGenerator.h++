@@ -37,18 +37,13 @@ public:
     /// @brief Construct generator for specific parent
     /// @param parent "muonium" or "antimuonium" (determines PDG IDs in generated event)
     /// @param momentum Muonium momentum
-    /// @param irCut IR cut for final-state electron (muonium) or positron (antimuonium)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @param mSqVer The matrix element version
-    M2ENNEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, double irCut,
+    M2ENNEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum,
                     std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
-                    std::optional<double> stepSize = {}, std::optional<QFT::MSqM2ENNE::Ver> mSqVer = {});
-
-    /// @brief Set matrix element version
-    /// @param mSqVer The matrix element version
-    auto MSqVersion(QFT::MSqM2ENNE::Ver mSqVer) -> void { fMatrixElement.Version(mSqVer); }
+                    std::optional<double> stepSize = {});
 
     /// @brief Set parent particle
     /// @param parent "muonium" or "antimuonium"
@@ -57,9 +52,6 @@ public:
     /// @brief Set parent momentum
     /// @param momentum Muonium momentum
     auto ParentMomentum(CLHEP::Hep3Vector momentum) -> void;
-    /// @brief Set IR cut for final-state electron (muonium) or positron (antimuonium)
-    /// @param irCut IR cut for final-state electron (muonium) or positron (antimuonium)
-    auto IRCut(double irCut) -> void;
 };
 
 } // namespace Mustard::inline Physics::inline Generator
