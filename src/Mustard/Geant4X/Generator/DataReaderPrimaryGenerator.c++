@@ -71,7 +71,7 @@ auto DataReaderPrimaryGenerator::EventData(const std::filesystem::path& file, co
 
 auto DataReaderPrimaryGenerator::NVertex(int n) -> void {
     CheckG4Status();
-    fNVertex = std::max(0, n);
+    fNVertex = n;
 }
 
 auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
@@ -80,8 +80,14 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
         fCurrentRun = {run, run->GetRunID()};
         fEndEntryForCurrentRun += run->GetNumberOfEventToBeProcessed();
     }
-    // use 'last entry' as reference index looks not perfect but G4Run may be destructed so I have to do so
-    const auto iBegin{fEndEntryForCurrentRun - run->GetNumberOfEventToBeProcessed() + event->GetEventID()};
+
+    if (fNVertex == 0) {
+        return;
+    }
+    if (fNVertex < 0) [[unlikely]] {
+        Mustard::PrintError("Number of vertices per event is negative");
+        return;
+    }
 
     auto& [reader, weight, t, x, y, z, thePDGID, theE, thePX, thePY, thePZ]{fEventData};
     if (reader.IsInvalid()) [[unlikely]] {
@@ -95,6 +101,8 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
     if (reader.GetEntries() % fNVertex != 0) [[unlikely]] {
         Mustard::PrintWarning("The number of entries cannot be exactly divided by the number of vertices");
     }
+    // use 'last entry' as reference index looks not perfect but G4Run may be destructed so I have to do so
+    const auto iBegin{fEndEntryForCurrentRun - run->GetNumberOfEventToBeProcessed() + event->GetEventID()};
     reader.SetEntry((iBegin * fNVertex) % reader.GetEntries());
 
     for (int iVertex{}; iVertex < fNVertex; ++iVertex) {
