@@ -74,7 +74,7 @@ auto MSqM2ENNGG::operator()(const InitialStateMomenta& pI, const FinalStateMomen
     }
     pm2ennggav *= -4 / 3.;
 
-    constexpr auto constant{4 * muc::pow(reduced_fermi_constant, 2) * muc::pow(4 * pi * fine_structure_const, 2)};
+    constexpr auto constant{4 * muc::pow(reduced_Fermi_constant, 2) * muc::pow(4 * pi * fine_structure_const, 2)};
     return constant * pm2ennggav;
 }
 
