@@ -82,12 +82,13 @@ constexpr auto muonium_mass_c2{muon_mass_c2 + electron_mass_c2 -
                                muc::pow(fine_structure_const * muonium_reduced_mass_c2, 2) / (2 * electron_mass_c2)};
 constexpr auto muonium_decay_constant{muc::pow(fine_structure_const * muonium_reduced_mass_c2, 3) * muonium_mass_c2 /
                                       (2 * CLHEP::pi * muon_mass_c2 * electron_mass_c2)};
+constexpr auto muonium_Bohr_radius{hbarc / (fine_structure_const * muonium_reduced_mass_c2)};
 
 constexpr auto muon_lifetime{2.1969811 * CLHEP::us};
 constexpr auto muonium_lifetime{muon_lifetime};
 
-constexpr auto reduced_fermi_constant{1.1663788e-5 * muc::pow(CLHEP::GeV, -2)};
-constexpr auto fermi_constant{reduced_fermi_constant * muc::pow(hbarc, 3)};
+constexpr auto reduced_Fermi_constant{1.1663788e-5 * muc::pow(CLHEP::GeV, -2)};
+constexpr auto Fermi_constant{reduced_Fermi_constant * muc::pow(hbarc, 3)};
 // --            Extra constants              -- //
 
 } // namespace Mustard::inline Utility::PhysicalConstant

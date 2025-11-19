@@ -30,8 +30,8 @@ using namespace MathConstant;
 auto MSqM2ENNE::operator()(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
     // Ref: Mitrajyoti Ghosh et al., arXiv:2510.25828 [hep-ph] (Eq. 2)
     const auto& [q1, q2, q3, q4]{pF};
-    return 512 * pi * muc::pow(reduced_fermi_constant, 2) * muc::pow(fine_structure_const, 3) *
-           (pI * q2) * (q3 * q4) / muc::hypot(q4.e(), Bohr_radius * (q1.vect() * q4.vect()));
+    return 512 * pi * muc::pow(reduced_Fermi_constant, 2) * muc::pow(fine_structure_const, 3) *
+           (pI * q2) * (q3 * q4) / muc::hypot_sq(q4.e(), muonium_Bohr_radius * (q1.vect() * q4.vect()));
 }
 
 } // namespace Mustard::inline Physics::QFT
