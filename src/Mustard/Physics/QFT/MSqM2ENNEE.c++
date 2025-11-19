@@ -89,7 +89,7 @@ auto MSqM2ENNEE::MSqMcMule0Av(const InitialStateMomenta& pI, const FinalStateMom
     m2enneeavImpl(p2, p4);
     m2enneeavImpl(p4, p2);
 
-    return muc::pow(2 * pi * fine_structure_const * reduced_fermi_constant, 2) * pm2enneeav;
+    return muc::pow(2 * pi * fine_structure_const * reduced_Fermi_constant, 2) * pm2enneeav;
 }
 
 MUSTARD_OPTIMIZE_FAST auto MSqM2ENNEE::OneBorn(double s12, double s13, double s14, double s23, double s24, double s34,
@@ -3373,7 +3373,7 @@ MUSTARD_OPTIMIZE_FAST auto MSqM2ENNEE::MSqMcMuleLegacy(const InitialStateMomenta
                               if14 / (den1 * den4) + if23 / (den2 * den3) +
                               if24 / (den2 * den4) + if34 / (den3 * den4))};
 
-    constexpr auto constant{8. * pow(reduced_fermi_constant, 2) * pow(4. * pi * fine_structure_const, 2)};
+    constexpr auto constant{8. * pow(reduced_Fermi_constant, 2) * pow(4. * pi * fine_structure_const, 2)};
     return constant * pm2ennee;
 }
 
