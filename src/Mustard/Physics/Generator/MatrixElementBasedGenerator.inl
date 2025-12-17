@@ -25,6 +25,8 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
     fGENBOD{pdgID, mass},
     fISMomenta{},
     fBoostFromLabToCM{},
+    fFSSymmetryFactor{1},
+    fIdenticalSet{},
     fIRCut{},
     fAcceptance{[](auto&&) { return 1; }},
     fAcceptanceGt1Counter{},
@@ -137,6 +139,28 @@ auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(const std::a
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
+    if (set.size() < 2) [[unlikely]] {
+        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
+        return;
+    }
+    muc::timsort(set);
+    if (const auto duplicate{std::ranges::unique(set)};
+        duplicate.size() != 0) [[unlikely]] {
+        PrintWarning(fmt::format("There are {} duplicate index in identical set, removing them", duplicate.size()));
+        set.erase(duplicate.begin(), duplicate.end());
+    }
+    for (auto&& addedSet : std::as_const(fIdenticalSet)) {
+        const auto duplicated{std::ranges::find_first_of(addedSet, set)};
+        if (duplicated != addedSet.cend()) [[unlikely]] {
+            PrintError(fmt::format("Particle {} added accross different identical sets", *duplicated));
+        }
+    }
+    fFSSymmetryFactor /= muc::factorial(set.size());
+    fIdenticalSet.emplace_back(std::move(set));
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::IRCut(int i, double cut) -> void {
     if (cut <= 0) [[unlikely]] {
         PrintWarning(fmt::format("Non-positive IR cut for particle {} (got {})", i, cut));
@@ -200,7 +224,7 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidMSqAcceptanceDetJ(const FinalSta
         return 0;
     }
     const auto mSq{fMatrixElement(fISMomenta, pF)};
-    const auto result{mSq * acceptance * detJ}; // |M|² × acceptance × |J|
+    const auto result{fFSSymmetryFactor * mSq * acceptance * detJ}; // 1/S * |M|² × acceptance × |J|
     constexpr auto Format{[](const FinalStateMomenta& pF, double acceptance, double detJ) {
         auto where{fmt::format("({})", detJ)};
         for (auto&& p : pF) {

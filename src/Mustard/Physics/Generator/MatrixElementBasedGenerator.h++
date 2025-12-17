@@ -62,7 +62,7 @@ namespace Mustard::inline Physics::inline Generator {
 /// @class MatrixElementBasedGenerator
 /// @brief Generator based on a matrix element.
 ///
-/// Generates events distributed according to |M|² × acceptance, and
+/// Generates events distributed according to 1/S × |M|² × acceptance, and
 /// weight = 1 / acceptance.
 ///
 /// @tparam M Number of initial-state particles
@@ -107,13 +107,13 @@ public:
     /// @brief Get currently set initial-state 4-momenta
     auto ISMomenta() const -> const auto& { return fISMomenta; }
 
-    /// @brief Compute |M|² × acceptance integral on phase space by Monte Carlo integration.
+    /// @brief Compute 1/S × |M|² × acceptance integral on phase space by Monte Carlo integration.
     /// Useful for calculating total decay width or cross section
     /// @param executor An executor instance
     /// @param precisionGoal Target relative uncertainty (e.g. 0.01 for 1% rel. unc.)
     /// @param integrationState Integration state for continuing integration
     /// @param rng Reference to CLHEP random engine
-    /// @return (1) Monte Carlo integration result of |M|² × acceptance integral on phase space
+    /// @return (1) Monte Carlo integration result of 1/S × |M|² × acceptance integral on phase space
     ///         (2) Effective sample size
     ///         (3) Current integration state
     auto PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
@@ -168,6 +168,16 @@ protected:
     auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
+    /// @brief Add an identical particle index set
+    /// @param set A vector of particle indices (0 ≤ index < N)
+    auto AddIdenticalSet(std::vector<int> set) -> void;
+    /// @brief Get identical particle index sets
+    /// @return Identical particle index sets
+    auto IdenticalSet() -> const auto& { return fIdenticalSet; }
+    /// @brief Get identical particle index set
+    /// @param i Set index (0 ≤ i < number of sets)
+    /// @return Identical particle index set
+    auto IdenticalSet(int i) -> const auto& { return fIdenticalSet[i]; }
     /// @brief Set IR cuts for single final-state particle
     /// @param i Particle index (0 ≤ i < N)
     /// @param cut IR cut value (kinetic energy)
@@ -178,7 +188,7 @@ protected:
     auto IRSafe(const FinalStateMomenta& pF) const -> bool;
 
     /// @brief Set user-defined acceptance function (0 <= acceptance <= 1 recommended)
-    /// (PDF = |M|² × acceptance, weight = 1 / acceptance)
+    /// (PDF = 1/S × |M|² × acceptance, weight = 1 / acceptance)
     /// @param B User-defined acceptance
     auto Acceptance(AcceptanceFunction Acceptance) -> void;
 
@@ -192,7 +202,7 @@ protected:
     /// @param event Final states from phase space
     /// @param acceptance Acceptance value at the same phase space point (from ValidAcceptance)
     /// @exception `std::runtime_error` if invalid PDF value produced
-    /// @return |M|²(p1, ..., pN) × acceptance(p1, ..., pN) × |J|(p1, ..., pN)
+    /// @return 1/S × |M|²(p1, ..., pN) × acceptance(p1, ..., pN) × |J|(p1, ..., pN)
     auto ValidMSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double;
 
 private:
@@ -205,12 +215,14 @@ protected:
     GENBOD<M, N> fGENBOD;                   ///< Phase space generator
 
 private:
-    InitialStateMomenta fISMomenta;             ///< Initial-state 4-momenta
-    CLHEP::Hep3Vector fBoostFromLabToCM;        ///< Boost from lab frame to c.m. frame
-    std::vector<std::pair<int, double>> fIRCut; ///< IR cuts (kinetic energies)
-    AcceptanceFunction fAcceptance;             ///< User acceptance function
-    mutable std::int8_t fAcceptanceGt1Counter;  ///< Counter of acceptance > 1 warning
-    mutable std::int8_t fNegativeMSqCounter;    ///< Counter of negative |M|² warning
+    InitialStateMomenta fISMomenta;              ///< Initial-state 4-momenta
+    CLHEP::Hep3Vector fBoostFromLabToCM;         ///< Boost from lab frame to c.m. frame
+    double fFSSymmetryFactor;                    ///< Final-state identical particle symmetry factor
+    std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
+    std::vector<std::pair<int, double>> fIRCut;  ///< IR cuts (kinetic energies)
+    AcceptanceFunction fAcceptance;              ///< User acceptance function
+    mutable std::int8_t fAcceptanceGt1Counter;   ///< Counter of acceptance > 1 warning
+    mutable std::int8_t fNegativeMSqCounter;     ///< Counter of negative |M|² warning
 };
 
 } // namespace Mustard::inline Physics::inline Generator
