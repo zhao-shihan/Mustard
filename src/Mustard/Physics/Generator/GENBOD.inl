@@ -47,7 +47,7 @@ auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> E
     invMass.back() = cmE;
 
     using Mustard::MathConstant::pi;
-    Event event{.weight = muc::pow(cmE, N - 3) / (4 * muc::pow(2 * pi, 2 * N + 2)), .pdgID = this->fPDGID, .p = {}};
+    Event event{.weight = std::pow(cmEk, N - 2) / (2 * muc::pow(2 * pi, 2 * N + 1) * muc::factorial(N - 2) * cmE), .pdgID = this->fPDGID, .p = {}};
     std::array<double, N> pRel;
     for (int i{}; i < N - 1; ++i) {
         constexpr auto RelativeMomentum{[](double m12, double m1, double m2) {
