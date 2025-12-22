@@ -211,21 +211,15 @@ protected:
     /// @param pI initial-state 4-momenta
     /// @warning The Markov chain requires reinitialize if value changes
     auto ISMomenta(const InitialStateMomenta& pI) -> void;
-
     /// @brief Set final-state masses
     /// @param mass Array of particle masses
     /// @warning The Markov chain requires reinitialize if value changes
     auto Mass(const std::array<double, N>& mass) -> void;
-
     /// @brief Set IR cuts for single final-state particle
     /// @param i Particle index (0 ≤ i < N)
     /// @param cut IR cut value
     /// @warning The Markov chain requires reinitialize after set
     auto IRCut(int i, double cut) -> void;
-    /// @brief Add an identical particle index set.
-    /// @note Add the set is not necessary but recommended for reducing
-    /// discrpancies between spectra of identical particles from MCMC.
-    auto AddIdenticalSet(std::vector<int> set) -> void;
 
     /// @brief Notify MCMC that reinitialize is required
     auto MCMCInitializeRequired() -> void;
@@ -256,8 +250,6 @@ private:
     virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool = 0;
 
 protected:
-    std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
-                                                 //
     double fThinningRatio;                       ///< User-defined thinning ratio
     unsigned fACFSampleSize;                     ///< Sample size for estimating ACF
                                                  //

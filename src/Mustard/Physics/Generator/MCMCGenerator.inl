@@ -22,7 +22,6 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                       std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) :
     Base{pI, pdgID, mass},
-    fIdenticalSet{},
     fThinningRatio{1.5},
     fACFSampleSize{fgDefaultInvalidACFSampleSize},
     fMCMCInitialized{},
@@ -332,27 +331,6 @@ auto MCMCGenerator<M, N, A>::IRCut(int i, double cut) -> void {
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
-    if (set.size() < 2) [[unlikely]] {
-        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
-        return;
-    }
-    muc::timsort(set);
-    if (const auto duplicate{std::ranges::unique(set)};
-        duplicate.size() != 0) [[unlikely]] {
-        PrintWarning(fmt::format("There are {} duplicate index in identical set, removing them", duplicate.size()));
-        set.erase(duplicate.begin(), duplicate.end());
-    }
-    for (auto&& addedSet : std::as_const(fIdenticalSet)) {
-        const auto duplicated{std::ranges::find_first_of(addedSet, set)};
-        if (duplicated != addedSet.cend()) [[unlikely]] {
-            PrintError(fmt::format("Particle {} added accross different identical sets", *duplicated));
-        }
-    }
-    fIdenticalSet.emplace_back(std::move(set));
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::MCMCInitializeRequired() -> void {
     fMCMCInitialized = false;
     fThinningSize = 0;
@@ -377,7 +355,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ProposePID(CLHEP::HepRandomEngine& rng, const std::array<int, N>& pID0, std::array<int, N>& pID) -> void {
     pID = pID0;
     // Walk particle mapping if there are identical particles
-    if (fIdenticalSet.empty() or rng.flat() < 0.5) {
+    if (this->IdenticalSet().empty() or rng.flat() < 0.5) {
         return;
     }
     const auto RandomIndex([&rng](int n) {
@@ -388,9 +366,9 @@ auto MCMCGenerator<M, N, A>::ProposePID(CLHEP::HepRandomEngine& rng, const std::
         }
         return i;
     });
-    const auto& idSet{fIdenticalSet.size() == 1 ?
-                          fIdenticalSet.front() :
-                          fIdenticalSet[RandomIndex(fIdenticalSet.size())]};
+    const auto& idSet{this->IdenticalSet().size() == 1 ?
+                          this->IdenticalSet(0) :
+                          this->IdenticalSet(RandomIndex(this->IdenticalSet().size()))};
     if (idSet.size() == 2) {
         std::swap(pID[idSet[0]], pID[idSet[1]]);
     } else {
