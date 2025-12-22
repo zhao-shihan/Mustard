@@ -173,11 +173,11 @@ protected:
     auto AddIdenticalSet(std::vector<int> set) -> void;
     /// @brief Get identical particle index sets
     /// @return Identical particle index sets
-    auto IdenticalSet() -> const auto& { return fIdenticalSet; }
+    auto IdenticalSet() const -> const auto& { return fIdenticalSet; }
     /// @brief Get identical particle index set
     /// @param i Set index (0 ≤ i < number of sets)
     /// @return Identical particle index set
-    auto IdenticalSet(int i) -> const auto& { return fIdenticalSet[i]; }
+    auto IdenticalSet(int i) const -> const auto& { return fIdenticalSet[i]; }
     /// @brief Set IR cuts for single final-state particle
     /// @param i Particle index (0 ≤ i < N)
     /// @param cut IR cut value (kinetic energy)

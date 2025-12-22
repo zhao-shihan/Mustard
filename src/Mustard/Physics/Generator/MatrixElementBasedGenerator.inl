@@ -146,14 +146,14 @@ auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set)
     }
     muc::timsort(set);
     if (const auto duplicate{std::ranges::unique(set)};
-        duplicate.size() != 0) [[unlikely]] {
-        PrintWarning(fmt::format("There are {} duplicate index in identical set, removing them", duplicate.size()));
+        not duplicate.empty()) [[unlikely]] {
+        PrintWarning(fmt::format("There is/are {} duplicate index/indices in identical set, removing it/them", duplicate.size()));
         set.erase(duplicate.begin(), duplicate.end());
     }
     for (auto&& addedSet : std::as_const(fIdenticalSet)) {
         const auto duplicated{std::ranges::find_first_of(addedSet, set)};
         if (duplicated != addedSet.cend()) [[unlikely]] {
-            PrintError(fmt::format("Particle {} added accross different identical sets", *duplicated));
+            PrintError(fmt::format("Particle {} added across different identical sets", *duplicated));
         }
     }
     fFSSymmetryFactor /= muc::factorial(set.size());
