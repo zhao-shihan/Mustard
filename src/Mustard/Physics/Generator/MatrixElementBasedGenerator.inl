@@ -140,13 +140,9 @@ auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(const std::a
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
-    if (set.size() < 2) [[unlikely]] {
-        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
-        return;
-    }
     for (auto&& i : std::as_const(set)) {
         if (i < 0 or i >= N) [[unlikely]] {
-            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0, {}), got {}), ignoring it", N, i));
+            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0, {}), got {}), ignoring the set", N, i));
             return;
         }
     }
@@ -156,10 +152,15 @@ auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set)
         PrintWarning(fmt::format("There is/are {} duplicate index/indices in identical set, removing it/them", duplicate.size()));
         set.erase(duplicate.begin(), duplicate.end());
     }
+    if (set.size() < 2) [[unlikely]] {
+        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
+        return;
+    }
     for (auto&& addedSet : std::as_const(fIdenticalSet)) {
         const auto duplicated{std::ranges::find_first_of(addedSet, set)};
         if (duplicated != addedSet.cend()) [[unlikely]] {
-            PrintError(fmt::format("Particle {} added across different identical sets", *duplicated));
+            PrintError(fmt::format("Particle {} added across different identical sets, ignoring the set", *duplicated));
+            return;
         }
     }
     fFSSymmetryFactor /= muc::factorial(set.size());
