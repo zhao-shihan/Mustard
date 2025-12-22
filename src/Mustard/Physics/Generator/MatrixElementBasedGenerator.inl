@@ -144,6 +144,13 @@ auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set)
         PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
         return;
     }
+    // Validate that all indices are within valid range [0, N)
+    for (const auto index : set) {
+        if (index < 0 or index >= N) [[unlikely]] {
+            PrintError(fmt::format("Invalid particle index {} in identical set (valid range is [0, {}))", index, N));
+            return;
+        }
+    }
     muc::timsort(set);
     if (const auto duplicate{std::ranges::unique(set)};
         not duplicate.empty()) [[unlikely]] {
