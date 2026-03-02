@@ -66,8 +66,8 @@ auto MultipleTryMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void 
     if (not std::isfinite(stepSize)) [[unlikely]] {
         PrintError(fmt::format("Infinite MCMC step size (got {})", stepSize));
     }
-    if (stepSize <= muc::default_tolerance<double> or 0.5 <= stepSize) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5)", stepSize, muc::default_tolerance<double>));
+    if (stepSize <= muc::default_abs_tol<double> or 0.5 <= stepSize) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5)", stepSize, muc::default_abs_tol<double>));
     }
     // Rescale stepSize
     // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0

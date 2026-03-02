@@ -62,7 +62,7 @@ The following dependencies are optional. If they are not found on your system du
 | [**indicators**](https://github.com/p-ranav/indicators)                     | 2.3         | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.0       | ISO C++ guidelines support library                       |
 | [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.25.1003   | A C++17 message passing library based on MPI             |
-| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.25.1217   | A standard non-standard C++ library                      |
+| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.302   | A standard non-standard C++ library                      |
 | [**zhao-shihan/yaml-cpp**](https://github.com/zhao-shihan/yaml-cpp)         | 0.8.2       | A YAML parser and emitter in C++                         |
 
 ## Projects using this library

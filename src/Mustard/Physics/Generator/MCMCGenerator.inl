@@ -74,7 +74,7 @@ auto MCMCGenerator<M, N, A>::InitialStatePolarization() const -> const std::arra
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    if (not pol.isNear(InitialStatePolarization(), muc::default_tolerance<double>)) {
+    if (not pol.isNear(InitialStatePolarization(), muc::default_rel_tol<double>)) {
         MCMCInitializeRequired();
     }
     Base::InitialStatePolarization(pol);
@@ -83,7 +83,7 @@ auto MCMCGenerator<M, N, A>::InitialStatePolarization(CLHEP::Hep3Vector pol) -> 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    if (not pol.isNear(InitialStatePolarization(i), muc::default_tolerance<double>)) {
+    if (not pol.isNear(InitialStatePolarization(i), muc::default_rel_tol<double>)) {
         MCMCInitializeRequired();
     }
     Base::InitialStatePolarization(i, pol);
@@ -93,7 +93,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     if (not std::ranges::equal(pol, InitialStatePolarization(),
-                               [](auto&& a, auto&& b) { return a.isNear(b, muc::default_tolerance<double>); })) {
+                               [](auto&& a, auto&& b) { return a.isNear(b, muc::default_rel_tol<double>); })) {
         MCMCInitializeRequired();
     }
     Base::InitialStatePolarization(pol);
@@ -303,12 +303,12 @@ auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStat
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& pI) -> void {
     if constexpr (M == 1) {
-        if (pI.isNear(Base::ISMomenta(), muc::default_tolerance<double>)) {
+        if (pI.isNear(Base::ISMomenta(), muc::default_rel_tol<double>)) {
             MCMCInitializeRequired();
         }
     } else {
         if (not std::ranges::equal(pI, Base::ISMomenta(),
-                                   [](auto p, auto q) { return p.isNear(q, muc::default_tolerance<double>); })) {
+                                   [](auto p, auto q) { return p.isNear(q, muc::default_rel_tol<double>); })) {
             MCMCInitializeRequired();
         }
     }
