@@ -243,10 +243,12 @@ private:
     template<gsl::index L, gsl::index R>
     MUSTARD_ALWAYS_INLINE auto VisitImpl(gsl::index i, auto&& F) const&& -> void;
 
-    static auto DynIndex(std::string_view name) -> gsl::index;
+    MUSTARD_ALWAYS_INLINE static auto DynIndex(std::string_view name) -> gsl::index;
 
 private:
     typename Model::StdTuple fTuple;
+
+    static const muc::flat_hash_map<std::string_view, gsl::index> fgDynIndexMap;
 };
 
 template<typename... Ts>
