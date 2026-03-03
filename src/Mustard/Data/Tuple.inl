@@ -18,15 +18,14 @@
 
 namespace Mustard::Data {
 
-namespace internal {
-
-template<typename ADerived>
-constexpr EnableGet<ADerived>::EnableGet() {
-    static_assert(std::derived_from<ADerived, EnableGet>);
-    static_assert(TupleLike<ADerived>);
-}
-
-} // namespace internal
+template<TupleModelizable... Ts>
+const muc::flat_hash_map<std::string_view, gsl::index> Tuple<Ts...>::fgDynIndexMap{
+    []<gsl::index... Is>(gslx::index_sequence<Is...>) {
+        muc::flat_hash_map<std::string_view, gsl::index> indexMap;
+        indexMap.reserve(sizeof...(Is));
+        (..., indexMap.emplace(std::tuple_element_t<Is, typename Model::StdTuple>::Name().sv(), Is));
+        return indexMap;
+    }(gslx::make_index_sequence<Size()>{})};
 
 template<TupleModelizable... Ts>
 template<TupleLike ATuple>
@@ -102,9 +101,8 @@ constexpr auto Tuple<Ts...>::AsImpl() const -> ATuple {
                 Throw<std::invalid_argument>(fmt::format("The function provided is not invocable with {}", \
                                                          muc::try_demangle(typeid(*GetImpl).name())));     \
             }                                                                                              \
-        } else {                                                                                           \
-            return VisitImpl<L + 1, R>(i, std::forward<decltype(F)>(F));                                   \
         }                                                                                                  \
+        return VisitImpl<L + 1, R>(i, std::forward<decltype(F)>(F));                                       \
     }
 
 template<TupleModelizable... Ts>
@@ -134,16 +132,9 @@ MUSTARD_ALWAYS_INLINE auto Tuple<Ts...>::VisitImpl(gsl::index i, auto&& F) const
 #undef MUSTARD_DATA_TUPLE_VISIT_IMPL
 
 template<TupleModelizable... Ts>
-auto Tuple<Ts...>::DynIndex(std::string_view name) -> gsl::index {
-    static const auto index{
-        []<gsl::index... Is>(gslx::index_sequence<Is...>) {
-            muc::flat_hash_map<std::string_view, gsl::index> indexMap;
-            indexMap.reserve(sizeof...(Is));
-            (..., indexMap.emplace(std::tuple_element_t<Is, typename Model::StdTuple>::Name().sv(), Is));
-            return indexMap;
-        }(gslx::make_index_sequence<Size()>{})};
+MUSTARD_ALWAYS_INLINE auto Tuple<Ts...>::DynIndex(std::string_view name) -> gsl::index {
     try {
-        return index.at(name);
+        return fgDynIndexMap.at(name);
     } catch (const std::out_of_range& e) {
         PrintError(fmt::format("No field named '{}'", name));
         throw e;

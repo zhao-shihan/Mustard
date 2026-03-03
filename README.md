@@ -1,11 +1,11 @@
 # Mustard
 
 [![GitHub License](https://img.shields.io/github/license/zhao-shihan/Mustard?color=red)](COPYING)
+![GitHub Created At](https://img.shields.io/github/created-at/zhao-shihan/Mustard?color=green)
 ![GitHub top language](https://img.shields.io/github/languages/top/zhao-shihan/Mustard?color=f34b7d)
-[![GitHub activity](https://img.shields.io/github/commit-activity/m/zhao-shihan/Mustard)](https://github.com/zhao-shihan/Mustard/pulse)
 ![GitHub last commit](https://img.shields.io/github/last-commit/zhao-shihan/Mustard)
-[![GitHub release](https://badgen.net/github/release/zhao-shihan/Mustard)](https://github.com/zhao-shihan/Mustard/releases)
 [![GitHub contributors](https://img.shields.io/github/contributors/zhao-shihan/Mustard?style=flat)](https://github.com/zhao-shihan/Mustard/graphs/contributors)
+![GitHub repo size](https://img.shields.io/github/repo-size/zhao-shihan/Mustard)
 
 **Mustard** is a modern, high-performance offline software framework designed for particle physics experiments. It provides a generic architecture with core features including:
 - **Distributed computing:** Scalable parallel processing capabilities.
@@ -62,8 +62,8 @@ The following dependencies are optional. If they are not found on your system du
 | [**indicators**](https://github.com/p-ranav/indicators)                     | 2.3         | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.0       | ISO C++ guidelines support library                       |
 | [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.25.1003   | A C++17 message passing library based on MPI             |
-| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.302   | A standard non-standard C++ library                      |
-| [**zhao-shihan/yaml-cpp**](https://github.com/zhao-shihan/yaml-cpp)         | 0.8.2       | A YAML parser and emitter in C++                         |
+| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.302    | A standard non-standard C++ library                      |
+| [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
 
 ## Projects using this library
 
@@ -71,6 +71,8 @@ Mustard has been used as the framework for the following projects:
 
 - [**MACESW**](https://github.com/zhao-shihan/MACESW): Muonium-to-Antimuonium Conversion Experiment (MACE) offline software
 - [**MusAirS**](https://github.com/zhao-shihan/MusAirS): An air shower simulation tool
+- [**Musae**](https://doi.org/10.1063/5.0273373): **Mu**Grid **s**imul**a**tion infrastructur**e**, or **Mu**on **s**cattering and **a**bsorption tomography simulation softwar**e**
+- [**CRmuSRSW**](https://arxiv.org/abs/2505.13877): CRmuSR (Cosmic-ray muSR) offline software
 
 They are also examples demonstrating the usage of Mustard.
 
@@ -80,7 +82,7 @@ If you are aware of other projects using this library, please let me know by ema
 
 If you use Mustard in your research, please cite the following papers:
 
-**BAI Ai-Yu, CAI Hanjie, CHEN Chang-Lin, et al (MACE working group).**  
-**Conceptual Design of the Muonium-to-Antimuonium Conversion Experiment (MACE) [DB/OL].**  
-*arXiv preprint*, 2024: 2410.18817 [hep-ex].  
-https://arxiv.org/abs/2410.18817.
+**BAI Ai-Yu, CAI Hanjie, CHEN Chang-Lin, et al. (MACE working group).**  
+**Conceptual Design of the Muonium-to-Antimuonium Conversion Experiment (MACE)** [J].  
+*Nucl. Sci. Tech.*, 2026, 37: 57. DOI: 10.1007/s41365-025-01876-0. arXiv: 2410.18817 [hep-ex].  
+https://doi.org/10.1007/s41365-025-01876-0.
