@@ -88,7 +88,7 @@ auto POCA(const Helix& helix, const Point2D& axis) -> HelixAxisPOCAResult {
         phiCCw += 2 * pi;
     } // ensure in [0, 2pi)
     auto phiCw{phiCCw - 2 * pi};
-    if (phiCCw == 0) {
+    if (muc::isclose(phiCCw, 0.)) {
         phiCw = 0;
     } // ensure in (-2pi, 0]
 
@@ -104,6 +104,9 @@ auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
 
     const auto& [c0, r, phi0, z0, lambda]{helix};
     const auto& t{point};
+    if (phiLow >= phiUp) {
+        return std::nullopt;
+    }
 
     const auto k{1 / std::tan(lambda)}; // can be 0
     const auto a{(c0.x() - t.x()) / r};
@@ -146,7 +149,7 @@ auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
     // minimize
     ROOT::Math::BrentMinimizer1D minimizer;
     minimizer.SetFunction(reducedSquaredDistance, x1, x2);
-    minimizer.SetNpx(nTrialPts);
+    minimizer.SetNpx(nTrialPts); // nTrialPts<2 skips grid search in ROOT::Math::BrentMinimizer1D
     const auto converged{minimizer.Minimize(maxIter, absTol, relTol)};
     if (not converged) {
         return std::nullopt;
@@ -164,6 +167,9 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
 
     const auto& [c, r, phi0, z0, lambda]{helix};
     const auto& [t, originalD]{line};
+    if (phiLow >= phiUp) {
+        return std::nullopt;
+    }
 
     const auto d{originalD.unit()};
     const auto dxdy{d.x() * d.y()};
@@ -184,14 +190,17 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
     const auto a2{-k * dxdz};
     const auto b2{-k * dydz};
     const auto c2{k * k * (dx2 + dy2) / 2};
+    const auto a1c{a1 * c};
+    const auto b12b0c{b1 + 2 * b0 * c};
+    const auto a2cc1{a2 * c + c1};
     // 1/2*(d(x)/r)^2 without constant terms; to be minimized (x=phi+phi0)
     const ROOT::Math::WrappedFunction reducedSquaredDistance{[&](double x) {
         const auto [s, c]{muc::sincos(x)};
         //>  a0 cos(2x) + b0 sin(2x) +
         //>  a1 cos(x) + b1 sin(x) + c1 x +
         //> (a2 cos(x) + b2 sin(x) + c2 x) x
-        return a1 * c + (b1 + 2 * b0 * c) * s + a0 * (c - s) * (c + s) +
-               (a2 * c + c1 + b2 * s) * x + c2 * muc::pow(x, 2);
+        return a1c + b12b0c * s + a0 * (c - s) * (c + s) +
+               (a2cc1 + b2 * s + c2 * x) * x;
     }};
     // define interval
     const auto x1{phiLow + phi0};
@@ -232,7 +241,7 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
     // minimize
     ROOT::Math::BrentMinimizer1D minimizer;
     minimizer.SetFunction(reducedSquaredDistance, x1, x2);
-    minimizer.SetNpx(nTrialPts);
+    minimizer.SetNpx(nTrialPts); // nTrialPts<2 skips grid search in ROOT::Math::BrentMinimizer1D
     const auto converged{minimizer.Minimize(maxIter, absTol, relTol)};
     if (not converged) {
         return std::nullopt;
