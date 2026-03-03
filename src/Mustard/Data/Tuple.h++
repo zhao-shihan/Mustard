@@ -108,48 +108,9 @@ struct tuple_element<I, T>
 
 namespace Mustard::Data {
 
-namespace internal {
-
-/// @brief Helper class for `Tuple` friend `Get` function.
-template<typename ADerived>
-class EnableGet {
-    template<muc::ceta_string... ANames>
-        requires(sizeof...(ANames) >= 1)
-    friend constexpr auto Get(const ADerived& t) -> decltype(auto) { return t.template Get<ANames...>(); }
-    template<muc::ceta_string... ANames>
-        requires(sizeof...(ANames) >= 1)
-    friend constexpr auto Get(ADerived& t) -> decltype(auto) { return t.template Get<ANames...>(); }
-    template<muc::ceta_string... ANames>
-        requires(sizeof...(ANames) >= 1)
-    friend constexpr auto Get(ADerived&& t) -> decltype(auto) { return std::move(t).template Get<ANames...>(); }
-    template<muc::ceta_string... ANames>
-        requires(sizeof...(ANames) >= 1)
-    friend constexpr auto Get(const ADerived&& t) -> decltype(auto) { return std::move(t).template Get<ANames...>(); }
-
-    template<muc::ceta_string AName, typename T>
-    friend constexpr auto GetAs(const ADerived& t) -> decltype(auto) { return t.template Get<AName>().template As<T>(); }
-    template<muc::ceta_string AName, typename T>
-    friend constexpr auto GetAs(ADerived&& t) -> decltype(auto) { return std::move(t).template Get<AName>().template As<T>(); }
-
-    template<gsl::index I>
-    friend constexpr auto get(const ADerived& t) -> decltype(auto) { return t.template Get<std::tuple_element_t<I, ADerived>::Name()>(); }
-    template<gsl::index I>
-    friend constexpr auto get(ADerived& t) -> decltype(auto) { return t.template Get<std::tuple_element_t<I, ADerived>::Name()>(); }
-    template<gsl::index I>
-    friend constexpr auto get(ADerived&& t) -> decltype(auto) { return std::move(t).template Get<std::tuple_element_t<I, ADerived>::Name()>(); }
-    template<gsl::index I>
-    friend constexpr auto get(const ADerived&& t) -> decltype(auto) { return std::move(t).template Get<std::tuple_element_t<I, ADerived>::Name()>(); }
-
-protected:
-    constexpr EnableGet();
-    constexpr ~EnableGet() = default;
-};
-
-} // namespace internal
-
 /// @brief Data model defined tuple.
 template<TupleModelizable... Ts>
-class Tuple : public internal::EnableGet<Tuple<Ts...>> {
+class Tuple {
 public:
     using Model = TupleModel<Ts...>;
 
@@ -207,6 +168,41 @@ public:
     static constexpr auto Size() -> auto { return Model::Size(); }
     static constexpr auto NameVector() -> auto { return Model::NameVector(); }
 
+    template<muc::ceta_string... ANames>
+        requires(sizeof...(ANames) >= 1)
+    friend constexpr auto Get(const Tuple<Ts...>& t) -> decltype(auto) { return t.template Get<ANames...>(); }
+    template<muc::ceta_string... ANames>
+        requires(sizeof...(ANames) >= 1)
+    friend constexpr auto Get(Tuple<Ts...>& t) -> decltype(auto) { return t.template Get<ANames...>(); }
+    template<muc::ceta_string... ANames>
+        requires(sizeof...(ANames) >= 1)
+    friend constexpr auto Get(Tuple<Ts...>&& t) -> decltype(auto) { return std::move(t).template Get<ANames...>(); }
+    template<muc::ceta_string... ANames>
+        requires(sizeof...(ANames) >= 1)
+    friend constexpr auto Get(const Tuple<Ts...>&& t) -> decltype(auto) { return std::move(t).template Get<ANames...>(); }
+
+    template<muc::ceta_string AName, typename T>
+    friend constexpr auto Get(const Tuple<Ts...>& t) -> decltype(auto) { return t.template Get<AName>().template As<T>(); }
+    template<muc::ceta_string AName, typename T>
+    friend constexpr auto Get(Tuple<Ts...>&& t) -> decltype(auto) { return std::move(t).template Get<AName>().template As<T>(); }
+
+    template<gsl::index I>
+    friend constexpr auto get(const Tuple<Ts...>& t) -> decltype(auto) { return t.template Get<std::tuple_element_t<I, Tuple<Ts...>>::Name()>(); }
+    template<gsl::index I>
+    friend constexpr auto get(Tuple<Ts...>& t) -> decltype(auto) { return t.template Get<std::tuple_element_t<I, Tuple<Ts...>>::Name()>(); }
+    template<gsl::index I>
+    friend constexpr auto get(Tuple<Ts...>&& t) -> decltype(auto) { return std::move(t).template Get<std::tuple_element_t<I, Tuple<Ts...>>::Name()>(); }
+    template<gsl::index I>
+    friend constexpr auto get(const Tuple<Ts...>&& t) -> decltype(auto) { return std::move(t).template Get<std::tuple_element_t<I, Tuple<Ts...>>::Name()>(); }
+
+    template<SubTuple<Tuple<Ts...>> ATuple>
+    friend constexpr auto As(const Tuple<Ts...>& t) -> decltype(auto) { return t.template As<ATuple>(); }
+
+    friend auto Visit(const Tuple<Ts...>& t, std::string_view name, auto&& F) -> void { t.template Visit(name, std::forward<decltype(F)>(F)); }
+    friend auto Visit(Tuple<Ts...>& t, std::string_view name, auto&& F) -> void { t.template Visit(name, std::forward<decltype(F)>(F)); }
+    friend auto Visit(Tuple<Ts...>&& t, std::string_view name, auto&& F) -> void { std::move(t).template Visit(name, std::forward<decltype(F)>(F)); }
+    friend auto Visit(const Tuple<Ts...>&& t, std::string_view name, auto&& F) -> void { std::move(t).template Visit(name, std::forward<decltype(F)>(F)); }
+
 private:
     template<gsl::index I>
         requires(0 <= I and I < Model::Size())
@@ -243,10 +239,12 @@ private:
     template<gsl::index L, gsl::index R>
     MUSTARD_ALWAYS_INLINE auto VisitImpl(gsl::index i, auto&& F) const&& -> void;
 
-    static auto DynIndex(std::string_view name) -> gsl::index;
+    MUSTARD_ALWAYS_INLINE static auto DynIndex(std::string_view name) -> gsl::index;
 
 private:
     typename Model::StdTuple fTuple;
+
+    static const muc::flat_hash_map<std::string_view, gsl::index> fgDynIndexMap;
 };
 
 template<typename... Ts>
