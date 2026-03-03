@@ -21,7 +21,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
 
-#include "muc/array"
 #include "muc/math"
 
 #include <cmath>
