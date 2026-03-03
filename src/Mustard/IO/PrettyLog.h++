@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Utility/FunctionAttribute.h++"
-
 #include "mplr/mplr.hpp"
 
 #include <concepts>
