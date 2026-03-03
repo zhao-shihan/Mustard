@@ -72,8 +72,8 @@ struct Line3D {
 /// The helix parametric equations are defined as
 /// @f[
 /// \begin{equation}
-/// x(\phi) = c_x + r \cos\left( \phi + \phi_0 \right) \right) \quad
-/// y(\phi) = c_y + r \sin\left( \phi + \phi_0 \right) \right) \quad
+/// x(\phi) = c_x + r \cos\left( \phi + \phi_0 \right) \quad
+/// y(\phi) = c_y + r \sin\left( \phi + \phi_0 \right) \quad
 /// z(\phi) = z_0 + r \phi \cot\lambda
 /// \end{equation}
 /// @f]
@@ -97,10 +97,10 @@ struct Line3D {
 /// @f]
 struct Helix {
     Point2D center; ///< Transverse center of the helix
-    double radius;  ///< Transverse radius of the helix
-    double phi0;    ///< Azimuthal angle at reference point
+    double radius;  ///< Transverse radius of the helix (0, +inf)
+    double phi0;    ///< Azimuthal angle at reference point (-pi, pi]
     double z0;      ///< z coordinate at reference point
-    double lambda;  ///< Dip angle
+    double lambda;  ///< Dip angle (-pi, pi)\{0}
 
     /// @brief Get point at helix azimuthal angle phi (relative to phi0)
     /// @param phi Helix azimuthal angle (relative to phi0)
