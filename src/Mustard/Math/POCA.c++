@@ -102,15 +102,15 @@ auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
           int nTrialPts, int maxIter, double absTol, double relTol) -> std::optional<HelixPointPOCAResult> {
     using Mustard::MathConstant::pi;
 
-    const auto& [c0, r, phi0, z0, lambda]{helix};
+    const auto& [o, r, phi0, z0, lambda]{helix};
     const auto& t{point};
     if (phiLow >= phiUp) {
         return std::nullopt;
     }
 
     const auto k{1 / std::tan(lambda)}; // can be 0
-    const auto a{(c0.x() - t.x()) / r};
-    const auto b{(c0.y() - t.y()) / r};
+    const auto a{(o.x() - t.x()) / r};
+    const auto b{(o.y() - t.y()) / r};
     const auto c{k * ((z0 - t.z()) / r - k * phi0)};
     const auto d{k * k / 2};
     // 1/2*(d(x)/r)^2 without constant terms; to be minimized (x=phi+phi0)
@@ -165,7 +165,7 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
           int nTrialPts, int maxIter, double absTol, double relTol) -> std::optional<HelixLinePOCAResult> {
     using Mustard::MathConstant::pi;
 
-    const auto& [c, r, phi0, z0, lambda]{helix};
+    const auto& [o, r, phi0, z0, lambda]{helix};
     const auto& [t, originalD]{line};
     if (phiLow >= phiUp) {
         return std::nullopt;
@@ -177,7 +177,7 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
     const auto dydz{d.y() * d.z()};
     const auto dx2{muc::pow(d.x(), 2)};
     const auto dy2{muc::pow(d.y(), 2)};
-    const Point3D xC{c.x(), c.y(), z0};
+    const Point3D xC{o.x(), o.y(), z0};
     const auto tPrime{(t - xC) / r};
     const auto delta{(tPrime.dot(d) * d - tPrime)};
     const auto k{1 / std::tan(lambda)}; // can be 0
@@ -190,17 +190,15 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
     const auto a2{-k * dxdz};
     const auto b2{-k * dydz};
     const auto c2{k * k * (dx2 + dy2) / 2};
-    const auto a1c{a1 * c};
-    const auto b12b0c{b1 + 2 * b0 * c};
-    const auto a2cc1{a2 * c + c1};
     // 1/2*(d(x)/r)^2 without constant terms; to be minimized (x=phi+phi0)
     const ROOT::Math::WrappedFunction reducedSquaredDistance{[&](double x) {
-        const auto [s, c]{muc::sincos(x)};
+        const auto [sinx, cosx]{muc::sincos(x)};
         //>  a0 cos(2x) + b0 sin(2x) +
         //>  a1 cos(x) + b1 sin(x) + c1 x +
         //> (a2 cos(x) + b2 sin(x) + c2 x) x
-        return a1c + b12b0c * s + a0 * (c - s) * (c + s) +
-               (a2cc1 + b2 * s + c2 * x) * x;
+        return a0 * (cosx - sinx) * (cosx + sinx) +
+               a1 * cosx + (b1 + 2 * b0 * cosx) * sinx +
+               (a2 * cosx + b2 * sinx + c2 * x + c1) * x;
     }};
     // define interval
     const auto x1{phiLow + phi0};
