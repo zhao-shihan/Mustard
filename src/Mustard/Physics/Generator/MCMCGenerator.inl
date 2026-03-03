@@ -303,7 +303,7 @@ auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStat
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& pI) -> void {
     if constexpr (M == 1) {
-        if (pI.isNear(Base::ISMomenta(), muc::default_rel_tol<double>)) {
+        if (not pI.isNear(Base::ISMomenta(), muc::default_rel_tol<double>)) {
             MCMCInitializeRequired();
         }
     } else {
