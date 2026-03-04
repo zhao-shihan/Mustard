@@ -26,7 +26,7 @@
 #include <random>
 #include <type_traits>
 
-namespace Mustard::Math::Random {
+namespace Mustard::inline Math::Random {
 
 /// @brief Concept of uniform pseudo random bit generator.
 template<typename G>
@@ -59,4 +59,4 @@ concept UniformPseudoRandomBitGenerator = requires(G& g) {
     requires muc::stream_ioable<G>;
 };
 
-} // namespace Mustard::Math::Random
+} // namespace Mustard::inline Math::Random

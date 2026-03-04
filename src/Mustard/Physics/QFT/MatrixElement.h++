@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "CLHEP/Vector/LorentzVector.h"
+#include "Mustard/Math/Vector.h++"
 
 #include <array>
 #include <type_traits>
@@ -37,10 +37,9 @@ template<int M, int N>
 class MatrixElement {
 public:
     /// @brief Initial state momentum(a) type
-    using InitialStateMomenta = std::conditional_t<M == 1, CLHEP::HepLorentzVector,
-                                                   std::array<CLHEP::HepLorentzVector, M>>;
+    using InitialStateMomenta = std::conditional_t<M == 1, VectorLor, std::array<VectorLor, M>>;
     /// @brief Final state momenta type
-    using FinalStateMomenta = std::array<CLHEP::HepLorentzVector, N>;
+    using FinalStateMomenta = std::array<VectorLor, N>;
 
 public:
     virtual ~MatrixElement() = default;

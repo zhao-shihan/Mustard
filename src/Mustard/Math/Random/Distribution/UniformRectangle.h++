@@ -31,7 +31,7 @@
 #include <iomanip>
 #include <type_traits>
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -155,4 +155,4 @@ public:
 template<typename T, typename U>
 UniformIntegerRectangle(std::initializer_list<T>, std::initializer_list<U>) -> UniformIntegerRectangle<std::array<std::common_type_t<T, U>, 2>>;
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution

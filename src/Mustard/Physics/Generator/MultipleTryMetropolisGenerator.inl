@@ -31,7 +31,7 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const In
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, Vector3D polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                                                         std::optional<double> stepSize) // clang-format off
@@ -45,7 +45,7 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const In
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                         std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                                                         std::optional<double> stepSize) // clang-format off

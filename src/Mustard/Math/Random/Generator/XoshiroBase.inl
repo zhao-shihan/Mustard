@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 template<typename ADerived, std::size_t NBit>
     requires(NBit % 64 == 0)
@@ -44,4 +44,4 @@ constexpr auto XoshiroBase<ADerived, NBit>::Seed(std::uint64_t seed) -> void {
     static_cast<ADerived*>(this)->Step();
 }
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator

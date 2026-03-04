@@ -21,7 +21,7 @@
 #include "Mustard/Math/Random/Generator/Xoshiro256Base.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 class Xoshiro256Plus final : public Xoshiro256Base<Xoshiro256Plus> {
 public:
@@ -31,6 +31,6 @@ public:
     MUSTARD_ALWAYS_INLINE constexpr auto operator()() -> ResultType;
 };
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator
 
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.inl"

@@ -22,7 +22,7 @@
 #include <random>
 #include <type_traits>
 
-namespace Mustard::Math::Random {
+namespace Mustard::inline Math::Random {
 
 /// @brief Concept of uniform random bit generator.
 template<typename G>
@@ -45,4 +45,4 @@ concept UniformRandomBitGenerator = requires(G g) {
     requires std::default_initializable<G>;
 };
 
-} // namespace Mustard::Math::Random
+} // namespace Mustard::inline Math::Random

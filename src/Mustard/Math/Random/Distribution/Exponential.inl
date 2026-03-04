@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -69,4 +69,4 @@ MUSTARD_ALWAYS_INLINE constexpr auto ExponentialFast<T>::Impl(auto& g, const Exp
     MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
 }
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution

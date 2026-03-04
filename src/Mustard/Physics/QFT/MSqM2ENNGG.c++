@@ -16,11 +16,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/QFT/MSqM2ENNGG.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
-
-#include "CLHEP/Vector/LorentzVector.h"
 
 #include "muc/math"
 
@@ -62,8 +61,8 @@ auto MSqM2ENNGG::operator()(const InitialStateMomenta& pI, const FinalStateMomen
 
     auto pm2ennggav{Unpolarized(mm2, me2, s12, s15, s16, s25, s26, s56,
                                 den1, den2, den3, den4, den5, den6)};
-    if (InitialStatePolarization() != CLHEP::Hep3Vector{}) {
-        const CLHEP::HepLorentzVector pol1{InitialStatePolarization()};
+    if (InitialStatePolarization() != Vector3D{}) {
+        const VectorLor pol1{InitialStatePolarization()};
         pm2ennggav += s(pol1, p2) * PolarizedS2n(mm2, me2, s12, s15, s16, s25, s26, s56,
                                                  den1, den2, den3, den4, den5, den6);
         pm2ennggav += s(pol1, p5) * PolarizedS5n(mm2, me2, s12, s15, s16, s25, s26, s56,

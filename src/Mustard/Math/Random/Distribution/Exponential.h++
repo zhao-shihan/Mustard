@@ -32,7 +32,7 @@
 #include <iomanip>
 #include <limits>
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -166,6 +166,6 @@ private:
 template<typename T>
 ExponentialFast(T) -> ExponentialFast<T>;
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution
 
 #include "Mustard/Math/Random/Distribution/Exponential.inl"

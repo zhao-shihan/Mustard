@@ -31,7 +31,7 @@
 #include <random>
 #include <type_traits>
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -184,6 +184,6 @@ public:
 template<typename T, typename U>
 UniformInteger(T, U) -> UniformInteger<std::common_type_t<T, U>>;
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution
 
 #include "Mustard/Math/Random/Distribution/Uniform.inl"

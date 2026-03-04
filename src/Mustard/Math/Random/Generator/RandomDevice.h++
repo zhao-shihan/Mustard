@@ -22,7 +22,7 @@
 
 #include <random>
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 class RandomDevice final : public UniformRandomBitGeneratorBase<RandomDevice,
                                                                 std::random_device::result_type> {
@@ -40,4 +40,4 @@ private:
     std::random_device fRD;
 };
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator

@@ -26,8 +26,8 @@
 using namespace Mustard;
 
 int main(int, char* argv[]) {
-    Math::Random::Xoshiro256Plus rng;
-    // Math::Random::MT1993732 rng;
+    Random::Xoshiro256Plus rng;
+    // Random::MT1993732 rng;
 
     using RNG = decltype(rng);
 
@@ -44,31 +44,31 @@ int main(int, char* argv[]) {
             std::cout << a << std::endl;
             throw "Failed";
         }
-        a = Math::Random::Uniform<double>()(rng);
+        a = Random::Uniform<double>()(rng);
     }
-    Math::Random::Uniform<double>().Reset();
+    Random::Uniform<double>().Reset();
     std::cout << a << std::endl;
 
     return 0;
 }
 
-static_assert(Math::Random::STDRandomNumberDistribution<std::uniform_int_distribution<int>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::uniform_real_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::bernoulli_distribution>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::binomial_distribution<int>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::negative_binomial_distribution<int>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::geometric_distribution<int>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::poisson_distribution<int>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::exponential_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::gamma_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::weibull_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::extreme_value_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::normal_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::lognormal_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::chi_squared_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::cauchy_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::fisher_f_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::student_t_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::discrete_distribution<int>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::piecewise_constant_distribution<double>>);
-static_assert(Math::Random::STDRandomNumberDistribution<std::piecewise_linear_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::uniform_int_distribution<int>>);
+static_assert(Random::STDRandomNumberDistribution<std::uniform_real_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::bernoulli_distribution>);
+static_assert(Random::STDRandomNumberDistribution<std::binomial_distribution<int>>);
+static_assert(Random::STDRandomNumberDistribution<std::negative_binomial_distribution<int>>);
+static_assert(Random::STDRandomNumberDistribution<std::geometric_distribution<int>>);
+static_assert(Random::STDRandomNumberDistribution<std::poisson_distribution<int>>);
+static_assert(Random::STDRandomNumberDistribution<std::exponential_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::gamma_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::weibull_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::extreme_value_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::normal_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::lognormal_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::chi_squared_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::cauchy_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::fisher_f_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::student_t_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::discrete_distribution<int>>);
+static_assert(Random::STDRandomNumberDistribution<std::piecewise_constant_distribution<double>>);
+static_assert(Random::STDRandomNumberDistribution<std::piecewise_linear_distribution<double>>);

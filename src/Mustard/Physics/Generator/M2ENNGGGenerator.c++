@@ -32,7 +32,7 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization, double irCut,
+M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization, double irCut,
                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                    std::optional<double> stepSize) :
     MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(200000), stepSize.value_or(0.1)} {
@@ -53,7 +53,7 @@ auto M2ENNGGGenerator::Parent(std::string_view parent) -> void {
     }
 }
 
-auto M2ENNGGGenerator::ParentMomentum(CLHEP::Hep3Vector momentum) -> void {
+auto M2ENNGGGenerator::ParentMomentum(Vector3D momentum) -> void {
     const auto energy{std::sqrt(momentum.mag2() + muc::pow(muon_mass_c2, 2))};
     ISMomenta({energy, momentum});
 }

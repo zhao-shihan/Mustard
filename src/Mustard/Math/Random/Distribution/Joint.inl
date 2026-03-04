@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -153,4 +153,4 @@ auto JointInterface<ADerived, AParameter, T, Ds...>::StreamInput(std::basic_istr
     }(gslx::index_sequence_for<Ds...>());
 }
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution

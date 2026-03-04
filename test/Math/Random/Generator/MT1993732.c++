@@ -32,7 +32,7 @@ using namespace Mustard;
 
 int main() {
     std::mt19937 stdMT1993732;
-    Math::Random::MT1993732 mt1993732;
+    Random::MT1993732 mt1993732;
 
     std::cout << "Simply generate 10 million integers:" << std::endl;
 

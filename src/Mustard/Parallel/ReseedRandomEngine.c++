@@ -65,9 +65,9 @@ auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
     const auto worldComm{mplr::comm_world()};
     Expects(worldComm.rank() == 0);
 
-    static_assert(std::same_as<Math::Random::Xoshiro256PlusPlus::SeedType, std::uint64_t>);
-    Math::Random::Xoshiro256PlusPlus xsr256{std::bit_cast<std::uint64_t>(xsr256Seed)};
-    Math::Random::Uniform<T> uniform{1, std::numeric_limits<T>::max() - 1}; // not 0x00...00 and not 0xff...ff
+    static_assert(std::same_as<Random::Xoshiro256PlusPlus::SeedType, std::uint64_t>);
+    Random::Xoshiro256PlusPlus xsr256{std::bit_cast<std::uint64_t>(xsr256Seed)};
+    Random::Uniform<T> uniform{1, std::numeric_limits<T>::max() - 1}; // not 0x00...00 and not 0xff...ff
 
     muc::flat_hash_set<T> uniqueSeeds;
     const auto worldSize{worldComm.size()};

@@ -28,7 +28,7 @@
 #include <limits>
 #include <ostream>
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 class SplitMix64 final : public UniformPseudoRandomBitGeneratorBase<SplitMix64,
                                                                     std::uint64_t,
@@ -52,6 +52,6 @@ private:
     ResultType fState;
 };
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator
 
 #include "Mustard/Math/Random/Generator/SplitMix64.inl"

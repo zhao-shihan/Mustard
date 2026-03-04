@@ -23,7 +23,7 @@
 
 #include <bit>
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 class Xoshiro256StarStar final : public Xoshiro256Base<Xoshiro256StarStar> {
 public:
@@ -33,6 +33,6 @@ public:
     MUSTARD_ALWAYS_INLINE constexpr auto operator()() -> ResultType;
 };
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator
 
 #include "Mustard/Math/Random/Generator/Xoshiro256StarStar.inl"

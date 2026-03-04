@@ -19,9 +19,8 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
-
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include "fmt/core.h"
 
@@ -44,7 +43,7 @@ public:
     PolarizedMatrixElement() = default;
     /// @brief Construct with initial polarization array
     /// @param pol Array of polarization vectors for each initial particle (all |p| ≤ 1)
-    PolarizedMatrixElement(const std::array<CLHEP::Hep3Vector, M>& pol);
+    PolarizedMatrixElement(const std::array<Vector3D, M>& pol);
 
     /// @brief Get polarization vector for single initial particle
     /// @param i Particle index (0 ≤ i < M)
@@ -55,13 +54,13 @@ public:
     /// @brief Set polarization for single initial particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|p| ≤ 1)
-    auto InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void;
+    auto InitialStatePolarization(int i, Vector3D pol) -> void;
     /// @brief Set all polarization vectors
     /// @param pol Array of polarization vectors for each initial particle (all |p| ≤ 1)
-    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void;
+    auto InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void;
 
 private:
-    std::array<CLHEP::Hep3Vector, M> fInitialStatePolarization; ///< Polarization storage
+    std::array<Vector3D, M> fInitialStatePolarization; ///< Polarization storage
 };
 
 /// @class PolarizedMatrixElement<1, N>
@@ -77,16 +76,16 @@ public:
     PolarizedMatrixElement() = default;
     /// @brief Construct with polarization vector
     /// @param pol Polarization vector (|p| ≤ 1)
-    PolarizedMatrixElement(CLHEP::Hep3Vector pol);
+    PolarizedMatrixElement(Vector3D pol);
 
     /// @brief Get polarization vector
     auto InitialStatePolarization() const -> auto { return fInitialStatePolarization; }
     /// @brief Set polarization vector
     /// @param pol Polarization vector (|p| ≤ 1)
-    auto InitialStatePolarization(CLHEP::Hep3Vector pol) -> void;
+    auto InitialStatePolarization(Vector3D pol) -> void;
 
 private:
-    CLHEP::Hep3Vector fInitialStatePolarization;
+    Vector3D fInitialStatePolarization;
 };
 
 } // namespace Mustard::inline Physics::QFT

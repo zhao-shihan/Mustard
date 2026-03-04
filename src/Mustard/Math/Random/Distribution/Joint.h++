@@ -35,7 +35,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -175,6 +175,6 @@ Joint(Ps...) -> Joint<std::array<std::common_type_t<typename Ps::DistributionTyp
 template<typename... Ds>
 Joint(JointParameter<Ds...>) -> Joint<std::array<std::common_type_t<typename Ds::ResultType...>, sizeof...(Ds)>, Ds...>;
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution
 
 #include "Mustard/Math/Random/Distribution/Joint.inl"

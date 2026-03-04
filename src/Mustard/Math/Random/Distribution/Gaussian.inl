@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -74,4 +74,4 @@ MUSTARD_ALWAYS_INLINE auto GaussianFast<T>::Impl(auto& g, const GaussianFastPara
 
 #undef MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution

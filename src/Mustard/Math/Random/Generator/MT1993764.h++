@@ -24,7 +24,7 @@
 
 #include <random>
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 class MT1993764 final : public UniformPseudoRandomBitGeneratorBase<MT1993764,
                                                                    std::mt19937_64::result_type,
@@ -48,6 +48,6 @@ private:
     std::mt19937_64 fMT;
 };
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator
 
 #include "Mustard/Math/Random/Generator/MT1993764.inl"

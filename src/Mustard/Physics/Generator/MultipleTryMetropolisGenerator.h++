@@ -88,7 +88,7 @@ public:
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
-    MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+    MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, Vector3D polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                    std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                                    std::optional<double> stepSize = {})
@@ -102,7 +102,7 @@ public:
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized scattering
-    MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+    MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                    std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                                    std::optional<double> stepSize = {})
@@ -125,8 +125,8 @@ private:
     virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override;
 
 private:
-    Math::Random::Gaussian<double> fGaussian; ///< Gaussian distribution
-    double fStepSize;                         ///< Step scale along one direction in random state space
+    Random::Gaussian<double> fGaussian; ///< Gaussian distribution
+    double fStepSize;                   ///< Step scale along one direction in random state space
 
     static constexpr auto fgNTrial{5};                                            ///< Number of trial points
     static inline const auto fgScalingFactor{3.12 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor. Ref: of M. B´edard et al. SPA 122 (2012) 758–786, https://doi.org/10.1016/j.spa.2011.11.004

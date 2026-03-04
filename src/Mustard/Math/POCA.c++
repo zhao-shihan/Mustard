@@ -27,7 +27,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace Mustard::Math {
+namespace Mustard::inline Math {
 
 auto POCA(const Line3D& line, const Point3D& point) -> LinePoint3DPOCAResult {
     const auto& [x1, d1]{line};
@@ -252,4 +252,4 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
     return HelixLinePOCAResult{poca1, poca2, doca};
 }
 
-} // namespace Mustard::Math
+} // namespace Mustard::inline Math

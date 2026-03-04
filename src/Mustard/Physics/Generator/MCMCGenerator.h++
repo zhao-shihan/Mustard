@@ -20,6 +20,7 @@
 
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Physics/Generator/MatrixElementBasedGenerator.h++"
@@ -29,7 +30,6 @@
 
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include "Eigen/Dense"
 
@@ -124,7 +124,7 @@ public:
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
-    MCMCGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+    MCMCGenerator(const InitialStateMomenta& pI, Vector3D polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
@@ -136,43 +136,43 @@ public:
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized scattering
-    MCMCGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+    MCMCGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Get polarization vector
     /// @note This overload is only enabled for polarized decay
-    auto InitialStatePolarization() const -> CLHEP::Hep3Vector
+    auto InitialStatePolarization() const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Get polarization vector
     /// @param i Particle index (0 ≤ i < M)
     /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
+    auto InitialStatePolarization(int i) const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
     /// @brief Get all polarization vectors
     /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
+    auto InitialStatePolarization() const -> const std::array<Vector3D, M>&
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set polarization vector
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note This overload is only enabled for polarized decay
     /// @warning The Markov chain requires reinitialize if value changes
-    auto InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
+    auto InitialStatePolarization(Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Set polarization for single initial particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note This overload is only enabled for polarized scattering
     /// @warning The Markov chain requires reinitialize if value changes
-    auto InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
+    auto InitialStatePolarization(int i, Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
     /// @brief Set all polarization vectors
     /// @param pol Array of polarization vectors for each initial particle (all |pol| ≤ 1)
     /// @note This overload is only enabled for polarized scattering
     /// @warning The Markov chain requires reinitialize if value changes
-    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
+    auto InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set user-defined acceptance function in PDF (PDF = |M|² × acceptance)
@@ -250,12 +250,12 @@ private:
     virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool = 0;
 
 protected:
-    double fThinningRatio;                       ///< User-defined thinning ratio
-    unsigned fACFSampleSize;                     ///< Sample size for estimating ACF
-                                                 //
-    bool fMCMCInitialized;                       ///< Initialization completed flag
-    unsigned fThinningSize;                      ///< Samples discarded between two generated
-    MarkovChain fMC;                             ///< Current Markov chain state
+    double fThinningRatio;   ///< User-defined thinning ratio
+    unsigned fACFSampleSize; ///< Sample size for estimating ACF
+                             //
+    bool fMCMCInitialized;   ///< Initialization completed flag
+    unsigned fThinningSize;  ///< Samples discarded between two generated
+    MarkovChain fMC;         ///< Current Markov chain state
 
     static constexpr auto fgDefaultInvalidACFSampleSize{static_cast<decltype(fACFSampleSize)>(-1)};
 };

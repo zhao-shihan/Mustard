@@ -30,8 +30,8 @@
 using namespace Mustard;
 
 int main() {
-    Math::Random::Xoshiro256StarStar xoshiro256SS(0x123456);
-    CLHEPX::Random::Wrap<Math::Random::Xoshiro256StarStar> xoshiro256SSX(0x123456);
+    Random::Xoshiro256StarStar xoshiro256SS(0x123456);
+    CLHEPX::Random::Wrap<Random::Xoshiro256StarStar> xoshiro256SSX(0x123456);
 
     std::cout << "Simply generate 10 million integers:" << std::endl;
 
@@ -61,14 +61,14 @@ int main() {
     Eigen::RowVector2d delta2d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS)};
+        delta2d = {Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS)};
         v2d += delta2d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS)};
+        delta2d = {Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS)};
         v2d += delta2d;
     }
     time = stopwatch.read();
@@ -94,16 +94,16 @@ int main() {
     Eigen::RowVector3d delta3d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS)};
+        delta3d = {Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS)};
         v3d += delta3d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS)};
+        delta3d = {Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS)};
         v3d += delta3d;
     }
     time = stopwatch.read();
@@ -131,18 +131,18 @@ int main() {
     Eigen::RowVector4d delta4d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS)};
+        delta4d = {Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS)};
         v4d += delta4d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS),
-                   Math::Random::Uniform<double>()(xoshiro256SS)};
+        delta4d = {Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS),
+                   Random::Uniform<double>()(xoshiro256SS)};
         v4d += delta4d;
     }
     time = stopwatch.read();

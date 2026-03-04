@@ -18,10 +18,9 @@
 
 #pragma once
 
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.h++"
 #include "Mustard/Physics/QFT/MSqM2ENNEE.h++"
-
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include <optional>
 #include <string_view>
@@ -42,7 +41,7 @@ public:
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @param mSqVer The matrix element version
-    M2ENNEEGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization,
+    M2ENNEEGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
                      std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                      std::optional<double> stepSize = {}, std::optional<QFT::MSqM2ENNEE::Ver> mSqVer = {});
 
@@ -56,7 +55,7 @@ public:
     auto Parent(std::string_view parent) -> void;
     /// @brief Set parent momentum
     /// @param momentum Muon momentum
-    auto ParentMomentum(CLHEP::Hep3Vector momentum) -> void;
+    auto ParentMomentum(Vector3D momentum) -> void;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

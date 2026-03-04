@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/Generator/MCMCGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Utility/VectorAssign.h++"
@@ -87,7 +88,7 @@ public:
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
-    AdaptiveMTMGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+    AdaptiveMTMGenerator(const InitialStateMomenta& pI, Vector3D polarization,
                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                          std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
@@ -99,7 +100,7 @@ public:
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized scattering
-    AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+    AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                          std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
@@ -124,7 +125,7 @@ private:
     auto NextEventImpl(CLHEP::HepRandomEngine& rng, double burnInStepSize = 0) -> bool;
 
 private:
-    Math::Random::Gaussian<double> fGaussian;                                      ///< Gaussian distribution
+    Random::Gaussian<double> fGaussian;                                            ///< Gaussian distribution
     unsigned long long fIteration;                                                 ///< Current iteration count
     double fLearningRate;                                                          ///< Learning rate for adaptation
     Eigen::Vector<double, MarkovChain::dim> fRunningMean;                          ///< Running mean of states

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -109,4 +109,4 @@ MUSTARD_ALWAYS_INLINE constexpr auto UniformDisk<T>::Impl(auto& g, const Uniform
 
 #undef MUSTARD_MATH_RANDOM_DISTRIBUTION_UNIFORM_DISK_GENERATOR
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution

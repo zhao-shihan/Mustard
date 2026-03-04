@@ -16,10 +16,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 MT1993732::MT1993732(MT1993732::SeedType seed) :
     UniformPseudoRandomBitGeneratorBase{},
     fMT{seed} {}
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator

@@ -28,7 +28,7 @@
 #include <ostream>
 #include <type_traits>
 
-namespace Mustard::Math::Random {
+namespace Mustard::inline Math::Random {
 
 /// @brief Sub-requirements on D::param_type of RandomNumberDistribution (a C++
 /// named requirements).
@@ -288,4 +288,4 @@ concept RandomNumberDistribution = requires(D d, const D x) {
     requires not std::convertible_to<typename D::ParameterType, D>;
 };
 
-} // namespace Mustard::Math::Random
+} // namespace Mustard::inline Math::Random
