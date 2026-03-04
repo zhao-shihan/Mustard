@@ -54,7 +54,7 @@ public:
 
     /// @brief Generate uniform double in [0,1) (ROOT interface requirement)
     /// @return Random double value in unit interval
-    auto Rndm() -> double override { Mustard::Random::Uniform<double>{}(fPRBG); }
+    auto Rndm() -> double override { return Mustard::Random::Uniform<double>{}(fPRBG); }
 
     /// @brief Functor interface equivalent to Rndm()
     auto operator()() -> auto { return Rndm(); }
