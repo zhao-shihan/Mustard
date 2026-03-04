@@ -198,10 +198,10 @@ public:
     template<SubTuple<Tuple<Ts...>> ATuple>
     friend constexpr auto As(const Tuple<Ts...>& t) -> decltype(auto) { return t.template As<ATuple>(); }
 
-    friend auto Visit(const Tuple<Ts...>& t, std::string_view name, auto&& F) -> void { t.template Visit(name, std::forward<decltype(F)>(F)); }
-    friend auto Visit(Tuple<Ts...>& t, std::string_view name, auto&& F) -> void { t.template Visit(name, std::forward<decltype(F)>(F)); }
-    friend auto Visit(Tuple<Ts...>&& t, std::string_view name, auto&& F) -> void { std::move(t).template Visit(name, std::forward<decltype(F)>(F)); }
-    friend auto Visit(const Tuple<Ts...>&& t, std::string_view name, auto&& F) -> void { std::move(t).template Visit(name, std::forward<decltype(F)>(F)); }
+    friend auto Visit(const Tuple<Ts...>& t, std::string_view name, auto&& F) -> void { t.Visit(name, std::forward<decltype(F)>(F)); }
+    friend auto Visit(Tuple<Ts...>& t, std::string_view name, auto&& F) -> void { t.Visit(name, std::forward<decltype(F)>(F)); }
+    friend auto Visit(Tuple<Ts...>&& t, std::string_view name, auto&& F) -> void { std::move(t).Visit(name, std::forward<decltype(F)>(F)); }
+    friend auto Visit(const Tuple<Ts...>&& t, std::string_view name, auto&& F) -> void { std::move(t).Visit(name, std::forward<decltype(F)>(F)); }
 
 private:
     template<gsl::index I>
