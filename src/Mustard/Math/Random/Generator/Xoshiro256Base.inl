@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 template<typename ADerived>
 constexpr Xoshiro256Base<ADerived>::Xoshiro256Base() : // clang-format off
@@ -63,4 +63,4 @@ auto Xoshiro256Base<ADerived>::StreamInput(std::basic_istream<AChar>& is) & -> d
               >> this->fState[3]; // clang-format on
 }
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator

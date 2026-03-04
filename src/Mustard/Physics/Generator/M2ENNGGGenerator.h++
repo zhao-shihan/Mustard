@@ -18,10 +18,9 @@
 
 #pragma once
 
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/Generator/MultipleTryMetropolisGenerator.h++"
 #include "Mustard/Physics/QFT/MSqM2ENNGG.h++"
-
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include <optional>
 #include <string_view>
@@ -42,7 +41,7 @@ public:
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
-    M2ENNGGGenerator(std::string_view parent, CLHEP::Hep3Vector momentum, CLHEP::Hep3Vector polarization, double irCut,
+    M2ENNGGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization, double irCut,
                      std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                      std::optional<double> stepSize = {});
 
@@ -52,7 +51,7 @@ public:
     auto Parent(std::string_view parent) -> void;
     /// @brief Set parent momentum
     /// @param momentum Muon momentum
-    auto ParentMomentum(CLHEP::Hep3Vector momentum) -> void;
+    auto ParentMomentum(Vector3D momentum) -> void;
     /// @brief Set IR cut for final-state photons
     /// @param irCut IR cut for final-state photons
     auto IRCut(double irCut) -> void;

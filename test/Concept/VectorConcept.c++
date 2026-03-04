@@ -16,10 +16,7 @@
 
 #include "Mustard/Concept/MathVector.h++"
 #include "Mustard/Concept/NumericVector.h++"
-
-#include "CLHEP/Vector/LorentzVector.h"
-#include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/TwoVector.h"
+#include "Mustard/Math/Vector.h++"
 
 #if __has_include("TEveVector.h")
 #    include "TEveVector.h"
@@ -84,9 +81,9 @@ static_assert(MathVector<Eigen::Vector2d, double, 2>);
 static_assert(MathVector<Eigen::Vector3d, double, 3>);
 static_assert(MathVector<Eigen::Vector4d, double, 4>);
 
-static_assert(MathVector<CLHEP::Hep2Vector, double, 2>);
-static_assert(MathVector<CLHEP::Hep3Vector, double, 3>);
-static_assert(MathVector<CLHEP::HepLorentzVector, double, 4>);
+static_assert(MathVector<Mustard::Vector2D, double, 2>);
+static_assert(MathVector<Mustard::Vector3D, double, 3>);
+static_assert(MathVector<Mustard::VectorLor, double, 4>);
 
 #if __has_include("TEveVector.h")
 static_assert(not MathVector<TEveVector2D, double, 2>);

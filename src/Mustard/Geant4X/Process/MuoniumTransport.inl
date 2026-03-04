@@ -127,8 +127,8 @@ auto MuoniumTransport<ATarget>::ProposeRandomFlight(const G4Track& track) -> voi
     fXoshiro256Plus.Seed(G4Random::getTheEngine()->operator unsigned int());
     do {
         // set free path
-        static_assert(Math::Random::ExponentialFast<double>::Stateless());
-        freePath = Math::Random::ExponentialFast{meanFreePath}(fXoshiro256Plus);
+        static_assert(Random::ExponentialFast<double>::Stateless());
+        freePath = Random::ExponentialFast{meanFreePath}(fXoshiro256Plus);
         // update flight length
         trueStepLength += freePath;
         // update time

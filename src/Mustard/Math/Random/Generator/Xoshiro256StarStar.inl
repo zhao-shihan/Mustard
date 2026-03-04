@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 constexpr Xoshiro256StarStar::Xoshiro256StarStar(Xoshiro256StarStar::SeedType seed) :
     Xoshiro256Base{seed} {}
@@ -27,4 +27,4 @@ MUSTARD_ALWAYS_INLINE constexpr auto Xoshiro256StarStar::operator()() -> Xoshiro
     return result;
 }
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator

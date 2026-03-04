@@ -46,7 +46,7 @@ namespace Mustard::CLHEPX::Random {
 /// UniformPseudoRandomBitGenerator.
 ///
 /// @tparam PRBG Mustard UniformPseudoRandomBitGenerator type to wrap
-///   - Must satisfy Mustard::Math::Random::UniformPseudoRandomBitGenerator
+///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator
 ///
 /// @note Implements all CLHEP engine virtual methods except getState()
 /// @warning getState() is intentionally non-functional

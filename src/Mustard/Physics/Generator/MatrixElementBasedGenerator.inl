@@ -35,7 +35,7 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, Vector3D polarization,
                                                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     MatrixElementBasedGenerator{pI, pdgID, mass} {
@@ -43,7 +43,7 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
                                                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
     MatrixElementBasedGenerator{pI, pdgID, mass} {
@@ -52,8 +52,8 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
-                                                              Math::MCIntegrationState integrationState,
-                                                              CLHEP::HepRandomEngine& rng) -> std::tuple<Math::Estimate, double, Math::MCIntegrationState> {
+                                                              MCIntegrationState integrationState,
+                                                              CLHEP::HepRandomEngine& rng) -> std::tuple<Estimate, double, MCIntegrationState> {
     MasterPrint("Integrate |M|^2 x (Acceptance) on phase space in {}.\n"
                 "\n",
                 muc::try_demangle(typeid(*this).name()));
@@ -103,37 +103,37 @@ auto MatrixElementBasedGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& 
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization() const -> CLHEP::Hep3Vector
+auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization() const -> Vector3D
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
     return fMatrixElement.InitialStatePolarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
+auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(int i) const -> Vector3D
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     return fMatrixElement.InitialStatePolarization(i);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
+auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization() const -> const std::array<Vector3D, M>&
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     return fMatrixElement.InitialStatePolarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
+auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
     fMatrixElement.InitialStatePolarization(pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
+auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(int i, Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     fMatrixElement.InitialStatePolarization(i, pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
+auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
     fMatrixElement.InitialStatePolarization(pol);
 }
@@ -259,7 +259,7 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidMSqAcceptanceDetJ(const FinalSta
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                                                     Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Math::Estimate, double> {
+                                                     MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Estimate, double> {
     if (precisionGoal <= 0) [[unlikely]] {
         Mustard::PrintWarning(fmt::format("Non-positive precision goal (got {}), taking its absolute value", precisionGoal));
         precisionGoal = std::abs(precisionGoal);
@@ -288,7 +288,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         }
         state.sum += sum;
         state.n += nSample;
-        Math::Estimate integral;
+        Estimate integral;
         integral.value = state.sum[0] / state.n;
         integral.uncertainty = std::sqrt((state.sum[1] / state.n - muc::pow(integral.value, 2)) / state.n);
         const auto nEff{muc::pow(state.sum[0], 2) / state.sum[1]};

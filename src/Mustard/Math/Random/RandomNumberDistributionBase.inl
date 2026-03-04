@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random {
+namespace Mustard::inline Math::Random {
 
 template<typename ADerived, typename ADistribution>
 constexpr DistributionParameterBase<ADerived, ADistribution>::DistributionParameterBase() {
@@ -31,4 +31,4 @@ constexpr RandomNumberDistributionBase<ADerived, AParameter, T>::RandomNumberDis
     static_assert(std::is_final_v<ADerived>);
 }
 
-} // namespace Mustard::Math::Random
+} // namespace Mustard::inline Math::Random

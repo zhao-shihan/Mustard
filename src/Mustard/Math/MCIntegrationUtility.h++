@@ -22,7 +22,7 @@
 
 #include "muc/array"
 
-namespace Mustard::Math {
+namespace Mustard::inline Math {
 
 /// @brief Monte Carlo integration internal state
 struct MCIntegrationState {
@@ -30,4 +30,4 @@ struct MCIntegrationState {
     unsigned long long n; ///< Sample size
 };
 
-} // namespace Mustard::Math
+} // namespace Mustard::inline Math

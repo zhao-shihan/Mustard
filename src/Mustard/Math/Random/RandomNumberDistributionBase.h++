@@ -23,7 +23,7 @@
 
 #include <type_traits>
 
-namespace Mustard::Math::Random {
+namespace Mustard::inline Math::Random {
 
 template<typename ADerived, typename ADistribution>
 class DistributionParameterBase {
@@ -65,6 +65,6 @@ public:
     constexpr auto operator<=>(const RandomNumberDistributionBase&) const -> auto = delete;
 };
 
-} // namespace Mustard::Math::Random
+} // namespace Mustard::inline Math::Random
 
 #include "Mustard/Math/Random/RandomNumberDistributionBase.inl"

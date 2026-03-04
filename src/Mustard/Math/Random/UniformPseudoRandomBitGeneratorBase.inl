@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random {
+namespace Mustard::inline Math::Random {
 
 template<typename ADerived, std::unsigned_integral AResult, std::unsigned_integral ASeed>
 constexpr UniformPseudoRandomBitGeneratorBase<ADerived, AResult, ASeed>::UniformPseudoRandomBitGeneratorBase() :
@@ -25,4 +25,4 @@ constexpr UniformPseudoRandomBitGeneratorBase<ADerived, AResult, ASeed>::Uniform
     static_assert(std::is_final_v<ADerived>);
 }
 
-} // namespace Mustard::Math::Random
+} // namespace Mustard::inline Math::Random

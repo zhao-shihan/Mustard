@@ -30,7 +30,7 @@
 using namespace Mustard;
 
 int main() {
-    Math::Random::MT1993732 mt32{0x123456};
+    Random::MT1993732 mt32{0x123456};
     CLHEPX::Random::MT1993732 mt32x{0x123456};
 
     std::cout << "Simply generate 10 million integers:" << std::endl;
@@ -61,14 +61,14 @@ int main() {
     Eigen::RowVector2d delta2d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32)};
+        delta2d = {Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32)};
         v2d += delta2d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32)};
+        delta2d = {Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32)};
         v2d += delta2d;
     }
     time = stopwatch.read();
@@ -94,16 +94,16 @@ int main() {
     Eigen::RowVector3d delta3d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32)};
+        delta3d = {Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32)};
         v3d += delta3d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32)};
+        delta3d = {Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32)};
         v3d += delta3d;
     }
     time = stopwatch.read();
@@ -131,18 +131,18 @@ int main() {
     Eigen::RowVector4d delta4d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32)};
+        delta4d = {Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32)};
         v4d += delta4d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32),
-                   Math::Random::Uniform<double>()(mt32)};
+        delta4d = {Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32),
+                   Random::Uniform<double>()(mt32)};
         v4d += delta4d;
     }
     time = stopwatch.read();

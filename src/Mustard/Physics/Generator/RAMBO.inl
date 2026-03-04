@@ -76,7 +76,7 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
     const auto Result{[&] {
         Event event{.weight = std::exp(wt), .pdgID = this->fPDGID, .p = {}};
         std::ranges::transform(p, event.p.begin(), [](auto&& p) {
-            return CLHEP::HepLorentzVector{p[1], p[2], p[3], p[0]};
+            return VectorLor{p[1], p[2], p[3], p[0]};
         });
         this->BoostToLabFrame(beta, event.p);
         return event;

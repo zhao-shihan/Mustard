@@ -24,7 +24,7 @@
 #include <cmath>
 #include <numbers>
 
-namespace Mustard::Math {
+namespace Mustard::inline Math {
 
 /// @brief Represents a value with associated uncertainty for error propagation
 ///
@@ -256,4 +256,4 @@ inline auto atanh(const Estimate& a) -> Estimate {
     return {std::atanh(a.value), a.uncertainty / (1 - muc::pow(a.value, 2))};
 }
 
-} // namespace Mustard::Math
+} // namespace Mustard::inline Math

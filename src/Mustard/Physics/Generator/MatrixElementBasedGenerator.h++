@@ -22,6 +22,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Estimate.h++"
 #include "Mustard/Math/MCIntegrationUtility.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
@@ -30,7 +31,6 @@
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "CLHEP/Random/Random.h"
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include "mplr/mplr.hpp"
 
@@ -91,7 +91,7 @@ public:
     /// @param polarization Initial-state polarization vector
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    MatrixElementBasedGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+    MatrixElementBasedGenerator(const InitialStateMomenta& pI, Vector3D polarization,
                                 const std::array<int, N>& pdgID, const std::array<double, N>& mass)
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Construct event generator
@@ -100,7 +100,7 @@ public:
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @note This overload is only enabled for polarized scattering
-    MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+    MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
                                 const std::array<int, N>& pdgID, const std::array<double, N>& mass)
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
@@ -117,8 +117,8 @@ public:
     ///         (2) Effective sample size
     ///         (3) Current integration state
     auto PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
-                            Math::MCIntegrationState integrationState = {},
-                            CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::tuple<Math::Estimate, double, Math::MCIntegrationState>;
+                            MCIntegrationState integrationState = {},
+                            CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::tuple<Estimate, double, MCIntegrationState>;
 
 protected:
     /// @brief Set initial-state 4-momenta
@@ -139,33 +139,33 @@ protected:
 
     /// @brief Get polarization vector
     /// @note This overload is only enabled for polarized decay
-    auto InitialStatePolarization() const -> CLHEP::Hep3Vector
+    auto InitialStatePolarization() const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Get polarization vector
     /// @param i Particle index (0 ≤ i < M)
     /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i) const -> CLHEP::Hep3Vector
+    auto InitialStatePolarization(int i) const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
     /// @brief Get all polarization vectors
     /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization() const -> const std::array<CLHEP::Hep3Vector, M>&
+    auto InitialStatePolarization() const -> const std::array<Vector3D, M>&
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set polarization vector
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note This overload is only enabled for polarized decay
-    auto InitialStatePolarization(CLHEP::Hep3Vector pol) -> void
+    auto InitialStatePolarization(Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Set polarization for single initial particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void
+    auto InitialStatePolarization(int i, Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
     /// @brief Set all polarization vectors
     /// @param pol Array of polarization vectors for each initial particle (all |pol| ≤ 1)
     /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void
+    auto InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Add an identical particle index set
@@ -208,7 +208,7 @@ protected:
 private:
     /// @brief Monte Carlo integration implementation
     auto Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                   Math::MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Math::Estimate, double>;
+                   MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Estimate, double>;
 
 protected:
     [[no_unique_address]] A fMatrixElement; ///< Matrix element
@@ -216,7 +216,7 @@ protected:
 
 private:
     InitialStateMomenta fISMomenta;              ///< Initial-state 4-momenta
-    CLHEP::Hep3Vector fBoostFromLabToCM;         ///< Boost from lab frame to c.m. frame
+    Vector3D fBoostFromLabToCM;                  ///< Boost from lab frame to c.m. frame
     double fFSSymmetryFactor;                    ///< Final-state identical particle symmetry factor
     std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
     std::vector<std::pair<int, double>> fIRCut;  ///< IR cuts (kinetic energies)

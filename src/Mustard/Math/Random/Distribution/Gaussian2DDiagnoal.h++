@@ -35,7 +35,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -197,6 +197,6 @@ private:
 template<typename T, typename U>
 Gaussian2DDiagnoalFast(std::initializer_list<T>, std::initializer_list<U>) -> Gaussian2DDiagnoalFast<std::array<std::common_type_t<T, U>, 2>>;
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution
 
 #include "Mustard/Math/Random/Distribution/Gaussian2DDiagnoal.inl"

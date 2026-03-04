@@ -36,11 +36,11 @@ namespace Mustard::ROOTX::Math {
 /// with ROOT's statistical functions and classes.
 ///
 /// @tparam PRBG Mustard UniformPseudoRandomBitGenerator type to adapt
-///   - Must satisfy Mustard::Math::Random::UniformPseudoRandomBitGenerator concept
+///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator concept
 ///   - Must provide SeedType, Seed(), Min(), Max(), and operator()
 ///
 /// @note Inherits from ROOT::Math::TRandomEngine to integrate with ROOT framework
-template<Mustard::Math::Random::UniformPseudoRandomBitGenerator PRBG>
+template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
 class AsTRandomEngine : public ROOT::Math::TRandomEngine {
 public:
     /// @brief Default constructor (uses PRBG's default seed)
@@ -54,7 +54,7 @@ public:
 
     /// @brief Generate uniform double in [0,1) (ROOT interface requirement)
     /// @return Random double value in unit interval
-    auto Rndm() -> double override { Mustard::Math::Random::Uniform<double>{}(fPRBG); }
+    auto Rndm() -> double override { Mustard::Random::Uniform<double>{}(fPRBG); }
 
     /// @brief Functor interface equivalent to Rndm()
     auto operator()() -> auto { return Rndm(); }

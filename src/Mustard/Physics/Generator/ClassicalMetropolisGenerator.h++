@@ -20,6 +20,7 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/Generator/MCMCGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 
@@ -86,7 +87,7 @@ public:
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
-    ClassicalMetropolisGenerator(const InitialStateMomenta& pI, CLHEP::Hep3Vector polarization,
+    ClassicalMetropolisGenerator(const InitialStateMomenta& pI, Vector3D polarization,
                                  const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                  std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                                  std::optional<double> stepSize = {})
@@ -100,7 +101,7 @@ public:
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized scattering
-    ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<CLHEP::Hep3Vector, M>& polarization,
+    ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
                                  const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                  std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                                  std::optional<double> stepSize = {})
@@ -123,8 +124,8 @@ private:
     virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override;
 
 private:
-    Math::Random::Gaussian<double> fGaussian; ///< Gaussian distribution
-    double fStepSize;                         ///< Step scale along one direction in random state space
+    Random::Gaussian<double> fGaussian; ///< Gaussian distribution
+    double fStepSize;                   ///< Step scale along one direction in random state space
 
     static inline const auto fgScalingFactor{2.38 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor
 };

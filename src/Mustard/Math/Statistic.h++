@@ -33,7 +33,7 @@
 #include <ranges>
 #include <stdexcept>
 
-namespace Mustard::Math {
+namespace Mustard::inline Math {
 
 template<int N>
     requires(N > 0)
@@ -192,6 +192,6 @@ private:
     double fSumW2;
 };
 
-} // namespace Mustard::Math
+} // namespace Mustard::inline Math
 
 #include "Mustard/Math/Statistic.inl"

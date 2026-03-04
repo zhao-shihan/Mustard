@@ -36,7 +36,7 @@
 #include <concepts>
 #include <iomanip>
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -193,6 +193,6 @@ UniformDisk(T, U, V) -> UniformDisk<std::array<std::common_type_t<T, U, V>, 2>>;
 template<typename T>
 UniformDisk(T) -> UniformDisk<std::array<T, 2>>;
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution
 
 #include "Mustard/Math/Random/Distribution/UniformDisk.inl"

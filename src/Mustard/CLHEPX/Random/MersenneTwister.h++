@@ -24,7 +24,7 @@
 
 namespace Mustard::CLHEPX::Random {
 
-using MT1993732 = CLHEPX::Random::Wrap<Math::Random::MT1993732>;
-using MT1993764 = CLHEPX::Random::Wrap<Math::Random::MT1993764>;
+using MT1993732 = CLHEPX::Random::Wrap<Random::MT1993732>;
+using MT1993764 = CLHEPX::Random::Wrap<Random::MT1993764>;
 
 } // namespace Mustard::CLHEPX::Random

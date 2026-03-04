@@ -18,18 +18,14 @@
 
 #pragma once
 
-#include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/TwoVector.h"
+#include "Mustard/Math/Vector.h++"
 
 #include "muc/math"
 
 #include <cmath>
 #include <utility>
 
-namespace Mustard::Math {
-
-/// @brief 2D vector
-using Vector2D = CLHEP::Hep2Vector;
+namespace Mustard::inline Math {
 
 /// @brief 2D point representation
 using Point2D = Vector2D;
@@ -46,9 +42,6 @@ struct Line2D {
         return point + t * direction;
     }
 };
-
-/// @brief 3D vector
-using Vector3D = CLHEP::Hep3Vector;
 
 /// @brief 3D point representation
 using Point3D = Vector3D;
@@ -140,4 +133,4 @@ struct Helix {
     }
 };
 
-} // namespace Mustard::Math
+} // namespace Mustard::inline Math

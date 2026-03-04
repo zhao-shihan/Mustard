@@ -29,7 +29,7 @@
 #include <concepts>
 #include <limits>
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -191,6 +191,6 @@ private:
 template<typename T, typename U>
 GaussianFast(T, U) -> GaussianFast<std::common_type_t<T, U>>;
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution
 
 #include "Mustard/Math/Random/Distribution/Gaussian.inl"

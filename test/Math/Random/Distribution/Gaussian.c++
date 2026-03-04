@@ -26,7 +26,7 @@
 using namespace Mustard;
 
 int main(int argc, char* argv[]) {
-    Math::Random::MT1993764 mt1993764;
+    Random::MT1993764 mt1993764;
 
     const auto n = std::stod(argv[1]);
     const auto mu1 = argc > 2 ? std::stod(argv[2]) : 0;
@@ -39,11 +39,11 @@ int main(int argc, char* argv[]) {
     ROOT::RDataFrame dataFrame(n);
     dataFrame
         .Define("g1",
-                [&] { return Math::Random::Gaussian(mu1, sigma1)(mt1993764); })
+                [&] { return Random::Gaussian(mu1, sigma1)(mt1993764); })
         .Define("g2",
-                [&] { return Math::Random::Gaussian2DDiagnoal({mu1, sigma1}, {mu2, sigma2})(mt1993764); })
+                [&] { return Random::Gaussian2DDiagnoal({mu1, sigma1}, {mu2, sigma2})(mt1993764); })
         .Define("g3",
-                [&] { return Math::Random::Gaussian3DDiagnoal({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3})(mt1993764); })
+                [&] { return Random::Gaussian3DDiagnoal({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3})(mt1993764); })
 
         .Snapshot("gaussian", "gaussian.root");
 

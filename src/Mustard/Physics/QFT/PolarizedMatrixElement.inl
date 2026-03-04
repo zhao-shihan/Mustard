@@ -19,13 +19,13 @@
 namespace Mustard::inline Physics::QFT {
 
 template<int M, int N>
-PolarizedMatrixElement<M, N>::PolarizedMatrixElement(const std::array<CLHEP::Hep3Vector, M>& pol) :
+PolarizedMatrixElement<M, N>::PolarizedMatrixElement(const std::array<Vector3D, M>& pol) :
     PolarizedMatrixElement{} {
     InitialStatePolarization(pol);
 }
 
 template<int M, int N>
-auto PolarizedMatrixElement<M, N>::InitialStatePolarization(int i, CLHEP::Hep3Vector pol) -> void {
+auto PolarizedMatrixElement<M, N>::InitialStatePolarization(int i, Vector3D pol) -> void {
     const auto polNorm{pol.mag()};
     if (polNorm > 1) [[unlikely]] {
         PrintWarning(fmt::format("Got polarization {} (pol) with |pol| = {} (expects |pol| <= 1)", i, polNorm));
@@ -34,20 +34,20 @@ auto PolarizedMatrixElement<M, N>::InitialStatePolarization(int i, CLHEP::Hep3Ve
 }
 
 template<int M, int N>
-auto PolarizedMatrixElement<M, N>::InitialStatePolarization(const std::array<CLHEP::Hep3Vector, M>& pol) -> void {
+auto PolarizedMatrixElement<M, N>::InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void {
     for (int i{}; i < M; ++i) {
         InitialStatePolarization(i, pol[i]);
     }
 }
 
 template<int N>
-PolarizedMatrixElement<1, N>::PolarizedMatrixElement(CLHEP::Hep3Vector pol) :
+PolarizedMatrixElement<1, N>::PolarizedMatrixElement(Vector3D pol) :
     PolarizedMatrixElement{} {
     InitialStatePolarization(pol);
 }
 
 template<int N>
-auto PolarizedMatrixElement<1, N>::InitialStatePolarization(CLHEP::Hep3Vector pol) -> void {
+auto PolarizedMatrixElement<1, N>::InitialStatePolarization(Vector3D pol) -> void {
     const auto polNorm{pol.mag()};
     if (polNorm > 1) [[unlikely]] {
         PrintWarning(fmt::format("Got polarization (pol) with |pol| = {} (expects |pol| <= 1)", polNorm));

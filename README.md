@@ -1,7 +1,7 @@
 # Mustard
 
 [![GitHub License](https://img.shields.io/github/license/zhao-shihan/Mustard?color=red)](COPYING)
-![GitHub Created At](https://img.shields.io/github/created-at/zhao-shihan/Mustard?color=green)
+![GitHub Created At](https://img.shields.io/github/created-at/zhao-shihan/Mustard?color=blue)
 ![GitHub top language](https://img.shields.io/github/languages/top/zhao-shihan/Mustard?color=f34b7d)
 ![GitHub last commit](https://img.shields.io/github/last-commit/zhao-shihan/Mustard)
 [![GitHub contributors](https://img.shields.io/github/contributors/zhao-shihan/Mustard?style=flat)](https://github.com/zhao-shihan/Mustard/graphs/contributors)

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math {
+namespace Mustard::inline Math {
 
 constexpr Statistic<1>::Statistic() :
     fSumWX{},
@@ -297,4 +297,4 @@ auto Statistic<N>::Kurtosis() const -> Eigen::Vector<double, N> {
     return CentralMoment<4>() / variance.cwiseProduct(variance);
 }
 
-} // namespace Mustard::Math
+} // namespace Mustard::inline Math

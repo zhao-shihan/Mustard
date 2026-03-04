@@ -24,7 +24,7 @@
 
 #include <optional>
 
-namespace Mustard::Math {
+namespace Mustard::inline Math {
 
 /// @brief Result of line-point POCA calculation
 struct LinePoint3DPOCAResult {
@@ -117,4 +117,4 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
           double absTol = muc::default_abs_tol<double>,
           double relTol = muc::default_rel_tol<double>) -> std::optional<HelixLinePOCAResult>;
 
-} // namespace Mustard::Math
+} // namespace Mustard::inline Math

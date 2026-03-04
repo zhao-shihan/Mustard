@@ -16,10 +16,23 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Math::Random::inline Generator {
+#pragma once
 
-MT1993764::MT1993764(MT1993764::SeedType seed) :
-    UniformPseudoRandomBitGeneratorBase{},
-    fMT{seed} {}
+#include "CLHEP/Vector/LorentzVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
 
-} // namespace Mustard::inline Math::Random::inline Generator
+// We use CLHEP vector as default vector types in Mustard.
+
+namespace Mustard::inline Math {
+
+/// @brief 2D vector
+using Vector2D = CLHEP::Hep2Vector;
+
+/// @brief 3D vector
+using Vector3D = CLHEP::Hep3Vector;
+
+/// @brief Lorentz vector
+using VectorLor = CLHEP::HepLorentzVector;
+
+} // namespace Mustard::inline Math

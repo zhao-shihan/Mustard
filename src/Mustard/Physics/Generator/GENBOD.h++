@@ -19,12 +19,12 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/Generator/VersatileEventGenerator.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/MathConstant.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "CLHEP/Vector/LorentzVector.h"
 
 #include "muc/math"
 #include "muc/numeric"

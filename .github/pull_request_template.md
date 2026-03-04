@@ -7,6 +7,7 @@ Fixes: #<issue-number> (if applicable)
 (Select one or more and delete other options from below)
 - Bug fix (non-breaking change which fixes an issue)
 - New feature (non-breaking change which adds functionality)
+- Refactor (non-breaking change which optimizes code structure)
 - Breaking change (fix or feature that would cause existing behavior to change)
 - Documentation update
 - CI / tooling

@@ -33,8 +33,8 @@
 using namespace Mustard;
 
 int main() {
-    Math::Random::MT1993732 mt1993732;
-    Math::Random::Xoshiro512Plus xoshiro512Plus;
+    Random::MT1993732 mt1993732;
+    Random::Xoshiro512Plus xoshiro512Plus;
 
     std::cout << "Simply generate 10 million integers:" << std::endl;
 
@@ -112,14 +112,14 @@ int main() {
     Eigen::RowVector2d delta2d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732)};
+        delta2d = {Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732)};
         v2d += delta2d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732)};
+        delta2d = {Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732)};
         v2d += delta2d;
     }
     time = stopwatch.read();
@@ -127,14 +127,14 @@ int main() {
 
     v2d = {0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus)};
+        delta2d = {Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus)};
         v2d += delta2d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta2d = {Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus)};
+        delta2d = {Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus)};
         v2d += delta2d;
     }
     time = stopwatch.read();
@@ -145,16 +145,16 @@ int main() {
     Eigen::RowVector3d delta3d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732)};
+        delta3d = {Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732)};
         v3d += delta3d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732)};
+        delta3d = {Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732)};
         v3d += delta3d;
     }
     time = stopwatch.read();
@@ -162,16 +162,16 @@ int main() {
 
     v3d = {0, 0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus)};
+        delta3d = {Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus)};
         v3d += delta3d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta3d = {Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus)};
+        delta3d = {Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus)};
         v3d += delta3d;
     }
     time = stopwatch.read();
@@ -182,18 +182,18 @@ int main() {
     Eigen::RowVector4d delta4d;
 
     for (int i = 0; i < 1'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732)};
+        delta4d = {Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732)};
         v4d += delta4d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732),
-                   Math::Random::Uniform<double>()(mt1993732)};
+        delta4d = {Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732),
+                   Random::Uniform<double>()(mt1993732)};
         v4d += delta4d;
     }
     time = stopwatch.read();
@@ -201,18 +201,18 @@ int main() {
 
     v4d = {0, 0, 0, 0};
     for (int i = 0; i < 1'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus)};
+        delta4d = {Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus)};
         v4d += delta4d;
     }
     stopwatch = {};
     for (int i = 0; i < 10'000'000; ++i) {
-        delta4d = {Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus),
-                   Math::Random::Uniform<double>()(xoshiro512Plus)};
+        delta4d = {Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus),
+                   Random::Uniform<double>()(xoshiro512Plus)};
         v4d += delta4d;
     }
     time = stopwatch.read();

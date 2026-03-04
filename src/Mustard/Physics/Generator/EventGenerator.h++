@@ -18,10 +18,10 @@
 
 #pragma once
 
+#include "Mustard/Math/Vector.h++"
+
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Vector/LorentzVector.h"
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include "muc/numeric"
 
@@ -61,10 +61,10 @@ template<int M, int N>
 class EventGenerator<M, N> {
 public:
     /// @brief Initial-state 4-momentum (or container type when M>1)
-    using InitialStateMomenta = std::conditional_t<M == 1, CLHEP::HepLorentzVector,
-                                                   std::array<CLHEP::HepLorentzVector, M>>;
+    using InitialStateMomenta = std::conditional_t<M == 1, VectorLor,
+                                                   std::array<VectorLor, M>>;
     /// @brief Final-state 4-momentum container type
-    using FinalStateMomenta = std::array<CLHEP::HepLorentzVector, N>;
+    using FinalStateMomenta = std::array<VectorLor, N>;
     /// @brief Generated event type
     struct Event {
         double weight;            ///< Event weight
@@ -99,7 +99,7 @@ protected:
     /// @brief Calculate boost from c.m. frame to lab frame
     /// @param pI Initial-state 4-momenta
     /// @return Boost from c.m. frame to lab frame
-    static auto CalculateBoost(const InitialStateMomenta& pI) -> CLHEP::Hep3Vector;
+    static auto CalculateBoost(const InitialStateMomenta& pI) -> Vector3D;
     /// @brief Boost initial state to c.m. frame
     ///
     /// Transforms initial-state momenta to c.m. frame:
@@ -111,7 +111,7 @@ protected:
     ///
     /// @note Return value should be saved for `BoostToLabFrame` call
     /// @warning Always called before event generation in c.m. frame
-    [[nodiscard]] static auto BoostToCMFrame(InitialStateMomenta& pI) -> CLHEP::Hep3Vector;
+    [[nodiscard]] static auto BoostToCMFrame(InitialStateMomenta& pI) -> Vector3D;
     /// @brief Boost final state to lab frame
     ///
     /// Applies inverse boost to return final state from c.m. frame to lab frame.
@@ -121,7 +121,7 @@ protected:
     ///
     /// @note Must use the β returned by `BoostToCMFrame` for correct transformation
     /// @warning Always called after event generation in c.m. frame
-    static auto BoostToLabFrame(CLHEP::Hep3Vector beta, FinalStateMomenta& pF) -> void;
+    static auto BoostToLabFrame(Vector3D beta, FinalStateMomenta& pF) -> void;
 };
 
 template<int M, int N, int D>

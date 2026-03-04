@@ -22,7 +22,7 @@
 
 #include <concepts>
 
-namespace Mustard::Math::Random {
+namespace Mustard::inline Math::Random {
 
 /// @brief Well-formed derivation of this class fulfills
 /// concepts UniformRandomBitGenerator and STDUniformRandomBitGenerator
@@ -46,6 +46,6 @@ public:
     constexpr bool operator==(const UniformRandomBitGeneratorBase&) const = default;
 };
 
-} // namespace Mustard::Math::Random
+} // namespace Mustard::inline Math::Random
 
 #include "Mustard/Math/Random/UniformRandomBitGeneratorBase.inl"

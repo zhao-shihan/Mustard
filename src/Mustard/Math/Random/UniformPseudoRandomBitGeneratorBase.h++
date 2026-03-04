@@ -24,7 +24,7 @@
 #include <concepts>
 #include <utility>
 
-namespace Mustard::Math::Random {
+namespace Mustard::inline Math::Random {
 
 /// @brief Well-formed derivation of this class fulfills
 /// the concept UniformPseudoRandomBitGenerator.
@@ -43,6 +43,6 @@ public:
     auto seed(SeedType s) -> void { return static_cast<ADerived*>(this)->Seed(s); }
 };
 
-} // namespace Mustard::Math::Random
+} // namespace Mustard::inline Math::Random
 
 #include "Mustard/Math/Random/UniformPseudoRandomBitGeneratorBase.inl"

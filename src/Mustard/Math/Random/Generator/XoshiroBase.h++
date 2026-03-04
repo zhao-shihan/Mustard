@@ -28,7 +28,7 @@
 #include <limits>
 #include <utility>
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 template<typename ADerived, std::size_t NBit>
     requires(NBit % 64 == 0)
@@ -50,6 +50,6 @@ protected:
     std::array<std::uint64_t, NBit / 64> fState;
 };
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator
 
 #include "Mustard/Math/Random/Generator/XoshiroBase.inl"

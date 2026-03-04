@@ -29,7 +29,7 @@
 #include <istream>
 #include <ostream>
 
-namespace Mustard::Math::Random::inline Generator {
+namespace Mustard::inline Math::Random::inline Generator {
 
 template<typename ADerived>
 class Xoshiro512Base : public XoshiroBase<ADerived, 512> {
@@ -53,6 +53,6 @@ private:
     auto StreamInput(std::basic_istream<AChar>& is) & -> decltype(is);
 };
 
-} // namespace Mustard::Math::Random::inline Generator
+} // namespace Mustard::inline Math::Random::inline Generator
 
 #include "Mustard/Math/Random/Generator/Xoshiro512Base.inl"

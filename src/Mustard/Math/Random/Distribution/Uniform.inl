@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Math::Random::inline Distribution {
+namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace internal {
 
@@ -100,4 +100,4 @@ MUSTARD_ALWAYS_INLINE constexpr auto UniformInteger<T>::operator()(UniformRandom
     return std::uniform_int_distribution<T>{p.Infimum(), p.Supremum()}(g);
 }
 
-} // namespace Mustard::Math::Random::inline Distribution
+} // namespace Mustard::inline Math::Random::inline Distribution

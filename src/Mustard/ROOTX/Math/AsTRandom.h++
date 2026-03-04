@@ -37,12 +37,12 @@ namespace Mustard::ROOTX::Math {
 /// including Gaussian generation and bulk array generation.
 ///
 /// @tparam PRBG Mustard UniformPseudoRandomBitGenerator type to adapt
-///   - Must satisfy Mustard::Math::Random::UniformPseudoRandomBitGenerator
+///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator
 ///   - Must provide SeedType and Seed() method
 ///
 /// @note Inherits from ROOT's TRandom for full framework integration
 /// @warning GetSeed() is intentionally non-functional (ROOT API limitation)
-template<Mustard::Math::Random::UniformPseudoRandomBitGenerator PRBG>
+template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
 class AsTRandom : public TRandom {
 public:
     /// @brief Default constructor (uses PRBG's default seed)
@@ -62,7 +62,7 @@ public:
     /// @param seed New seed value (converted to PRBG's SeedType)
     virtual auto SetSeed(ULong_t seed) -> void override { fPRBG.Seed(seed); }
     /// @brief Generate uniform double in (0,1)
-    virtual auto Rndm() -> Double_t override { return Mustard::Math::Random::Uniform<Double_t>{}(fPRBG); }
+    virtual auto Rndm() -> Double_t override { return Mustard::Random::Uniform<Double_t>{}(fPRBG); }
     /// @brief Fill array with uniform float values in (0,1)
     /// @param n Number of elements to generate
     /// @param array Pre-allocated output buffer
@@ -80,7 +80,7 @@ private:
 
 private:
     PRBG fPRBG;
-    Mustard::Math::Random::Gaussian<Double_t> fGaussian;
+    Mustard::Random::Gaussian<Double_t> fGaussian;
 };
 
 } // namespace Mustard::ROOTX::Math

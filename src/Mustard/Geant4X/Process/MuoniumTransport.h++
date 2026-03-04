@@ -74,8 +74,8 @@ private:
     TransportStatus fTransportStatus;
     G4bool fIsExitingTargetVolume;
 
-    Math::Random::Xoshiro256Plus fXoshiro256Plus;
-    Math::Random::Gaussian3DDiagnoalFast<G4ThreeVector> fStandardGaussian3D;
+    Random::Xoshiro256Plus fXoshiro256Plus;
+    Random::Gaussian3DDiagnoalFast<G4ThreeVector> fStandardGaussian3D;
 
     typename MuoniumPhysicsMessenger<ATarget>::template Register<MuoniumTransport<ATarget>> fMessengerRegister;
 };
