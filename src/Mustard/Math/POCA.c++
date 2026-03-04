@@ -79,7 +79,7 @@ auto POCA(const Line3D& line1, const Line3D& line2) -> LineLine3DPOCAResult {
 auto POCA(const Helix& helix, const Point2D& axis) -> HelixAxisPOCAResult {
     using Mustard::MathConstant::pi;
 
-    const auto& [c, r, phi0, z0, lambda]{helix};
+    const auto& [c, r, phi0, _1, _2]{helix};
 
     const auto xCT{axis - c};
     const auto phi1{xCT.phi()};

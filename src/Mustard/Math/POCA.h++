@@ -23,7 +23,6 @@
 #include "muc/numeric"
 
 #include <optional>
-#include <utility>
 
 namespace Mustard::Math {
 
