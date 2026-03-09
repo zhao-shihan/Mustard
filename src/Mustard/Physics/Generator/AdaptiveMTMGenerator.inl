@@ -121,12 +121,12 @@ auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, d
         }
         double detJ;
         std::tie(eventY[i], detJ) = this->PhaseSpace(stateY[i]); // y_i -> event(y_i) = g(y_i), also get |J|(g(y_i))
-        if (not this->IRSafe(eventY[i].p)) {
+        if (not this->InfraredSafe(eventY[i].p)) {
             piY[i] = 0;
             continue;
         }
-        acceptanceY[i] = this->ValidAcceptance(eventY[i].p);                      // g(y_i) -> B(g(y_i))
-        piY[i] = this->ValidMSqAcceptanceDetJ(eventY[i].p, acceptanceY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
+        acceptanceY[i] = this->Acceptance(eventY[i].p);                      // g(y_i) -> B(g(y_i))
+        piY[i] = this->MSqAcceptanceDetJ(eventY[i].p, acceptanceY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
     }
     const auto sumPiY{muc::ranges::reduce(piY)}; // pi(y_1) + ... + pi(y_k)
     const auto selected{[&] {                    // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
@@ -148,11 +148,11 @@ auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, d
             continue;
         }
         const auto [event, detJ]{this->PhaseSpace(stateX)}; // x_i -> event(x_i) = g(x_i), also get |J|(g(x_i))
-        if (not this->IRSafe(event.p)) {
+        if (not this->InfraredSafe(event.p)) {
             continue;
         }
-        const auto acceptanceX{this->ValidAcceptance(event.p)};             // g(x_i) -> B(g(x_i))
-        sumPiX += this->ValidMSqAcceptanceDetJ(event.p, acceptanceX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
+        const auto acceptanceX{this->Acceptance(event.p)};             // g(x_i) -> B(g(x_i))
+        sumPiX += this->MSqAcceptanceDetJ(event.p, acceptanceX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
     }
 
     // accept/reject Y

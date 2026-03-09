@@ -66,8 +66,8 @@ auto MultipleTryMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void 
     if (not std::isfinite(stepSize)) [[unlikely]] {
         PrintError(fmt::format("Infinite MCMC step size (got {})", stepSize));
     }
-    if (stepSize <= muc::default_abs_tol<double> or 0.5 <= stepSize) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5)", stepSize, muc::default_abs_tol<double>));
+    if (stepSize <= std::numeric_limits<double>::epsilon() or 0.5 <= stepSize) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious MCMC step size (expects {} < step size < 0.5, got {})", stepSize, std::numeric_limits<double>::epsilon()));
     }
     // Rescale stepSize
     // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
@@ -119,12 +119,12 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
         ProposeState(this->fMC.state, stateY[i]); // Draw y_i from T(x, *)
         double detJ;
         std::tie(eventY[i], detJ) = this->PhaseSpace(stateY[i]); // y_i -> event(y_i) = g(y_i), also get |J|(g(y_i))
-        if (not this->IRSafe(eventY[i].p)) {
+        if (not this->InfraredSafe(eventY[i].p)) {
             piY[i] = 0;
             continue;
         }
-        acceptanceY[i] = this->ValidAcceptance(eventY[i].p);                      // g(y_i) -> B(g(y_i))
-        piY[i] = this->ValidMSqAcceptanceDetJ(eventY[i].p, acceptanceY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
+        acceptanceY[i] = this->Acceptance(eventY[i].p);                      // g(y_i) -> B(g(y_i))
+        piY[i] = this->MSqAcceptanceDetJ(eventY[i].p, acceptanceY[i], detJ); // g(y_i) -> pi(y_i) = |M|²(g(y_i)) × B(g(y_i)) × |J|(g(y_i))
     }
     const auto sumPiY{muc::ranges::reduce(piY)}; // pi(y_1) + ... + pi(y_k)
     const auto selected{[&] {                    // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
@@ -144,11 +144,11 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
     for (int i{}; i < fgNTrial - 1; ++i) {
         ProposeState(stateY[selected], stateX);             // Draw x_i from T(Y, *)
         const auto [event, detJ]{this->PhaseSpace(stateX)}; // x_i -> event(x_i) = g(x_i), also get |J|(g(x_i))
-        if (not this->IRSafe(event.p)) {
+        if (not this->InfraredSafe(event.p)) {
             continue;
         }
-        const auto acceptanceX{this->ValidAcceptance(event.p)};             // g(x_i) -> B(g(x_i))
-        sumPiX += this->ValidMSqAcceptanceDetJ(event.p, acceptanceX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
+        const auto acceptanceX{this->Acceptance(event.p)};             // g(x_i) -> B(g(x_i))
+        sumPiX += this->MSqAcceptanceDetJ(event.p, acceptanceX, detJ); // g(x_i) -> pi(x_i) = |M|²(g(x_i)) × B(g(x_i)) × |J|(g(y_i))
     }
 
     // accept/reject Y

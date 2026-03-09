@@ -36,6 +36,8 @@
 
 #include "muc/array"
 #include "muc/chrono"
+#include "muc/hash_map"
+#include "muc/hash_set"
 #include "muc/math"
 #include "muc/numeric"
 #include "muc/utility"
@@ -63,7 +65,10 @@ namespace Mustard::inline Physics::inline Generator {
 /// @brief Generator based on a matrix element.
 ///
 /// Generates events distributed according to 1/S × |M|² × acceptance, and
-/// weight = 1 / acceptance.
+/// weight = 1 / acceptance. Here S is the final state symmetry factor,
+/// |M|² is the matrix element (squared amplitude), acceptance is a user-defined
+/// function (normally 0 <= acceptance <= 1) to apply importance sampling,
+/// and J is the Jacobian of the phase space transformation (e.g. from GENBOD)
 ///
 /// @tparam M Number of initial-state particles
 /// @tparam N Number of final-state particles
@@ -77,7 +82,7 @@ public:
     using typename EventGenerator<M, N>::FinalStateMomenta;
     /// @brief Generated event type
     using typename EventGenerator<M, N>::Event;
-    /// @brief User-defined acceptance function type
+    /// @brief User-defined acceptance function type (normally 0 <= acceptance <= 1)
     using AcceptanceFunction = std::function<auto(const FinalStateMomenta&)->double>;
 
 public:
@@ -178,32 +183,38 @@ protected:
     /// @param i Set index (0 ≤ i < number of sets)
     /// @return Identical particle index set
     auto IdenticalSet(int i) const -> const auto& { return fIdenticalSet[i]; }
-    /// @brief Set IR cuts for single final-state particle
+
+    /// @brief Set low-energy cutoff for single final-state particle to avoid infrared divergence (if applicable)
     /// @param i Particle index (0 ≤ i < N)
-    /// @param cut IR cut value (kinetic energy)
-    auto IRCut(int i, double cut) -> void;
-    /// @brief Check final-state momenta pass the IR cut
+    /// @param cutoff Soft cutoff value (on kinetic energy in the c.m. frame)
+    auto SoftCutoff(int i, double cutoff) -> void;
+    /// @brief Set collinear cutoff for two particles to avoid infrared divergence (if applicable)
+    /// @param pID Pair of particle indices (0 ≤ index < N)
+    /// @param cutoff Collinear cutoff value (on angle between the two particles in the c.m. frame)
+    auto CollinearCutoff(std::pair<int, int> pID, double cutoff) -> void;
+    /// @brief Check final-state momenta pass the soft cutoff and collinear cutoff (i.e. are IR-safe)
     /// @param pF Final states' 4-momenta
-    /// @return true if momenta is IR-safe
-    auto IRSafe(const FinalStateMomenta& pF) const -> bool;
+    /// @return true if momenta are IR-safe
+    auto InfraredSafe(FinalStateMomenta pF) const -> bool;
 
-    /// @brief Set user-defined acceptance function (0 <= acceptance <= 1 recommended)
+    /// @brief Set user-defined acceptance function (normally 0 <= acceptance <= 1)
     /// (PDF = 1/S × |M|² × acceptance, weight = 1 / acceptance)
-    /// @param B User-defined acceptance
-    auto Acceptance(AcceptanceFunction Acceptance) -> void;
-
+    /// @param acceptance User-defined acceptance
+    auto Acceptance(AcceptanceFunction acceptance) -> void;
     /// @brief Get acceptance with range check
     /// @param pF Final states' 4-momenta
     /// @exception `std::runtime_error` if invalid acceptance value produced
-    /// @return B(p1, ..., pN)
-    auto ValidAcceptance(const FinalStateMomenta& pF) const -> double;
-    /// @brief Get reweighted PDF value with range check
+    /// @return acceptance(p1, ..., pN)
+    auto Acceptance(const FinalStateMomenta& pF) const -> double;
+
+    /// @brief Get weighted PDF value with range check
     /// @param pF Final states' 4-momenta
     /// @param event Final states from phase space
-    /// @param acceptance Acceptance value at the same phase space point (from ValidAcceptance)
+    /// @param acceptance Acceptance value at the same phase space point (from `Acceptance(const FinalStateMomenta& pF)`)
     /// @exception `std::runtime_error` if invalid PDF value produced
-    /// @return 1/S × |M|²(p1, ..., pN) × acceptance(p1, ..., pN) × |J|(p1, ..., pN)
-    auto ValidMSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double;
+    /// @return 1/S × |M|²(p1, ..., pN) × acceptance(p1, ..., pN) × |J|(p1, ..., pN), where S is
+    /// the final state symmetry factor, and J is the Jacobian of the phase space transformation (e.g. from GENBOD)
+    auto MSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double;
 
 private:
     /// @brief Monte Carlo integration implementation
@@ -215,14 +226,20 @@ protected:
     GENBOD<M, N> fGENBOD;                   ///< Phase space generator
 
 private:
-    InitialStateMomenta fISMomenta;              ///< Initial-state 4-momenta
-    Vector3D fBoostFromLabToCM;                  ///< Boost from lab frame to c.m. frame
-    double fFSSymmetryFactor;                    ///< Final-state identical particle symmetry factor
-    std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
-    std::vector<std::pair<int, double>> fIRCut;  ///< IR cuts (kinetic energies)
-    AcceptanceFunction fAcceptance;              ///< User acceptance function
-    mutable std::int8_t fAcceptanceGt1Counter;   ///< Counter of acceptance > 1 warning
-    mutable std::int8_t fNegativeMSqCounter;     ///< Counter of negative |M|² warning
+    InitialStateMomenta fISMomenta;                                   ///< Initial-state 4-momenta
+    Vector3D fBoostFromLabToCM;                                       ///< Boost from lab frame to c.m. frame
+                                                                      //
+    double fFSSymmetryFactor;                                         ///< Final-state identical particle symmetry factor
+    std::vector<std::vector<int>> fIdenticalSet;                      ///< Identical particle sets
+                                                                      //
+    muc::flat_hash_map<int, double> fSoftCutoff;                      ///< Soft cutoffs (on kinetic energies in the c.m. frame)
+    muc::flat_hash_map<std::pair<int, int>, double> fCollinearCutoff; ///< Collinear cutoffs (on cosine of angles between particles in the c.m. frame)
+    muc::flat_hash_set<int> fInfraredUnsafePID;                       ///< Particle indices involved in IR cutoffs
+                                                                      //
+    AcceptanceFunction fAcceptance;                                   ///< User acceptance function (normally 0 <= acceptance <= 1)
+                                                                      //
+    mutable std::int8_t fAcceptanceGt1Counter;                        ///< Counter of acceptance > 1 warning
+    mutable std::int8_t fNegativeMSqCounter;                          ///< Counter of negative |M|² warning
 };
 
 } // namespace Mustard::inline Physics::inline Generator

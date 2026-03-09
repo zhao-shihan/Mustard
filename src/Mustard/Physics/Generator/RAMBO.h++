@@ -81,7 +81,7 @@ public:
     /// @param pI Initial-state 4-momenta
     /// @return Generated event
     virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event override;
-    // Inherit operator() overloads
+    // Avoid hiding other operator() overloads from base class
     using VersatileEventGenerator<M, N, 4 * N>::operator();
 
 private:

@@ -27,8 +27,10 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
     fBoostFromLabToCM{},
     fFSSymmetryFactor{1},
     fIdenticalSet{},
-    fIRCut{},
-    fAcceptance{[](auto&&) { return 1; }},
+    fSoftCutoff{},
+    fCollinearCutoff{},
+    fInfraredUnsafePID{},
+    fAcceptance{},
     fAcceptanceGt1Counter{},
     fNegativeMSqCounter{} {
     ISMomenta(pI);
@@ -54,7 +56,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
                                                               MCIntegrationState integrationState,
                                                               CLHEP::HepRandomEngine& rng) -> std::tuple<Estimate, double, MCIntegrationState> {
-    MasterPrint("Integrate |M|^2 x (Acceptance) on phase space in {}.\n"
+    MasterPrint("Integrating |M|^2 * (Acceptance) over phase space in {}.\n"
                 "\n",
                 muc::try_demangle(typeid(*this).name()));
 
@@ -74,8 +76,8 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
     // Start integration
     const auto Integrand{[this](const Event& event) {
         const auto& [detJ, _, pF]{event};
-        const auto acceptance{ValidAcceptance(pF)};
-        return ValidMSqAcceptanceDetJ(pF, acceptance, detJ);
+        const auto acceptance{Acceptance(pF)};
+        return MSqAcceptanceDetJ(pF, acceptance, detJ);
     }};
     muc::chrono::stopwatch stopwatch;
     const auto [integral, nEff]{Integrate(Integrand, precisionGoal, integrationState, executor, rng)};
@@ -89,7 +91,7 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
     MasterPrint("Integration completed in {:.3f}s.\n"
                 "Integration state (integration can be contined from here):\n"
                 "  {} {} {}\n"
-                "|M|^2 x (Acceptance) phase-space integral:\n"
+                "The integral of |M|^2 * (Acceptance) over phase space:\n"
                 "  {} +/- {}  (rel. unc.: {:.3}%, N_eff: {:.2f})\n",
                 time, summation[0], summation[1], nSample, integral.value, integral.uncertainty,
                 integral.uncertainty / integral.value * 100, nEff);
@@ -142,7 +144,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
     for (auto&& i : std::as_const(set)) {
         if (i < 0 or i >= N) [[unlikely]] {
-            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0, {}), got {}), ignoring the set", N, i));
+            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0,{}), got {}), ignoring the set", N, i));
             return;
         }
     }
@@ -168,19 +170,55 @@ auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set)
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::IRCut(int i, double cut) -> void {
-    if (cut <= 0) [[unlikely]] {
-        PrintWarning(fmt::format("Non-positive IR cut for particle {} (got {})", i, cut));
+auto MatrixElementBasedGenerator<M, N, A>::SoftCutoff(int i, double cutoff) -> void {
+    if (i < 0 or i >= N) [[unlikely]] {
+        PrintError(fmt::format("Invalid particle index (valid range is [0,{}), got {})", N, i));
+        return;
     }
-    fIRCut.push_back({i, cut});
+    if (cutoff <= 0) [[unlikely]] {
+        PrintWarning(fmt::format("Non-positive soft cutoff for particle {} (got {})", i, cutoff));
+    }
+    fSoftCutoff[i] = cutoff;
+    fInfraredUnsafePID.insert(i);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF) const -> bool {
-    for (auto&& [i, cut] : fIRCut) {
-        auto p{pF[i]};
-        p.boost(fBoostFromLabToCM);
-        if (p.e() - p.m() <= cut) {
+auto MatrixElementBasedGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> pID, double cutoff) -> void {
+    auto& [i, j]{pID};
+    if (i > j) {
+        std::swap(i, j);
+    }
+    if (i < 0 or i >= N or j < 0 or j >= N) [[unlikely]] {
+        PrintError(fmt::format("Invalid particle index (valid range is [0,{}), got (i,j) = {})", N, pID));
+        return;
+    }
+    if (i == j) [[unlikely]] {
+        PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i,j) = {})", pID));
+        return;
+    }
+    if (cutoff <= 0) [[unlikely]] {
+        PrintWarning(fmt::format("Non-positive collinear cutoff for particle pair {} (got {})", pID, cutoff));
+    }
+    fCollinearCutoff[pID] = std::cos(cutoff);
+    fInfraredUnsafePID.insert(i);
+    fInfraredUnsafePID.insert(j);
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MatrixElementBasedGenerator<M, N, A>::InfraredSafe(FinalStateMomenta pF) const -> bool {
+    for (auto&& i : std::as_const(fInfraredUnsafePID)) {
+        pF[i].boost(fBoostFromLabToCM);
+    }
+    for (auto&& [i, cutoff] : std::as_const(fSoftCutoff)) {
+        const auto& p{pF[i]};
+        if (p.e() - p.m() <= cutoff) {
+            return false;
+        }
+    }
+    for (auto&& [i, cutoff] : std::as_const(fCollinearCutoff)) {
+        const auto p1{pF[i.first].vect()};
+        const auto p2{pF[i.second].vect()};
+        if (p1.cosTheta(p2) >= cutoff) { // cosθ ≥ cutoff means θ ≤ cutoff, i.e. collinear
             return false;
         }
     }
@@ -188,13 +226,16 @@ auto MatrixElementBasedGenerator<M, N, A>::IRSafe(const FinalStateMomenta& pF) c
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::Acceptance(AcceptanceFunction Acceptance) -> void {
-    fAcceptance = std::move(Acceptance);
+auto MatrixElementBasedGenerator<M, N, A>::Acceptance(AcceptanceFunction acceptance) -> void {
+    fAcceptance = std::move(acceptance);
     fAcceptanceGt1Counter = 0;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ValidAcceptance(const FinalStateMomenta& pF) const -> double {
+auto MatrixElementBasedGenerator<M, N, A>::Acceptance(const FinalStateMomenta& pF) const -> double {
+    if (not fAcceptance) {
+        return 1;
+    }
     const auto acceptance{fAcceptance(pF)};
     constexpr auto Format{[](const FinalStateMomenta& pF) {
         std::string where;
@@ -224,14 +265,14 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidAcceptance(const FinalStateMomen
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ValidMSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double {
+auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double {
     Expects(acceptance >= 0);
     Expects(detJ > 0);
     if (acceptance <= std::numeric_limits<double>::epsilon()) {
         return 0;
     }
     const auto mSq{fMatrixElement(fISMomenta, pF)};
-    const auto result{fFSSymmetryFactor * mSq * acceptance * detJ}; // 1/S * |M|² × acceptance × |J|
+    const auto result{fFSSymmetryFactor * mSq * acceptance * detJ}; // 1/S × |M|² × acceptance × |J|
     constexpr auto Format{[](const FinalStateMomenta& pF, double acceptance, double detJ) {
         auto where{fmt::format("({})", detJ)};
         for (auto&& p : pF) {
@@ -252,7 +293,7 @@ auto MatrixElementBasedGenerator<M, N, A>::ValidMSqAcceptanceDetJ(const FinalSta
         }
     }
     if (not std::isfinite(result)) {
-        Throw<std::runtime_error>(fmt::format("Infinite |M|^2 x (Acceptance) x |J| found (got {} at {})", result, Format(pF, acceptance, detJ)));
+        Throw<std::runtime_error>(fmt::format("Infinite 1/S * |M|^2 * acceptance * |J| found (got {} at {})", result, Format(pF, acceptance, detJ)));
     }
     return result;
 }
@@ -277,7 +318,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         }};
         executor(nSample, [&](auto) {
             const auto event{PhaseSpace(rng)};
-            if (not IRSafe(event.p)) {
+            if (not InfraredSafe(event.p)) {
                 return;
             }
             const auto value{Integrand(event)};

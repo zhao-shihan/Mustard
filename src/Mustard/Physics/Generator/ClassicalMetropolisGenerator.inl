@@ -106,9 +106,9 @@ auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rn
     this->ProposePID(rng, this->fMC.state.pID, state.pID);
     auto [event, detJ]{this->PhaseSpace(state)};
     bool accepted{};
-    if (this->IRSafe(event.p)) {
-        const auto acceptance{this->ValidAcceptance(event.p)};
-        const auto mSqAcceptanceDetJ{this->ValidMSqAcceptanceDetJ(event.p, acceptance, detJ)};
+    if (this->InfraredSafe(event.p)) {
+        const auto acceptance{this->Acceptance(event.p)};
+        const auto mSqAcceptanceDetJ{this->MSqAcceptanceDetJ(event.p, acceptance, detJ)};
         if (mSqAcceptanceDetJ >= this->fMC.mSqAcceptanceDetJ or
             mSqAcceptanceDetJ > this->fMC.mSqAcceptanceDetJ * rng.flat()) {
             this->fMC.state = std::move(state);

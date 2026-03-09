@@ -97,7 +97,7 @@ protected:
         static constexpr int dim{std::tuple_size_v<RandomState>};
         struct State {
             RandomState u;          ///< Random state
-            std::array<int, N> pID; ///< Particle ID mapping (for swapping identical particles)
+            std::array<int, N> pID; ///< Particle ID permutation (for swapping identical particles, if any)
         } state;                    ///< State of the chain
         double mSqAcceptanceDetJ;   ///< |M|² × acceptance × |J|
         Event event;                ///< The corresponding event
@@ -178,7 +178,7 @@ public:
     /// @brief Set user-defined acceptance function in PDF (PDF = |M|² × acceptance)
     /// @param Acceptance User-defined acceptance
     /// @warning The Markov chain requires reinitialize after set
-    auto Acceptance(AcceptanceFunction Acceptance) -> void;
+    auto Acceptance(AcceptanceFunction acceptance) -> void;
 
     /// @brief Set thinning ratio
     /// Larger the thinning ratio, more samples will be discarded,
@@ -203,7 +203,7 @@ public:
     /// @warning Initial-state momenta passed to this function are ignored.
     /// Use `ISMomenta` to set initial-state momenta
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta) -> Event override;
-    // Inherit operator() overloads
+    // Avoid hiding other operator() overloads from base class
     using Base::operator();
 
 protected:
@@ -215,14 +215,22 @@ protected:
     /// @param mass Array of particle masses
     /// @warning The Markov chain requires reinitialize if value changes
     auto Mass(const std::array<double, N>& mass) -> void;
-    /// @brief Set IR cuts for single final-state particle
+
+    /// @brief Set low-energy cutoff for single final-state particle to avoid infrared divergence (if applicable)
     /// @param i Particle index (0 ≤ i < N)
-    /// @param cut IR cut value
+    /// @param cutoff Soft cutoff value (on kinetic energy in the c.m. frame)
     /// @warning The Markov chain requires reinitialize after set
-    auto IRCut(int i, double cut) -> void;
+    auto SoftCutoff(int i, double cutoff) -> void;
+    /// @brief Set collinear cutoff for two particles to avoid infrared divergence (if applicable)
+    /// @param pID Pair of particle indices (0 ≤ index < N)
+    /// @param cutoff Collinear cutoff value (on angle between the two particles in the c.m. frame)
+    auto CollinearCutoff(std::pair<int, int> pID, double cutoff) -> void;
+
+    // Avoid hiding other Acceptance overloads from base class
+    using Base::Acceptance;
 
     /// @brief Notify MCMC that reinitialize is required
-    auto MCMCInitializeRequired() -> void;
+    auto MCMCInitializationRequired() -> void;
 
     /// @brief Transform hypercube to phase space
     /// @param u A random state

@@ -32,14 +32,16 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization, double irCut,
+M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
+                                   double softCutoff, double collinearCutoff,
                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                    std::optional<double> stepSize) :
     MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(200000), stepSize.value_or(0.1)} {
     Parent(parent);
     ParentMomentum(momentum);
     Mass({electron_mass_c2, 0, 0, 0, 0});
-    IRCut(irCut);
+    SoftCutoff(softCutoff);
+    CollinearCutoff(collinearCutoff);
     AddIdenticalSet({3, 4});
 }
 
@@ -58,9 +60,14 @@ auto M2ENNGGGenerator::ParentMomentum(Vector3D momentum) -> void {
     ISMomenta({energy, momentum});
 }
 
-auto M2ENNGGGenerator::IRCut(double irCut) -> void {
-    MultipleTryMetropolisGenerator::IRCut(3, irCut);
-    MultipleTryMetropolisGenerator::IRCut(4, irCut);
+auto M2ENNGGGenerator::SoftCutoff(double softCutoff) -> void {
+    MultipleTryMetropolisGenerator::SoftCutoff(3, softCutoff);
+    MultipleTryMetropolisGenerator::SoftCutoff(4, softCutoff);
+}
+
+auto M2ENNGGGenerator::CollinearCutoff(double collinearCutoff) -> void {
+    MultipleTryMetropolisGenerator::CollinearCutoff({0, 3}, collinearCutoff);
+    MultipleTryMetropolisGenerator::CollinearCutoff({0, 4}, collinearCutoff);
 }
 
 } // namespace Mustard::inline Physics::inline Generator
