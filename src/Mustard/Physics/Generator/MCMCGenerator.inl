@@ -36,67 +36,49 @@ MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                       const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                       std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     MCMCGenerator{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)} {
-    this->InitialStatePolarization(polarization);
+    this->ISPolarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                                      const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                      std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
-    MCMCGenerator{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)} {
-    this->InitialStatePolarization(polarization);
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization() const -> Vector3D
+auto MCMCGenerator<M, N, A>::ISPolarization() const -> const typename A::InitialStatePolarization&
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    return Base::InitialStatePolarization();
+    return Base::ISPolarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization(int i) const -> Vector3D
+auto MCMCGenerator<M, N, A>::ISPolarization(int i) const -> Vector3D
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return Base::InitialStatePolarization(i);
+    return Base::ISPolarization(i);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization() const -> const std::array<Vector3D, M>&
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return Base::InitialStatePolarization();
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization(Vector3D pol) -> void
+auto MCMCGenerator<M, N, A>::ISPolarization(const typename A::InitialStatePolarization& pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    if (not pol.isNear(InitialStatePolarization(), muc::default_rel_tol<double>)) {
-        MCMCInitializationRequired();
+    if constexpr (M == 1) {
+        if (not pol.isNear(ISPolarization(), muc::default_rel_tol<double>)) {
+            MCMCInitializationRequired();
+        }
+    } else {
+        if (not std::ranges::equal(pol, ISPolarization(),
+                                   [](auto&& a, auto&& b) { return a.isNear(b, muc::default_rel_tol<double>); })) {
+            MCMCInitializationRequired();
+        }
     }
-    Base::InitialStatePolarization(pol);
+    Base::ISPolarization(pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization(int i, Vector3D pol) -> void
+auto MCMCGenerator<M, N, A>::ISPolarization(int i, Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    if (not pol.isNear(InitialStatePolarization(i), muc::default_rel_tol<double>)) {
+    if (not pol.isNear(ISPolarization(i), muc::default_rel_tol<double>)) {
         MCMCInitializationRequired();
     }
-    Base::InitialStatePolarization(i, pol);
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    if (not std::ranges::equal(pol, InitialStatePolarization(),
-                               [](auto&& a, auto&& b) { return a.isNear(b, muc::default_rel_tol<double>); })) {
-        MCMCInitializationRequired();
-    }
-    Base::InitialStatePolarization(pol);
+    Base::ISPolarization(i, pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>

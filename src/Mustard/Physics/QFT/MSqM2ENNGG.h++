@@ -31,6 +31,7 @@ namespace Mustard::inline Physics::QFT {
 /// referenceing McMule's analytical formula.
 class MSqM2ENNGG : public PolarizedMatrixElement<1, 5> {
 public:
+    // Inherit constructor
     using PolarizedMatrixElement::PolarizedMatrixElement;
 
     /// @brief Calculate squared matrix element for double radiative muon decay

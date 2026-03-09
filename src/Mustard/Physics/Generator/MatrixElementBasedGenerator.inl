@@ -37,19 +37,11 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     MatrixElementBasedGenerator{pI, pdgID, mass} {
-    fMatrixElement.InitialStatePolarization(polarization);
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                                                                  const std::array<int, N>& pdgID, const std::array<double, N>& mass) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
-    MatrixElementBasedGenerator{pI, pdgID, mass} {
-    fMatrixElement.InitialStatePolarization(polarization);
+    ISPolarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -105,39 +97,27 @@ auto MatrixElementBasedGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& 
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization() const -> Vector3D
+auto MatrixElementBasedGenerator<M, N, A>::ISPolarization() const -> const typename A::InitialStatePolarization&
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    return fMatrixElement.InitialStatePolarization();
+    return fMatrixElement.ISPolarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(int i) const -> Vector3D
+auto MatrixElementBasedGenerator<M, N, A>::ISPolarization(int i) const -> Vector3D
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return fMatrixElement.InitialStatePolarization(i);
+    return fMatrixElement.ISPolarization(i);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization() const -> const std::array<Vector3D, M>&
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return fMatrixElement.InitialStatePolarization();
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(Vector3D pol) -> void
+auto MatrixElementBasedGenerator<M, N, A>::ISPolarization(const typename A::InitialStatePolarization& pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    fMatrixElement.InitialStatePolarization(pol);
+    fMatrixElement.ISPolarization(pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(int i, Vector3D pol) -> void
+auto MatrixElementBasedGenerator<M, N, A>::ISPolarization(int i, Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    fMatrixElement.InitialStatePolarization(i, pol);
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    fMatrixElement.InitialStatePolarization(pol);
+    fMatrixElement.ISPolarization(i, pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>

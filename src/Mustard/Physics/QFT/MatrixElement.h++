@@ -38,6 +38,8 @@ class MatrixElement {
 public:
     /// @brief Initial state momentum(a) type
     using InitialStateMomenta = std::conditional_t<M == 1, VectorLor, std::array<VectorLor, M>>;
+    /// @brief Initial state polarization vector(s) type (for PolarizedMatrixElement)
+    using InitialStatePolarization = std::conditional_t<M == 1, Vector3D, std::array<Vector3D, M>>;
     /// @brief Final state momenta type
     using FinalStateMomenta = std::array<VectorLor, N>;
 

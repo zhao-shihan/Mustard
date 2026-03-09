@@ -62,7 +62,7 @@ auto MSqM2ENNEE::MSqMcMule0Av(const InitialStateMomenta& pI, const FinalStateMom
     const auto m12{p1.m2()};
     const auto m32{p3.m2()};
 
-    const auto polarized{InitialStatePolarization() != Vector3D{}};
+    const auto polarized{ISPolarization() != Vector3D{}};
     const auto sqrtM12{polarized ? std::sqrt(m12) : 0};
 
     double pm2enneeav{};
@@ -76,7 +76,7 @@ auto MSqM2ENNEE::MSqMcMule0Av(const InitialStateMomenta& pI, const FinalStateMom
         pm2enneeav += 2 * OneBorn(s12, s13, s14, s23, s24, s34, m12, m22, m32) +
                       TwoBorn(s12, s13, s14, s23, s24, s34, m12, m22, m32);
         if (polarized) {
-            const VectorLor n{-InitialStatePolarization()};
+            const VectorLor n{-ISPolarization()};
             const auto s2n{s(p2, n)};
             const auto s3n{s(p3, n)};
             const auto s4n{s(p4, n)};
@@ -2869,7 +2869,7 @@ MUSTARD_OPTIMIZE_FAST auto MSqM2ENNEE::TwoBornPol(double s12, double s13, double
 MUSTARD_OPTIMIZE_FAST auto MSqM2ENNEE::MSqMcMuleLegacy(const InitialStateMomenta& pI, const FinalStateMomenta& pF) const -> double {
     const auto& q1{pI};
     const auto& [q2, q3, q4, q6, q5]{pF}; // should 5 <-> 6 for this version
-    const VectorLor pol1{InitialStatePolarization()};
+    const VectorLor pol1{ISPolarization()};
 
     // Adapt from McMule v0.5.1, mudecrare/mudecrare_pm2ennee.f95, FUNCTION PM2ENNEE
     //

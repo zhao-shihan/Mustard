@@ -118,61 +118,37 @@ public:
                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
-    /// @param polarization Initial-state polarization vector
+    /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
-    MCMCGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+    MCMCGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
-    /// @brief Construct event generator
-    /// @param pI initial-state 4-momenta
-    /// @param polarization Initial-state polarization vectors
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
-    /// @note This overload is only enabled for polarized scattering
-    MCMCGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                  const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                  std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
-    /// @brief Get polarization vector
-    /// @note This overload is only enabled for polarized decay
-    auto InitialStatePolarization() const -> Vector3D
+    /// @brief Get initial-state polarization vector(s)
+    /// @note This overload is only enabled for polarized process
+    auto ISPolarization() const -> const typename A::InitialStatePolarization&
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
-    /// @brief Get polarization vector
+    /// @brief Get initial-state polarization vector
     /// @param i Particle index (0 ≤ i < M)
     /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i) const -> Vector3D
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
-    /// @brief Get all polarization vectors
-    /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization() const -> const std::array<Vector3D, M>&
+    auto ISPolarization(int i) const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
-    /// @brief Set polarization vector
-    /// @param pol Polarization vector (|pol| ≤ 1)
-    /// @note This overload is only enabled for polarized decay
-    /// @warning The Markov chain requires reinitialize if value changes
-    auto InitialStatePolarization(Vector3D pol) -> void
+    /// @brief Set initial-state polarization vector(s)
+    /// @param pol Polarization vector(s) (all |pol| ≤ 1)
+    /// @note This overload is only enabled for polarized process
+    auto ISPolarization(const typename A::InitialStatePolarization& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
-    /// @brief Set polarization for single initial particle
+    /// @brief Set polarization for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note This overload is only enabled for polarized scattering
-    /// @warning The Markov chain requires reinitialize if value changes
-    auto InitialStatePolarization(int i, Vector3D pol) -> void
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
-    /// @brief Set all polarization vectors
-    /// @param pol Array of polarization vectors for each initial particle (all |pol| ≤ 1)
-    /// @note This overload is only enabled for polarized scattering
-    /// @warning The Markov chain requires reinitialize if value changes
-    auto InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void
+    auto ISPolarization(int i, Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set user-defined acceptance function in PDF (PDF = |M|² × acceptance)
