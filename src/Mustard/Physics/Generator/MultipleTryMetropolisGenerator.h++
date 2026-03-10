@@ -125,8 +125,8 @@ private:
     virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override;
 
 private:
-    Random::Gaussian<double> fGaussian; ///< Gaussian distribution
-    double fStepSize;                   ///< Step scale along one direction in random state space
+    Random::GaussianFast<double> fGaussian; ///< Gaussian distribution
+    double fStepSize;                       ///< Step scale along one direction in random state space
 
     static constexpr auto fgNTrial{5};                                            ///< Number of trial points
     static inline const auto fgScalingFactor{3.12 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor. Ref: of M. B´edard et al. SPA 122 (2012) 758–786, https://doi.org/10.1016/j.spa.2011.11.004
