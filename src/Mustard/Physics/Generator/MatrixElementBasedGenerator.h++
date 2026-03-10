@@ -31,6 +31,7 @@
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "CLHEP/Random/Random.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 #include "mplr/mplr.hpp"
 
@@ -121,18 +122,6 @@ protected:
     /// @param pI initial-state 4-momenta
     auto ISMomenta(const InitialStateMomenta& pI) -> void;
 
-    /// @brief Set final-state PDG IDs
-    /// @param pdgID Array of particle PDG IDs
-    auto PDGID(const std::array<int, N>& pdgID) -> void { fGENBOD.PDGID(pdgID); }
-    /// @brief Set final-state masses
-    /// @param mass Array of particle masses
-    auto Mass(const std::array<double, N>& mass) -> void { fGENBOD.Mass(mass); }
-
-    /// @brief Generate an event on phase space
-    /// @param rng Reference to CLHEP random engine
-    /// @return An event from phase space
-    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fISMomenta); }
-
     /// @brief Get initial-state polarization vector(s)
     /// @note This overload is only enabled for polarized process
     auto ISPolarization() const -> const typename A::InitialStatePolarization&
@@ -154,6 +143,18 @@ protected:
     /// @note This overload is only enabled for polarized scattering
     auto ISPolarization(int i, Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
+
+    /// @brief Set final-state PDG IDs
+    /// @param pdgID Array of particle PDG IDs
+    auto PDGID(const std::array<int, N>& pdgID) -> void { fGENBOD.PDGID(pdgID); }
+    /// @brief Set final-state masses
+    /// @param mass Array of particle masses
+    auto Mass(const std::array<double, N>& mass) -> void { fGENBOD.Mass(mass); }
+
+    /// @brief Generate an event on phase space
+    /// @param rng Reference to CLHEP random engine
+    /// @return An event from phase space
+    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fISMomenta); }
 
     /// @brief Add an identical particle index set
     /// @param set A vector of particle indices (0 ≤ index < N)

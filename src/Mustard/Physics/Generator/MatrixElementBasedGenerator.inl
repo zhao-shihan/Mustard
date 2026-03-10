@@ -48,9 +48,21 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
                                                               MCIntegrationState integrationState,
                                                               CLHEP::HepRandomEngine& rng) -> std::tuple<Estimate, double, MCIntegrationState> {
-    MasterPrint("Integrating |M|^2 * (Acceptance) over phase space in {}.\n"
-                "\n",
-                muc::try_demangle(typeid(*this).name()));
+    MasterPrintLn("Integrating |M|^2 * (Acceptance) over phase space in {}.\n", muc::try_demangle(typeid(*this).name()));
+    if (fInfraredUnsafePID.empty()) {
+        MasterPrintLn("No infrared cutoff is set.\n");
+    } else {
+        MasterPrintLn("Infrared cutoff(s) in the c.m. frame:");
+        for (auto&& [i, cutoff] : std::as_const(fSoftCutoff)) {
+            MasterPrintLn("  Soft cutoff for particle {}: k.e. > {}", i, cutoff);
+        }
+        for (auto&& [i, cutoff] : std::as_const(fCollinearCutoff)) {
+            const auto radian{std::acos(cutoff)};
+            const auto degree{radian / CLHEP::degree};
+            MasterPrintLn("  Collinear cutoff for particle {}: angle(p{}, p{}) > {:.6} rad ({:.6} deg)", i, i.first, i.second, radian, degree);
+        }
+        MasterPrint("\n");
+    }
 
     // Reseed random engine for statistical safety
     Parallel::ReseedRandomEngine(&rng);
@@ -124,7 +136,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
     for (auto&& i : std::as_const(set)) {
         if (i < 0 or i >= N) [[unlikely]] {
-            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0,{}), got {}), ignoring the set", N, i));
+            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0, {}), got {}), ignoring the set", N, i));
             return;
         }
     }
@@ -152,7 +164,7 @@ auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set)
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::SoftCutoff(int i, double cutoff) -> void {
     if (i < 0 or i >= N) [[unlikely]] {
-        PrintError(fmt::format("Invalid particle index (valid range is [0,{}), got {})", N, i));
+        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got {})", N, i));
         return;
     }
     if (cutoff <= 0) [[unlikely]] {
@@ -169,11 +181,11 @@ auto MatrixElementBasedGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> p
         std::swap(i, j);
     }
     if (i < 0 or i >= N or j < 0 or j >= N) [[unlikely]] {
-        PrintError(fmt::format("Invalid particle index (valid range is [0,{}), got (i,j) = {})", N, pID));
+        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got (i, j) = {})", N, pID));
         return;
     }
     if (i == j) [[unlikely]] {
-        PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i,j) = {})", pID));
+        PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i, j) = {})", pID));
         return;
     }
     if (cutoff <= 0) [[unlikely]] {
