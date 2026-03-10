@@ -51,26 +51,26 @@ public:
 
     /// @brief Get initial-state polarization vector(s)
     /// @return Initial-state polarization vector(s)
-    auto ISPolarization() const -> const auto& { return fISPolarization; }
+    auto Polarization() const -> const auto& { return fPolarization; }
     /// @brief Get polarization vector for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @return Polarization vector
     /// @note This overload is only enabled for polarized scattering (M > 1)
-    auto ISPolarization(int i) const -> auto
-        requires(M > 1) { return fISPolarization.at(i); }
+    auto Polarization(int i) const -> auto
+        requires(M > 1) { return fPolarization.at(i); }
 
     /// @brief Set initial-state polarization vector(s)
     /// @param pol Initial-state polarization vector(s) (all |p| ≤ 1)
-    auto ISPolarization(const InitialStatePolarization& pol) -> void;
+    auto Polarization(const InitialStatePolarization& pol) -> void;
     /// @brief Set polarization for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|p| ≤ 1)
     /// @note This overload is only enabled for polarized scattering (M > 1)
-    auto ISPolarization(int i, Vector3D pol) -> void
+    auto Polarization(int i, Vector3D pol) -> void
         requires(M > 1);
 
 private:
-    InitialStatePolarization fISPolarization; ///< Polarization storage
+    InitialStatePolarization fPolarization; ///< Polarization storage
 };
 
 } // namespace Mustard::inline Physics::QFT

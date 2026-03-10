@@ -61,8 +61,8 @@ auto MSqM2ENNGG::operator()(const InitialStateMomenta& pI, const FinalStateMomen
 
     auto pm2ennggav{Unpolarized(mm2, me2, s12, s15, s16, s25, s26, s56,
                                 den1, den2, den3, den4, den5, den6)};
-    if (ISPolarization() != Vector3D{}) {
-        const VectorLor pol1{ISPolarization()};
+    if (Polarization() != Vector3D{}) {
+        const VectorLor pol1{Polarization()};
         pm2ennggav += s(pol1, p2) * PolarizedS2n(mm2, me2, s12, s15, s16, s25, s26, s56,
                                                  den1, den2, den3, den4, den5, den6);
         pm2ennggav += s(pol1, p5) * PolarizedS5n(mm2, me2, s12, s15, s16, s25, s26, s56,

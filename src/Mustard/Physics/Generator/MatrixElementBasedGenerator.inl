@@ -23,7 +23,7 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
     EventGenerator<M, N>{},
     fMatrixElement{},
     fGENBOD{pdgID, mass},
-    fISMomenta{},
+    fMomenta{},
     fBoostFromLabToCM{},
     fFSSymmetryFactor{1},
     fIdenticalSet{},
@@ -33,7 +33,7 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
     fAcceptance{},
     fAcceptanceGt1Counter{},
     fNegativeMSqCounter{} {
-    ISMomenta(pI);
+    Momenta(pI);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -41,7 +41,7 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
                                                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     MatrixElementBasedGenerator{pI, pdgID, mass} {
-    ISPolarization(polarization);
+    Polarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -103,33 +103,33 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& pI) -> void {
-    fISMomenta = pI;
+auto MatrixElementBasedGenerator<M, N, A>::Momenta(const InitialStateMomenta& pI) -> void {
+    fMomenta = pI;
     fBoostFromLabToCM = -this->CalculateBoost(pI);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ISPolarization() const -> const typename A::InitialStatePolarization&
+auto MatrixElementBasedGenerator<M, N, A>::Polarization() const -> const typename A::InitialStatePolarization&
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    return fMatrixElement.ISPolarization();
+    return fMatrixElement.Polarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ISPolarization(int i) const -> Vector3D
+auto MatrixElementBasedGenerator<M, N, A>::Polarization(int i) const -> Vector3D
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return fMatrixElement.ISPolarization(i);
+    return fMatrixElement.Polarization(i);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ISPolarization(const typename A::InitialStatePolarization& pol) -> void
+auto MatrixElementBasedGenerator<M, N, A>::Polarization(const typename A::InitialStatePolarization& pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    fMatrixElement.ISPolarization(pol);
+    fMatrixElement.Polarization(pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::ISPolarization(int i, Vector3D pol) -> void
+auto MatrixElementBasedGenerator<M, N, A>::Polarization(int i, Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    fMatrixElement.ISPolarization(i, pol);
+    fMatrixElement.Polarization(i, pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -263,7 +263,7 @@ auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMom
     if (acceptance <= std::numeric_limits<double>::epsilon()) {
         return 0;
     }
-    const auto mSq{fMatrixElement(fISMomenta, pF)};
+    const auto mSq{fMatrixElement(fMomenta, pF)};
     const auto result{fFSSymmetryFactor * mSq * acceptance * detJ}; // 1/S × |M|² × acceptance × |J|
     constexpr auto Format{[](const FinalStateMomenta& pF, double acceptance, double detJ) {
         auto where{fmt::format("({})", detJ)};

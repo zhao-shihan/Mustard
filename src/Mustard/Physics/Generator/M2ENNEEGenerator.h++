@@ -55,7 +55,7 @@ public:
     auto Parent(std::string_view parent) -> void;
     /// @brief Set parent momentum
     /// @param momentum Muon momentum
-    auto ParentMomentum(Vector3D momentum) -> void;
+    auto Momentum(Vector3D momentum) -> void;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

@@ -41,44 +41,44 @@ MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const typen
                                       std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
     MCMCGenerator{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)} {
-    this->ISPolarization(polarization);
+    this->Polarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ISPolarization() const -> const typename A::InitialStatePolarization&
+auto MCMCGenerator<M, N, A>::Polarization() const -> const typename A::InitialStatePolarization&
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    return Base::ISPolarization();
+    return Base::Polarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ISPolarization(int i) const -> Vector3D
+auto MCMCGenerator<M, N, A>::Polarization(int i) const -> Vector3D
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return Base::ISPolarization(i);
+    return Base::Polarization(i);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ISPolarization(const typename A::InitialStatePolarization& pol) -> void
+auto MCMCGenerator<M, N, A>::Polarization(const typename A::InitialStatePolarization& pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
     if constexpr (M == 1) {
-        if (not pol.isNear(ISPolarization(), muc::default_rel_tol<double>)) {
+        if (not pol.isNear(Polarization(), muc::default_rel_tol<double>)) {
             MCMCInitializationRequired();
         }
     } else {
-        if (not std::ranges::equal(pol, ISPolarization(),
+        if (not std::ranges::equal(pol, Polarization(),
                                    [](auto&& a, auto&& b) { return a.isNear(b, muc::default_rel_tol<double>); })) {
             MCMCInitializationRequired();
         }
     }
-    Base::ISPolarization(pol);
+    Base::Polarization(pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ISPolarization(int i, Vector3D pol) -> void
+auto MCMCGenerator<M, N, A>::Polarization(int i, Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    if (not pol.isNear(ISPolarization(i), muc::default_rel_tol<double>)) {
+    if (not pol.isNear(Polarization(i), muc::default_rel_tol<double>)) {
         MCMCInitializationRequired();
     }
-    Base::ISPolarization(i, pol);
+    Base::Polarization(i, pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -283,18 +283,18 @@ auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStat
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& pI) -> void {
+auto MCMCGenerator<M, N, A>::Momenta(const InitialStateMomenta& pI) -> void {
     if constexpr (M == 1) {
-        if (not pI.isNear(Base::ISMomenta(), muc::default_rel_tol<double>)) {
+        if (not pI.isNear(Base::Momenta(), muc::default_rel_tol<double>)) {
             MCMCInitializationRequired();
         }
     } else {
-        if (not std::ranges::equal(pI, Base::ISMomenta(),
+        if (not std::ranges::equal(pI, Base::Momenta(),
                                    [](auto p, auto q) { return p.isNear(q, muc::default_rel_tol<double>); })) {
             MCMCInitializationRequired();
         }
     }
-    Base::ISMomenta(pI);
+    Base::Momenta(pI);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -326,7 +326,7 @@ auto MCMCGenerator<M, N, A>::MCMCInitializationRequired() -> void {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::DirectPhaseSpace(const RandomState& u) -> std::pair<Event, double> {
-    auto event{this->fGENBOD(u, Base::ISMomenta())};
+    auto event{this->fGENBOD(u, Base::Momenta())};
     auto detJ{event.weight};
     event.weight = 1;
     return {std::move(event), detJ};

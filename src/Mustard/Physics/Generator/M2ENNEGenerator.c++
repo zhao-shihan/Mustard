@@ -37,7 +37,7 @@ M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, Vector3D momentum,
                                  std::optional<double> stepSize) :
     MultipleTryMetropolisGenerator{{}, {}, {}, thinningRatio, acfSampleSize.value_or(100000), stepSize.value_or(0.1)} {
     Parent(parent);
-    ParentMomentum(momentum);
+    Momentum(momentum);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2});
 }
 
@@ -51,9 +51,9 @@ auto M2ENNEGenerator::Parent(std::string_view parent) -> void {
     }
 }
 
-auto M2ENNEGenerator::ParentMomentum(Vector3D momentum) -> void {
+auto M2ENNEGenerator::Momentum(Vector3D momentum) -> void {
     const auto energy{std::sqrt(momentum.mag2() + muc::pow(muonium_mass_c2, 2))};
-    ISMomenta({energy, momentum});
+    Momenta({energy, momentum});
 }
 
 } // namespace Mustard::inline Physics::inline Generator

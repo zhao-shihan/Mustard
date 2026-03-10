@@ -25,7 +25,7 @@ namespace Mustard::inline Physics::QFT {
 
 /// @class MSqM2ENNGG
 /// @brief Matrix element squared for μ⁻ → e⁻ννγγ and μ⁺ → e⁺ννγγ decays.
-/// Neutrino energies are averaged over.
+/// Neutrino momenta are averaged over.
 ///
 /// Implements polarized matrix element calculation for double radiative muon decay
 /// referenceing McMule's analytical formula.

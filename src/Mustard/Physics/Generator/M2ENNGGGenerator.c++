@@ -38,7 +38,7 @@ M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, Vector3D momentum, V
                                    std::optional<double> stepSize) :
     MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(200000), stepSize.value_or(0.1)} {
     Parent(parent);
-    ParentMomentum(momentum);
+    Momentum(momentum);
     Mass({electron_mass_c2, 0, 0, 0, 0});
     SoftCutoff(softCutoff);
     CollinearCutoff(collinearCutoff);
@@ -55,9 +55,9 @@ auto M2ENNGGGenerator::Parent(std::string_view parent) -> void {
     }
 }
 
-auto M2ENNGGGenerator::ParentMomentum(Vector3D momentum) -> void {
+auto M2ENNGGGenerator::Momentum(Vector3D momentum) -> void {
     const auto energy{std::sqrt(momentum.mag2() + muc::pow(muon_mass_c2, 2))};
-    ISMomenta({energy, momentum});
+    Momenta({energy, momentum});
 }
 
 auto M2ENNGGGenerator::SoftCutoff(double softCutoff) -> void {

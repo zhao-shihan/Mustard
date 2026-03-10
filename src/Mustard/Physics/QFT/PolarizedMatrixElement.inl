@@ -21,32 +21,32 @@ namespace Mustard::inline Physics::QFT {
 template<int M, int N>
 PolarizedMatrixElement<M, N>::PolarizedMatrixElement(const InitialStatePolarization& pol) :
     PolarizedMatrixElement{} {
-    ISPolarization(pol);
+    Polarization(pol);
 }
 
 template<int M, int N>
-auto PolarizedMatrixElement<M, N>::ISPolarization(const InitialStatePolarization& pol) -> void {
+auto PolarizedMatrixElement<M, N>::Polarization(const InitialStatePolarization& pol) -> void {
     if constexpr (M == 1) {
         const auto polNorm{pol.mag()};
         if (polNorm > 1) [[unlikely]] {
             PrintWarning(fmt::format("Got polarization (pol) with |pol| = {} (expects |pol| <= 1)", polNorm));
         }
-        fISPolarization = pol;
+        fPolarization = pol;
     } else {
         for (int i{}; i < M; ++i) {
-            ISPolarization(i, pol[i]);
+            Polarization(i, pol[i]);
         }
     }
 }
 
 template<int M, int N>
-auto PolarizedMatrixElement<M, N>::ISPolarization(int i, Vector3D pol) -> void
+auto PolarizedMatrixElement<M, N>::Polarization(int i, Vector3D pol) -> void
     requires(M > 1) {
     const auto polNorm{pol.mag()};
     if (polNorm > 1) [[unlikely]] {
         PrintWarning(fmt::format("Got polarization {} (pol) with |pol| = {} (expects |pol| <= 1)", i, polNorm));
     }
-    fISPolarization.at(i) = pol;
+    fPolarization.at(i) = pol;
 }
 
 } // namespace Mustard::inline Physics::QFT

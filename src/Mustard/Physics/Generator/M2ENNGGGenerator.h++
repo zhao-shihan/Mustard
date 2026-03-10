@@ -53,7 +53,7 @@ public:
     auto Parent(std::string_view parent) -> void;
     /// @brief Set parent momentum
     /// @param momentum Muon momentum
-    auto ParentMomentum(Vector3D momentum) -> void;
+    auto Momentum(Vector3D momentum) -> void;
     /// @brief Set soft cutoff for final-state photons
     /// @param softCutoff Low-energy cutoff for final-state photons (in the c.m. frame)
     auto SoftCutoff(double softCutoff) -> void;

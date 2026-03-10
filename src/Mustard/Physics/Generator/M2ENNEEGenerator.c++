@@ -40,7 +40,7 @@ M2ENNEEGenerator::M2ENNEEGenerator(std::string_view parent, Vector3D momentum, V
         MSqVersion(*mSqVer);
     }
     Parent(parent);
-    ParentMomentum(momentum);
+    Momentum(momentum);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2, electron_mass_c2});
     AddIdenticalSet({0, 4});
 }
@@ -55,9 +55,9 @@ auto M2ENNEEGenerator::Parent(std::string_view parent) -> void {
     }
 }
 
-auto M2ENNEEGenerator::ParentMomentum(Vector3D momentum) -> void {
+auto M2ENNEEGenerator::Momentum(Vector3D momentum) -> void {
     const auto energy{std::sqrt(momentum.mag2() + muc::pow(muon_mass_c2, 2))};
-    ISMomenta({energy, momentum});
+    Momenta({energy, momentum});
 }
 
 } // namespace Mustard::inline Physics::inline Generator

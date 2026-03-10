@@ -102,7 +102,7 @@ public:
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
 
     /// @brief Get currently set initial-state 4-momenta
-    auto ISMomenta() const -> const auto& { return fISMomenta; }
+    auto Momenta() const -> const auto& { return fMomenta; }
 
     /// @brief Compute 1/S × |M|² × acceptance integral on phase space by Monte Carlo integration.
     /// Useful for calculating total decay width or cross section
@@ -120,28 +120,28 @@ public:
 protected:
     /// @brief Set initial-state 4-momenta
     /// @param pI initial-state 4-momenta
-    auto ISMomenta(const InitialStateMomenta& pI) -> void;
+    auto Momenta(const InitialStateMomenta& pI) -> void;
 
     /// @brief Get initial-state polarization vector(s)
     /// @note This overload is only enabled for polarized process
-    auto ISPolarization() const -> const typename A::InitialStatePolarization&
+    auto Polarization() const -> const typename A::InitialStatePolarization&
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Get initial-state polarization vector
     /// @param i Particle index (0 ≤ i < M)
     /// @note This overload is only enabled for polarized scattering
-    auto ISPolarization(int i) const -> Vector3D
+    auto Polarization(int i) const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set initial-state polarization vector(s)
     /// @param pol Polarization vector(s) (all |pol| ≤ 1)
     /// @note This overload is only enabled for polarized process
-    auto ISPolarization(const typename A::InitialStatePolarization& pol) -> void
+    auto Polarization(const typename A::InitialStatePolarization& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
     /// @brief Set polarization for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
     /// @note This overload is only enabled for polarized scattering
-    auto ISPolarization(int i, Vector3D pol) -> void
+    auto Polarization(int i, Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set final-state PDG IDs
@@ -154,7 +154,7 @@ protected:
     /// @brief Generate an event on phase space
     /// @param rng Reference to CLHEP random engine
     /// @return An event from phase space
-    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fISMomenta); }
+    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fMomenta); }
 
     /// @brief Add an identical particle index set
     /// @param set A vector of particle indices (0 ≤ index < N)
@@ -209,7 +209,7 @@ protected:
     GENBOD<M, N> fGENBOD;                   ///< Phase space generator
 
 private:
-    InitialStateMomenta fISMomenta;                                   ///< Initial-state 4-momenta
+    InitialStateMomenta fMomenta;                                   ///< Initial-state 4-momenta
     Vector3D fBoostFromLabToCM;                                       ///< Boost from lab frame to c.m. frame
                                                                       //
     double fFSSymmetryFactor;                                         ///< Final-state identical particle symmetry factor
