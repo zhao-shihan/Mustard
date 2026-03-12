@@ -67,7 +67,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void 
         PrintError(fmt::format("Infinite MCMC step size (got {})", stepSize));
     }
     if (stepSize <= std::numeric_limits<double>::epsilon() or 0.5 <= stepSize) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious MCMC step size (expects {} < step size < 0.5, got {})", stepSize, std::numeric_limits<double>::epsilon()));
+        PrintWarning(fmt::format("Suspicious MCMC step size (expects {} < step size < 0.5, got {})", std::numeric_limits<double>::epsilon(), stepSize));
     }
     // Rescale stepSize
     // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
