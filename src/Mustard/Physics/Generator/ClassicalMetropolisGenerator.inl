@@ -31,25 +31,11 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                                     const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                                     std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
                                                                     std::optional<double> stepSize) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
-    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
-    fGaussian{},
-    fStepSize{std::numeric_limits<double>::quiet_NaN()} {
-    if (stepSize) {
-        StepSize(*stepSize);
-    }
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                                                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
-                                                                    std::optional<double> stepSize) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
     fStepSize{std::numeric_limits<double>::quiet_NaN()} {

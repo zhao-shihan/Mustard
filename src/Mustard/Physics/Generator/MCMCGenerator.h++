@@ -127,12 +127,12 @@ public:
     MCMCGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     /// @brief Get initial-state polarization vector(s)
     /// @note This overload is only enabled for polarized process
     auto Polarization() const -> const typename A::InitialStatePolarization&
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
     /// @brief Get initial-state polarization vector
     /// @param i Particle index (0 ≤ i < M)
     /// @note This overload is only enabled for polarized scattering
@@ -143,7 +143,7 @@ public:
     /// @param pol Polarization vector(s) (all |pol| ≤ 1)
     /// @note This overload is only enabled for polarized process
     auto Polarization(const typename A::InitialStatePolarization& pol) -> void
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
     /// @brief Set polarization for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)

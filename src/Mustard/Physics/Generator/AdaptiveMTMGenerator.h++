@@ -82,28 +82,16 @@ public:
                          std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
-    /// @param polarization Initial-state polarization vector
+    /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
-    AdaptiveMTMGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+    AdaptiveMTMGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                          std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
-    /// @brief Construct event generator
-    /// @param pI initial-state 4-momenta
-    /// @param polarization Initial-state polarization vectors
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
-    /// @note This overload is only enabled for polarized scattering
-    AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                         std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     // Keep the class abstract
     virtual ~AdaptiveMTMGenerator() override = 0;

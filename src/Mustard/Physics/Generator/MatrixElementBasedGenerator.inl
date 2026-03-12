@@ -39,7 +39,7 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                                   const std::array<int, N>& pdgID, const std::array<double, N>& mass) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
     MatrixElementBasedGenerator{pI, pdgID, mass} {
     Polarization(polarization);
 }
@@ -110,7 +110,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Momenta(const InitialStateMomenta& pI
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::Polarization() const -> const typename A::InitialStatePolarization&
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> {
     return fMatrixElement.Polarization();
 }
 
@@ -122,7 +122,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Polarization(int i) const -> Vector3D
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::Polarization(const typename A::InitialStatePolarization& pol) -> void
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> {
     fMatrixElement.Polarization(pol);
 }
 

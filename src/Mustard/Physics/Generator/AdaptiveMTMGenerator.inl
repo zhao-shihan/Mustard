@@ -30,23 +30,10 @@ AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& p
     fProposalSigma{} {}
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                     const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                                     std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
-    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
-    fGaussian{},
-    fIteration{},
-    fLearningRate{},
-    fRunningMean{},
-    fProposalCovariance{},
-    fProposalSigma{} {}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
     fIteration{},
