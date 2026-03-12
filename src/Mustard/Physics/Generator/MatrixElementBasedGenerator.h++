@@ -45,7 +45,7 @@
 
 #include "gsl/gsl"
 
-#include "fmt/core.h"
+#include "fmt/std.h"
 
 #include <algorithm>
 #include <array>
@@ -209,7 +209,7 @@ protected:
     GENBOD<M, N> fGENBOD;                   ///< Phase space generator
 
 private:
-    InitialStateMomenta fMomenta;                                   ///< Initial-state 4-momenta
+    InitialStateMomenta fMomenta;                                     ///< Initial-state 4-momenta
     Vector3D fBoostFromLabToCM;                                       ///< Boost from lab frame to c.m. frame
                                                                       //
     double fFSSymmetryFactor;                                         ///< Final-state identical particle symmetry factor
