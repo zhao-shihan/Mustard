@@ -177,7 +177,7 @@ public:
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     /// @warning Initial-state momenta passed to this function are ignored.
-    /// Use `ISMomenta` to set initial-state momenta
+    /// Use `Momenta` to set initial-state momenta
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta) -> Event override;
     // Avoid hiding other operator() overloads from base class
     using Base::operator();
