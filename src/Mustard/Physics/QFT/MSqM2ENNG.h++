@@ -28,7 +28,7 @@ namespace Mustard::inline Physics::QFT {
 /// Neutrino momenta are averaged over.
 ///
 /// Implements polarized matrix element calculation for radiative muon decay
-/// referenceing McMule's analytical formula.
+/// referencing McMule's analytical formula.
 class MSqM2ENNG : public PolarizedMatrixElement<1, 4> {
 public:
     // Inherit constructor
