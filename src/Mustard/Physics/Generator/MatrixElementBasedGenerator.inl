@@ -91,13 +91,13 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
     }
 
     // Report result
-    const auto& [summation, nSample]{integrationState};
+    const auto& [sumF, sumF2, nSample]{integrationState};
     MasterPrint("Integration completed in {:.3f}s.\n"
                 "Integration state (integration can be continued from here):\n"
                 "  {} {} {}\n"
                 "The integral of |M|^2 * (Acceptance) over phase space:\n"
                 "  {} +/- {}  (rel. unc.: {:.3}%, N_eff: {:.2f})\n",
-                time, summation[0], summation[1], nSample, integral.value, integral.uncertainty,
+                time, sumF, sumF2, nSample, integral.value, integral.uncertainty,
                 integral.uncertainty / integral.value * 100, nEff);
     return {integral, nEff, integrationState};
 }
@@ -188,8 +188,8 @@ auto MatrixElementBasedGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> p
         PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i, j) = {})", pID));
         return;
     }
-    if (cutoff <= 0) [[unlikely]] {
-        PrintWarning(fmt::format("Non-positive collinear cutoff for particle pair {} (got {})", pID, cutoff));
+    if (cutoff <= 0 or CLHEP::pi <= cutoff) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious collinear cutoff for particle pair {} (expect 0 < cutoff < pi, got {})", pID, cutoff));
     }
     fCollinearCutoff[pID] = std::cos(cutoff); // store cosθ to speed up the check (cosθ ≥ cutoff means θ ≤ cutoff, i.e. collinear)
     fInfraredUnsafePID.insert(i);
@@ -321,26 +321,26 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         if (mplr::available()) {
             mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
         }
-        state.sum += sum;
+        state.sumF += sum[0];
+        state.sumF2 += sum[1];
         state.n += nSample;
         Estimate integral;
-        integral.value = state.sum[0] / state.n;
-        integral.uncertainty = std::sqrt((state.sum[1] / state.n - muc::pow(integral.value, 2)) / state.n);
-        const auto nEff{muc::pow(state.sum[0], 2) / state.sum[1]};
+        integral.value = state.sumF / state.n;
+        integral.uncertainty = std::sqrt((state.sumF2 / state.n - muc::pow(integral.value, 2)) / state.n);
+        const auto nEff{muc::pow(state.sumF, 2) / state.sumF2};
         return std::pair{integral, nEff};
     }};
     // Integration loop
     MasterPrintLn("Integration starts. Precision goal: {:.3}.", precisionGoal);
     const auto initialBatchSize{muc::to_unsigned(muc::llround(muc::pow(precisionGoal, -2)))};
     auto batchSize{std::max(1000000ull * executor.NProcess(), initialBatchSize)};
-    double nSamplePerMin{}; // just a very approximate value
     for (int checkpoint{};; ++checkpoint) {
         if (state.n == 0) {
             MasterPrintLn("[Checkpoint {}] Restarting integration.", checkpoint);
         } else {
             MasterPrintLn("[Checkpoint {}] Continuing integration from state\n"
                           "  {} {} {}",
-                          checkpoint, state.sum[0], state.sum[1], state.n);
+                          checkpoint, state.sumF, state.sumF2, state.n);
         }
         MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
         const auto [integral, nEff]{Integrate(batchSize)};
@@ -355,18 +355,18 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         MasterPrint("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} not reached.\n"
                     "\n",
                     precision, nEff, precisionGoal);
-        // Estimate throughput
-        nSamplePerMin = batchSize / muc::chrono::minutes<double>{executor.ExecutionInfo().wallTime}.count();
+        // Estimate throughput, just a very approximate value
+        const auto nSamplePerMin{batchSize / muc::chrono::minutes<double>{executor.ExecutionInfo().wallTime}.count()};
         // Increase total sample size adaptively
-        constexpr auto zFactor{1}; // decrease z sigma to increase stability
-        const auto counterFactor{1 - zFactor / std::sqrt(nEff)};
-        const auto factor{std::max(0., counterFactor * muc::pow(precision / precisionGoal, 2) - 1)};
-        if (std::isfinite(factor)) {
+        if (std::isfinite(precision)) { // finite precision implies finite nEff
+            constexpr auto zFactor{1};  // decrease z sigma to increase stability
+            const auto counterFactor{1 - zFactor / std::sqrt(nEff)};
+            const auto factor{std::max(0., counterFactor * muc::pow(precision / precisionGoal, 2) - 1)};
             batchSize = factor * state.n;
-        } else {
+        } else { // increase the batch size by 10 if we have not even stepped into the real phase space
             batchSize *= 10;
         }
-        // Batch size should not be too samll,
+        // Batch size should not be too small,
         const auto batchSizeLowerBound{std::max<long long>(executor.NProcess(), std::llround(nSamplePerMin))};
         // and not too large
         const auto batchSizeUpperBound{std::llround(15 * nSamplePerMin)};

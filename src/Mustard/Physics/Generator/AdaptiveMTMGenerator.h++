@@ -76,7 +76,7 @@ public:
     /// @param pI initial-state 4-momenta
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                          std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {});
@@ -85,7 +85,7 @@ public:
     /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
     AdaptiveMTMGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,

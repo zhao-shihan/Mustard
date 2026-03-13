@@ -50,7 +50,8 @@ MultipleTryMetropolisGenerator<M, N, A>::~MultipleTryMetropolisGenerator() = def
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
     if (not std::isfinite(stepSize)) [[unlikely]] {
-        PrintError(fmt::format("Infinite MCMC step size (got {})", stepSize));
+        PrintError(fmt::format("Infinite MCMC step size (got {}) not allowed, not setting it", stepSize));
+        return;
     }
     if (stepSize <= std::numeric_limits<double>::epsilon() or 0.5 <= stepSize) [[unlikely]] {
         PrintWarning(fmt::format("Suspicious MCMC step size (expects {} < step size < 0.5, got {})", std::numeric_limits<double>::epsilon(), stepSize));
@@ -67,7 +68,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
     // i.e. sqrt(random walk distance) >~ scale * sqrt(dimension)
     constexpr auto travelScale{10};
     double distance{};
-    while (distance > muc::pow(travelScale, 2) * MarkovChain::dim) {
+    while (distance < muc::pow(travelScale, 2) * MarkovChain::dim) {
         if (NextEvent(rng)) {
             distance += fStepSize;
         }

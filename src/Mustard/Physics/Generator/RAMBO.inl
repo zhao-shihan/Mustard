@@ -94,13 +94,10 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
 
     // generate N massless momenta in infinite phase space
     for (int i = 0; i < N; i++) {
-        double r1 = u[4 * i];
-        double c = 2. * r1 - 1.;
+        double c = 2. * u[4 * i] - 1.;
         double s = std::sqrt(1. - c * c);
         double f = twopi * u[4 * i + 1];
-        r1 = u[4 * i + 2];
-        double r2 = u[4 * i + 3];
-        q[i][0] = -std::log(r1 * r2);
+        q[i][0] = -std::log(u[4 * i + 2] * u[4 * i + 3]);
         q[i][3] = q[i][0] * c;
         q[i][2] = q[i][0] * s * std::cos(f);
         q[i][1] = q[i][0] * s * std::sin(f);

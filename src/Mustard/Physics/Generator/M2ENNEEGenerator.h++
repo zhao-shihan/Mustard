@@ -37,7 +37,7 @@ public:
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param momentum Muon momentum
     /// @param polarization Muon polarization vector
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @param mSqVer The matrix element version

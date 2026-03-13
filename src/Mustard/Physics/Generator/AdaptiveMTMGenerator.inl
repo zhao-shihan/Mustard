@@ -52,7 +52,7 @@ auto AdaptiveMTMGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void 
     // i.e. sqrt(random walk distance) >~ scale * sqrt(dimension)
     constexpr auto travelScale{10};
     double distance{};
-    while (distance > muc::pow(travelScale, 2) * MarkovChain::dim) {
+    while (distance < muc::pow(travelScale, 2) * MarkovChain::dim) {
         if (NextEventImpl(rng, fgInitProposalStepSize)) {
             distance += fgInitProposalStepSize;
         }

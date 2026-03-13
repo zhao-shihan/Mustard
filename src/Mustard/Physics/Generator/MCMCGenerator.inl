@@ -90,14 +90,15 @@ auto MCMCGenerator<M, N, A>::Acceptance(AcceptanceFunction Acceptance) -> void {
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ThinningRatio(double value) -> void {
     if (not std::isfinite(value)) [[unlikely]] {
-        PrintError(fmt::format("Infinite thinning factor (got {})", value));
+        PrintError(fmt::format("Infinite thinning ratio not allowed (got {}), not setting it", value));
+        return;
     }
     if (value < 0) [[unlikely]] {
-        PrintWarning(fmt::format("Negative thinning factor (got {}), setting to 0", value));
-        value = 0;
+        PrintError(fmt::format("Negative thinning ratio not allowed (got {}), not setting it", value));
+        return;
     }
     if (value > 10) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious thinning factor (got {})", value));
+        PrintWarning(fmt::format("Suspicious thinning ratio (got {})", value));
     }
     fThinningRatio = value;
 }
@@ -105,7 +106,7 @@ auto MCMCGenerator<M, N, A>::ThinningRatio(double value) -> void {
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ACFSampleSize(unsigned n) -> void {
     if (n == 0) {
-        PrintError("Zero ACF sample size not allowed");
+        PrintError("Zero ACF sample size not allowed, not setting it");
         return;
     }
     if (n <= 10 or std::numeric_limits<int>::max() <= n) [[unlikely]] {
@@ -130,7 +131,16 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     // find phase space
     MasterPrintLn("Finding phase space...");
     muc::ranges::iota(fMC.state.pID, 0);
-    while (true) {
+    for (long long counter{};; ++counter) {
+        if (counter >= 1'000'000'000) {
+            const auto billion{std::div(counter, 1'000'000'000ll)};
+            if (billion.rem == 0) [[unlikely]] {
+                PrintWarning(fmt::format("Tried {} billion times to find phase space in {} initialization, still trying...", billion.quot, thisName));
+            }
+            if (billion.quot == 1000) {
+                Throw<std::runtime_error>(fmt::format("Failed to find phase space after 1 trillion tries in {} initialization", thisName));
+            }
+        }
         rng.flatArray(fMC.state.u.size(), fMC.state.u.data());
         auto [event, detJ]{DirectPhaseSpace(fMC.state.u)};
         if (not this->InfraredSafe(event.p)) {

@@ -39,7 +39,7 @@ public:
     /// @param polarization Muon polarization vector
     /// @param softCutoff Low-energy cutoff for final-state photon (in the c.m. frame)
     /// @param collinearCutoff Collinear cutoff on angles between final-state photon and e⁺/e⁻ (in the c.m. frame)
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     M2ENNGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,

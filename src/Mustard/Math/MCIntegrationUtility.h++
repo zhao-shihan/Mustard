@@ -20,14 +20,13 @@
 
 #include "Mustard/Math/Estimate.h++"
 
-#include "muc/array"
-
 namespace Mustard::inline Math {
 
 /// @brief Monte Carlo integration internal state
 struct MCIntegrationState {
-    muc::array2d sum;     ///< Sum of integrand and squared integrand
-    unsigned long long n; ///< Sample size
+    double sumF{};          ///< Sum of integrand
+    double sumF2{};         ///< Sum of squared integrand
+    unsigned long long n{}; ///< Sample size
 };
 
 } // namespace Mustard::inline Math
