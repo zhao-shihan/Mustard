@@ -104,7 +104,11 @@ auto MCMCGenerator<M, N, A>::ThinningRatio(double value) -> void {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ACFSampleSize(unsigned n) -> void {
-    if (n >= std::numeric_limits<int>::max()) [[unlikely]] {
+    if (n == 0) {
+        PrintError("Zero ACF sample size not allowed");
+        return;
+    }
+    if (n <= 10 or std::numeric_limits<int>::max() <= n) [[unlikely]] {
         PrintWarning(fmt::format("Suspicious ACF sample size (got {})", n));
     }
     fACFSampleSize = n;
