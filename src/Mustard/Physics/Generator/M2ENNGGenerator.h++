@@ -37,8 +37,8 @@ public:
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param momentum Muon momentum
     /// @param polarization Muon polarization vector
-    /// @param softCutoff Low-energy cutoff for final-state photons (in the c.m. frame)
-    /// @param collinearCutoff Collinear cutoff on angles between final-state photons and e⁺/e⁻ (in the c.m. frame)
+    /// @param softCutoff Low-energy cutoff for final-state photon (in the c.m. frame)
+    /// @param collinearCutoff Collinear cutoff on angles between final-state photon and e⁺/e⁻ (in the c.m. frame)
     /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
@@ -54,11 +54,11 @@ public:
     /// @brief Set parent momentum
     /// @param momentum Muon momentum
     auto Momentum(Vector3D momentum) -> void;
-    /// @brief Set soft cutoff for final-state photons
-    /// @param softCutoff Low-energy cutoff for final-state photons (in the c.m. frame)
+    /// @brief Set soft cutoff for final-state photon
+    /// @param softCutoff Low-energy cutoff for final-state photon (in the c.m. frame)
     auto SoftCutoff(double softCutoff) -> void;
-    /// @brief Set collinear cutoff for final-state photons
-    /// @param collinearCutoff Cutoff on angles between final-state photons and e⁺/e⁻ (in the c.m. frame)
+    /// @brief Set collinear cutoff for final-state photon
+    /// @param collinearCutoff Cutoff on angles between final-state photon and e⁺/e⁻ (in the c.m. frame)
     auto CollinearCutoff(double collinearCutoff) -> void;
 };
 

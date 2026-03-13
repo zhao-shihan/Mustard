@@ -45,8 +45,8 @@ public:
 public:
     /// @brief Default constructor (all polarizations zero)
     PolarizedMatrixElement() = default;
-    /// @brief Construct with initial-state polarization vectors
-    /// @param pol Array of polarization vectors for each initial-state particle (all |p| ≤ 1)
+    /// @brief Construct with initial-state polarization vector(s)
+    /// @param pol Initial-state polarization vector(s) for each initial-state particle (all |p| ≤ 1)
     PolarizedMatrixElement(const InitialStatePolarization& pol);
 
     /// @brief Get initial-state polarization vector(s)

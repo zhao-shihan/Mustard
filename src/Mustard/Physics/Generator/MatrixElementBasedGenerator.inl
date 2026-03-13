@@ -191,7 +191,7 @@ auto MatrixElementBasedGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> p
     if (cutoff <= 0) [[unlikely]] {
         PrintWarning(fmt::format("Non-positive collinear cutoff for particle pair {} (got {})", pID, cutoff));
     }
-    fCollinearCutoff[pID] = std::cos(cutoff);
+    fCollinearCutoff[pID] = std::cos(cutoff); // store cosθ to speed up the check (cosθ ≥ cutoff means θ ≤ cutoff, i.e. collinear)
     fInfraredUnsafePID.insert(i);
     fInfraredUnsafePID.insert(j);
 }

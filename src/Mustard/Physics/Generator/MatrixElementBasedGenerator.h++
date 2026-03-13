@@ -173,7 +173,7 @@ protected:
     auto SoftCutoff(int i, double cutoff) -> void;
     /// @brief Set collinear cutoff for two particles to avoid infrared divergence (if applicable)
     /// @param pID Pair of particle indices (0 ≤ index < N)
-    /// @param cutoff Collinear cutoff value (on angle between the two particles in the c.m. frame)
+    /// @param cutoff Collinear cutoff value (on angle between the two particles in the c.m. frame, should within (0, π))
     auto CollinearCutoff(std::pair<int, int> pID, double cutoff) -> void;
     /// @brief Check final-state momenta pass the soft cutoff and collinear cutoff (i.e. are IR-safe)
     /// @param pF Final states' 4-momenta
