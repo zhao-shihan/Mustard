@@ -178,7 +178,7 @@ protected:
     /// @brief Check final-state momenta pass the soft cutoff and collinear cutoff (i.e. are IR-safe)
     /// @param pF Final states' 4-momenta
     /// @return true if momenta are IR-safe
-    auto InfraredSafe(FinalStateMomenta pF) const -> bool;
+    auto InfraredSafe(const FinalStateMomenta& pF) const -> bool;
 
     /// @brief Set user-defined acceptance function (normally 0 <= acceptance <= 1)
     /// (PDF = 1/S × |M|² × acceptance, weight = 1 / acceptance)

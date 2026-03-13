@@ -197,19 +197,21 @@ auto MatrixElementBasedGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> p
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::InfraredSafe(FinalStateMomenta pF) const -> bool {
+auto MatrixElementBasedGenerator<M, N, A>::InfraredSafe(const FinalStateMomenta& pF) const -> bool {
+    FinalStateMomenta infraredUnsafePF;
     for (auto&& i : std::as_const(fInfraredUnsafePID)) {
-        pF[i].boost(fBoostFromLabToCM);
+        infraredUnsafePF[i] = pF[i];
+        infraredUnsafePF[i].boost(fBoostFromLabToCM);
     }
     for (auto&& [i, cutoff] : std::as_const(fSoftCutoff)) {
-        const auto& p{pF[i]};
+        const auto& p{infraredUnsafePF[i]};
         if (p.e() - p.m() <= cutoff) {
             return false;
         }
     }
     for (auto&& [i, cutoff] : std::as_const(fCollinearCutoff)) {
-        const auto p1{pF[i.first].vect()};
-        const auto p2{pF[i.second].vect()};
+        const auto p1{infraredUnsafePF[i.first].vect()};
+        const auto p2{infraredUnsafePF[i.second].vect()};
         if (p1.cosTheta(p2) >= cutoff) { // cosθ ≥ cutoff means θ ≤ cutoff, i.e. collinear
             return false;
         }

@@ -28,7 +28,7 @@ namespace Mustard::inline Physics::QFT {
 /// Neutrino momenta are averaged over.
 ///
 /// Implements polarized matrix element squared for muon decay with internal conversion
-/// (radiative decay where virtual photon converts to e⁺e⁻ pair). Referenceing
+/// (radiative decay where virtual photon converts to e⁺e⁻ pair). Referencing
 /// McMule's analytical formula.
 class MSqM2ENNEE : public PolarizedMatrixElement<1, 5> {
 public:
