@@ -34,8 +34,8 @@ if(MUSTARD_BUILTIN_INDICATORS)
         set(MUSTARD_BUILTIN_INDICATORS_VERSION ${MUSTARD_INDICATORS_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MUSTARD_BUILTIN_INDICATORS_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/indicators-master")
-    set(MUSTARD_BUILTIN_INDICATORS_URL "https://github.com/p-ranav/indicators/archive/refs/heads/master.zip")
+    set(MUSTARD_BUILTIN_INDICATORS_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/indicators-3872f37abd90d7557bac5f834bfb45bd6c75259a")
+    set(MUSTARD_BUILTIN_INDICATORS_URL "https://github.com/p-ranav/indicators/archive/3872f37abd90d7557bac5f834bfb45bd6c75259a.zip")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_INDICATORS_SRC_DIR}/CMakeLists.txt")
