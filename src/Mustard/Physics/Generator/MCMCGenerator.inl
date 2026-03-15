@@ -90,7 +90,7 @@ auto MCMCGenerator<M, N, A>::Acceptance(AcceptanceFunction Acceptance) -> void {
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ThinningRatio(double value) -> void {
     if (not std::isfinite(value)) [[unlikely]] {
-        PrintError(fmt::format("Infinite thinning ratio not allowed (got {}), not setting it", value));
+        PrintError(fmt::format("Non-finite thinning ratio not allowed (got {}), not setting it", value));
         return;
     }
     if (value < 0) [[unlikely]] {

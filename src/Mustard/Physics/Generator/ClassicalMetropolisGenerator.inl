@@ -50,7 +50,7 @@ ClassicalMetropolisGenerator<M, N, A>::~ClassicalMetropolisGenerator() = default
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto ClassicalMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
     if (not std::isfinite(stepSize)) [[unlikely]] {
-        PrintError(fmt::format("Infinite MCMC step size not allowed (got {}), not setting it", stepSize));
+        PrintError(fmt::format("Non-finite MCMC step size not allowed (got {}), not setting it", stepSize));
         return;
     }
     if (stepSize <= muc::default_tolerance<double> or 0.5 <= stepSize) [[unlikely]] {

@@ -98,7 +98,7 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
                 "The integral of |M|^2 * (Acceptance) over phase space:\n"
                 "  {} +/- {}  (rel. unc.: {:.3}%, N_eff: {:.2f})\n",
                 time, sumF, sumF2, nSample, integral.value, integral.uncertainty,
-                integral.uncertainty / integral.value * 100, nEff);
+                integral.uncertainty / std::abs(integral.value) * 100, nEff);
     return {integral, nEff, integrationState};
 }
 
@@ -167,6 +167,10 @@ auto MatrixElementBasedGenerator<M, N, A>::SoftCutoff(int i, double cutoff) -> v
         PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got {})", N, i));
         return;
     }
+    if (not std::isfinite(cutoff)) [[unlikely]] {
+        PrintError(fmt::format("Non-finite soft cutoff for particle {} not allowed (got {}), not setting it", i, cutoff));
+        return;
+    }
     if (cutoff <= 0) [[unlikely]] {
         PrintWarning(fmt::format("Non-positive soft cutoff for particle {} (got {})", i, cutoff));
     }
@@ -186,6 +190,10 @@ auto MatrixElementBasedGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> p
     }
     if (i == j) [[unlikely]] {
         PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i, j) = {})", pID));
+        return;
+    }
+    if (not std::isfinite(cutoff)) [[unlikely]] {
+        PrintError(fmt::format("Non-finite collinear cutoff for particle pair {} not allowed (got {}), not setting it", pID, cutoff));
         return;
     }
     if (cutoff <= 0 or CLHEP::pi <= cutoff) [[unlikely]] {
@@ -239,7 +247,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Acceptance(const FinalStateMomenta& p
         return where;
     }};
     if (not std::isfinite(acceptance)) {
-        Throw<std::runtime_error>(fmt::format("Infinite acceptance found (got {} at {})", acceptance, Format(pF)));
+        Throw<std::runtime_error>(fmt::format("Non-finite acceptance found (got {} at {})", acceptance, Format(pF)));
     }
     if (acceptance < 0) {
         Throw<std::runtime_error>(fmt::format("Negative acceptance found (got {} at {})", acceptance, Format(pF)));
@@ -287,7 +295,7 @@ auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMom
         }
     }
     if (not std::isfinite(result)) {
-        Throw<std::runtime_error>(fmt::format("Infinite 1/S * |M|^2 * acceptance * |J| found (got {} at {})", result, Format(pF, acceptance, detJ)));
+        Throw<std::runtime_error>(fmt::format("Non-finite 1/S * |M|^2 * acceptance * |J| found (got {} at {})", result, Format(pF, acceptance, detJ)));
     }
     return result;
 }
@@ -344,7 +352,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         }
         MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
         const auto [integral, nEff]{Integrate(batchSize)};
-        const auto precision{integral.uncertainty / integral.value};
+        const auto precision{integral.uncertainty / std::abs(integral.value)};
         if (precision <= precisionGoal) {
             MasterPrint("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} reached.\n"
                         "\n"
