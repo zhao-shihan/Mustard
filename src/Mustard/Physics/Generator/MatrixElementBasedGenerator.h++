@@ -33,12 +33,12 @@
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
+#include "gtl/phmap.hpp"
+
 #include "mplr/mplr.hpp"
 
 #include "muc/array"
 #include "muc/chrono"
-#include "muc/hash_map"
-#include "muc/hash_set"
 #include "muc/math"
 #include "muc/numeric"
 #include "muc/utility"
@@ -215,9 +215,9 @@ private:
     double fFSSymmetryFactor;                                         ///< Final-state identical particle symmetry factor
     std::vector<std::vector<int>> fIdenticalSet;                      ///< Identical particle sets
                                                                       //
-    muc::flat_hash_map<int, double> fSoftCutoff;                      ///< Soft cutoffs (on kinetic energies in the c.m. frame)
-    muc::flat_hash_map<std::pair<int, int>, double> fCollinearCutoff; ///< Collinear cutoffs (on cosine of angles between particles in the c.m. frame)
-    muc::flat_hash_set<int> fInfraredUnsafePID;                       ///< Particle indices involved in IR cutoffs
+    gtl::flat_hash_map<int, double> fSoftCutoff;                      ///< Soft cutoffs (on kinetic energies in the c.m. frame)
+    gtl::flat_hash_map<std::pair<int, int>, double> fCollinearCutoff; ///< Collinear cutoffs (on cosine of angles between particles in the c.m. frame)
+    gtl::flat_hash_set<int> fInfraredUnsafePID;                       ///< Particle indices involved in IR cutoffs
                                                                       //
     AcceptanceFunction fAcceptance;                                   ///< User acceptance function (normally 0 <= acceptance <= 1)
                                                                       //

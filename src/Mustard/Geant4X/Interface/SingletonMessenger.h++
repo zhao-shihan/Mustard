@@ -25,7 +25,8 @@
 
 #include "G4UImessenger.hh"
 
-#include "muc/hash_set"
+#include "gtl/phmap.hpp"
+
 #include "muc/type_traits"
 #include "muc/utility"
 
@@ -94,7 +95,7 @@ protected:
 
 private:
     mutable bool fDelivering;                                           ///< Delivery state flag (prevents deregistration during delivery)
-    std::tuple<muc::flat_hash_set<ARecipients*>...> fRecipientSetTuple; ///< Type-segregated recipient sets
+    std::tuple<gtl::flat_hash_set<ARecipients*>...> fRecipientSetTuple; ///< Type-segregated recipient sets
 };
 
 } // namespace Mustard::Geant4X::inline Interface

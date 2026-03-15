@@ -24,9 +24,10 @@
 #include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
+#include "gtl/phmap.hpp"
+
 #include "muc/ceta_string"
 #include "muc/concepts"
-#include "muc/hash_map"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -244,7 +245,7 @@ private:
 private:
     typename Model::StdTuple fTuple;
 
-    static const muc::flat_hash_map<std::string_view, gsl::index> fgDynIndexMap;
+    static const gtl::flat_hash_map<std::string_view, gsl::index> fgDynIndexMap;
 };
 
 template<typename... Ts>

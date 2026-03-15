@@ -28,7 +28,7 @@ auto MakeFlatRDFEventSplit(ROOT::RDF::RNode rdf,
     std::vector<gsl::index> eventSplit;
 
     gsl::index index{};
-    muc::flat_hash_set<T> eventIDSet;
+    gtl::flat_hash_set<T> eventIDSet;
     rdf.Foreach(
         [&](T eventID) {
             if (eventIDList.empty() or eventID != eventIDList.back()) {
@@ -112,7 +112,7 @@ auto RDFEventSplit(std::array<ROOT::RDF::RNode, N> rdf,
         }
     }
 
-    std::array<muc::flat_hash_map<T, RDFEntryRange>, N> eventMap;
+    std::array<gtl::flat_hash_map<T, RDFEntryRange>, N> eventMap;
     for (gsl::index iRDF{}; iRDF < nRDF; ++iRDF) {
         const auto& [eventID, es]{flatES[iRDF]};
         const auto nEvent{ssize(eventID)};

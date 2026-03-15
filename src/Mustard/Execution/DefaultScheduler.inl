@@ -20,7 +20,7 @@ namespace Mustard::inline Execution {
 
 template<std::integral T>
 auto MakeCodedScheduler(std::string_view scheduler) -> std::unique_ptr<Scheduler<T>> {
-    static const muc::flat_hash_map<std::string_view, std::function<auto()->std::unique_ptr<Scheduler<T>>>> schedulerMap{
+    static const gtl::flat_hash_map<std::string_view, std::function<auto()->std::unique_ptr<Scheduler<T>>>> schedulerMap{
         {"clmw", [] { return std::make_unique<ClusterAwareMasterWorkerScheduler<T>>(); }},
         {"mw",   [] { return std::make_unique<MasterWorkerScheduler<T>>(); }            },
         {"seq",  [] { return std::make_unique<SequentialScheduler<T>>(); }              },

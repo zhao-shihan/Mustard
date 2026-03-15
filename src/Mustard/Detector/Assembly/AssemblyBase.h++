@@ -20,7 +20,8 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "muc/hash_map"
+#include "gtl/phmap.hpp"
+
 #include "muc/utility"
 
 #include "fmt/core.h"
@@ -87,7 +88,7 @@ private:
     };
 
 private:
-    muc::flat_hash_map<std::type_index, std::unique_ptr<Definition::DefinitionBase, DeleteIfTopmost>> fTop;
+    gtl::flat_hash_map<std::type_index, std::unique_ptr<Definition::DefinitionBase, DeleteIfTopmost>> fTop;
 };
 
 } // namespace Assembly

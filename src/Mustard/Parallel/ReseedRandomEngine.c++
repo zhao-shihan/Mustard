@@ -26,9 +26,9 @@
 
 #include "TRandom.h"
 
-#include "mplr/mplr.hpp"
+#include "gtl/phmap.hpp"
 
-#include "muc/hash_set"
+#include "mplr/mplr.hpp"
 
 #include "gsl/gsl"
 
@@ -61,7 +61,7 @@ namespace {
 /// @note Called exclusively by MPI rank 0 during seed generation
 /// @warning Must satisfy: worldComm.rank() == 0 (enforced by Expects)
 template<std::unsigned_integral T>
-auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
+auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> gtl::flat_hash_set<T> {
     const auto worldComm{mplr::comm_world()};
     Expects(worldComm.rank() == 0);
 
@@ -69,7 +69,7 @@ auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> muc::flat_hash_set<T> {
     Random::Xoshiro256PlusPlus xsr256{std::bit_cast<std::uint64_t>(xsr256Seed)};
     Random::Uniform<T> uniform{1, std::numeric_limits<T>::max() - 1}; // not 0x00...00 and not 0xff...ff
 
-    muc::flat_hash_set<T> uniqueSeeds;
+    gtl::flat_hash_set<T> uniqueSeeds;
     const auto worldSize{worldComm.size()};
     uniqueSeeds.reserve(worldSize);
     do {

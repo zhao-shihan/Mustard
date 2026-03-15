@@ -22,7 +22,8 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
-#include "muc/hash_map"
+#include "gtl/phmap.hpp"
+
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -61,7 +62,7 @@ public:
     static auto RecursiveMutex() -> auto& { return fgRecursiveMutex; }
 
 private:
-    muc::flat_hash_map<std::type_index, const std::weak_ptr<void*>> fInstanceMap;
+    gtl::flat_hash_map<std::type_index, const std::weak_ptr<void*>> fInstanceMap;
 
     static WeakSingletonPool* fgInstance;
     static bool fgInstantiated;
