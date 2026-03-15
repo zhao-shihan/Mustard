@@ -62,6 +62,7 @@ option(MUSTARD_BUILTIN_BACKWARD "Use built-in backward-cpp (network or pre-downl
 option(MUSTARD_BUILTIN_EFM "Use built-in EFM (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_ENVPARSE "Use built-in envparse (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_FMT "Use built-in fmt (network or pre-downloaded source is required)." OFF)
+option(MUSTARD_BUILTIN_GTL "Use built-in gtl (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_INDICATORS "Use built-in indicators (network or pre-downloaded source is required)." ON)
 option(MUSTARD_BUILTIN_MPLR "Use built-in MPLR (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_MSGSL "Use built-in Microsoft.GSL (network or pre-downloaded source is required)." OFF)
@@ -83,6 +84,7 @@ set(MUSTARD_BUILTIN_BACKWARD_VERSION 1.6.1 CACHE STRING "Set built-in backward-c
 set(MUSTARD_BUILTIN_EFM_VERSION 0.1.0 CACHE STRING "Set built-in EFM version (if required).")
 set(MUSTARD_BUILTIN_ENVPARSE_VERSION 1.0.0 CACHE STRING "Set built-in envparse version (if required).")
 set(MUSTARD_BUILTIN_FMT_VERSION 12.1.0 CACHE STRING "Set built-in fmt version (if required).")
+set(MUSTARD_BUILTIN_GTL_VERSION 1.2.0 CACHE STRING "Set built-in gtl version (if required).")
 set(MUSTARD_BUILTIN_INDICATORS_VERSION 2.3 CACHE STRING "Set built-in indicators version (if required).")
 set(MUSTARD_BUILTIN_MPLR_VERSION 0.25.1003 CACHE STRING "Set built-in MPLR version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.2.1 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
@@ -115,33 +117,36 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/GlobalCompileConfig.cmake)
 
 # Required:
 
+# Independent and lightweight libraries, alphabtic order:
 # argparse (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForArgparse.cmake)
 # envparse (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEnvparse.cmake)
 # fmt (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForFmt.cmake)
+# gtl (built-in if not found)
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForGTL.cmake)
 # indicators (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForIndicators.cmake)
 # Microsoft.GSL (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMicrosoftGSL.cmake)
 # muc (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMUC.cmake)
-
 # yaml-cpp (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForYamlCpp.cmake)
-# backward-cpp (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForBackward.cmake)
-# MPLR (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMPLR.cmake)
 
+# Dependent or heavy libraries, sort by dependency order and heaviness (roughly):
+# backward-cpp (built-in if not found), depends on some stacktrace library
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForBackward.cmake)
+# MPLR (built-in if not found), depends on MPI
+include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMPLR.cmake)
 # Eigen
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEigen.cmake)
-# Geant4
+# Geant4, depends on many external libraries
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForGeant4.cmake)
-# ROOT
+# ROOT, depends on many more external libraries
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForROOT.cmake)
-# EFM (built-in if not found)
+# EFM (built-in if not found), depends on ROOT
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEFM.cmake)
 
 # =============================================================================

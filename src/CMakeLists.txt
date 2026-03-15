@@ -30,41 +30,34 @@ configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl.in
                               ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl
                               INSTALL_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Mustard)
 
-# envparse
-target_link_libraries(Mustard PUBLIC envparse::envparse)
-
-# muc
-target_link_libraries(Mustard PUBLIC muc::muc)
-
-# EFM
-target_link_libraries(Mustard PUBLIC EFM::EFM)
-
-# backward-cpp
-target_link_libraries(Mustard PUBLIC Backward::Interface)
-
+# Independent and lightweight libraries, alphabtic order:
 # argparse
 target_link_libraries(Mustard PUBLIC argparse::argparse)
-
-# indicators
-target_link_libraries(Mustard PUBLIC indicators::indicators)
-
-# MPLR
-target_link_libraries(Mustard PUBLIC mplr::mplr)
-
-# Microsoft.GSL
-target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
-
+# envparse
+target_link_libraries(Mustard PUBLIC envparse::envparse)
 # fmt
 target_link_libraries(Mustard PUBLIC fmt::fmt)
-
-# Eigen
-target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
-
+# gtl
+target_link_libraries(Mustard PUBLIC gtl)
+# indicators
+target_link_libraries(Mustard PUBLIC indicators::indicators)
+# Microsoft.GSL
+target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
+# muc
+target_link_libraries(Mustard PUBLIC muc::muc)
 # yaml-cpp
 target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
 
+# Dependent or heavy libraries, sort by dependency order and heaviness (roughly):
+# backward-cpp
+target_link_libraries(Mustard PUBLIC Backward::Interface)
+# MPLR
+target_link_libraries(Mustard PUBLIC mplr::mplr)
+# Eigen
+target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
 # Geant4
 target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
-
 # ROOT
 target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Thread ROOT::Tree ROOT::MathCore ROOT::ROOTDataFrame ROOT::Geom)
+# EFM
+target_link_libraries(Mustard PUBLIC EFM::EFM)

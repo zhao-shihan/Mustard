@@ -141,37 +141,40 @@ IncludeCategories:
   - Regex: '"argparse/.*"'
     Priority: 8
     CaseSensitive: true
-  - Regex: '"Eigen/.*"'
+  - Regex: '"gtl/.*\.hpp"'
     Priority: 9
     CaseSensitive: true
-  - Regex: '"gsl.*\.h"'
+  - Regex: '"Eigen/.*"'
     Priority: 10
     CaseSensitive: true
-  - Regex: '"mplr/mplr.hpp"'
+  - Regex: '"gsl.*\.h"'
     Priority: 11
     CaseSensitive: true
-  - Regex: '"mpi.*\.h"'
+  - Regex: '"mplr/mplr.hpp"'
     Priority: 12
     CaseSensitive: true
-  - Regex: '"EFM/.*\.h.*"'
+  - Regex: '"mpi.*\.h"'
     Priority: 13
     CaseSensitive: true
-  - Regex: '"muc/.*"'
+  - Regex: '"EFM/.*\.h.*"'
     Priority: 14
     CaseSensitive: true
-  - Regex: '"envparse/.*\.h.*"'
+  - Regex: '"muc/.*"'
     Priority: 15
     CaseSensitive: true
-  - Regex: '"gsl/.*"'
+  - Regex: '"envparse/.*\.h.*"'
     Priority: 16
     CaseSensitive: true
-  - Regex: '"fmt/.*\.h"'
+  - Regex: '"gsl/.*"'
     Priority: 17
+    CaseSensitive: true
+  - Regex: '"fmt/.*\.h"'
+    Priority: 18
     CaseSensitive: true
   # very general
   - Regex: '".*"'
     Priority: 1
     CaseSensitive: true
   - Regex: "<.*>"
-    Priority: 18
+    Priority: 19
     CaseSensitive: true
