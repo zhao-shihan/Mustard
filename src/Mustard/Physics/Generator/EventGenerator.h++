@@ -152,7 +152,7 @@ public:
     /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)
     /// @return Generated event
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event override;
-    // Inherit operator() overloads
+    // Avoid hiding other operator() overloads from base class
     using EventGenerator<M, N>::operator();
 };
 

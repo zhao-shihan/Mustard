@@ -36,93 +36,80 @@ MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                       const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                       std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> : // clang-format on
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
     MCMCGenerator{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)} {
-    this->InitialStatePolarization(polarization);
+    this->Polarization(polarization);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                                      const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                      std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) : // clang-format on
-    MCMCGenerator{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)} {
-    this->InitialStatePolarization(polarization);
+auto MCMCGenerator<M, N, A>::Polarization() const -> const typename A::InitialStatePolarization&
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> {
+    return Base::Polarization();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization() const -> Vector3D
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    return Base::InitialStatePolarization();
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization(int i) const -> Vector3D
+auto MCMCGenerator<M, N, A>::Polarization(int i) const -> Vector3D
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return Base::InitialStatePolarization(i);
+    return Base::Polarization(i);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization() const -> const std::array<Vector3D, M>&
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    return Base::InitialStatePolarization();
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization(Vector3D pol) -> void
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>> {
-    if (not pol.isNear(InitialStatePolarization(), muc::default_rel_tol<double>)) {
-        MCMCInitializeRequired();
+auto MCMCGenerator<M, N, A>::Polarization(const typename A::InitialStatePolarization& pol) -> void
+    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> {
+    if constexpr (M == 1) {
+        if (not pol.isNear(Polarization(), muc::default_rel_tol<double>)) {
+            MCMCInitializationRequired();
+        }
+    } else {
+        if (not std::ranges::equal(pol, Polarization(),
+                                   [](auto&& a, auto&& b) { return a.isNear(b, muc::default_rel_tol<double>); })) {
+            MCMCInitializationRequired();
+        }
     }
-    Base::InitialStatePolarization(pol);
+    Base::Polarization(pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization(int i, Vector3D pol) -> void
+auto MCMCGenerator<M, N, A>::Polarization(int i, Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    if (not pol.isNear(InitialStatePolarization(i), muc::default_rel_tol<double>)) {
-        MCMCInitializeRequired();
+    if (not pol.isNear(Polarization(i), muc::default_rel_tol<double>)) {
+        MCMCInitializationRequired();
     }
-    Base::InitialStatePolarization(i, pol);
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void
-    requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    if (not std::ranges::equal(pol, InitialStatePolarization(),
-                               [](auto&& a, auto&& b) { return a.isNear(b, muc::default_rel_tol<double>); })) {
-        MCMCInitializeRequired();
-    }
-    Base::InitialStatePolarization(pol);
+    Base::Polarization(i, pol);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Acceptance(AcceptanceFunction Acceptance) -> void {
+    MCMCInitializationRequired();
     Base::Acceptance(Acceptance);
-    MCMCInitializeRequired();
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ThinningRatio(double value) -> void {
     if (not std::isfinite(value)) [[unlikely]] {
-        PrintError(fmt::format("Infinite thinning factor (got {})", value));
+        PrintError(fmt::format("Non-finite thinning ratio not allowed (got {}), not setting it", value));
+        return;
     }
     if (value < 0) [[unlikely]] {
-        PrintWarning(fmt::format("Negative thinning factor (got {}), setting to 0", value));
-        value = 0;
+        PrintError(fmt::format("Negative thinning ratio not allowed (got {}), not setting it", value));
+        return;
     }
     if (value > 10) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious thinning factor (got {})", value));
+        PrintWarning(fmt::format("Suspicious thinning ratio (got {})", value));
     }
     fThinningRatio = value;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::ACFSampleSize(unsigned n) -> void {
-    if (n >= std::numeric_limits<int>::max()) [[unlikely]] {
+    if (n == 0) {
+        PrintError("Zero ACF sample size not allowed, not setting it");
+        return;
+    }
+    if (n <= 10 or std::numeric_limits<int>::max() <= n) [[unlikely]] {
         PrintWarning(fmt::format("Suspicious ACF sample size (got {})", n));
     }
     fACFSampleSize = n;
@@ -144,17 +131,23 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     // find phase space
     MasterPrintLn("Finding phase space...");
     muc::ranges::iota(fMC.state.pID, 0);
-    while (true) {
+    for (long long counter{};; ++counter) {
+        if (counter >= 1'000'000'000) {
+            const auto billion{std::div(counter, 1'000'000'000ll)};
+            if (billion.rem == 0) [[unlikely]] {
+                PrintWarning(fmt::format("Tried {} billion times to find phase space in {} initialization, still trying...", billion.quot, thisName));
+            }
+            if (billion.quot == 1000) {
+                Throw<std::runtime_error>(fmt::format("Failed to find phase space after 1 trillion tries in {} initialization", thisName));
+            }
+        }
         rng.flatArray(fMC.state.u.size(), fMC.state.u.data());
         auto [event, detJ]{DirectPhaseSpace(fMC.state.u)};
-        if (not this->IRSafe(event.p)) {
+        if (not this->InfraredSafe(event.p)) {
             continue;
         }
-        const auto acceptance{this->ValidAcceptance(event.p)};
-        if (acceptance <= std::numeric_limits<double>::min()) {
-            continue;
-        }
-        const auto mSqAcceptanceDetJ{this->ValidMSqAcceptanceDetJ(event.p, acceptance, detJ)};
+        const auto acceptance{this->Acceptance(event.p)};
+        const auto mSqAcceptanceDetJ{this->MSqAcceptanceDetJ(event.p, acceptance, detJ)};
         if (mSqAcceptanceDetJ <= std::numeric_limits<double>::min()) {
             continue;
         }
@@ -182,11 +175,11 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
             Eigen::Vector<double, MarkovChain::dim> u;
             rng.flatArray(u.size(), u.data());
             auto [event, detJ]{DirectPhaseSpace(VectorCast<RandomState>(u))};
-            if (not this->IRSafe(event.p)) {
+            if (not this->InfraredSafe(event.p)) {
                 continue;
             }
-            const auto acceptance{this->ValidAcceptance(event.p)};
-            const auto mSqAcceptanceDetJ{this->ValidMSqAcceptanceDetJ(event.p, acceptance, detJ)};
+            const auto acceptance{this->Acceptance(event.p)};
+            const auto mSqAcceptanceDetJ{this->MSqAcceptanceDetJ(event.p, acceptance, detJ)};
             const auto uMSqAcceptanceDetJ{(mSqAcceptanceDetJ * u).eval()};
             mean.u += uMSqAcceptanceDetJ;
             mean.uuT += uMSqAcceptanceDetJ * u.transpose();
@@ -195,7 +188,8 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
         mean.u /= sumMSqAcceptanceDetJ;
         mean.uuT /= sumMSqAcceptanceDetJ;
         const auto covariance{(mean.uuT - mean.u * mean.u.transpose()).eval()};
-        const auto sqrtDiagCov{Eigen::SelfAdjointEigenSolver<decltype(covariance)>{covariance}.eigenvalues().array().sqrt()};
+        const Eigen::SelfAdjointEigenSolver<decltype(covariance)> covEigenSolver{covariance};
+        const auto sqrtDiagCov{covEigenSolver.eigenvalues().array().sqrt()};
         PrintInfo(fmt::format("Sqrt(diag(covariance)): {}", sqrtDiagCov));
     }
 
@@ -256,7 +250,9 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
         lastAutocorrelation = &autocorrelation;
     }
     if (not std::ranges::all_of(autocorrelationConverged, [](auto c) { return c; })) {
-        PrintWarning(fmt::format("Autocorrelation not converged. Try increasing ACF sample size (current: {})", fACFSampleSize));
+        PrintWarning(fmt::format("Autocorrelation not converged. Try increasing ACF sample size (current: {}). "
+                                 "Generated events may be highly correlated.",
+                                 fACFSampleSize));
     }
 
     double meanSumAutocorrelation{};
@@ -301,44 +297,50 @@ auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStat
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ISMomenta(const InitialStateMomenta& pI) -> void {
+auto MCMCGenerator<M, N, A>::Momenta(const InitialStateMomenta& pI) -> void {
     if constexpr (M == 1) {
-        if (not pI.isNear(Base::ISMomenta(), muc::default_rel_tol<double>)) {
-            MCMCInitializeRequired();
+        if (not pI.isNear(Base::Momenta(), muc::default_rel_tol<double>)) {
+            MCMCInitializationRequired();
         }
     } else {
-        if (not std::ranges::equal(pI, Base::ISMomenta(),
+        if (not std::ranges::equal(pI, Base::Momenta(),
                                    [](auto p, auto q) { return p.isNear(q, muc::default_rel_tol<double>); })) {
-            MCMCInitializeRequired();
+            MCMCInitializationRequired();
         }
     }
-    Base::ISMomenta(pI);
+    Base::Momenta(pI);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Mass(const std::array<double, N>& mass) -> void {
     if (not std::ranges::equal(mass, this->fGENBOD.Mass(),
                                [](auto a, auto b) { return muc::isclose(a, b); })) {
-        MCMCInitializeRequired();
+        MCMCInitializationRequired();
     }
     Base::Mass(mass);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::IRCut(int i, double cut) -> void {
-    MCMCInitializeRequired();
-    Base::IRCut(i, cut);
+auto MCMCGenerator<M, N, A>::SoftCutoff(int i, double cutoff) -> void {
+    MCMCInitializationRequired();
+    Base::SoftCutoff(i, cutoff);
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::MCMCInitializeRequired() -> void {
+auto MCMCGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> pID, double cutoff) -> void {
+    MCMCInitializationRequired();
+    Base::CollinearCutoff(pID, cutoff);
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MCMCGenerator<M, N, A>::MCMCInitializationRequired() -> void {
     fMCMCInitialized = false;
     fThinningSize = 0;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::DirectPhaseSpace(const RandomState& u) -> std::pair<Event, double> {
-    auto event{this->fGENBOD(u, Base::ISMomenta())};
+    auto event{this->fGENBOD(u, Base::Momenta())};
     auto detJ{event.weight};
     event.weight = 1;
     return {std::move(event), detJ};

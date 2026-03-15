@@ -72,7 +72,7 @@ public:
     /// @param pI initial-state 4-momenta
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
@@ -80,32 +80,18 @@ public:
                                  std::optional<double> stepSize = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
-    /// @param polarization Initial-state polarization vector
+    /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
-    ClassicalMetropolisGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+    ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                  const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                  std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                                  std::optional<double> stepSize = {})
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
-    /// @brief Construct event generator
-    /// @param pI initial-state 4-momenta
-    /// @param polarization Initial-state polarization vectors
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
-    /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
-    /// @note This overload is only enabled for polarized scattering
-    ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                                 const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                 std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
-                                 std::optional<double> stepSize = {})
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     // Keep the class abstract
     virtual ~ClassicalMetropolisGenerator() override = 0;
@@ -124,8 +110,8 @@ private:
     virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override;
 
 private:
-    Random::Gaussian<double> fGaussian; ///< Gaussian distribution
-    double fStepSize;                   ///< Step scale along one direction in random state space
+    Random::GaussianFast<double> fGaussian; ///< Gaussian distribution
+    double fStepSize;                       ///< Step scale along one direction in random state space
 
     static inline const auto fgScalingFactor{2.38 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor
 };

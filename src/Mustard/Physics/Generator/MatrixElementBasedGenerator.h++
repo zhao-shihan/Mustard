@@ -31,18 +31,21 @@
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "CLHEP/Random/Random.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 #include "mplr/mplr.hpp"
 
 #include "muc/array"
 #include "muc/chrono"
+#include "muc/hash_map"
+#include "muc/hash_set"
 #include "muc/math"
 #include "muc/numeric"
 #include "muc/utility"
 
 #include "gsl/gsl"
 
-#include "fmt/core.h"
+#include "fmt/std.h"
 
 #include <algorithm>
 #include <array>
@@ -63,7 +66,10 @@ namespace Mustard::inline Physics::inline Generator {
 /// @brief Generator based on a matrix element.
 ///
 /// Generates events distributed according to 1/S × |M|² × acceptance, and
-/// weight = 1 / acceptance.
+/// weight = 1 / acceptance. Here S is the final state symmetry factor,
+/// |M|² is the matrix element (squared amplitude), acceptance is a user-defined
+/// function (normally 0 <= acceptance <= 1) to apply importance sampling,
+/// and J is the Jacobian of the phase space transformation (e.g. from GENBOD)
 ///
 /// @tparam M Number of initial-state particles
 /// @tparam N Number of final-state particles
@@ -77,7 +83,7 @@ public:
     using typename EventGenerator<M, N>::FinalStateMomenta;
     /// @brief Generated event type
     using typename EventGenerator<M, N>::Event;
-    /// @brief User-defined acceptance function type
+    /// @brief User-defined acceptance function type (normally 0 <= acceptance <= 1)
     using AcceptanceFunction = std::function<auto(const FinalStateMomenta&)->double>;
 
 public:
@@ -88,24 +94,15 @@ public:
     MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass);
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
-    /// @param polarization Initial-state polarization vector
+    /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    MatrixElementBasedGenerator(const InitialStateMomenta& pI, Vector3D polarization,
+    MatrixElementBasedGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                 const std::array<int, N>& pdgID, const std::array<double, N>& mass)
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
-    /// @brief Construct event generator
-    /// @param pI initial-state 4-momenta
-    /// @param polarization Initial-state polarization vectors
-    /// @param pdgID Array of particle PDG IDs (index order preserved)
-    /// @param mass Array of particle masses (index order preserved)
-    /// @note This overload is only enabled for polarized scattering
-    MatrixElementBasedGenerator(const InitialStateMomenta& pI, const std::array<Vector3D, M>& polarization,
-                                const std::array<int, N>& pdgID, const std::array<double, N>& mass)
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     /// @brief Get currently set initial-state 4-momenta
-    auto ISMomenta() const -> const auto& { return fISMomenta; }
+    auto Momenta() const -> const auto& { return fMomenta; }
 
     /// @brief Compute 1/S × |M|² × acceptance integral on phase space by Monte Carlo integration.
     /// Useful for calculating total decay width or cross section
@@ -123,7 +120,29 @@ public:
 protected:
     /// @brief Set initial-state 4-momenta
     /// @param pI initial-state 4-momenta
-    auto ISMomenta(const InitialStateMomenta& pI) -> void;
+    auto Momenta(const InitialStateMomenta& pI) -> void;
+
+    /// @brief Get initial-state polarization vector(s)
+    /// @note This overload is only enabled for polarized process
+    auto Polarization() const -> const typename A::InitialStatePolarization&
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
+    /// @brief Get initial-state polarization vector
+    /// @param i Particle index (0 ≤ i < M)
+    /// @note This overload is only enabled for polarized scattering
+    auto Polarization(int i) const -> Vector3D
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
+
+    /// @brief Set initial-state polarization vector(s)
+    /// @param pol Polarization vector(s) (all |pol| ≤ 1)
+    /// @note This overload is only enabled for polarized process
+    auto Polarization(const typename A::InitialStatePolarization& pol) -> void
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
+    /// @brief Set polarization for single initial-state particle
+    /// @param i Particle index (0 ≤ i < M)
+    /// @param pol Polarization vector (|pol| ≤ 1)
+    /// @note This overload is only enabled for polarized scattering
+    auto Polarization(int i, Vector3D pol) -> void
+        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set final-state PDG IDs
     /// @param pdgID Array of particle PDG IDs
@@ -135,38 +154,7 @@ protected:
     /// @brief Generate an event on phase space
     /// @param rng Reference to CLHEP random engine
     /// @return An event from phase space
-    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fISMomenta); }
-
-    /// @brief Get polarization vector
-    /// @note This overload is only enabled for polarized decay
-    auto InitialStatePolarization() const -> Vector3D
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
-    /// @brief Get polarization vector
-    /// @param i Particle index (0 ≤ i < M)
-    /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i) const -> Vector3D
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
-    /// @brief Get all polarization vectors
-    /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization() const -> const std::array<Vector3D, M>&
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
-
-    /// @brief Set polarization vector
-    /// @param pol Polarization vector (|pol| ≤ 1)
-    /// @note This overload is only enabled for polarized decay
-    auto InitialStatePolarization(Vector3D pol) -> void
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<1, N>>;
-    /// @brief Set polarization for single initial particle
-    /// @param i Particle index (0 ≤ i < M)
-    /// @param pol Polarization vector (|pol| ≤ 1)
-    /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(int i, Vector3D pol) -> void
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
-    /// @brief Set all polarization vectors
-    /// @param pol Array of polarization vectors for each initial particle (all |pol| ≤ 1)
-    /// @note This overload is only enabled for polarized scattering
-    auto InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void
-        requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
+    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fMomenta); }
 
     /// @brief Add an identical particle index set
     /// @param set A vector of particle indices (0 ≤ index < N)
@@ -178,32 +166,38 @@ protected:
     /// @param i Set index (0 ≤ i < number of sets)
     /// @return Identical particle index set
     auto IdenticalSet(int i) const -> const auto& { return fIdenticalSet[i]; }
-    /// @brief Set IR cuts for single final-state particle
+
+    /// @brief Set low-energy cutoff for single final-state particle to avoid infrared divergence (if applicable)
     /// @param i Particle index (0 ≤ i < N)
-    /// @param cut IR cut value (kinetic energy)
-    auto IRCut(int i, double cut) -> void;
-    /// @brief Check final-state momenta pass the IR cut
+    /// @param cutoff Soft cutoff value (on kinetic energy in the c.m. frame)
+    auto SoftCutoff(int i, double cutoff) -> void;
+    /// @brief Set collinear cutoff for two particles to avoid infrared divergence (if applicable)
+    /// @param pID Pair of particle indices (0 ≤ index < N)
+    /// @param cutoff Collinear cutoff value (on angle between the two particles in the c.m. frame, should within (0, π))
+    auto CollinearCutoff(std::pair<int, int> pID, double cutoff) -> void;
+    /// @brief Check final-state momenta pass the soft cutoff and collinear cutoff (i.e. are IR-safe)
     /// @param pF Final states' 4-momenta
-    /// @return true if momenta is IR-safe
-    auto IRSafe(const FinalStateMomenta& pF) const -> bool;
+    /// @return true if momenta are IR-safe
+    auto InfraredSafe(const FinalStateMomenta& pF) const -> bool;
 
-    /// @brief Set user-defined acceptance function (0 <= acceptance <= 1 recommended)
+    /// @brief Set user-defined acceptance function (normally 0 <= acceptance <= 1)
     /// (PDF = 1/S × |M|² × acceptance, weight = 1 / acceptance)
-    /// @param B User-defined acceptance
-    auto Acceptance(AcceptanceFunction Acceptance) -> void;
-
+    /// @param acceptance User-defined acceptance
+    auto Acceptance(AcceptanceFunction acceptance) -> void;
     /// @brief Get acceptance with range check
     /// @param pF Final states' 4-momenta
     /// @exception `std::runtime_error` if invalid acceptance value produced
-    /// @return B(p1, ..., pN)
-    auto ValidAcceptance(const FinalStateMomenta& pF) const -> double;
-    /// @brief Get reweighted PDF value with range check
+    /// @return acceptance(p1, ..., pN)
+    auto Acceptance(const FinalStateMomenta& pF) const -> double;
+
+    /// @brief Get weighted PDF value with range check
     /// @param pF Final states' 4-momenta
     /// @param event Final states from phase space
-    /// @param acceptance Acceptance value at the same phase space point (from ValidAcceptance)
+    /// @param acceptance Acceptance value at the same phase space point (from `Acceptance(const FinalStateMomenta& pF)`)
     /// @exception `std::runtime_error` if invalid PDF value produced
-    /// @return 1/S × |M|²(p1, ..., pN) × acceptance(p1, ..., pN) × |J|(p1, ..., pN)
-    auto ValidMSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double;
+    /// @return 1/S × |M|²(p1, ..., pN) × acceptance(p1, ..., pN) × |J|(p1, ..., pN), where S is
+    /// the final state symmetry factor, and J is the Jacobian of the phase space transformation (e.g. from GENBOD)
+    auto MSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double;
 
 private:
     /// @brief Monte Carlo integration implementation
@@ -215,14 +209,20 @@ protected:
     GENBOD<M, N> fGENBOD;                   ///< Phase space generator
 
 private:
-    InitialStateMomenta fISMomenta;              ///< Initial-state 4-momenta
-    Vector3D fBoostFromLabToCM;                  ///< Boost from lab frame to c.m. frame
-    double fFSSymmetryFactor;                    ///< Final-state identical particle symmetry factor
-    std::vector<std::vector<int>> fIdenticalSet; ///< Identical particle sets
-    std::vector<std::pair<int, double>> fIRCut;  ///< IR cuts (kinetic energies)
-    AcceptanceFunction fAcceptance;              ///< User acceptance function
-    mutable std::int8_t fAcceptanceGt1Counter;   ///< Counter of acceptance > 1 warning
-    mutable std::int8_t fNegativeMSqCounter;     ///< Counter of negative |M|² warning
+    InitialStateMomenta fMomenta;                                     ///< Initial-state 4-momenta
+    Vector3D fBoostFromLabToCM;                                       ///< Boost from lab frame to c.m. frame
+                                                                      //
+    double fFSSymmetryFactor;                                         ///< Final-state identical particle symmetry factor
+    std::vector<std::vector<int>> fIdenticalSet;                      ///< Identical particle sets
+                                                                      //
+    muc::flat_hash_map<int, double> fSoftCutoff;                      ///< Soft cutoffs (on kinetic energies in the c.m. frame)
+    muc::flat_hash_map<std::pair<int, int>, double> fCollinearCutoff; ///< Collinear cutoffs (on cosine of angles between particles in the c.m. frame)
+    muc::flat_hash_set<int> fInfraredUnsafePID;                       ///< Particle indices involved in IR cutoffs
+                                                                      //
+    AcceptanceFunction fAcceptance;                                   ///< User acceptance function (normally 0 <= acceptance <= 1)
+                                                                      //
+    mutable std::int8_t fAcceptanceGt1Counter;                        ///< Counter of acceptance > 1 warning
+    mutable std::int8_t fNegativeMSqCounter;                          ///< Counter of negative |M|² warning
 };
 
 } // namespace Mustard::inline Physics::inline Generator

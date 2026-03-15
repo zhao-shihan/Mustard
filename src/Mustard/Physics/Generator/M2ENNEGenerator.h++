@@ -35,7 +35,7 @@ public:
     /// @brief Construct generator for specific parent
     /// @param parent "muonium" or "antimuonium" (determines PDG IDs in generated event)
     /// @param momentum Muonium momentum
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     M2ENNEGenerator(std::string_view parent, Vector3D momentum,
@@ -48,7 +48,7 @@ public:
     auto Parent(std::string_view parent) -> void;
     /// @brief Set parent momentum
     /// @param momentum Muonium momentum
-    auto ParentMomentum(Vector3D momentum) -> void;
+    auto Momentum(Vector3D momentum) -> void;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

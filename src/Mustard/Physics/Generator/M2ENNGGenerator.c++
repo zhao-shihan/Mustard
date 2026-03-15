@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Physics/Generator/M2ENNEEGenerator.h++"
+#include "Mustard/Physics/Generator/M2ENNGGenerator.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "muc/math"
@@ -32,32 +32,39 @@ namespace Mustard::inline Physics::inline Generator {
 
 using namespace PhysicalConstant;
 
-M2ENNEEGenerator::M2ENNEEGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
+M2ENNGGenerator::M2ENNGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
+                                   double softCutoff, double collinearCutoff,
                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
-                                   std::optional<double> stepSize, std::optional<QFT::MSqM2ENNEE::Ver> mSqVer) :
-    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(40000), stepSize.value_or(0.1)} {
-    if (mSqVer) {
-        MSqVersion(*mSqVer);
-    }
+                                   std::optional<double> stepSize) :
+    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(100000), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);
-    Mass({electron_mass_c2, 0, 0, electron_mass_c2, electron_mass_c2});
-    AddIdenticalSet({0, 4});
+    Mass({electron_mass_c2, 0, 0, 0});
+    SoftCutoff(softCutoff);
+    CollinearCutoff(collinearCutoff);
 }
 
-auto M2ENNEEGenerator::Parent(std::string_view parent) -> void {
+auto M2ENNGGenerator::Parent(std::string_view parent) -> void {
     if (parent == "mu-") {
-        PDGID({11, -12, 14, -11, 11});
+        PDGID({11, -12, 14, 22});
     } else if (parent == "mu+") {
-        PDGID({-11, 12, -14, 11, -11});
+        PDGID({-11, 12, -14, 22});
     } else {
         Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'", parent));
     }
 }
 
-auto M2ENNEEGenerator::Momentum(Vector3D momentum) -> void {
+auto M2ENNGGenerator::Momentum(Vector3D momentum) -> void {
     const auto energy{std::sqrt(momentum.mag2() + muc::pow(muon_mass_c2, 2))};
     Momenta({energy, momentum});
+}
+
+auto M2ENNGGenerator::SoftCutoff(double softCutoff) -> void {
+    MultipleTryMetropolisGenerator::SoftCutoff(3, softCutoff);
+}
+
+auto M2ENNGGenerator::CollinearCutoff(double collinearCutoff) -> void {
+    MultipleTryMetropolisGenerator::CollinearCutoff({0, 3}, collinearCutoff);
 }
 
 } // namespace Mustard::inline Physics::inline Generator

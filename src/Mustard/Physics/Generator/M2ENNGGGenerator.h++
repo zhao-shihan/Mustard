@@ -37,11 +37,13 @@ public:
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param momentum Muon momentum
     /// @param polarization Muon polarization vector
-    /// @param irCut IR cut for final-state photons
-    /// @param thinningRatio Thinning factor (between 0--1, optional, use default value if not set)
+    /// @param softCutoff Low-energy cutoff for final-state photons (in the c.m. frame)
+    /// @param collinearCutoff Collinear cutoff on angles between final-state photons and e⁺/e⁻ (in the c.m. frame)
+    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
-    M2ENNGGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization, double irCut,
+    M2ENNGGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
+                     double softCutoff, double collinearCutoff,
                      std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
                      std::optional<double> stepSize = {});
 
@@ -51,10 +53,13 @@ public:
     auto Parent(std::string_view parent) -> void;
     /// @brief Set parent momentum
     /// @param momentum Muon momentum
-    auto ParentMomentum(Vector3D momentum) -> void;
-    /// @brief Set IR cut for final-state photons
-    /// @param irCut IR cut for final-state photons
-    auto IRCut(double irCut) -> void;
+    auto Momentum(Vector3D momentum) -> void;
+    /// @brief Set soft cutoff for final-state photons
+    /// @param softCutoff Low-energy cutoff for final-state photons (in the c.m. frame)
+    auto SoftCutoff(double softCutoff) -> void;
+    /// @brief Set collinear cutoff for final-state photons
+    /// @param collinearCutoff Cutoff on angles between final-state photons and e⁺/e⁻ (in the c.m. frame)
+    auto CollinearCutoff(double collinearCutoff) -> void;
 };
 
 } // namespace Mustard::inline Physics::inline Generator

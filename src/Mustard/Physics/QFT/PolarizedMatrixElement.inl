@@ -19,40 +19,34 @@
 namespace Mustard::inline Physics::QFT {
 
 template<int M, int N>
-PolarizedMatrixElement<M, N>::PolarizedMatrixElement(const std::array<Vector3D, M>& pol) :
+PolarizedMatrixElement<M, N>::PolarizedMatrixElement(const InitialStatePolarization& pol) :
     PolarizedMatrixElement{} {
-    InitialStatePolarization(pol);
+    Polarization(pol);
 }
 
 template<int M, int N>
-auto PolarizedMatrixElement<M, N>::InitialStatePolarization(int i, Vector3D pol) -> void {
+auto PolarizedMatrixElement<M, N>::Polarization(const InitialStatePolarization& pol) -> void {
+    if constexpr (M == 1) {
+        const auto polNorm{pol.mag()};
+        if (polNorm > 1) [[unlikely]] {
+            PrintWarning(fmt::format("Got polarization (pol) with |pol| = {} (expects |pol| <= 1)", polNorm));
+        }
+        fPolarization = pol;
+    } else {
+        for (int i{}; i < M; ++i) {
+            Polarization(i, pol[i]);
+        }
+    }
+}
+
+template<int M, int N>
+auto PolarizedMatrixElement<M, N>::Polarization(int i, Vector3D pol) -> void
+    requires(M > 1) {
     const auto polNorm{pol.mag()};
     if (polNorm > 1) [[unlikely]] {
         PrintWarning(fmt::format("Got polarization {} (pol) with |pol| = {} (expects |pol| <= 1)", i, polNorm));
     }
-    fInitialStatePolarization.at(i) = pol;
-}
-
-template<int M, int N>
-auto PolarizedMatrixElement<M, N>::InitialStatePolarization(const std::array<Vector3D, M>& pol) -> void {
-    for (int i{}; i < M; ++i) {
-        InitialStatePolarization(i, pol[i]);
-    }
-}
-
-template<int N>
-PolarizedMatrixElement<1, N>::PolarizedMatrixElement(Vector3D pol) :
-    PolarizedMatrixElement{} {
-    InitialStatePolarization(pol);
-}
-
-template<int N>
-auto PolarizedMatrixElement<1, N>::InitialStatePolarization(Vector3D pol) -> void {
-    const auto polNorm{pol.mag()};
-    if (polNorm > 1) [[unlikely]] {
-        PrintWarning(fmt::format("Got polarization (pol) with |pol| = {} (expects |pol| <= 1)", polNorm));
-    }
-    fInitialStatePolarization = pol;
+    fPolarization.at(i) = pol;
 }
 
 } // namespace Mustard::inline Physics::QFT
