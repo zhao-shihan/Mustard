@@ -60,7 +60,7 @@ The following dependencies are optional. If they are not found on your system du
 | [**envparse**](https://github.com/zhao-shihan/envparse)                     | 1.0.0       | A simple, header-only environment variable parser in C++ |
 | [**fmt**](https://github.com/fmtlib/fmt)                                    | 12.1.0      | A modern formatting library                              |
 | [**indicators**](https://github.com/p-ranav/indicators)                     | 2.3         | Activity Indicators for Modern C++                       |
-| [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.0       | ISO C++ guidelines support library                       |
+| [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.1       | ISO C++ guidelines support library                       |
 | [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.25.1003   | A C++17 message passing library based on MPI             |
 | [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.302    | A standard non-standard C++ library                      |
 | [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
