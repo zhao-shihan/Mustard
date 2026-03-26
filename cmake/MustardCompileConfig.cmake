@@ -148,6 +148,14 @@ if(MUSTARD_ENABLE_MSVC_STD_CONFORMITY AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 # =============================================================================
+# GTL-induced compile options for Mustard
+# =============================================================================
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-interference-size)
+endif()
+
+# =============================================================================
 # MPI-induced compile options for Mustard
 # =============================================================================
 
@@ -163,9 +171,3 @@ list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MPICH_SKIP_MPICXX=1)
 
 # Inform Eigen not to enable multithreading, though we are not using OpenMP. It is safer to do so.
 list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_DONT_PARALLELIZE=1)
-
-if(CMAKE_CXX_PLATFORM_ID STREQUAL "MinGW")
-    # MinGW and GCC 12.2 have issues with explitic vectorization
-    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_DONT_VECTORIZE=1)
-    message(NOTICE "***Notice: Building on Windows with MinGW, disabling vectorization of Eigen")
-endif()
