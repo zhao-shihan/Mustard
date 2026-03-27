@@ -93,6 +93,43 @@ set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.9.0 CACHE STRING "Set built-in yaml-cpp v
 set(MUSTARD_DEBUG_POSTFIX d CACHE STRING "Debug library postfix.")
 
 # =============================================================================
+# Check compiler
+# =============================================================================
+
+set(MUSTARD_MINIMUM_GCC_VERSION 13)
+set(MUSTARD_MINIMUM_CLANG_VERSION 19)
+set(MUSTARD_MINIMUM_INTELLLVM_VERSION 2025)
+set(MUSTARD_MINIMUM_MSVC_VERSION 19.50)
+
+set(MUSTARD_COMPILER_OKAY TRUE)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${MUSTARD_MINIMUM_GCC_VERSION})
+        set(MUSTARD_COMPILER_OKAY FALSE)
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${MUSTARD_MINIMUM_CLANG_VERSION})
+        set(MUSTARD_COMPILER_OKAY FALSE)
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "IntelLLVM")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${MUSTARD_MINIMUM_INTELLLVM_VERSION})
+        set(MUSTARD_COMPILER_OKAY FALSE)
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${MUSTARD_MINIMUM_MSVC_VERSION})
+        set(MUSTARD_COMPILER_OKAY FALSE)
+    endif()
+endif()
+
+if(NOT MUSTARD_COMPILER_OKAY)
+    message(FATAL_ERROR "Mustard cannot be built with ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}.\n"
+                        "  Recommended compilers:\n"
+                        "    GNU Compiler (at least GCC ${MUSTARD_MINIMUM_GCC_VERSION})\n"
+                        "    LLVM Clang (at least Clang ${MUSTARD_MINIMUM_CLANG_VERSION})\n"
+                        "    Intel oneAPI DPC++/C++ Compiler (at least IntelLLVM ${MUSTARD_MINIMUM_INTELLLVM_VERSION})\n"
+                        "    Microsoft Visual C++ (at least MSVC ${MUSTARD_MINIMUM_MSVC_VERSION})")
+endif()
+
+# =============================================================================
 # Installation path
 # =============================================================================
 
