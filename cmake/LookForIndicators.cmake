@@ -16,7 +16,7 @@
 
 message(STATUS "Looking for indicators")
 
-set(MUSTARD_INDICATORS_MINIMUM_REQUIRED 2.3)
+set(MUSTARD_INDICATORS_MINIMUM_REQUIRED 2.3.1)
 
 if(NOT MUSTARD_BUILTIN_INDICATORS)
     find_package(indicators ${MUSTARD_INDICATORS_MINIMUM_REQUIRED})
@@ -34,8 +34,8 @@ if(MUSTARD_BUILTIN_INDICATORS)
         set(MUSTARD_BUILTIN_INDICATORS_VERSION ${MUSTARD_INDICATORS_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MUSTARD_BUILTIN_INDICATORS_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/indicators-3872f37abd90d7557bac5f834bfb45bd6c75259a")
-    set(MUSTARD_BUILTIN_INDICATORS_URL "https://github.com/p-ranav/indicators/archive/3872f37abd90d7557bac5f834bfb45bd6c75259a.zip")
+    set(MUSTARD_BUILTIN_INDICATORS_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/indicators-${MUSTARD_BUILTIN_INDICATORS_VERSION}")
+    set(MUSTARD_BUILTIN_INDICATORS_URL "https://github.com/zhao-shihan/indicators/archive/refs/tags/v${MUSTARD_BUILTIN_INDICATORS_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_INDICATORS_SRC_DIR}/CMakeLists.txt")
@@ -47,8 +47,8 @@ if(MUSTARD_BUILTIN_INDICATORS)
         message(STATUS "indicators will be downloaded from ${MUSTARD_BUILTIN_INDICATORS_URL} to ${MUSTARD_BUILTIN_INDICATORS_SRC_DIR}")
     endif()
     # set options
-    set(INDICATORS_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
-    set(INDICATORS_PACKAGE ${MUSTARD_INSTALL} CACHE INTERNAL "")
+    set(INDICATORS_INSTALL ON CACHE INTERNAL "")
+    set(INDICATORS_PACKAGE OFF CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring indicators (version: ${MUSTARD_BUILTIN_INDICATORS_VERSION})")
     FetchContent_MakeAvailable(indicators)

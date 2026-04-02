@@ -47,7 +47,7 @@ if(MUSTARD_BUILTIN_MSGSL)
         message(STATUS "Microsoft.GSL will be downloaded from ${MUSTARD_BUILTIN_MSGSL_URL} to ${MUSTARD_BUILTIN_MSGSL_SRC_DIR}")
     endif()
     # set options
-    set(GSL_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
+    set(GSL_INSTALL ON CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring Microsoft.GSL (version: ${MUSTARD_BUILTIN_MSGSL_VERSION})")
     FetchContent_MakeAvailable(MSGSL)

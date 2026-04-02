@@ -16,25 +16,21 @@
 
 @PACKAGE_INIT@
 
-# set(Mustard_VERSION @MUSTARD_VERSION@)
-
 include(CMakeFindDependencyMacro)
 
-find_dependency(Eigen3 @MUSTARD_EIGEN_MINIMUM_REQUIRED@ REQUIRED)
+find_dependency(fmt @MUSTARD_FMT_MINIMUM_REQUIRED@)
 find_dependency(Geant4 @MUSTARD_G4_MINIMUM_REQUIRED@ REQUIRED @MUSTARD_G4_REQUIRED_COMPONENTS@)
 find_dependency(ROOT @MUSTARD_ROOT_MINIMUM_REQUIRED@ REQUIRED @MUSTARD_ROOT_REQUIRED_COMPONENTS@)
+find_dependency(yaml-cpp @MUSTARD_YAML_CPP_MINIMUM_REQUIRED@)
 
 find_dependency(argparse @MUSTARD_ARGPARSE_MINIMUM_REQUIRED@.0)
-find_dependency(Backward)
 find_dependency(EFM @MUSTARD_EFM_MINIMUM_REQUIRED@)
+find_dependency(Eigen3 @MUSTARD_EIGEN_MINIMUM_REQUIRED@ REQUIRED)
 find_dependency(envparse @MUSTARD_ENVPARSE_MINIMUM_REQUIRED@)
-find_dependency(fmt @MUSTARD_FMT_MINIMUM_REQUIRED@)
 find_dependency(gtl @MUSTARD_GTL_MINIMUM_REQUIRED@)
-find_dependency(indicators @MUSTARD_INDICATORS_MINIMUM_REQUIRED@.0)
 find_dependency(Microsoft.GSL @MUSTARD_MSGSL_MINIMUM_REQUIRED@)
 find_dependency(mplr @MUSTARD_MPLR_MINIMUM_REQUIRED@)
 find_dependency(muc @MUSTARD_MUC_MINIMUM_REQUIRED@)
-find_dependency(yaml-cpp @MUSTARD_YAML_CPP_MINIMUM_REQUIRED@)
 
 include("${CMAKE_CURRENT_LIST_DIR}/MustardTargets.cmake")
 

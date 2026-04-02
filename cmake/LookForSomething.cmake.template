@@ -60,6 +60,7 @@ if(MUSTARD_BUILTIN_<LIB_NAME>)
     endif()
     # set options
     # uses CACHE INTERNAL variables to propagate options. see https://discourse.cmake.org/t/what-is-the-correct-way-to-set-options-of-a-project-before-fetch-content/268/4
+    # e.g. set(XYZ_INSTALL ON CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MUSTARD_BUILTIN_<LIB_NAME>_VERSION})")
     FetchContent_MakeAvailable(<lib_cmake_name>)

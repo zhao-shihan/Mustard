@@ -293,13 +293,13 @@ constexpr auto CompareTrackID{
 - No wrapping after `=`
 ```cpp
 template<typename M1, typename M2>
-concept SubTupleModel = requires {
+concept SubModel = requires {
     /* ... */
 };
 
 template<typename T1, typename T2>
 concept SubTuple = TupleLike<T1> and TupleLike<T2> and
-                   SubTupleModel<typename T1::Model, typename T2::Model>;
+                   SubModel<typename T1::Model, typename T2::Model>;
 ```
 
 ## Naming Conventions

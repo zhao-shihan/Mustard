@@ -23,41 +23,54 @@ target_include_directories(Mustard PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOUR
                                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_options(Mustard PUBLIC ${MUSTARD_PUBLIC_COMPILE_OPTIONS}
                                PRIVATE ${MUSTARD_PRIVATE_COMPILE_OPTIONS})
-target_compile_definitions(Mustard PUBLIC ${MUSTARD_PUBLIC_COMPILE_DEFINITIONS})
+target_compile_definitions(Mustard PUBLIC ${MUSTARD_PUBLIC_COMPILE_DEFINITIONS}
+                                   PRIVATE ${MUSTARD_PRIVATE_COMPILE_DEFINITIONS})
 
 # Generate version header
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl.in
-                              ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl
-                              INSTALL_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Mustard)
+include(CMakePackageConfigHelpers)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl.in
+               ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl
+               @ONLY)
 
-# Independent and lightweight libraries, alphabtic order:
-# argparse
-target_link_libraries(Mustard PUBLIC argparse::argparse)
-# envparse
-target_link_libraries(Mustard PUBLIC envparse::envparse)
+# Required dependencies
+
+# Public dependencies
 # fmt
 target_link_libraries(Mustard PUBLIC fmt::fmt)
-# gtl
-target_link_libraries(Mustard PUBLIC gtl)
-# indicators
-target_link_libraries(Mustard PUBLIC indicators::indicators)
-# Microsoft.GSL
-target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
-# muc
-target_link_libraries(Mustard PUBLIC muc::muc)
-# yaml-cpp
-target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
-
-# Dependent or heavy libraries, sort by dependency order and heaviness (roughly):
-# backward-cpp
-target_link_libraries(Mustard PUBLIC Backward::Interface)
-# MPLR
-target_link_libraries(Mustard PUBLIC mplr::mplr)
-# Eigen
-target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
 # Geant4
 target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
 # ROOT
 target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Thread ROOT::Tree ROOT::MathCore ROOT::ROOTDataFrame ROOT::Geom)
+# yaml-cpp
+target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
+
+# Interface dependencies
+# argparse
+target_link_libraries(Mustard INTERFACE argparse::argparse)
 # EFM
-target_link_libraries(Mustard PUBLIC EFM::EFM)
+target_link_libraries(Mustard INTERFACE EFM::EFM)
+# Eigen
+target_link_libraries(Mustard INTERFACE Eigen3::Eigen)
+# envparse
+target_link_libraries(Mustard INTERFACE envparse::envparse)
+# gtl
+target_link_libraries(Mustard INTERFACE gtl-targets)
+# Microsoft.GSL
+target_link_libraries(Mustard INTERFACE Microsoft.GSL::GSL)
+# MPLR
+target_link_libraries(Mustard INTERFACE mplr::mplr)
+# muc
+target_link_libraries(Mustard INTERFACE muc::muc)
+
+# Private dependencies
+# backward-cpp
+target_link_libraries(Mustard PRIVATE backward_interface)
+# indicators
+target_link_libraries(Mustard PRIVATE indicators::indicators)
+
+# Conditional dependencies
+
+if(MUSTARD_USE_MIMALLOC)
+    # mimalloc
+    target_link_libraries(Mustard PRIVATE mimalloc-static)
+endif()

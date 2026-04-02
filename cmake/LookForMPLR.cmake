@@ -47,7 +47,7 @@ if(MUSTARD_BUILTIN_MPLR)
         message(STATUS "mplr will be downloaded from ${MUSTARD_BUILTIN_MPLR_URL} to ${MUSTARD_BUILTIN_MPLR_SRC_DIR}")
     endif()
     # set options
-    set(MPLR_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
+    set(MPLR_INSTALL ON CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring mplr (version: ${MUSTARD_BUILTIN_MPLR_VERSION})")
     FetchContent_MakeAvailable(mplr)

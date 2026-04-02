@@ -9,8 +9,8 @@
 
 **Mustard** is a modern, high-performance offline software framework designed for particle physics experiments. It provides a generic architecture with core features including:
 - **Distributed computing:** Scalable parallel processing capabilities.
-- **Unified geometry:** A consistent interface for handling experimental geometries.
-- **Data model framework:** High-level data models abstractions to simplify simulation and analysis workflows.
+- **Unified detector description:** A consistent interface for handling detector description.
+- **Data processing framework:** High-level data models abstractions and data processing framworks to simplify simulation and analysis workflows.
 - **Physics:** An event generator framework and a set of Geant4 physics and processes.
 - **Many utilities:** Useful functions, classes, wrappers and etc. to speed up development and improve runtime performance.
 
@@ -20,8 +20,8 @@ This framework serves as the core component of the [**MACE offline software (MAC
   - [Building from Source](#building-from-source)
     - [Prerequisites](#prerequisites)
       - [Toolchain](#toolchain)
-      - [Dependencies](#dependencies)
-      - [Optional Dependencies](#optional-dependencies)
+      - [Required dependencies](#required-dependencies)
+      - [Optional dependencies](#optional-dependencies)
   - [Projects using this library](#projects-using-this-library)
   - [Citation](#citation)
 
@@ -37,20 +37,18 @@ This section guides you through building Mustard from source.
 - **C++ standard library:** libstdc++ ≥ 13 or equivalent
 - **Build system:** CMake ≥ 3.21, and GNU Make or Ninja or equivalent
 
-#### Dependencies
+#### Required dependencies
 
 Mustard requires the following external libraries to be installed on your system:
 
-| Library                                   | Min version | Notes                         |
+| Library                                   | Min version | Remarks                       |
 | :---------------------------------------- | :---------- | :---------------------------- |
 | [**Eigen**](https://eigen.tuxfamily.org/) | 3.4.0       |                               |
 | [**Geant4**](https://geant4.org/)         | 11.0.0      | Requires GDML support         |
 | [**ROOT**](https://root.cern/)            | 6.30.00     | Requires `gdml` component     |
 | [**MPI**](https://www.mpi-forum.org/)     | 3.1         | MPICH, OpenMPI, or equivalent |
 
-#### Optional Dependencies
-
-The following dependencies are optional. If they are not found on your system during configuration, CMake will automatically download and build them.
+The following dependencies are required, but built-in if not found.
 
 | Library                                                                     | Min version | Description                                              |
 | :-------------------------------------------------------------------------- | :---------- | :------------------------------------------------------- |
@@ -59,11 +57,22 @@ The following dependencies are optional. If they are not found on your system du
 | [**EFM**](https://github.com/zhao-shihan/EFM)                               | 0.1.0       | A generic bilinear/trilinear interpolator                |
 | [**envparse**](https://github.com/zhao-shihan/envparse)                     | 1.0.0       | A simple, header-only environment variable parser in C++ |
 | [**fmt**](https://github.com/fmtlib/fmt)                                    | 12.1.0      | A modern formatting library                              |
-| [**indicators**](https://github.com/p-ranav/indicators)                     | 2.3         | Activity Indicators for Modern C++                       |
+| [**gtl**](https://github.com/greg7mdp/gtl)                                  | 1.2.0       | Greg's Template Library of useful classes                |
+| [**zhao-shihan/indicators**](https://github.com/zhao-shihan/indicators)     | 2.3.1       | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.1       | ISO C++ guidelines support library                       |
 | [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.25.1003   | A C++17 message passing library based on MPI             |
 | [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.302    | A standard non-standard C++ library                      |
 | [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
+
+#### Optional dependencies
+
+The following dependencies are only required when certain options are set.
+
+| Library                                                   | Min version | Remarks                                                             |
+| :-------------------------------------------------------- | :---------- | :------------------------------------------------------------------ |
+| [**Geant4**](https://geant4.org/) visualization component | N/A         | Required when `MUSTARD_USE_G4VIS` is set                            |
+| [**Geant4**](https://geant4.org/) static library          | N/A         | Required when `MUSTARD_USE_STATIC_G4` is set                        |
+| [**mimalloc**](https://github.com/p-ranav/argparse)       | 3.2.8       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found) |
 
 ## Projects using this library
 

@@ -129,52 +129,46 @@ IncludeCategories:
   - Regex: '"G4.*"'
     Priority: 4
     CaseSensitive: true
-  - Regex: '"backward\.hpp"'
+  - Regex: '"yaml-cpp/.*"'
     Priority: 5
     CaseSensitive: true
-  - Regex: '"yaml-cpp/.*"'
+  - Regex: '"argparse/.*"'
     Priority: 6
     CaseSensitive: true
-  - Regex: '"indicators/.*"'
+  - Regex: '"gtl/.*\.hpp"'
     Priority: 7
     CaseSensitive: true
-  - Regex: '"argparse/.*"'
+  - Regex: '"Eigen/.*"'
     Priority: 8
     CaseSensitive: true
-  - Regex: '"gtl/.*\.hpp"'
+  - Regex: '"gsl.*\.h"'
     Priority: 9
     CaseSensitive: true
-  - Regex: '"Eigen/.*"'
+  - Regex: '"mplr/mplr.hpp"'
     Priority: 10
     CaseSensitive: true
-  - Regex: '"gsl.*\.h"'
+  - Regex: '"mpi.*\.h"'
     Priority: 11
     CaseSensitive: true
-  - Regex: '"mplr/mplr.hpp"'
+  - Regex: '"EFM/.*\.h.*"'
     Priority: 12
     CaseSensitive: true
-  - Regex: '"mpi.*\.h"'
+  - Regex: '"muc/.*"'
     Priority: 13
     CaseSensitive: true
-  - Regex: '"EFM/.*\.h.*"'
+  - Regex: '"envparse/.*\.h.*"'
     Priority: 14
     CaseSensitive: true
-  - Regex: '"muc/.*"'
+  - Regex: '"gsl/.*"'
     Priority: 15
     CaseSensitive: true
-  - Regex: '"envparse/.*\.h.*"'
-    Priority: 16
-    CaseSensitive: true
-  - Regex: '"gsl/.*"'
-    Priority: 17
-    CaseSensitive: true
   - Regex: '"fmt/.*\.h"'
-    Priority: 18
+    Priority: 16
     CaseSensitive: true
   # very general
   - Regex: '".*"'
     Priority: 1
     CaseSensitive: true
   - Regex: "<.*>"
-    Priority: 19
+    Priority: 17
     CaseSensitive: true

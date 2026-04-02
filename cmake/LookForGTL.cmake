@@ -47,7 +47,7 @@ if(MUSTARD_BUILTIN_GTL)
         message(STATUS "gtl will be downloaded from ${MUSTARD_BUILTIN_GTL_URL} to ${MUSTARD_BUILTIN_GTL_SRC_DIR}")
     endif()
     # set options
-    set(GTL_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
+    set(GTL_INSTALL ON CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring gtl (version: ${MUSTARD_BUILTIN_GTL_VERSION})")
     FetchContent_MakeAvailable(gtl)

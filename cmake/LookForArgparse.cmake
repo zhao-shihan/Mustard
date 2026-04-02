@@ -47,7 +47,7 @@ if(MUSTARD_BUILTIN_ARGPARSE)
         message(STATUS "argparse will be downloaded from ${MUSTARD_BUILTIN_ARGPARSE_URL} to ${MUSTARD_BUILTIN_ARGPARSE_SRC_DIR}")
     endif()
     # set options
-    set(ARGPARSE_INSTALL ${MUSTARD_INSTALL} CACHE INTERNAL "")
+    set(ARGPARSE_INSTALL ON CACHE INTERNAL "")
     # configure it
     message(STATUS "Downloading (if required) and configuring argparse (version: ${MUSTARD_BUILTIN_ARGPARSE_VERSION})")
     FetchContent_MakeAvailable(argparse)
