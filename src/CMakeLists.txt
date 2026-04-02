@@ -44,23 +44,23 @@ target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Thread ROOT::Tr
 # yaml-cpp
 target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
 
-# Interface dependencies
+# Public header-only dependencies
 # argparse
-target_link_libraries(Mustard INTERFACE argparse::argparse)
+target_link_libraries(Mustard PUBLIC argparse::argparse)
 # EFM
-target_link_libraries(Mustard INTERFACE EFM::EFM)
+target_link_libraries(Mustard PUBLIC EFM::EFM)
 # Eigen
-target_link_libraries(Mustard INTERFACE Eigen3::Eigen)
+target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
 # envparse
-target_link_libraries(Mustard INTERFACE envparse::envparse)
+target_link_libraries(Mustard PUBLIC envparse::envparse)
 # gtl
-target_link_libraries(Mustard INTERFACE gtl-targets)
+target_link_libraries(Mustard PUBLIC gtl)
 # Microsoft.GSL
-target_link_libraries(Mustard INTERFACE Microsoft.GSL::GSL)
+target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
 # MPLR
-target_link_libraries(Mustard INTERFACE mplr::mplr)
+target_link_libraries(Mustard PUBLIC mplr::mplr)
 # muc
-target_link_libraries(Mustard INTERFACE muc::muc)
+target_link_libraries(Mustard PUBLIC muc::muc)
 
 # Private dependencies
 # backward-cpp

@@ -162,7 +162,7 @@ include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForROOT.cmake)
 # yaml-cpp (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForYamlCpp.cmake)
 
-# Interface dependencies
+# Public header-only dependencies
 # argparse (built-in if not found)
 include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForArgparse.cmake)
 # EFM (built-in if not found), depends on ROOT
