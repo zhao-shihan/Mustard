@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Memory/Alloc.h++"
+#include "Mustard/Memory/ClassSpecificNewDelete.h++"
 
 #include "gtl/intrusive.hpp"
 
@@ -35,40 +35,16 @@ namespace impl {
 /// @tparam T User object type.
 /// @warning ArcObj is an implementation detail and should not be used directly by users.
 /// @details
-/// ArcObj inherit from gtl::intrusive_ref_counter to provide thread-safe
-/// reference counting, and inherit from T to store user data.
+/// ArcObj inherit from ClassSpecificNewDelete to redirect dynamic allocation to
+/// Mustard memory primitives, inherit from gtl::intrusive_ref_counter to provide
+/// thread-safe reference counting, and inherit from T to store user data.
 template<typename T>
-class ArcObj : public gtl::intrusive_ref_counter<ArcObj<T>, gtl::thread_safe_counter>,
+class ArcObj : public ClassSpecificNewDelete,
+               public gtl::intrusive_ref_counter<ArcObj<T>, gtl::thread_safe_counter>,
                public T {
 public:
     /// @brief Inherit all T constructors
     using T::T;
-
-    /// @brief Allocate ArcObj with Mustard memory allocation primitive.
-    [[nodiscard]] auto operator new(std::size_t n) -> void* { return Allocate(n); }
-    [[nodiscard]] auto operator new(std::size_t n, std::align_val_t al) -> void* { return Allocate(n, al); }
-    [[nodiscard]] auto operator new(std::size_t n, const std::nothrow_t& nt) noexcept -> void* { return Allocate(n, nt); }
-    [[nodiscard]] auto operator new(std::size_t n, std::align_val_t al, const std::nothrow_t& nt) noexcept -> void* { return Allocate(n, al, nt); }
-
-    /// @brief Deallocate ArcObj with Mustard memory deallocation primitive.
-    auto operator delete(void* p) noexcept -> void { Deallocate(p); }
-    auto operator delete(void* p, std::align_val_t al) noexcept -> void { Deallocate(p, al); }
-    auto operator delete(void* p, std::size_t n) noexcept -> void { Deallocate(p, n); }
-    auto operator delete(void* p, std::size_t n, std::align_val_t al) noexcept -> void { Deallocate(p, n, al); }
-    auto operator delete(void* p, const std::nothrow_t&) noexcept -> void { Deallocate(p); }
-    auto operator delete(void* p, std::align_val_t al, const std::nothrow_t&) noexcept -> void { Deallocate(p, al); }
-
-    /// @brief Array allocation/deallocation is intentionally disabled for ArcObj.
-    auto operator new[](std::size_t) -> void* = delete;
-    auto operator new[](std::size_t, std::align_val_t) -> void* = delete;
-    auto operator new[](std::size_t, const std::nothrow_t&) noexcept -> void* = delete;
-    auto operator new[](std::size_t, std::align_val_t, const std::nothrow_t&) noexcept -> void* = delete;
-    auto operator delete[](void*) noexcept -> void = delete;
-    auto operator delete[](void*, std::align_val_t) noexcept -> void = delete;
-    auto operator delete[](void*, std::size_t) noexcept -> void = delete;
-    auto operator delete[](void*, std::size_t, std::align_val_t) noexcept -> void = delete;
-    auto operator delete[](void*, const std::nothrow_t&) noexcept -> void = delete;
-    auto operator delete[](void*, std::align_val_t, const std::nothrow_t&) noexcept -> void = delete;
 };
 
 } // namespace impl
