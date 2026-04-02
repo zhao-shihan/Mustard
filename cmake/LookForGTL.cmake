@@ -16,7 +16,7 @@
 
 message(STATUS "Looking for gtl")
 
-set(MUSTARD_GTL_MINIMUM_REQUIRED 1.2.0)
+set(MUSTARD_GTL_MINIMUM_REQUIRED 1.2.1)
 
 if(NOT MUSTARD_BUILTIN_GTL)
     find_package(gtl ${MUSTARD_GTL_MINIMUM_REQUIRED})
@@ -35,7 +35,7 @@ if(MUSTARD_BUILTIN_GTL)
     endif()
     # set download dest and URL
     set(MUSTARD_BUILTIN_GTL_SRC_DIR "${MUSTARD_PROJECT_3RDPARTY_DIR}/gtl-${MUSTARD_BUILTIN_GTL_VERSION}")
-    set(MUSTARD_BUILTIN_GTL_URL "https://github.com/greg7mdp/gtl/archive/refs/tags/v${MUSTARD_BUILTIN_GTL_VERSION}.tar.gz")
+    set(MUSTARD_BUILTIN_GTL_URL "https://github.com/zhao-shihan/gtl/archive/refs/tags/v${MUSTARD_BUILTIN_GTL_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MUSTARD_BUILTIN_GTL_SRC_DIR}/CMakeLists.txt")

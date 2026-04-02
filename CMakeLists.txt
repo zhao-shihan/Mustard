@@ -85,7 +85,7 @@ set(MUSTARD_BUILTIN_BACKWARD_VERSION 1.6.1 CACHE STRING "Set built-in backward-c
 set(MUSTARD_BUILTIN_EFM_VERSION 0.1.0 CACHE STRING "Set built-in EFM version (if required).")
 set(MUSTARD_BUILTIN_ENVPARSE_VERSION 1.0.0 CACHE STRING "Set built-in envparse version (if required).")
 set(MUSTARD_BUILTIN_FMT_VERSION 12.1.0 CACHE STRING "Set built-in fmt version (if required).")
-set(MUSTARD_BUILTIN_GTL_VERSION 1.2.0 CACHE STRING "Set built-in gtl version (if required).")
+set(MUSTARD_BUILTIN_GTL_VERSION 1.2.1 CACHE STRING "Set built-in gtl version (if required).")
 set(MUSTARD_BUILTIN_INDICATORS_VERSION 2.3.1 CACHE STRING "Set built-in indicators version (if required).")
 set(MUSTARD_BUILTIN_MIMALLOC_VERSION 3.2.8 CACHE STRING "Set built-in mimalloc version (if required).")
 set(MUSTARD_BUILTIN_MPLR_VERSION 0.25.1003 CACHE STRING "Set built-in MPLR version (if required).")
