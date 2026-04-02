@@ -52,11 +52,11 @@ namespace Mustard::inline Execution::internal {
 template<std::integral T>
 class ParallelExecutorImpl final : public ExecutorImplBase<T> {
 public:
-    ParallelExecutorImpl(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
     auto NProcess() const -> int { return mplr::comm_world().size(); }
 
-    auto operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto PrintExecutionSummary() const -> void;
 
 private:

@@ -19,7 +19,7 @@
 namespace Mustard::inline Execution::internal {
 
 template<std::integral T>
-ParallelExecutorImpl<T>::ParallelExecutorImpl(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
+ParallelExecutorImpl<T>::ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
     ExecutorImplBase<T>{std::move(executionName), std::move(taskName), std::move(scheduler)},
     fExecutionInfoList{} {
     using std::chrono_literals::operator""s;
@@ -27,7 +27,7 @@ ParallelExecutorImpl<T>::ParallelExecutorImpl(std::string executionName, std::st
 }
 
 template<std::integral T>
-auto ParallelExecutorImpl<T>::operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto ParallelExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
         Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));
@@ -139,9 +139,9 @@ auto ParallelExecutorImpl<T>::PostTaskReport(T iEnded) const -> void {
     const auto worldComm{mplr::comm_world()};
     const auto perSecondSpeed{muc::chrono::seconds<double>{1} / StopwatchDuration{1} * speed};
     const auto now{std::chrono::system_clock::now()};
-    Print("MPI{}> [{}] {} {} has ended\n"
+    Print("MPI{}> [{}] {} of {} {} completed \n"
           "MPI{}>   {} elaps., {}\n",
-          worldComm.rank(), FormatToLocalTime(now), this->fTaskName, iEnded,
+          worldComm.rank(), FormatToLocalTime(now), this->fOperationName, this->fTaskName, iEnded,
           worldComm.rank(), this->ToDayHrMinSecMs(elapsed),
           [&, good{goodEstimation}, nExecuted{nExecutedTask}] {
               if (good) {

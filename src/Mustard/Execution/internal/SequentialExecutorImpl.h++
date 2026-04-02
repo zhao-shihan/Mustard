@@ -39,11 +39,11 @@ namespace Mustard::inline Execution::internal {
 template<std::integral T>
 class SequentialExecutorImpl final : public ExecutorImplBase<T> {
 public:
-    SequentialExecutorImpl(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    SequentialExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
     auto NProcess() const -> int { return 1; }
 
-    auto operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto PrintExecutionSummary() const -> void;
 
 private:

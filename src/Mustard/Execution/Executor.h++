@@ -42,9 +42,9 @@ public:
 
 public:
     Executor(std::string_view scheduler = DefaultSchedulerCode());
-    Executor(std::string executionName, std::string taskName, std::string_view scheduler = DefaultSchedulerCode());
+    Executor(std::string executionName, std::string opName, std::string taskName, std::string_view scheduler = DefaultSchedulerCode());
     Executor(std::unique_ptr<Scheduler<T>> scheduler);
-    Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
     auto SwitchScheduler(std::string_view scheduler) -> void;
     auto SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void;
@@ -68,8 +68,8 @@ public:
     auto TaskName() const -> const std::string&;
     auto TaskName(std::string name) -> void;
 
-    auto operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
-    auto operator()(T size, std::invocable<T> auto&& F) -> T;
+    auto Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto Run(T size, std::invocable<T> auto&& F) -> T;
 
     auto ExecutionInfo() const -> const ExecutionInfoType&;
     auto PrintExecutionSummary() const -> void;

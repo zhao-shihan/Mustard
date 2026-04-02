@@ -28,6 +28,7 @@
 #include "mplr/mplr.hpp"
 
 #include "muc/chrono"
+#include "muc/ctype"
 
 #include "gsl/gsl"
 
@@ -58,7 +59,7 @@ public:
     };
 
 public:
-    ExecutorImplBase(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    ExecutorImplBase(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
 
     auto SwitchScheduler(std::string_view scheduler) -> void { SwitchScheduler(MakeCodedScheduler<T>(scheduler)); }
     auto SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void;
@@ -77,6 +78,8 @@ public:
 
     auto ExecutionName() const -> const auto& { return fExecutionName; }
     auto ExecutionName(std::string name) -> void { fExecutionName = std::move(name); }
+    auto OperationName() const -> const auto& { return fOperationName; }
+    auto OperationName(std::string name) -> void { fOperationName = std::move(name); }
     auto TaskName() const -> const auto& { return fTaskName; }
     auto TaskName(std::string name) -> void { fTaskName = std::move(name); }
 
@@ -98,6 +101,7 @@ protected:
     muc::chrono::seconds<double> fPrintProgressInterval;
 
     std::string fExecutionName;
+    std::string fOperationName;
     std::string fTaskName;
 
     std::chrono::system_clock::time_point fExecutionBeginTime;

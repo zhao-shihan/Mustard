@@ -19,7 +19,7 @@
 namespace Mustard::inline Execution::internal {
 
 template<std::integral T>
-SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
+SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
     ExecutorImplBase<T>{std::move(executionName), std::move(taskName), std::move(scheduler)},
     fProgressBar{} {
     using std::chrono_literals::operator""ms;
@@ -27,7 +27,7 @@ SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std
 }
 
 template<std::integral T>
-auto SequentialExecutorImpl<T>::operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto SequentialExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
         Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));

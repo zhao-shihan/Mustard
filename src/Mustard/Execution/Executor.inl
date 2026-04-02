@@ -23,24 +23,24 @@ Executor<T>::Executor(std::string_view scheduler) :
     Executor{MakeCodedScheduler<T>(scheduler)} {}
 
 template<std::integral T>
-Executor<T>::Executor(std::string executionName, std::string taskName, std::string_view scheduler) :
-    Executor{std::move(executionName), std::move(taskName), MakeCodedScheduler<T>(scheduler)} {}
+Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::string_view scheduler) :
+    Executor{std::move(executionName), std::move(opName), std::move(taskName), MakeCodedScheduler<T>(scheduler)} {}
 
 template<std::integral T>
 Executor<T>::Executor(std::unique_ptr<Scheduler<T>> scheduler) :
-    Executor{"Execution", "Task", std::move(scheduler)} {}
+    Executor{"Run", "Executing", "task", std::move(scheduler)} {}
 
 template<std::integral T>
-Executor<T>::Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
+Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
     fImpl{[&] {
         if (not mplr::available() or mplr::comm_world().size() == 1) {
             return std::make_unique<Impl>(
                 std::in_place_type<internal::SequentialExecutorImpl<T>>,
-                std::move(executionName), std::move(taskName), std::move(scheduler));
+                std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler));
         }
         return std::make_unique<Impl>(
             std::in_place_type<internal::ParallelExecutorImpl<T>>,
-            std::move(executionName), std::move(taskName), std::move(scheduler));
+            std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler));
     }()} {}
 
 template<std::integral T>
@@ -172,16 +172,16 @@ auto Executor<T>::TaskName(std::string name) -> void {
 }
 
 template<std::integral T>
-auto Executor<T>::operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto Executor<T>::Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
     return std::visit([&](auto&& impl) {
-        return impl(std::move(task), std::forward<decltype(F)>(F));
+        return impl.Run(std::move(task), std::forward<decltype(F)>(F));
     },
                       *fImpl);
 }
 
 template<std::integral T>
-auto Executor<T>::operator()(T size, std::invocable<T> auto&& F) -> T {
-    return (*this)({0, size}, std::forward<decltype(F)>(F));
+auto Executor<T>::Run(T size, std::invocable<T> auto&& F) -> T {
+    return Run({0, size}, std::forward<decltype(F)>(F));
 }
 
 template<std::integral T>

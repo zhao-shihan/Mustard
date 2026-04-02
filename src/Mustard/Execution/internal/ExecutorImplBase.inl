@@ -20,17 +20,22 @@ namespace Mustard::inline Execution::internal {
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-ExecutorImplBase<T>::ExecutorImplBase(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
+ExecutorImplBase<T>::ExecutorImplBase(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
     fScheduler{std::move(scheduler)},
     fExecuting{},
     fPrintProgress{true},
     fPrintProgressInterval{},
     fExecutionName{std::move(executionName)},
+    fOperationName{std::move(opName)},
     fTaskName{std::move(taskName)},
     fExecutionBeginTime{},
     fStopwatch{},
     fProcessorStopwatch{},
-    fExecutionInfo{} {}
+    fExecutionInfo{} {
+    if (fScheduler == nullptr) {
+        Throw<std::invalid_argument>("Scheduler is nullptr");
+    }
+}
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
@@ -45,6 +50,27 @@ auto ExecutorImplBase<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> schedule
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+auto ExecutionName(std::string name) -> void {
+    name.front() = muc::toupper(name.front());
+    fExecutionName = std::move(name);
+}
+
+template<std::integral T>
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+auto OperationName(std::string name) -> void {
+    name.front() = muc::toupper(name.front());
+    fOperationName = std::move(name);
+}
+
+template<std::integral T>
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+auto TaskName(std::string name) -> void {
+    name.front() = muc::tolower(name.front());
+    fTaskName = std::move(name);
+}
+
+template<std::integral T>
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto ExecutorImplBase<T>::PreLoopReport() const -> void {
     if (not this->fPrintProgress) {
         return;
@@ -53,7 +79,7 @@ auto ExecutorImplBase<T>::PreLoopReport() const -> void {
     if (worldComm.is_valid() and worldComm.rank() != 0) {
         return;
     }
-    auto startText{fmt::format("[{}] {} has started", FormatToLocalTime(fExecutionBeginTime), this->fExecutionName)};
+    auto startText{fmt::format("[{}] {} started", FormatToLocalTime(fExecutionBeginTime), this->fExecutionName)};
     if (worldComm.is_valid()) {
         startText += fmt::format(" on {} process{}", worldComm.size(), worldComm.size() > 1 ? "es" : "");
     }
@@ -77,7 +103,7 @@ auto ExecutorImplBase<T>::PostLoopReport() const -> void {
     using Seconds = muc::chrono::seconds<double>;
     using std::chrono_literals::operator""s;
     const auto now{std::chrono::system_clock::now()};
-    auto endText{fmt::format("[{}] {} has ended", FormatToLocalTime(now), this->fExecutionName)};
+    auto endText{fmt::format("[{}] {} completed", FormatToLocalTime(now), this->fExecutionName)};
     if (worldComm.is_valid()) {
         endText += fmt::format(" on {} process{}", worldComm.size(), worldComm.size() > 1 ? "es" : "");
     }
