@@ -29,11 +29,11 @@ auto main(int argc, char* argv[]) -> int {
     Mustard::Env::BasicEnv env{argc, argv, {}};
 
     Executor<unsigned long long> executor;
-    executor(std::stoull(argv[1]),
-             [](auto) {
-                 // using std::chrono_literals::operator""ms;
-                 // std::this_thread::sleep_for(1ms);
-             });
+    executor.Run(std::stoull(argv[1]),
+                 [](auto) {
+                     // using std::chrono_literals::operator""ms;
+                     // std::this_thread::sleep_for(1ms);
+                 });
     executor.PrintExecutionSummary();
 
     return EXIT_SUCCESS;

@@ -20,7 +20,7 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Utility/UseXoshiro.h++"
 
 #include <concepts>
@@ -29,7 +29,7 @@ namespace Mustard::Env {
 
 template<unsigned AXoshiroWidth>
 class MonteCarloEnv : virtual public BasicEnv,
-                      public Memory::PassiveSingleton<MonteCarloEnv<AXoshiroWidth>> {
+                      public PassiveSingleton<MonteCarloEnv<AXoshiroWidth>> {
 protected:
     MonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
                   enum VerboseLevel verboseLevel,

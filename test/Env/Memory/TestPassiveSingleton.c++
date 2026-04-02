@@ -15,9 +15,9 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
-class NullPassiveSingleton : public Mustard::Env::Memory::PassiveSingleton<NullPassiveSingleton> {};
+class NullPassiveSingleton : public Mustard::Env::PassiveSingleton<NullPassiveSingleton> {};
 
 int main(int /* argc */, char* /* argv */[]) {
     // Mustard::Env::BasicEnv environment(argc, argv, {});

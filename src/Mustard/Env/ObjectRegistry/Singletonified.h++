@@ -19,28 +19,29 @@
 #pragma once
 
 #include "Mustard/Concept/NonCopyable.h++"
+#include "Mustard/Env/ObjectRegistry/internal/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonBase.h++"
 
 #include <concepts>
 #include <type_traits>
 
-namespace Mustard::Env::Memory {
-
-namespace internal {
-
-class SingletonBase;
-
-} // namespace internal
+namespace Mustard::Env::inline ObjectRegistry {
 
 template<typename ADerived>
-class PassiveSingleton;
+class Singleton;
 
+/// @brief Constraint for types accepted by `Singleton<T>`.
+/// @tparam T Candidate singleton type.
 template<typename T>
-concept PassiveSingletonified =
+concept Singletonified =
     requires {
         { T::Instance() } -> std::same_as<T&>;
-        requires std::derived_from<T, PassiveSingleton<T>>;
-        requires not std::is_base_of_v<internal::SingletonBase, T>;
+        requires std::derived_from<T, Singleton<T>>;
+        requires std::derived_from<T, internal::SingletonBase>;
+        requires not std::is_base_of_v<internal::WeakSingletonBase, T>;
         requires Concept::NonCopyable<T>;
+        requires std::is_final_v<T>;
+        requires not std::is_default_constructible_v<T>; // try to constrain to private or protected constructor
     };
 
-} // namespace Mustard::Env::Memory
+} // namespace Mustard::Env::inline ObjectRegistry

@@ -16,10 +16,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Env::Memory {
+namespace Mustard::Env::inline ObjectRegistry {
 
 template<typename ADerived>
-std::shared_ptr<void*> WeakSingleton<ADerived>::fgInstance{};
+std::shared_ptr<void*> WeakSingleton<ADerived>::fgInstancePtr{};
 template<typename ADerived>
 muc::spin_mutex WeakSingleton<ADerived>::fgSpinMutex{};
 
@@ -28,25 +28,24 @@ WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
     WeakSingletonBase{} {
     static_assert(WeakSingletonified<ADerived>);
     std::scoped_lock lock{internal::WeakSingletonPool::RecursiveMutex()};
-    if (auto& weakSingletonPool{internal::WeakSingletonPool::Instance()};
-        not weakSingletonPool.Contains<ADerived>()) {
-        fgInstance = weakSingletonPool.Insert<ADerived>(self);
-    } else {
-        Throw<std::logic_error>(fmt::format("Trying to construct {} (weak singleton in environment) twice",
-                                            muc::try_demangle(typeid(ADerived).name())));
+    auto& pool{internal::WeakSingletonPool::Instance()};
+    if (pool.Contains<ADerived>()) {
+        Throw<std::runtime_error>(fmt::format("Trying to construct {} (weak singleton in environment) twice",
+                                              muc::try_demangle(typeid(ADerived).name())));
     }
+    fgInstancePtr = pool.Insert<ADerived>(self);
 }
 
 template<typename ADerived>
 WeakSingleton<ADerived>::~WeakSingleton() {
     LoadInstance();
-    *fgInstance = nullptr;
+    *fgInstancePtr = nullptr;
 }
 
 template<typename ADerived>
 MUSTARD_ALWAYS_INLINE auto WeakSingleton<ADerived>::Status() -> enum Status {
     std::scoped_lock lock{fgSpinMutex};
-    if (fgInstance and *fgInstance) [[likely]] {
+    if (fgInstancePtr and *fgInstancePtr) [[likely]] {
         return Status::Available;
     }
     return LoadInstance();
@@ -55,18 +54,18 @@ MUSTARD_ALWAYS_INLINE auto WeakSingleton<ADerived>::Status() -> enum Status {
 template<typename ADerived>
 MUSTARD_NOINLINE auto WeakSingleton<ADerived>::LoadInstance() -> enum Status {
     std::scoped_lock lock{internal::WeakSingletonPool::RecursiveMutex()};
-    if (fgInstance == nullptr) {
+    if (fgInstancePtr == nullptr) {
         if (const auto sharedNode{internal::WeakSingletonPool::Instance().Find<ADerived>()}) {
-            fgInstance = sharedNode;
+            fgInstancePtr = sharedNode;
         } else {
             return Status::NotInstantiated;
         }
     }
-    if (*fgInstance == nullptr) {
+    if (*fgInstancePtr == nullptr) {
         return Status::Expired;
     } else {
         return Status::Available;
     }
 }
 
-} // namespace Mustard::Env::Memory
+} // namespace Mustard::Env::inline ObjectRegistry

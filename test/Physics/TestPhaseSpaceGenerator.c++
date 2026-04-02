@@ -43,7 +43,7 @@ auto main(int argc, char* argv[]) -> int {
 
     const auto nEvent{cli->get<unsigned long long>("n")};
     const auto nBin{gsl::narrow<int>(muc::llround(std::sqrt(nEvent / 100000)))};
-    Mustard::Executor<unsigned long long> executor{"Generation", "Sample"};
+    Mustard::Executor<unsigned long long> executor{"Generation", "Generation", "sample"};
 
     constexpr auto FillDalitzPlot{[](Mustard::EventGenerator<1, 3>& generator,
                                      double cmE, TH2D& dalitzPlot, TH2D& UnweightedPlot) {
@@ -80,14 +80,14 @@ auto main(int argc, char* argv[]) -> int {
     Mustard::GENBOD<1, 3> genbodLc2PiKP({211, -321, 2212}, {mPi, mK, mP});
     TH2D genbodLc2PiKPDalitzPlot{"GENBOD_Lc2PiKP", "GENBOD_Lc2PiKP", nBin, mPiKLow, mPiKUp, nBin, mKPLow, mKPUp};
     TH2D genbodLc2PiKPUnweighted{"GENBOD_Lc2PiKP_Unweighted", "GENBOD_Lc2PiKP_Unweighted", nBin, mPiKLow, mPiKUp, nBin, mKPLow, mKPUp};
-    executor(nEvent, [&](auto) { FillDalitzPlot(genbodLc2PiKP, mLc, genbodLc2PiKPDalitzPlot, genbodLc2PiKPUnweighted); });
+    executor.Run(nEvent, [&](auto) { FillDalitzPlot(genbodLc2PiKP, mLc, genbodLc2PiKPDalitzPlot, genbodLc2PiKPUnweighted); });
     executor.PrintExecutionSummary();
     WritePlot(genbodLc2PiKPDalitzPlot, genbodLc2PiKPUnweighted);
 
     Mustard::RAMBO<1, 3> ramboLc2PiKP({211, -321, 2212}, {mPi, mK, mP});
     TH2D ramboLc2PiKPDalitzPlot{"RAMBO_Lc2PiKP", "RAMBO_Lc2PiKP", nBin, mPiKLow, mPiKUp, nBin, mKPLow, mKPUp};
     TH2D ramboLc2PiKPUnweighted{"RAMBO_Lc2PiKP_Unweighted", "RAMBO_Lc2PiKP_Unweighted", nBin, mPiKLow, mPiKUp, nBin, mKPLow, mKPUp};
-    executor(nEvent, [&](auto) { FillDalitzPlot(ramboLc2PiKP, mLc, ramboLc2PiKPDalitzPlot, ramboLc2PiKPUnweighted); });
+    executor.Run(nEvent, [&](auto) { FillDalitzPlot(ramboLc2PiKP, mLc, ramboLc2PiKPDalitzPlot, ramboLc2PiKPUnweighted); });
     executor.PrintExecutionSummary();
     WritePlot(ramboLc2PiKPDalitzPlot, ramboLc2PiKPUnweighted);
 
@@ -95,14 +95,14 @@ auto main(int argc, char* argv[]) -> int {
     Mustard::GENBOD<1, 3> genbodMu2ENN({-11, -14, 12}, {electron_mass_c2, 0, 0});
     TH2D genbodMu2ENNDalitzPlot{"GENBOD_Mu2ENN", "GENBOD_Mu2ENN", nBin, 0, muc::pow(muon_mass_c2, 2), nBin, 0, muc::pow(muon_mass_c2, 2)};
     TH2D genbodMu2ENNUnweighted{"GENBOD_Mu2ENN_Unweighted", "GENBOD_Mu2ENN_Unweighted", nBin, 0, muc::pow(muon_mass_c2, 2), nBin, 0, muc::pow(muon_mass_c2, 2)};
-    executor(nEvent, [&](auto) { FillDalitzPlot(genbodMu2ENN, muon_mass_c2, genbodMu2ENNDalitzPlot, genbodMu2ENNUnweighted); });
+    executor.Run(nEvent, [&](auto) { FillDalitzPlot(genbodMu2ENN, muon_mass_c2, genbodMu2ENNDalitzPlot, genbodMu2ENNUnweighted); });
     executor.PrintExecutionSummary();
     WritePlot(genbodMu2ENNDalitzPlot, genbodMu2ENNUnweighted);
 
     Mustard::RAMBO<1, 3> ramboMu2ENN({-11, -14, 12}, {electron_mass_c2, 0, 0});
     TH2D ramboMu2ENNDalitzPlot{"RAMBO_Mu2ENN", "RAMBO_Mu2ENN", nBin, 0, muc::pow(muon_mass_c2, 2), nBin, 0, muc::pow(muon_mass_c2, 2)};
     TH2D ramboMu2ENNUnweighted{"RAMBO_Mu2ENN_Unweighted", "RAMBO_Mu2ENN_Unweighted", nBin, 0, muc::pow(muon_mass_c2, 2), nBin, 0, muc::pow(muon_mass_c2, 2)};
-    executor(nEvent, [&](auto) { FillDalitzPlot(ramboMu2ENN, muon_mass_c2, ramboMu2ENNDalitzPlot, ramboMu2ENNUnweighted); });
+    executor.Run(nEvent, [&](auto) { FillDalitzPlot(ramboMu2ENN, muon_mass_c2, ramboMu2ENNDalitzPlot, ramboMu2ENNUnweighted); });
     executor.PrintExecutionSummary();
     WritePlot(ramboMu2ENNDalitzPlot, ramboMu2ENNUnweighted);
 

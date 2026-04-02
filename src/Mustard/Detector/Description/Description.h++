@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Env/Memory/Singletonified.h++"
+#include "Mustard/Env/ObjectRegistry/Singletonified.h++"
 
 #include <concepts>
 
@@ -32,7 +32,7 @@ template<typename T>
 concept Description =
     requires {
         requires std::derived_from<T, DescriptionBase<>>;
-        requires Env::Memory::Singletonified<T>;
+        requires Env::Singletonified<T>;
     };
 
 } // namespace Mustard::Detector::Description

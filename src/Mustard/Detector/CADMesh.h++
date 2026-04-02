@@ -1460,7 +1460,7 @@ inline G4ThreeVector TetrahedralMesh::GetTetPoint(G4int index_offset) {
         State* operator()(Lexer* lexer) const; \
     }
 
-#define CADMeshLexerState(name) name##State::operator()(Lexer* lexer) const
+#define CADMeshLexerState(name) name##State::operator()(Lexer * lexer) const
 
 #define ThisIsA(name) lexer->ThisIsA(name##Token)
 #define StartOfA(name) lexer->StartOfA(name##Token)

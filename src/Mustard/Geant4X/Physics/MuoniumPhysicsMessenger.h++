@@ -45,7 +45,7 @@ template<TargetForMuoniumPhysics ATarget>
 class MuoniumPhysicsMessenger final : public SingletonMessenger<MuoniumPhysicsMessenger<ATarget>,
                                                                 MuoniumFormation<ATarget>,
                                                                 MuoniumTransport<ATarget>> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     MuoniumPhysicsMessenger();

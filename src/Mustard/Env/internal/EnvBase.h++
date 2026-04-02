@@ -24,11 +24,12 @@
 
 namespace Mustard::Env {
 
-namespace Memory::internal {
+inline namespace ObjectRegistry {
+namespace internal {
 class WeakSingletonPool;
-class SingletonDeleter;
 class SingletonPool;
-} // namespace Memory::internal
+} // namespace internal
+} // namespace ObjectRegistry
 
 namespace internal {
 
@@ -41,9 +42,8 @@ private:
     static auto CheckFundamentalType() -> void;
 
 private:
-    std::unique_ptr<Memory::internal::WeakSingletonPool> fWeakSingletonPool;
-    std::unique_ptr<Memory::internal::SingletonPool> fSingletonPool;
-    std::unique_ptr<Memory::internal::SingletonDeleter> fSingletonDeleter;
+    std::unique_ptr<ObjectRegistry::internal::WeakSingletonPool> fWeakSingletonPool;
+    std::unique_ptr<ObjectRegistry::internal::SingletonPool> fSingletonPool;
 };
 
 } // namespace internal

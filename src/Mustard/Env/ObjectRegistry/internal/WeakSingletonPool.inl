@@ -16,30 +16,29 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Env::Memory::internal {
+namespace Mustard::Env::inline ObjectRegistry::internal {
 
 template<WeakSingletonified AWeakSingleton>
-[[nodiscard]] auto WeakSingletonPool::Find() -> std::shared_ptr<void*> {
-    if (const auto existed{fInstanceMap.find(typeid(AWeakSingleton))};
-        existed == fInstanceMap.cend()) {
+[[nodiscard]] auto WeakSingletonPool::Find() const -> std::shared_ptr<void*> {
+    const auto existed{fInstanceMap.find(typeid(AWeakSingleton))};
+    if (existed == fInstanceMap.cend()) {
         return {};
-    } else {
-        const auto& [type, instance]{*existed};
-        if (instance.expired()) {
-            Throw<std::logic_error>(fmt::format("Instance pointer of {} expired", muc::try_demangle(type.name())));
-        }
-        return instance.lock();
     }
+    const auto& [type, instancePtr]{*existed};
+    if (instancePtr.expired()) {
+        Throw<std::runtime_error>(fmt::format("Instance pointer of {} expired", muc::try_demangle(type.name())));
+    }
+    return instancePtr.lock();
 }
 
 template<WeakSingletonified AWeakSingleton>
 [[nodiscard]] auto WeakSingletonPool::Insert(gsl::not_null<AWeakSingleton*> instance) -> std::shared_ptr<void*> {
-    const auto sharedInstance{std::make_shared<void*>(instance)};
-    const auto [_, inserted]{fInstanceMap.try_emplace(typeid(AWeakSingleton), sharedInstance)};
+    auto instancePtr{std::allocate_shared<void*>(Allocator<void*>{}, instance)};
+    const auto [_, inserted]{fInstanceMap.try_emplace(typeid(AWeakSingleton), instancePtr)};
     if (not inserted) {
-        Throw<std::logic_error>(fmt::format("Instance of type {} already exists", muc::try_demangle(typeid(AWeakSingleton).name())));
+        Throw<std::runtime_error>(fmt::format("Instance of type {} already exists", muc::try_demangle(typeid(AWeakSingleton).name())));
     }
-    return sharedInstance;
+    return instancePtr;
 }
 
-} // namespace Mustard::Env::Memory::internal
+} // namespace Mustard::Env::inline ObjectRegistry::internal

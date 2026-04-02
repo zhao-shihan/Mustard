@@ -318,7 +318,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
             compensation = (newSum - sum) - correctedValue;
             sum = newSum;
         }};
-        executor(nSample, [&](auto) {
+        executor.Run(nSample, [&](auto) {
             const auto event{PhaseSpace(rng)};
             if (not InfraredSafe(event.p)) {
                 return;

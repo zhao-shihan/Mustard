@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/CLI/CLI.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Env/VerboseLevel.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
@@ -34,7 +34,7 @@
 namespace Mustard::Env {
 
 class BasicEnv : virtual public internal::EnvBase,
-                 public Memory::PassiveSingleton<BasicEnv> {
+                 public PassiveSingleton<BasicEnv> {
 protected:
     struct NoBanner {};
 

@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "Mustard/Env/Memory/WeakSingletonified.h++"
-#include "Mustard/Env/Memory/internal/WeakSingletonBase.h++"
-#include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/WeakSingletonified.h++"
+#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
@@ -35,24 +35,38 @@
 #include <string>
 #include <typeinfo>
 
-namespace Mustard::Env::Memory {
+namespace Mustard::Env::inline ObjectRegistry {
 
 template<typename ADerived>
 class PassiveSingleton;
 
+/// @brief Base mixin for externally owned singleton-like objects.
+/// @tparam ADerived Final derived type.
+/// @details The object registers itself into `internal::WeakSingletonPool` on
+/// construction. Access is status-driven and does not force object creation.
+/// @note Registration uses a shared indirection node from the global pool, so
+/// code in different dynamic libraries can observe the same object pointer when
+/// they are running in the same Mustard environment.
 template<typename ADerived>
 class WeakSingleton : public internal::WeakSingletonBase {
     friend class PassiveSingleton<ADerived>;
 
 protected:
+    /// @brief Registers @p self as the current weak singleton instance.
+    /// @param self Non-null pointer to the derived object under construction.
     WeakSingleton(ADerived* self);
+    /// @brief Marks the shared instance slot as expired.
     ~WeakSingleton();
 
 public:
-    MUSTARD_ALWAYS_INLINE static auto NotInstantiated() -> bool { return Status() == Status::NotInstantiated; }
-    MUSTARD_ALWAYS_INLINE static auto Available() -> bool { return Status() == Status::Available; }
-    MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return Status() == Status::Expired; }
+    /// @brief Checks whether the singleton has ever been instantiated.
     MUSTARD_ALWAYS_INLINE static auto Instantiated() -> bool { return not NotInstantiated(); }
+    /// @brief Checks whether the singleton has ever been instantiated.
+    MUSTARD_ALWAYS_INLINE static auto NotInstantiated() -> bool { return Status() == Status::NotInstantiated; }
+    /// @brief Checks whether the singleton instance is currently alive.
+    MUSTARD_ALWAYS_INLINE static auto Available() -> bool { return Status() == Status::Available; }
+    /// @brief Checks whether the singleton was instantiated but already destroyed.
+    MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return Status() == Status::Expired; }
 
 private:
     enum struct Status {
@@ -61,14 +75,15 @@ private:
         Expired
     };
 
+private:
     MUSTARD_ALWAYS_INLINE static auto Status() -> enum Status;
     MUSTARD_NOINLINE static auto LoadInstance() -> enum Status;
 
 private:
-    static std::shared_ptr<void*> fgInstance;
+    static std::shared_ptr<void*> fgInstancePtr;
     static muc::spin_mutex fgSpinMutex;
 };
 
-} // namespace Mustard::Env::Memory
+} // namespace Mustard::Env::inline ObjectRegistry
 
-#include "Mustard/Env/Memory/WeakSingleton.inl"
+#include "Mustard/Env/ObjectRegistry/WeakSingleton.inl"

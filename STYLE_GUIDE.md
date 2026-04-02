@@ -526,7 +526,7 @@ class Accelerator final : public Mustard::Detector::Definition::DefinitionBase {
 ```cpp
 class Geant4Env : virtual public MPIEnv,
                   virtual public MonteCarloEnv<512>,
-                  public Memory::PassiveSingleton<Geant4Env> {
+                  public PassiveSingleton<Geant4Env> {
     /* ... */
 };
 ```
@@ -850,7 +850,7 @@ template<typename T>
 concept Description =
     requires {
         requires std::derived_from<T, DescriptionBase<>>;
-        requires Env::Memory::Singletonified<T>;
+        requires Env::Singletonified<T>;
     };
 
 // Function templates with concept constraints
@@ -927,7 +927,7 @@ public:
 - **Never write your own singleton**
 ```cpp
 class Solenoid final : public Mustard::Detector::Description::DescriptionBase<Solenoid> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Solenoid();
@@ -1279,7 +1279,7 @@ class G4Material;
 
 ```cpp
 class Solenoid final : public Mustard::Detector::Description::DescriptionBase<Solenoid> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Solenoid();

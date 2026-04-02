@@ -20,7 +20,7 @@ namespace Mustard::inline Execution::internal {
 
 template<std::integral T>
 ParallelExecutorImpl<T>::ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
-    ExecutorImplBase<T>{std::move(executionName), std::move(taskName), std::move(scheduler)},
+    ExecutorImplBase<T>{std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler)},
     fExecutionInfoList{} {
     using std::chrono_literals::operator""s;
     this->fPrintProgressInterval = 3s;

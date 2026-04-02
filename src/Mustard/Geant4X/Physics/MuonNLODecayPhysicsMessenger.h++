@@ -34,7 +34,7 @@ class MuoniumNLODecayPhysics;
 class MuonNLODecayPhysicsMessenger final : public Geant4X::SingletonMessenger<MuonNLODecayPhysicsMessenger,
                                                                               MuonNLODecayPhysics,
                                                                               MuoniumNLODecayPhysics> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     MuonNLODecayPhysicsMessenger();

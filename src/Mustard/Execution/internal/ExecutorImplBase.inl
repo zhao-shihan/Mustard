@@ -50,27 +50,6 @@ auto ExecutorImplBase<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> schedule
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-auto ExecutionName(std::string name) -> void {
-    name.front() = muc::toupper(name.front());
-    fExecutionName = std::move(name);
-}
-
-template<std::integral T>
-    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-auto OperationName(std::string name) -> void {
-    name.front() = muc::toupper(name.front());
-    fOperationName = std::move(name);
-}
-
-template<std::integral T>
-    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-auto TaskName(std::string name) -> void {
-    name.front() = muc::tolower(name.front());
-    fTaskName = std::move(name);
-}
-
-template<std::integral T>
-    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto ExecutorImplBase<T>::PreLoopReport() const -> void {
     if (not this->fPrintProgress) {
         return;

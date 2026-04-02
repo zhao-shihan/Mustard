@@ -18,15 +18,15 @@
 
 #pragma once
 
-#include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
 
 #include "G4ParticleDefinition.hh"
 
 namespace Mustard::Geant4X::inline Particle {
 
-class Muonium final : public Env::Memory::Singleton<Muonium>,
+class Muonium final : public Env::Singleton<Muonium>,
                       public G4ParticleDefinition {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     Muonium();

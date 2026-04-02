@@ -34,7 +34,7 @@ class EcoMugCosmicRayMuon;
 
 class EcoMugCosmicRayMuonMessenger final : public Geant4X::SingletonMessenger<EcoMugCosmicRayMuonMessenger,
                                                                               EcoMugCosmicRayMuon> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     EcoMugCosmicRayMuonMessenger();

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Env::Memory {
+namespace Mustard::Env::inline ObjectRegistry {
 
 template<typename ADerived>
 PassiveSingleton<ADerived>::PassiveSingleton(ADerived* self) :
@@ -29,15 +29,15 @@ template<typename ADerived>
 MUSTARD_ALWAYS_INLINE auto PassiveSingleton<ADerived>::Instance() -> ADerived& {
     switch (Base::Status()) {
     [[unlikely]] case Base::Status::NotInstantiated:
-        Throw<std::logic_error>(fmt::format("{} (passive singleton in environment) has not been instantiated",
-                                            muc::try_demangle(typeid(ADerived).name())));
+        Throw<std::runtime_error>(fmt::format("{} (passive singleton in environment) has not been instantiated",
+                                              muc::try_demangle(typeid(ADerived).name())));
     [[likely]] case Base::Status::Available:
-        return *static_cast<ADerived*>(*Base::fgInstance);
+        return *static_cast<ADerived*>(*Base::fgInstancePtr);
     [[unlikely]] case Base::Status::Expired:
-        Throw<std::logic_error>(fmt::format("The instance of {} (passive singleton in environment) has been deleted",
-                                            muc::try_demangle(typeid(ADerived).name())));
+        Throw<std::runtime_error>(fmt::format("The instance of {} (passive singleton in environment) has been deleted",
+                                              muc::try_demangle(typeid(ADerived).name())));
     }
     muc::unreachable();
 }
 
-} // namespace Mustard::Env::Memory
+} // namespace Mustard::Env::inline ObjectRegistry

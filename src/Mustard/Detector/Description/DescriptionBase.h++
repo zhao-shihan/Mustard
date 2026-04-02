@@ -20,7 +20,7 @@
 
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
@@ -76,7 +76,7 @@ private:
 };
 
 template<typename ADerived>
-class DescriptionBase<ADerived> : public Env::Memory::Singleton<ADerived>,
+class DescriptionBase<ADerived> : public Env::Singleton<ADerived>,
                                   public DescriptionBase<> {
 protected:
     DescriptionBase(std::string name);

@@ -16,10 +16,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Env::Memory {
+namespace Mustard::Env::inline ObjectRegistry {
 
 template<typename ADerived>
-std::shared_ptr<void*> Singleton<ADerived>::fgInstance{};
+std::shared_ptr<void*> Singleton<ADerived>::fgInstancePtr{};
 template<typename ADerived>
 muc::spin_mutex Singleton<ADerived>::fgSpinMutex{};
 
@@ -32,17 +32,17 @@ Singleton<ADerived>::Singleton() :
 template<typename ADerived>
 Singleton<ADerived>::~Singleton() {
     LoadInstance();
-    *fgInstance = nullptr;
+    *fgInstancePtr = nullptr;
 }
 
 template<typename ADerived>
 MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Instance() -> ADerived& {
     switch (Status()) {
     [[likely]] case Status::Available:
-        return *static_cast<ADerived*>(*fgInstance);
+        return *static_cast<ADerived*>(*fgInstancePtr);
     [[unlikely]] case Status::Expired:
-        Throw<std::logic_error>(fmt::format("The instance of {} has been deleted",
-                                            muc::try_demangle(typeid(ADerived).name())));
+        Throw<std::runtime_error>(fmt::format("The instance of {} has been deleted",
+                                              muc::try_demangle(typeid(ADerived).name())));
     }
     muc::unreachable();
 }
@@ -50,7 +50,7 @@ MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Instance() -> ADerived& {
 template<typename ADerived>
 MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Status() -> enum Status {
     std::scoped_lock lock{fgSpinMutex};
-    if (fgInstance and *fgInstance) [[likely]] {
+    if (fgInstancePtr and *fgInstancePtr) [[likely]] {
         return Status::Available;
     }
     return LoadInstance();
@@ -59,23 +59,19 @@ MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Status() -> enum Status {
 template<typename ADerived>
 MUSTARD_NOINLINE auto Singleton<ADerived>::LoadInstance() -> enum Status {
     std::scoped_lock lock{internal::SingletonPool::RecursiveMutex()};
-    if (fgInstance == nullptr) {
-        if (const auto sharedNode{internal::SingletonPool::Instance().Find<ADerived>()}) {
-            fgInstance = sharedNode;
+    if (fgInstancePtr == nullptr) {
+        auto& pool{internal::SingletonPool::Instance()};
+        if (auto instancePtr{pool.Find<ADerived>()}) {
+            fgInstancePtr = std::move(instancePtr);
         } else {
-            auto& pool{internal::SingletonPool::Instance()};
-            if (pool.Contains<ADerived>()) {
-                Throw<std::logic_error>(fmt::format("Trying to construct {} (environmental singleton) twice",
-                                                    muc::try_demangle(typeid(ADerived).name())));
-            }
-            fgInstance = pool.Insert<ADerived>(SingletonInstantiator::New<ADerived>());
+            fgInstancePtr = pool.Make<ADerived>();
         }
     }
-    if (*fgInstance) {
+    if (*fgInstancePtr) {
         return Status::Available;
     } else {
         return Status::Expired;
     }
 }
 
-} // namespace Mustard::Env::Memory
+} // namespace Mustard::Env::inline ObjectRegistry

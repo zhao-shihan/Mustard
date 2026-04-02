@@ -20,7 +20,7 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "mplr/mplr.hpp"
 
@@ -36,7 +36,7 @@
 namespace Mustard::Env {
 
 class MPIEnv : virtual public BasicEnv,
-               public Memory::PassiveSingleton<MPIEnv> {
+               public PassiveSingleton<MPIEnv> {
 protected:
     MPIEnv(NoBanner, int argc, char* argv[],
            muc::optional_ref<CLI::CLI<>> cli,

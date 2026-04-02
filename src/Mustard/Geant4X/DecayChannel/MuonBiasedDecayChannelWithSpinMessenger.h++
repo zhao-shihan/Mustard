@@ -31,7 +31,7 @@ class MuonBiasedDecayChannelWithSpin;
 
 class MuonBiasedDecayChannelWithSpinMessenger final : public Geant4X::SingletonMessenger<MuonBiasedDecayChannelWithSpinMessenger,
                                                                                          MuonBiasedDecayChannelWithSpin> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     MuonBiasedDecayChannelWithSpinMessenger();

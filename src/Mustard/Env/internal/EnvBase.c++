@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/Memory/internal/SingletonDeleter.h++"
-#include "Mustard/Env/Memory/internal/SingletonPool.h++"
-#include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/internal/SingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
@@ -209,8 +208,7 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
 EnvBase::EnvBase() :
     NonCopyableBase{},
     fWeakSingletonPool{},
-    fSingletonPool{},
-    fSingletonDeleter{} {
+    fSingletonPool{} {
 
     static_assert("三清庇佑 运行稳定 结果无偏");
     static_assert("God bless no bugs");
@@ -235,9 +233,8 @@ EnvBase::EnvBase() :
         gInstantiated = true;
     }
 
-    fWeakSingletonPool = std::make_unique_for_overwrite<Memory::internal::WeakSingletonPool>();
-    fSingletonPool = std::make_unique_for_overwrite<Memory::internal::SingletonPool>();
-    fSingletonDeleter = std::make_unique_for_overwrite<Memory::internal::SingletonDeleter>();
+    fWeakSingletonPool = std::make_unique<ObjectRegistry::internal::WeakSingletonPool>();
+    fSingletonPool = std::make_unique<ObjectRegistry::internal::SingletonPool>();
 }
 
 EnvBase::~EnvBase() = default;

@@ -16,7 +16,7 @@ namespace Mustard::Simulation {
 template<typename AReceiver>
 class AnalysisBaseMessenger final : public Geant4X::SingletonMessenger<AnalysisBaseMessenger<AReceiver>,
                                                                        AReceiver> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     AnalysisBaseMessenger();

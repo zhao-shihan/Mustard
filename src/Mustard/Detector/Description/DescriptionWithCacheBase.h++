@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Detector/Description/DescriptionBase.h++"
-#include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
 #include <concepts>
@@ -111,7 +111,7 @@ private:
 };
 
 template<typename ADerived>
-class DescriptionWithCacheBase<ADerived> : public Env::Memory::Singleton<ADerived>,
+class DescriptionWithCacheBase<ADerived> : public Env::Singleton<ADerived>,
                                            public DescriptionWithCacheBase<> {
 protected:
     using DescriptionWithCacheBase<>::DescriptionWithCacheBase;

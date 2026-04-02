@@ -18,15 +18,15 @@
 
 #pragma once
 
-#include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
 
 #include "G4ParticleDefinition.hh"
 
 namespace Mustard::Geant4X::inline Particle {
 
-class Antimuonium final : public Env::Memory::Singleton<Antimuonium>,
+class Antimuonium final : public Env::Singleton<Antimuonium>,
                           public G4ParticleDefinition {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     Antimuonium();

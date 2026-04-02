@@ -22,7 +22,7 @@
 #include "Mustard/CLI/Module/Geant4Module.h++"
 #include "Mustard/CLI/Module/ModuleBase.h++"
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/WeakSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/WeakSingleton.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "G4UIExecutive.hh"
@@ -42,7 +42,7 @@
 
 namespace Mustard::Geant4X::inline Interface {
 
-class MPIExecutive : public Env::Memory::WeakSingleton<MPIExecutive> {
+class MPIExecutive : public Env::WeakSingleton<MPIExecutive> {
 public:
     MPIExecutive();
 

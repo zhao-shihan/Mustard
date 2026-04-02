@@ -43,9 +43,9 @@ public:
     /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     M2ENNGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
-                     double softCutoff, double collinearCutoff,
-                     std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
-                     std::optional<double> stepSize = {});
+                    double softCutoff, double collinearCutoff,
+                    std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
+                    std::optional<double> stepSize = {});
 
     /// @brief Set parent particle
     /// @param parent "mu-" or "mu+"

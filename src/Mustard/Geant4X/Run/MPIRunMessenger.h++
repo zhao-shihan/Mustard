@@ -33,7 +33,7 @@ class MPIRunManager;
 
 class MPIRunMessenger final : public Geant4X::SingletonMessenger<MPIRunMessenger,
                                                                  MPIRunManager> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     MPIRunMessenger();

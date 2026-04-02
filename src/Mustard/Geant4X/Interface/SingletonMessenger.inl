@@ -20,7 +20,7 @@ namespace Mustard::Geant4X::inline Interface {
 
 template<typename ADerived, typename... ARecipients>
 SingletonMessenger<ADerived, ARecipients...>::SingletonMessenger() :
-    Env::Memory::Singleton<ADerived>{},
+    Env::Singleton<ADerived>{},
     G4UImessenger{},
     fDelivering{},
     fRecipientSetTuple{} {

@@ -79,7 +79,7 @@ auto main(int argc, char* argv[]) -> int {
 
     std::vector<int> localIndexList;
     executor.PrintProgress(false);
-    executor(n, [&](auto i) { localIndexList.emplace_back(i); });
+    executor.Run(n, [&](auto i) { localIndexList.emplace_back(i); });
     executor.PrintExecutionSummary();
     CheckIndexList(n, localIndexList);
     MasterPrintLn("");
@@ -89,7 +89,7 @@ auto main(int argc, char* argv[]) -> int {
     const auto bigN{std::min<long long>(1000ll * n, std::numeric_limits<int>::max() / 2)};
     localIndexList.clear();
     executor.PrintProgress(true);
-    executor(bigN, [&](auto i) { localIndexList.emplace_back(i); });
+    executor.Run(bigN, [&](auto i) { localIndexList.emplace_back(i); });
     executor.PrintExecutionSummary();
     CheckIndexList(bigN, localIndexList);
     MasterPrintLn("");
@@ -97,7 +97,7 @@ auto main(int argc, char* argv[]) -> int {
     std::this_thread::sleep_for(1s);
 
     localIndexList.clear();
-    executor(n, [&](auto i) {
+    executor.Run(n, [&](auto i) {
         localIndexList.emplace_back(i);
         std::this_thread::sleep_for(500ms);
     });
@@ -109,7 +109,7 @@ auto main(int argc, char* argv[]) -> int {
 
     executor.PrintProgressInterval(100ms);
     localIndexList.clear();
-    executor(n, [&](auto i) {
+    executor.Run(n, [&](auto i) {
         localIndexList.emplace_back(i);
         std::this_thread::sleep_for(500ms);
     });

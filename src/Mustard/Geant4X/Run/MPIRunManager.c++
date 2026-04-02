@@ -50,7 +50,7 @@ MPIRunManager::MPIRunManager() :
     internal::PreG4RunManagerInitFlipG4cout{},
     G4RunManager{},
     internal::PostG4RunManagerInitFlipG4cout{},
-    fExecutor{"G4Run", "G4Event"},
+    fExecutor{"G4Run", "Simulation", "G4Event"},
     fMessengerRegister{this} {
     printModulo = -1;
     SetVerboseLevel(muc::to_underlying(Env::BasicEnv::Instance().VerboseLevel()));
@@ -78,7 +78,7 @@ auto MPIRunManager::DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSe
         fExecutor.ExecutionName(fmt::format("G4Run {}", currentRun->GetRunID()));
     }
     // Event loop
-    fExecutor(numberOfEventToBeProcessed, [this](auto eventID) {
+    fExecutor.Run(numberOfEventToBeProcessed, [this](auto eventID) {
         ProcessOneEvent(eventID);
         TerminateOneEvent();
         if (runAborted) {

@@ -32,7 +32,7 @@ class GeneralParticleSourceX;
 
 class GeneralParticleSourceXMessenger final : public Geant4X::SingletonMessenger<GeneralParticleSourceXMessenger,
                                                                                  GeneralParticleSourceX> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     GeneralParticleSourceXMessenger();

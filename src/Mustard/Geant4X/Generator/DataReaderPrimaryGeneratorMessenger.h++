@@ -34,7 +34,7 @@ class DataReaderPrimaryGenerator;
 
 class DataReaderPrimaryGeneratorMessenger final : public Geant4X::SingletonMessenger<DataReaderPrimaryGeneratorMessenger,
                                                                                      DataReaderPrimaryGenerator> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     DataReaderPrimaryGeneratorMessenger();

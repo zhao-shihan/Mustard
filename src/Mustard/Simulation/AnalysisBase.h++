@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
 #include "Mustard/IO/File.h++"
 #include "Mustard/IO/PrettyLog.h++"
@@ -24,7 +24,7 @@
 namespace Mustard::Simulation {
 
 template<typename ADerived, muc::ceta_string AAppName>
-class AnalysisBase : public Env::Memory::PassiveSingleton<ADerived> {
+class AnalysisBase : public Env::PassiveSingleton<ADerived> {
 public:
     AnalysisBase(ADerived* self);
     virtual ~AnalysisBase() = default;

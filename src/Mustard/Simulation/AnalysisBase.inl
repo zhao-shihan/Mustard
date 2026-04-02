@@ -2,7 +2,7 @@ namespace Mustard::Simulation {
 
 template<typename ADerived, muc::ceta_string AAppName>
 AnalysisBase<ADerived, AAppName>::AnalysisBase(ADerived* self) :
-    Env::Memory::PassiveSingleton<ADerived>{self},
+    Env::PassiveSingleton<ADerived>{self},
     fFilePath{fmt::format("{}_untitled", AAppName.sv())},
     fFileMode{"NEW"},
     fLastUsedFullFilePath{},

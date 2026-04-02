@@ -18,16 +18,26 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Concept/NonCopyable.h++"
+#include "Mustard/Env/ObjectRegistry/internal/SingletonBase.h++"
 
-namespace Mustard::Env::Memory::internal {
+#include <concepts>
+#include <type_traits>
 
-/// @brief Implementation detail of Mustard::Env::Memory::PassiveSingleton.
-/// Not API. Just a signature of passive singleton.
-class PassiveSingletonBase : public NonCopyableBase {
-protected:
-    PassiveSingletonBase() = default;
-    ~PassiveSingletonBase() = default;
-};
+namespace Mustard::Env::inline ObjectRegistry {
 
-} // namespace Mustard::Env::Memory::internal
+template<typename ADerived>
+class PassiveSingleton;
+
+/// @brief Constraint for a type deriving from PassiveSingleton.
+/// @tparam T Candidate singleton type.
+template<typename T>
+concept PassiveSingletonified =
+    requires {
+        { T::Instance() } -> std::same_as<T&>;
+        requires std::derived_from<T, PassiveSingleton<T>>;
+        requires not std::is_base_of_v<internal::SingletonBase, T>;
+        requires Concept::NonCopyable<T>;
+    };
+
+} // namespace Mustard::Env::inline ObjectRegistry

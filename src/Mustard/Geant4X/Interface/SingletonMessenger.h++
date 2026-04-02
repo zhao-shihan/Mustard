@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
@@ -50,7 +50,7 @@ namespace Mustard::Geant4X::inline Interface {
 ///
 /// @warning Deregistration during delivery will terminate the program
 template<typename ADerived, typename... ARecipients>
-class SingletonMessenger : public Env::Memory::Singleton<ADerived>,
+class SingletonMessenger : public Env::Singleton<ADerived>,
                            public G4UImessenger {
 protected:
     SingletonMessenger();

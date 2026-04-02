@@ -30,7 +30,7 @@ class MuoniumLFVDecayPhysics;
 
 class MuoniumLFVDecayPhysicsMessenger final : public SingletonMessenger<MuoniumLFVDecayPhysicsMessenger,
                                                                         MuoniumLFVDecayPhysics> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     MuoniumLFVDecayPhysicsMessenger();

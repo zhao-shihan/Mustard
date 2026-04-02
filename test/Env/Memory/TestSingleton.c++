@@ -15,10 +15,10 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
 
-class NullSingleton final : public Mustard::Env::Memory::Singleton<NullSingleton> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+class NullSingleton final : public Mustard::Env::Singleton<NullSingleton> {
+    friend Mustard::Env::SingletonFactory;
 
 private:
     NullSingleton() = default;

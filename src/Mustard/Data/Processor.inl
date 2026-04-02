@@ -87,7 +87,7 @@ auto Processor<AExecutor>::ProcessImpl(AsyncReader<AData>& asyncReader, Index n,
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
     const auto worldComm{mplr::comm_world()};
     const auto batch{this->CalculateBatchConfiguration(worldComm.size(), n)};
-    fExecutor(std::max(static_cast<Index>(worldComm.size()), batch.nBatch), [&](auto k) { // k is batch index
+    fExecutor.Run(std::max(static_cast<Index>(worldComm.size()), batch.nBatch), [&](auto k) { // k is batch index
         if (byPassWillOccur) [[unlikely]] {
             if (k >= n) { // by pass when there are too many processes
                 std::invoke(std::forward<decltype(F)>(F), /*byPass =*/true, typename AData::value_type{});

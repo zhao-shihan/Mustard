@@ -17,13 +17,13 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/internal/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.h++"
 
 #include "fmt/core.h"
 
 #include <utility>
 
-namespace Mustard::Env::Memory::internal {
+namespace Mustard::Env::inline ObjectRegistry::internal {
 
 WeakSingletonPool* WeakSingletonPool::fgInstance{};
 bool WeakSingletonPool::fgInstantiated{};
@@ -33,12 +33,11 @@ std::recursive_mutex WeakSingletonPool::fgRecursiveMutex{};
 WeakSingletonPool::WeakSingletonPool() :
     NonCopyableBase{},
     fInstanceMap{} {
-    if (not fgInstantiated) {
-        fgInstance = this;
-        fgInstantiated = true;
-    } else {
-        Throw<std::logic_error>("Trying to instantiate the pool twice");
+    if (fgInstantiated) {
+        Throw<std::runtime_error>("Trying to instantiate the pool twice");
     }
+    fgInstance = this;
+    fgInstantiated = true;
 }
 
 WeakSingletonPool::~WeakSingletonPool() {
@@ -56,12 +55,11 @@ WeakSingletonPool::~WeakSingletonPool() {
 }
 
 auto WeakSingletonPool::Instance() -> WeakSingletonPool& {
-    if (fgInstance != nullptr) {
-        return *fgInstance;
-    } else {
+    if (fgInstance == nullptr) {
         Throw<std::runtime_error>("The pool has not been instantiated or has been destructed "
                                   "(maybe you forgot to instantiate an environment?)");
     }
+    return *fgInstance;
 }
 
-} // namespace Mustard::Env::Memory::internal
+} // namespace Mustard::Env::inline ObjectRegistry::internal

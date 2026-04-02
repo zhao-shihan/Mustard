@@ -97,7 +97,7 @@ auto DescriptionBase<>::PrintNodeNotFoundNotice(std::convertible_to<std::string>
 
 template<typename ADerived>
 DescriptionBase<ADerived>::DescriptionBase(std::string name) :
-    Env::Memory::Singleton<ADerived>{},
+    Env::Singleton<ADerived>{},
     DescriptionBase<>{std::move(name)} {
     static_assert(Description<ADerived>);
 }

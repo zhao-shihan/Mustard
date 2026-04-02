@@ -16,19 +16,21 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/Memory/internal/SingletonBase.h++"
-#include "Mustard/Env/Memory/internal/SingletonDeleter.h++"
-#include "Mustard/Env/Memory/internal/SingletonPool.h++"
+#pragma once
 
-namespace Mustard::Env::Memory::internal {
+#include "Mustard/Utility/NonCopyableBase.h++"
 
-SingletonDeleter::SingletonDeleter() :
-    WeakSingleton<SingletonDeleter>{this} {}
+namespace Mustard::Env::inline ObjectRegistry::internal {
 
-SingletonDeleter::~SingletonDeleter() {
-    for (auto&& singletonBase : SingletonPool::Instance().GetUndeletedInReverseInsertionOrder()) {
-        delete singletonBase;
-    }
-}
+/// @brief Implementation detail of Mustard::Env::PassiveSingleton.
+/// @details Not API. Used as a lightweight tag and non-copyable base for
+/// passive singletons.
+class PassiveSingletonBase : public NonCopyableBase {
+protected:
+    /// @brief Protected default constructor for mixin inheritance.
+    PassiveSingletonBase() = default;
+    /// @brief Protected default destructor for mixin inheritance.
+    ~PassiveSingletonBase() = default;
+};
 
-} // namespace Mustard::Env::Memory::internal
+} // namespace Mustard::Env::inline ObjectRegistry::internal

@@ -33,9 +33,9 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 M2ENNGGenerator::M2ENNGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
-                                   double softCutoff, double collinearCutoff,
-                                   std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
-                                   std::optional<double> stepSize) :
+                                 double softCutoff, double collinearCutoff,
+                                 std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                 std::optional<double> stepSize) :
     MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(100000), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);

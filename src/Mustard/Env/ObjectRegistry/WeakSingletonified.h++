@@ -19,32 +19,34 @@
 #pragma once
 
 #include "Mustard/Concept/NonCopyable.h++"
+#include "Mustard/Env/ObjectRegistry/internal/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonBase.h++"
 
 #include <concepts>
 #include <type_traits>
 
-namespace Mustard::Env::Memory {
-
-namespace internal {
-
-class WeakSingletonBase;
-class SingletonBase;
-
-} // namespace internal
+namespace Mustard::Env::inline ObjectRegistry {
 
 template<typename ADerived>
-class Singleton;
+class WeakSingleton;
 
+/// @brief Constraint for non-active singleton objects tracked by registry.
+/// @tparam T Candidate type.
 template<typename T>
-concept Singletonified =
+concept IndirectlyWeakSingletonified =
     requires {
-        { T::Instance() } -> std::same_as<T&>;
-        requires std::derived_from<T, Singleton<T>>;
-        requires std::derived_from<T, internal::SingletonBase>;
-        requires not std::is_base_of_v<internal::WeakSingletonBase, T>;
+        requires std::is_base_of_v<internal::WeakSingletonBase, T>;
+        requires not std::is_base_of_v<internal::SingletonBase, T>;
         requires Concept::NonCopyable<T>;
-        requires std::is_final_v<T>;
-        requires not std::is_default_constructible_v<T>; // try to constrain to private or protected constructor
     };
 
-} // namespace Mustard::Env::Memory
+/// @brief Constraint for direct `WeakSingleton<T>` specializations.
+/// @tparam T Candidate weak singleton type.
+template<typename T>
+concept WeakSingletonified =
+    requires {
+        requires std::derived_from<T, WeakSingleton<T>>;
+        requires IndirectlyWeakSingletonified<T>;
+    };
+
+} // namespace Mustard::Env::inline ObjectRegistry
