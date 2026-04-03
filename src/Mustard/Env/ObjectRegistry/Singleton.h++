@@ -46,6 +46,11 @@ namespace Mustard::Env::inline ObjectRegistry {
 /// Registration uses a shared indirection node from the global pool, so
 /// code in different dynamic libraries can observe the same object pointer when
 /// they are running in the same Mustard environment.
+/// @warning Singleton uses a special allocator to allocate instances,
+/// and this base class inherits matching ClassSpecificAllocation to
+/// allow usual delete expression on singleton instances. Do not implement
+/// any allocation/deallocation function in derived classes, otherwise
+/// memory could corrupt.
 template<typename ADerived>
 class Singleton : public internal::SingletonBase {
 protected:
