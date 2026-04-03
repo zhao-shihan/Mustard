@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Memory/ClassSpecificNewDelete.h++"
+#include "Mustard/Memory/ClassSpecificAllocation.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
 namespace Mustard::Env::inline ObjectRegistry::internal {
@@ -26,7 +26,7 @@ namespace Mustard::Env::inline ObjectRegistry::internal {
 /// @brief Implementation detail of Mustard::Env::WeakSingleton.
 /// @details Not API. Provides a common marker and allocation behavior for
 /// weak singleton objects tracked by ObjectRegistry.
-class WeakSingletonBase : public ClassSpecificNewDelete,
+class WeakSingletonBase : public ClassSpecificAllocation,
                           public NonCopyableBase {
 protected:
     /// @brief Protected default constructor for mixin inheritance.

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Memory/ClassSpecificNewDelete.h++"
+#include "Mustard/Memory/ClassSpecificAllocation.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
 namespace Mustard::Env::inline ObjectRegistry::internal {
@@ -27,11 +27,11 @@ namespace Mustard::Env::inline ObjectRegistry::internal {
 /// @details Not API. Combines non-copyable semantics with special
 /// allocation/deallocation operators.
 /// @warning Singleton uses a special allocator to allocate instances,
-/// and this base class inherits matching ClassSpecificNewDelete to
+/// and this base class inherits matching ClassSpecificAllocation to
 /// allow usual delete expression on singleton instances. Do not implement
 /// any allocation/deallocation function in derived classes, otherwise
 /// memory could corrupt.
-class SingletonBase : public ClassSpecificNewDelete,
+class SingletonBase : public ClassSpecificAllocation,
                       public NonCopyableBase {
 protected:
     /// @brief Protected default constructor for mixin inheritance.

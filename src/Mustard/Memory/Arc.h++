@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Memory/ClassSpecificNewDelete.h++"
+#include "Mustard/Memory/ClassSpecificAllocation.h++"
 
 #include "gtl/intrusive.hpp"
 
@@ -35,11 +35,11 @@ namespace impl {
 /// @tparam T User object type.
 /// @warning ArcObj is an implementation detail and should not be used directly by users.
 /// @details
-/// ArcObj inherit from ClassSpecificNewDelete to redirect dynamic allocation to
+/// ArcObj inherit from ClassSpecificAllocation to redirect dynamic allocation to
 /// Mustard memory primitives, inherit from gtl::intrusive_ref_counter to provide
 /// thread-safe reference counting, and inherit from T to store user data.
 template<typename T>
-class ArcObj : public ClassSpecificNewDelete,
+class ArcObj : public ClassSpecificAllocation,
                public gtl::intrusive_ref_counter<ArcObj<T>, gtl::thread_safe_counter>,
                public T {
 public:

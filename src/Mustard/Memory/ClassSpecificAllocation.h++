@@ -28,12 +28,12 @@ namespace Mustard::inline Memory {
 /// for the derived type with overloads backed by Mustard::Allocate and
 /// Mustard::Deallocate. The full standard family is provided, including
 /// aligned, @c nothrow, and sized-deallocation forms.
-class ClassSpecificNewDelete {
+class ClassSpecificAllocation {
 protected:
     /// @brief Protected default constructor for mixin-style inheritance.
-    constexpr ClassSpecificNewDelete() = default;
+    constexpr ClassSpecificAllocation() = default;
     /// @brief Protected default destructor for mixin-style inheritance.
-    constexpr ~ClassSpecificNewDelete() = default;
+    constexpr ~ClassSpecificAllocation() = default;
 
 public:
     /// @name Scalar Allocation
