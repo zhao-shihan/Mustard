@@ -53,7 +53,8 @@ public:
 /// @tparam T User object type.
 /// @note Reference counting is thread-safe.
 /// @warning Arc's element type inherits from T but is not T itself... so if anything funny happens,
-/// you can always fall back to std::shared_ptr.
+/// you can always fall back to std::shared_ptr. Managed class should not define their custom
+/// allocation/deallocation functions, otherwise compilation will fail.
 /// @details
 /// Arc stores an impl::ArcObj<T> and shares ownership using intrusive reference counting.
 /// This is just an alias of gtl::intrusive_ptr.
