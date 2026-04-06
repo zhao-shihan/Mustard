@@ -20,198 +20,38 @@
 #include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.h++"
 #include "Mustard/Env/internal/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/FormatToLocalTime.h++"
 
 #include "muc/bit"
 #include "muc/utility"
 
-#include "gsl/gsl"
-
 #include "fmt/color.h"
 
-#include <csignal>
 #include <exception>
 #include <limits>
-#include <typeinfo>
+#include <stdexcept>
 
-#if MUSTARD_SIGNAL_HANDLER
+#ifdef MUSTARD_SIGNAL_HANDLER
 
-#    include "Mustard/IO/Print.h++"
-#    include "Mustard/Utility/FunctionAttribute.h++"
-#    include "Mustard/Utility/PrintStackTrace.h++"
+#    include <csignal>
 
-#    include "mplr/mplr.hpp"
-
-#    include <chrono>
-#    include <cstdio>
-#    include <cstdlib>
-#    include <ctime>
+extern "C" {
+auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void;
+[[noreturn]] auto Mustard_SIGABRT_Handler(int) -> void;
+auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void;
+} // extern "C"
 
 #endif
 
 namespace Mustard::Env::internal {
 
-[[noreturn]] auto TerminateHandler() -> void {
-    try {
-        const auto exception{std::current_exception()};
-        if (exception) {
-            std::signal(SIGABRT, SIG_DFL);
-            std::rethrow_exception(exception);
-        } else {
-            const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::dark_orange)};
-            Print<'E'>(ts | fmt::emphasis::blink, "***");
-            Print<'E'>(ts, " terminate called without an active exception");
-            Print<'E'>("\n");
-        }
-    } catch (const std::exception& e) {
-        std::string_view what{e.what()};
-        if (not what.empty() and what.ends_with('\n')) {
-            what.remove_suffix(1);
-        }
-        const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::tomato)};
-        Print<'E'>(ts | fmt::emphasis::blink, "***");
-        Print<'E'>(ts, " terminate called after throwing an instance of '{}'\n", muc::try_demangle(typeid(e).name()));
-        Print<'E'>(ts | fmt::emphasis::blink, "***");
-        Print<'E'>(ts, "   what(): {}", what);
-        Print<'E'>("\n");
-    } catch (...) {
-        const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::tomato)};
-        Print<'E'>(ts | fmt::emphasis::blink, "***");
-        if constexpr (requires { std::current_exception().__cxa_exception_type()->name(); }) {
-            Print<'E'>(ts, " terminate called after throwing an instance of '{}'", muc::try_demangle(std::current_exception().__cxa_exception_type()->name()));
-        } else {
-            Print<'E'>(ts, " terminate called after throwing a non-std::exception instance");
-        }
-        Print<'E'>("\n");
-    }
-    std::abort();
-}
-
-#if MUSTARD_SIGNAL_HANDLER
-
-extern "C" {
-
-auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
-    std::signal(sig, SIG_DFL);
-    if (static auto called{false};
-        called) {
-        std::abort();
-    } else {
-        called = true;
-    }
-    static struct Handler {
-        MUSTARD_ALWAYS_INLINE Handler(int sig) {
-            const auto now{std::chrono::system_clock::now()};
-            const auto lineHeader{mplr::available() ?
-                                      fmt::format("MPI{}> ", mplr::comm_world().rank()) :
-                                      ""};
-            const auto ts{fmt::emphasis::bold};
-            Print<'E'>(stderr, "\n");
-            switch (sig) {
-            case SIGINT:
-                Print<'E'>(stderr, ts, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
-                break;
-            case SIGTERM:
-                Print<'E'>(stderr, ts, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
-                break;
-            }
-            if (mplr::available()) {
-                Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                           lineHeader, mplr::comm_world().rank(), mplr::processor_name());
-            }
-            Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
-            PrintStackTrace(64, 2, stderr, ts);
-            Print<'E'>(stderr, "\n");
-            switch (sig) {
-            case SIGINT:
-                Print<'E'>(stderr, ts, "Ctrl-C pressed or an external interrupt received."); // no '\n' looks good for now
-                break;
-            case SIGTERM:
-                Print<'E'>(stderr, ts, "The process is terminated.\n");
-                break;
-            }
-            Print<'E'>(stderr, "\n");
-            std::fflush(stderr);
-            std::raise(sig);
-        }
-    } handler{sig};
-}
-
-[[noreturn]] auto Mustard_SIGABRT_Handler(int) -> void {
-    std::signal(SIGABRT, SIG_DFL);
-    const auto now{std::chrono::system_clock::now()};
-    const auto lineHeader{mplr::available() ?
-                              fmt::format("MPI{}> ", mplr::comm_world().rank()) :
-                              ""};
-    const auto ts{fmt::emphasis::bold | fg(fmt::color::orange)};
-    Print<'E'>(stderr, "\n");
-    Print<'E'>(stderr, ts, "{}***** ABORT (SIGABRT) received\n", lineHeader);
-    if (mplr::available()) {
-        Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                   lineHeader, mplr::comm_world().rank(), mplr::processor_name());
-    }
-    Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
-    PrintStackTrace(64, 2, stderr, ts);
-    Print<'E'>(stderr, "\n");
-    Print<'E'>(stderr, ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
-    Print<'E'>(stderr, "\n");
-    std::fflush(stderr);
-    std::abort();
-}
-
-auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
-    std::signal(sig, SIG_DFL);
-    if (static auto called{false};
-        called) {
-        std::abort();
-    } else {
-        called = true;
-    }
-    static struct Handler {
-        MUSTARD_ALWAYS_INLINE Handler(int sig) {
-            const auto now{std::chrono::system_clock::now()};
-            const auto lineHeader{mplr::available() ?
-                                      fmt::format("MPI{}> ", mplr::comm_world().rank()) :
-                                      ""};
-            const auto ts{fmt::emphasis::bold | fg(fmt::color::tomato)};
-            Print<'E'>(stderr, "\n");
-            switch (sig) {
-            case SIGFPE:
-                Print<'E'>(stderr, ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
-                break;
-            case SIGILL:
-                Print<'E'>(stderr, ts, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
-                break;
-            case SIGSEGV:
-                Print<'E'>(stderr, ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
-                break;
-            }
-            if (mplr::available()) {
-                Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                           lineHeader, mplr::comm_world().rank(), mplr::processor_name());
-            }
-            Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
-            PrintStackTrace(64, 2, stderr, ts);
-            Print<'E'>(stderr, "\n");
-            Print<'E'>(stderr, ts, "It is likely that the program has one or more errors. Try seeking help from debugging tools.\n");
-            Print<'E'>(stderr, "\n");
-            std::fflush(stderr);
-            std::raise(sig);
-        }
-    } handler{sig};
-}
-
-} // extern "C"
-
-#endif
+[[noreturn]] auto TerminateHandler() -> void;
 
 EnvBase::EnvBase() :
     NonCopyableBase{},
     fWeakSingletonPool{},
     fSingletonPool{} {
 
-    static_assert("三清庇佑 运行稳定 结果无偏");
-    static_assert("God bless no bugs");
+    static_assert("三清在上 运行稳定 结果无偏");
 
     CheckFundamentalType();
 
@@ -228,7 +68,7 @@ EnvBase::EnvBase() :
 
     if (static bool gInstantiated{false};
         gInstantiated) {
-        Throw<std::logic_error>("Trying to construct environment twice");
+        Throw<std::runtime_error>("Trying to construct environment twice");
     } else {
         gInstantiated = true;
     }
