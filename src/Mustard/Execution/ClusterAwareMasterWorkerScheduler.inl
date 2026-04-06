@@ -89,7 +89,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::StartAll() -> void {
         fClusterMaster->StartAll();
         fClusterMasterThread = std::jthread{std::ref(*fClusterMaster)};
     }
-    fS->fInterNodeComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
+    fS->fInterNodeComm.ibarrier()
+        .wait(mplr::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>
@@ -192,7 +193,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::PreLoopAction() -> void {
         fNodeMaster->StartAll();
         fNodeMasterThread = std::jthread{std::ref(*fNodeMaster)};
     }
-    fIntraNodeComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
+    fIntraNodeComm.ibarrier()
+        .wait(mplr::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>

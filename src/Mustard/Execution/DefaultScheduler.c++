@@ -47,7 +47,7 @@ auto DefaultSchedulerCode() -> std::string {
         std::ranges::all_of(mpiEnv.NodeList(), [](auto&& n) { return n.size <= 8; })) {
         return "mw";
     }
-    return "clmw";
+    return "cmw";
 }
 
 } // namespace Mustard::inline Execution

@@ -48,7 +48,8 @@ auto ParallelExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable
     // initialize
     this->fExecuting = true;
     this->fScheduler->PreLoopAction();
-    worldComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
+    worldComm.ibarrier()
+        .wait(mplr::duty_ratio::preset::moderate);
     this->fExecutionBeginTime = std::chrono::system_clock::now();
     this->fStopwatch.reset();
     this->fProcessorStopwatch.reset();
@@ -69,7 +70,8 @@ auto ParallelExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable
     std::vector<ExecutionInfoTuple> executionInfoList(worldComm.rank() == 0 ? worldComm.size() : 0);
     auto gatherExecutionInfo{worldComm.igather(0, executionInfo, executionInfoList.data())};
     this->fScheduler->PostLoopAction();
-    gatherExecutionInfo.wait(mplr::duty_ratio::preset::relaxed);
+    gatherExecutionInfo
+        .wait(mplr::duty_ratio::preset::relaxed);
     constexpr auto ToExecutionInfo{[](const ExecutionInfoTuple& t) -> ExecutionInfoType {
         return {.nExecutedTask = get<0>(t),
                 .wallTime = StopwatchDuration{get<1>(t)},
@@ -88,7 +90,8 @@ auto ParallelExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable
                                  fExecutionInfoList, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; })
                                  .count();
     }
-    worldComm.ibcast(0, executionInfo).wait(mplr::duty_ratio::preset::relaxed);
+    worldComm.ibcast(0, executionInfo)
+        .wait(mplr::duty_ratio::preset::relaxed);
     this->fExecutionInfo = ToExecutionInfo(executionInfo);
     this->fExecuting = false;
     this->PostLoopReport();

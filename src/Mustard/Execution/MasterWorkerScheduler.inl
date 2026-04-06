@@ -94,7 +94,8 @@ auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
         fMaster->StartAll();
         fMasterThread = std::jthread{std::ref(*fMaster)};
     }
-    fComm.ibarrier().wait(mplr::duty_ratio::preset::moderate);
+    fComm.ibarrier()
+        .wait(mplr::duty_ratio::preset::moderate);
 }
 
 template<std::integral T>

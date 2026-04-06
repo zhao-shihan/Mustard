@@ -124,7 +124,8 @@ MPIEnv::MPIEnv(int argc, char* argv[],
 MPIEnv::~MPIEnv() {
     const auto worldComm{mplr::comm_world()};
     // Wait all processes before finalizing
-    worldComm.ibarrier().wait(mplr::duty_ratio::preset::relaxed);
+    worldComm.ibarrier()
+        .wait(mplr::duty_ratio::preset::relaxed);
     // Show exit banner
     if (fShowBanner and worldComm.rank() == 0) {
         PrintExitBanner();

@@ -87,7 +87,7 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
     const auto [integral, nEff]{Integrate(Integrand, precisionGoal, integrationState, executor, rng)};
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
     if (mplr::available()) {
-        mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
+        mplr::comm_world().reduce(mplr::max<double>{}, 0, time);
     }
 
     // Report result

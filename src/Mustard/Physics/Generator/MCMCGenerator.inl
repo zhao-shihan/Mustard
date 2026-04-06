@@ -262,7 +262,8 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     meanSumAutocorrelation = std::sqrt(meanSumAutocorrelation / sumAutocorrelation.size());
     if (mplr::available()) {
         const auto worldComm{mplr::comm_world()};
-        worldComm.iallreduce(std::plus{}, meanSumAutocorrelation).wait(mplr::duty_ratio::preset::relaxed);
+        worldComm.iallreduce(std::plus{}, meanSumAutocorrelation)
+            .wait(mplr::duty_ratio::preset::relaxed);
         meanSumAutocorrelation /= worldComm.size();
     }
     // Here sumAutocorrelation = sum(rho_k,0,inf) = sum(rho_k,1,inf)+1,
@@ -275,7 +276,7 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     fMCMCInitialized = true;
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
     if (mplr::available()) {
-        mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
+        mplr::comm_world().reduce(mplr::max<double>{}, 0, time);
     }
     MasterPrint("{} initialized in {:.3f}s.\n"
                 "\n",
