@@ -40,7 +40,7 @@ target_link_libraries(Mustard PUBLIC fmt::fmt)
 # Geant4
 target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
 # ROOT
-target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Thread ROOT::Tree ROOT::MathCore ROOT::ROOTDataFrame ROOT::Geom)
+target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Imt ROOT::MathCore ROOT::Hist ROOT::Tree ROOT::ROOTDataFrame ROOT::RIO)
 # yaml-cpp
 target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
 

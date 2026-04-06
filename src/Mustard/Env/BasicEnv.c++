@@ -22,7 +22,7 @@
 #include "Mustard/Utility/FormatToLocalTime.h++"
 #include "Mustard/Version.h++"
 
-#include "TThread.h"
+#include "TROOT.h"
 
 #include "mplr/mplr.hpp"
 
@@ -55,9 +55,8 @@ BasicEnv::BasicEnv(NoBanner, int argc, char* argv[],
             fShowBanner = basicCLI->ShowBanner();
         }
     }
-
     // We have async ROOT IO, enable ROOT global mutex
-    TThread::Initialize();
+    ROOT::EnableThreadSafety();
 }
 
 BasicEnv::BasicEnv(int argc, char* argv[],
