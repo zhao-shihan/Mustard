@@ -59,7 +59,7 @@ ProgressBar::ProgressBar() = default;
 
 ProgressBar::ProgressBar(ProgressBar&& other) noexcept {
     if (other.fImpl) {
-        other.fImpl->asyncPrint.wait();
+        other.fImpl->asyncPrint.get();
         fImpl = std::move(other.fImpl);
     }
 }
@@ -75,7 +75,7 @@ auto ProgressBar::operator=(ProgressBar&& other) noexcept -> ProgressBar& {
         if (fImpl) {
             Stop();
         }
-        other.fImpl->asyncPrint.wait();
+        other.fImpl->asyncPrint.get();
         fImpl = std::move(other.fImpl);
     }
     return *this;
