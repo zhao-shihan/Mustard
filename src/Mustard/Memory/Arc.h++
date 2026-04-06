@@ -68,6 +68,8 @@ using Arc = gtl::intrusive_ptr<impl::ArcObj<T>>;
 /// @return Arc<T> that shares ownership of the created object.
 template<typename T, typename... Us>
     requires std::constructible_from<T, Us&&...>
-auto MakeArc(Us&&... args) -> Arc<T> { return new impl::ArcObj<T>(std::forward<Us>(args)...); }
+auto MakeArc(Us&&... args) -> Arc<T> {
+    return new impl::ArcObj<T>(std::forward<Us>(args)...);
+}
 
 } // namespace Mustard::inline Memory

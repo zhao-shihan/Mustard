@@ -43,7 +43,7 @@ concept NumericVector =
         requires(SubscriptableTo<std::add_const_t<T>, const F&> or
                  SubscriptableTo<std::add_const_t<T>, F>);
         requires sizeof(T) % sizeof(F) == 0;
-        requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+        requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
             return requires(T v, std::array<F, sizeof...(Is)> u) {
                 ::delete ::new T{std::get<Is>(u)...};
                 v = T{std::get<Is>(u)...};

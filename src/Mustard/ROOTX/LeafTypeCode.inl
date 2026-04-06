@@ -18,35 +18,35 @@
 
 namespace Mustard::ROOTX {
 
-template<ROOTX::Fundamental T>
+template<ROOTX::TTreePersistableFundamental T>
 constexpr auto LeafTypeCode() -> char {
     if constexpr (std::same_as<std::decay_t<T>, gsl::zstring>) {
         return 'C';
-    } else if constexpr (std::same_as<T, Char_t>) {
+    } else if constexpr (std::same_as<T, char>) {
         return 'B';
-    } else if constexpr (std::same_as<T, UChar_t>) {
+    } else if constexpr (std::same_as<T, std::uint8_t>) {
         return 'b';
-    } else if constexpr (std::same_as<T, Short_t>) {
+    } else if constexpr (std::same_as<T, std::int16_t>) {
         return 'S';
-    } else if constexpr (std::same_as<T, UShort_t>) {
+    } else if constexpr (std::same_as<T, std::uint16_t>) {
         return 's';
-    } else if constexpr (std::same_as<T, Int_t>) {
+    } else if constexpr (std::same_as<T, std::int32_t>) {
         return 'I';
-    } else if constexpr (std::same_as<T, UInt_t>) {
+    } else if constexpr (std::same_as<T, std::uint32_t>) {
         return 'i';
-    } else if constexpr (std::same_as<T, Float_t>) {
+    } else if constexpr (std::same_as<T, float>) {
         return 'F';
-    } else if constexpr (std::same_as<T, Double_t>) {
+    } else if constexpr (std::same_as<T, double>) {
         return 'D';
-    } else if constexpr (std::same_as<T, Long64_t>) {
+    } else if constexpr (std::same_as<T, std::int64_t>) {
         return 'L';
-    } else if constexpr (std::same_as<T, ULong64_t>) {
+    } else if constexpr (std::same_as<T, std::uint64_t>) {
         return 'l';
-    } else if constexpr (std::same_as<T, Long_t>) {
+    } else if constexpr (std::same_as<T, long>) {
         return 'G';
-    } else if constexpr (std::same_as<T, ULong_t>) {
+    } else if constexpr (std::same_as<T, unsigned long>) {
         return 'g';
-    } else if constexpr (std::same_as<T, Bool_t>) {
+    } else if constexpr (std::same_as<T, bool>) {
         return 'O';
     }
 }

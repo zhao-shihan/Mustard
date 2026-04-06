@@ -82,7 +82,7 @@ constexpr JointInterface<ADerived, AParameter, T, Ds...>::JointInterface(const A
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Reset() -> void {
-    [this]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    [this]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr {
         (..., this->template Margin<Is>().Reset());
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -90,7 +90,7 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Reset() -> void {
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Parameter() const -> AParameter {
-    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) -> AParameter {
+    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> AParameter {
         return {this->Parameter<Is>()...};
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -98,7 +98,7 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Parameter() const
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Parameter(const AParameter& p) -> void {
-    [this, &p]<gsl::index... Is>(std::index_sequence<Is...>) {
+    [this, &p]<gsl::index... Is>(std::index_sequence<Is...>) constexpr {
         (..., this->Parameter<Is>(p.template Parameter<Is>()));
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -106,7 +106,7 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Parameter(const A
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Min() const -> T {
-    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
+    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> T {
         return {this->template Margin<Is>().Min()...};
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -114,7 +114,7 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Min() const -> T 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Max() const -> T {
-    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
+    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> T {
         return {this->template Margin<Is>().Max()...};
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -122,7 +122,7 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Max() const -> T 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 MUSTARD_ALWAYS_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Impl(auto& g) -> T {
-    return [this, &g]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
+    return [this, &g]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> T {
         return {this->template Margin<Is>()(g)...};
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -130,7 +130,7 @@ MUSTARD_ALWAYS_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds.
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 MUSTARD_ALWAYS_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Impl(auto& g, const AParameter& p) -> T {
-    return [this, &g, &p]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
+    return [this, &g, &p]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> T {
         return {this->template Margin<Is>()(g, p.template Parameter<Is>())...};
     }(gslx::index_sequence_for<Ds...>());
 }
