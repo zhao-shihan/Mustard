@@ -60,7 +60,7 @@ The following dependencies are required, but built-in if not found.
 | [**zhao-shihan/gtl**](https://github.com/zhao-shihan/gtl)                   | 1.2.1       | Greg's Template Library of useful classes                |
 | [**zhao-shihan/indicators**](https://github.com/zhao-shihan/indicators)     | 2.3.1       | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.1       | ISO C++ guidelines support library                       |
-| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.25.1003   | A C++17 message passing library based on MPI             |
+| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.26.406    | A C++17 message passing library based on MPI             |
 | [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.302    | A standard non-standard C++ library                      |
 | [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
 
