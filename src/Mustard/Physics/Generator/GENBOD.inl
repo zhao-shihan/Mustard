@@ -65,8 +65,7 @@ auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> E
         const auto cZ{2 * (*random++) - 1};
         const auto sZ{std::sqrt(1 - muc::pow(cZ, 2))};
         const auto phiY{CLHEP::twopi * (*random++)};
-        const auto cY{std::cos(phiY)};
-        const auto sY{std::sin(phiY)};
+        const auto [sY, cY]{muc::sincos(phiY)};
         for (int j{}; j <= i; ++j) {
             auto& p{event.p[j]};
             auto x{p.x()};

@@ -94,13 +94,14 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
 
     // generate N massless momenta in infinite phase space
     for (int i = 0; i < N; i++) {
-        double c = 2. * u[4 * i] - 1.;
-        double s = std::sqrt(1. - c * c);
-        double f = twopi * u[4 * i + 1];
+        const auto c{2. * u[4 * i] - 1.};
+        const auto s{std::sqrt(1. - c * c)};
+        const auto f{twopi * u[4 * i + 1]};
+        const auto [sf, cf]{muc::sincos(f)};
         q[i][0] = -std::log(u[4 * i + 2] * u[4 * i + 3]);
         q[i][3] = q[i][0] * c;
-        q[i][2] = q[i][0] * s * std::cos(f);
-        q[i][1] = q[i][0] * s * std::sin(f);
+        q[i][2] = q[i][0] * s * cf;
+        q[i][1] = q[i][0] * s * sf;
     }
     // calculate the parameters of the conformal transformation
     for (int i = 0; i < N; i++) {

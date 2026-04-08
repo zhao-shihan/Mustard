@@ -55,8 +55,7 @@ HelicalTube::HelicalTube(std::string name,
     fFrontEndNormal{},
     fBackEndPosition{},
     fBackEndNormal{} {
-    const auto cosA{std::cos(pitch)};
-    const auto sinA{std::sin(pitch)};
+    const auto [sinA, cosA]{muc::sincos(pitch)};
     const auto tanA{sinA / cosA};
     const auto tanAR{majorRadius * tanA};
     const auto zOffset{(phi0 + phiTotal / 2) * tanAR};
@@ -82,10 +81,10 @@ HelicalTube::HelicalTube(std::string name,
     const auto Surface{
         [&](const auto& u, const auto& v) -> G4Point3D {
             const auto u1{u + phi0};
-            const auto cosU{std::cos(u1)};
-            const auto sinU{std::sin(u1)};
-            const auto rCosV{minorRadius * std::cos(v)};
-            const auto rSinV{minorRadius * std::sin(v)};
+            const auto [sinU, cosU]{muc::sincos(u1)};
+            const auto [sinV, cosV]{muc::sincos(v)};
+            const auto rCosV{minorRadius * cosV};
+            const auto rSinV{minorRadius * sinV};
             const auto rSinVSinA{rSinV * sinA};
             return {(majorRadius + rCosV) * cosU + rSinVSinA * sinU,
                     (majorRadius + rCosV) * sinU - rSinVSinA * cosU,
@@ -135,15 +134,17 @@ HelicalTube::HelicalTube(std::string name,
     const auto Helix{
         [&](const auto& u) -> G4Point3D {
             const auto u1{u + phi0};
-            return {majorRadius * std::cos(u1),
-                    majorRadius * std::sin(u1),
+            const auto [sinU, cosU]{muc::sincos(u1)};
+            return {majorRadius * cosU,
+                    majorRadius * sinU,
                     u1 * tanAR - zOffset};
         }};
     const auto EndFaceNormal{
         [&](const auto& u) -> G4ThreeVector {
             const auto u1{u + phi0};
-            return {-majorRadius * std::sin(u1),
-                    majorRadius * std::cos(u1),
+            const auto [sinU, cosU]{muc::sincos(u1)};
+            return {-majorRadius * sinU,
+                    majorRadius * cosU,
                     tanAR};
         }};
     fFrontEndPosition = Helix(0);

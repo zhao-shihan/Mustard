@@ -60,8 +60,7 @@ HelicalBox::HelicalBox(std::string name,
     fFrontEndNormal{},
     fBackEndPosition{},
     fBackEndNormal{} {
-    const auto cosA{std::cos(pitch)};
-    const auto sinA{std::sin(pitch)};
+    const auto [sinA, cosA]{muc::sincos(pitch)};
     const auto tanA{sinA / cosA};
     const auto tanAR{radius * tanA};
     const auto zOffset{(phi0 + phiTotal / 2) * tanAR};
@@ -80,15 +79,17 @@ HelicalBox::HelicalBox(std::string name,
     const auto Helix{
         [&](const auto& u) -> G4Point3D {
             const auto u1{u + phi0};
-            return {radius * std::cos(u1),
-                    radius * std::sin(u1),
+            const auto [sinU1, cosU1]{muc::sincos(u1)};
+            return {radius * cosU1,
+                    radius * sinU1,
                     u1 * tanAR - zOffset};
         }};
     const auto EndFaceNormal{
         [&](const auto& u) -> G4ThreeVector {
             const auto u1{u + phi0};
-            return {-radius * std::sin(u1),
-                    radius * std::cos(u1),
+            const auto [sinU1, cosU1]{muc::sincos(u1)};
+            return {-radius * sinU1,
+                    radius * cosU1,
                     tanAR};
         }};
 
@@ -102,12 +103,13 @@ HelicalBox::HelicalBox(std::string name,
     double tBack{std::numeric_limits<double>::quiet_NaN()};
     const auto MainPoint{
         [&](const auto& u, int j) -> G4Point3D {
-            const auto u1{u + phi0};
-            const auto cosU{std::cos(u1)};
-            const auto sinU{std::sin(u1)};
             const auto r{(sqrt2 / 2) * width};
-            const auto rCosV{r * std::cos(j * (pi / 2) - (3 * pi / 4))};
-            const auto rSinV{r * std::sin(j * (pi / 2) - (3 * pi / 4))};
+            const auto u1{u + phi0};
+            const auto v{j * (pi / 2) - (3 * pi / 4)};
+            const auto [sinU, cosU]{muc::sincos(u1)};
+            const auto [sinV, cosV]{muc::sincos(v)};
+            const auto rCosV{r * cosV};
+            const auto rSinV{r * sinV};
             const auto rSinVSinA{rSinV * sinA};
 
             auto x{(radius + rCosV) * cosU + rSinVSinA * sinU};
@@ -152,12 +154,13 @@ HelicalBox::HelicalBox(std::string name,
 
     const auto AuxillaryPoint{
         [&](const auto& u, int j) -> G4Point3D {
-            const auto u1{u + phi0 + deltaU / 2};
-            const auto cosU{std::cos(u1)};
-            const auto sinU{std::sin(u1)};
             const auto r{width / 2};
-            const auto rCosV{r * std::cos(j * pi - (pi / 2))};
-            const auto rSinV{r * std::sin(j * pi - (pi / 2))};
+            const auto u1{u + phi0 + deltaU / 2};
+            const auto v{j * pi - (pi / 2)};
+            const auto [sinU, cosU]{muc::sincos(u1)};
+            const auto [sinV, cosV]{muc::sincos(v)};
+            const auto rCosV{r * cosV};
+            const auto rSinV{r * sinV};
             const auto rSinVSinA{rSinV * sinA};
             return {(radius + rCosV) * cosU + rSinVSinA * sinU,
                     (radius + rCosV) * sinU - rSinVSinA * cosU,
