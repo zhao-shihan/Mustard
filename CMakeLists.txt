@@ -35,7 +35,7 @@ set(MUSTARD_VERSION_PATCH 315)
 set(MUSTARD_VERSION ${MUSTARD_VERSION_MAJOR}.${MUSTARD_VERSION_MINOR}.${MUSTARD_VERSION_PATCH})
 
 project(Mustard VERSION ${MUSTARD_VERSION}
-                LANGUAGES C CXX)
+                LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
@@ -88,7 +88,7 @@ set(MUSTARD_BUILTIN_FMT_VERSION 12.1.0 CACHE STRING "Set built-in fmt version (i
 set(MUSTARD_BUILTIN_GTL_VERSION 1.2.1 CACHE STRING "Set built-in gtl version (if required).")
 set(MUSTARD_BUILTIN_INDICATORS_VERSION 2.3.1 CACHE STRING "Set built-in indicators version (if required).")
 set(MUSTARD_BUILTIN_MIMALLOC_VERSION 3.2.8 CACHE STRING "Set built-in mimalloc version (if required).")
-set(MUSTARD_BUILTIN_MPLR_VERSION 0.26.406 CACHE STRING "Set built-in MPLR version (if required).")
+set(MUSTARD_BUILTIN_MPLR_VERSION 0.26.408 CACHE STRING "Set built-in MPLR version (if required).")
 set(MUSTARD_BUILTIN_MSGSL_VERSION 4.2.1 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
 set(MUSTARD_BUILTIN_MUC_VERSION 0.26.302 CACHE STRING "Set built-in muc version (if required).")
 set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.9.0 CACHE STRING "Set built-in yaml-cpp version (if required).")
