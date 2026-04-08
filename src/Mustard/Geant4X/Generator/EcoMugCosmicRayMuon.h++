@@ -77,8 +77,8 @@ public:
     auto EstimatedTime(double nMuon, double horizontalFlux = 129_m_2_s_1) -> double;
 
 private:
-    auto EcoMuG() const -> const auto&;
-    auto EcoMuG() -> auto&;
+    auto EcoMug() const -> const auto&;
+    auto EcoMug() -> auto&;
 
     auto ToEcoMug(G4ThreeVector x) -> muc::array3d;
     auto ToGeant4(muc::array3d x) -> G4ThreeVector;

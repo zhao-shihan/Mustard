@@ -41,6 +41,7 @@
 namespace Mustard::Geant4X::inline Generator {
 
 namespace {
+namespace BuiltInEcoMug {
 
 /////////////////////////////////////////////////////////////////////////////////////
 // EcoMug: Efficient COsmic MUon Generator                                         //
@@ -65,7 +66,7 @@ namespace {
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.          //
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define ECOMUG_VERSION "2.1"
+#define ECOMUG_VERSION "2.2"
 
 #ifndef M_PI
 #    define M_PI_NOT_DEFINED
@@ -899,17 +900,26 @@ private:
     void MCJprimeCustomHSphereIntegration(double& rate, double& error, int npoints) {
         double I = 0., I2 = 0., value = 0.;
         for (auto i = 0; i < npoints; ++i) {
-            mTheta0 = mRandom.GenerateRandomDouble(mHSphereMinPositionTheta, mHSphereMaxPositionTheta);
+            mTheta0 = acos(mRandom.GenerateRandomDouble(mHSphereCosMaxPositionTheta, mHSphereCosMinPositionTheta));
+            mPhi0 = mRandom.GenerateRandomDouble(mHSphereMinPositionPhi, mHSphereMaxPositionPhi); // NEW
             mGenerationTheta = mRandom.GenerateRandomDouble(mMinimumTheta, mMaximumTheta);
             mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
             mGenerationMomentum = mRandom.GenerateRandomDouble(mMinimumMomentum, mMaximumMomentum);
-            value = mJ(mGenerationMomentum, mGenerationTheta) * (sin(mTheta0) * sin(mGenerationTheta) * sin(mGenerationTheta) * cos(mGenerationPhi) + cos(mTheta0) * cos(mGenerationTheta) * sin(mGenerationTheta)) * sin(mTheta0);
+
+            double cosDeltaPhi = cos(mGenerationPhi - mPhi0); // NEW
+
+            value = mJ(mGenerationMomentum, mGenerationTheta) * (sin(mTheta0) * sin(mGenerationTheta) * sin(mGenerationTheta) * cosDeltaPhi // CHANGED
+                                                                 + cos(mTheta0) * cos(mGenerationTheta) * sin(mGenerationTheta)) *
+                    sin(mTheta0);
             if (value < 0)
                 value = 0;
             I += value;
             I2 += pow(value, 2);
         }
-        double V = (mMaximumMomentum - mMinimumMomentum) * (mMaximumTheta - mMinimumTheta) * (mMaximumPhi - mMinimumPhi) * (mHSphereMaxPositionTheta - mHSphereMinPositionTheta);
+
+        // Add position-phi range to V: NEW
+        double V = (mMaximumMomentum - mMinimumMomentum) * (mMaximumTheta - mMinimumTheta) * (mMaximumPhi - mMinimumPhi) * (mHSphereMaxPositionTheta - mHSphereMinPositionTheta) * (mHSphereMaxPositionPhi - mHSphereMinPositionPhi); // NEW
+
         double expected = I / npoints;
         double expectedSquare = I2 / npoints;
         rate = V * I / npoints;
@@ -960,20 +970,30 @@ private:
     void MCJprimeHSphereIntegration(double& rate, double& error, int npoints) {
         double I = 0., I2 = 0., value = 0.;
         for (auto i = 0; i < npoints; ++i) {
-            mTheta0 = mRandom.GenerateRandomDouble(mHSphereMinPositionTheta, mHSphereMaxPositionTheta);
+            mTheta0 = acos(mRandom.GenerateRandomDouble(mHSphereCosMaxPositionTheta, mHSphereCosMinPositionTheta));
+            mPhi0 = mRandom.GenerateRandomDouble(mHSphereMinPositionPhi, mHSphereMaxPositionPhi); // NEW
             mGenerationTheta = mRandom.GenerateRandomDouble(mMinimumTheta, mMaximumTheta);
             mGenerationPhi = mRandom.GenerateRandomDouble(mMinimumPhi, mMaximumPhi);
-            mGenerationMomentum = mRandom.GenerateRandomDouble(mMinimumMomentum, mMaximumMomentum);
+            mGenerationMomentum = GenerateMomentumF1(); // keep using F1 like the original
             mN = 2.856 - 0.655 * log(mGenerationMomentum);
             if (mN < 0.1)
                 mN = 0.1;
-            value = 1600 * pow(mGenerationMomentum + 2.68, -3.175) * pow(mGenerationMomentum, 0.279) * pow(cos(mGenerationTheta), mN) * (sin(mTheta0) * sin(mGenerationTheta) * sin(mGenerationTheta) * cos(mGenerationPhi) + cos(mTheta0) * cos(mGenerationTheta) * sin(mGenerationTheta)) * sin(mTheta0);
+
+            // Use cos(phi - phi0) instead of cos(phi): the relative azimuth is what matters
+            double cosDeltaPhi = cos(mGenerationPhi - mPhi0); // NEW
+
+            value = 1600 * pow(mGenerationMomentum + 2.68, -3.175) * pow(mGenerationMomentum, 0.279) * pow(cos(mGenerationTheta), mN) * (sin(mTheta0) * sin(mGenerationTheta) * sin(mGenerationTheta) * cosDeltaPhi // CHANGED
+                                                                                                                                         + cos(mTheta0) * cos(mGenerationTheta) * sin(mGenerationTheta)) *
+                    sin(mTheta0);
             if (value < 0)
                 value = 0;
             I += value;
             I2 += pow(value, 2);
         }
-        double V = (mMaximumMomentum - mMinimumMomentum) * (mMaximumTheta - mMinimumTheta) * (mMaximumPhi - mMinimumPhi) * (mHSphereMaxPositionTheta - mHSphereMinPositionTheta);
+
+        // Add (mHSphereMaxPositionPhi - mHSphereMinPositionPhi) to V: NEW
+        double V = (mMaximumMomentum - mMinimumMomentum) * (mMaximumTheta - mMinimumTheta) * (mMaximumPhi - mMinimumPhi) * (mHSphereMaxPositionTheta - mHSphereMinPositionTheta) * (mHSphereMaxPositionPhi - mHSphereMinPositionPhi); // NEW
+
         double expected = I / npoints;
         double expectedSquare = I2 / npoints;
         rate = V * I / npoints;
@@ -1280,88 +1300,89 @@ private:
 #    undef M_PI_NOT_DEFINED
 #endif
 
+} // namespace BuiltInEcoMug
 } // namespace
 
 using namespace LiteralUnit::Length;
 
-auto EcoMugCosmicRayMuon::EcoMuG() const -> const auto& {
-    return *static_cast<const EcoMug*>(fEcoMug);
+auto EcoMugCosmicRayMuon::EcoMug() const -> const auto& {
+    return *static_cast<const BuiltInEcoMug::EcoMug*>(fEcoMug);
 }
 
-auto EcoMugCosmicRayMuon::EcoMuG() -> auto& {
-    return *static_cast<EcoMug*>(fEcoMug);
+auto EcoMugCosmicRayMuon::EcoMug() -> auto& {
+    return *static_cast<BuiltInEcoMug::EcoMug*>(fEcoMug);
 }
 
 EcoMugCosmicRayMuon::EcoMugCosmicRayMuon(Coordinate c) :
     G4VPrimaryGenerator{},
-    fEcoMug{new EcoMug},
+    fEcoMug{new BuiltInEcoMug::EcoMug},
     fCoordinate{c},
     fReseedCounter{},
     fMessengerRegister{this} {
-    auto& ecoMug{EcoMuG()};
+    auto& ecoMug{EcoMug()};
     ecoMug.SetUseSky();
     ecoMug.SetSkySize({50_m, 50_m});
     ecoMug.SetSkyCenterPosition({0, 0, 20_m});
 }
 
 EcoMugCosmicRayMuon::~EcoMugCosmicRayMuon() {
-    delete static_cast<EcoMug*>(fEcoMug);
+    delete static_cast<BuiltInEcoMug::EcoMug*>(fEcoMug);
 }
 
 auto EcoMugCosmicRayMuon::UseSky() -> void {
-    EcoMuG().SetUseSky();
+    EcoMug().SetUseSky();
 }
 
 auto EcoMugCosmicRayMuon::SkySize(double x, double y) -> void {
-    EcoMuG().SetSkySize({x / m, y / m});
+    EcoMug().SetSkySize({x / m, y / m});
 }
 
 auto EcoMugCosmicRayMuon::SkyCenterPosition(G4ThreeVector x0) -> void {
-    EcoMuG().SetSkyCenterPosition(ToEcoMug(x0 / m));
+    EcoMug().SetSkyCenterPosition(ToEcoMug(x0 / m));
 }
 
 auto EcoMugCosmicRayMuon::UseCylinder() -> void {
-    EcoMuG().SetUseCylinder();
+    EcoMug().SetUseCylinder();
 }
 
 auto EcoMugCosmicRayMuon::CylinderRadius(double r) -> void {
-    EcoMuG().SetCylinderRadius(r / m);
+    EcoMug().SetCylinderRadius(r / m);
 }
 
 auto EcoMugCosmicRayMuon::CylinderHeight(double h) -> void {
-    EcoMuG().SetCylinderHeight(h / m);
+    EcoMug().SetCylinderHeight(h / m);
 }
 
 auto EcoMugCosmicRayMuon::CylinderCenterPosition(G4ThreeVector x0) -> void {
-    EcoMuG().SetCylinderCenterPosition(ToEcoMug(x0 / m));
+    EcoMug().SetCylinderCenterPosition(ToEcoMug(x0 / m));
 }
 
 auto EcoMugCosmicRayMuon::UseHSphere() -> void {
-    EcoMuG().SetUseHSphere();
+    EcoMug().SetUseHSphere();
 }
 
 auto EcoMugCosmicRayMuon::HSphereRadius(double r) -> void {
-    EcoMuG().SetHSphereRadius(r / m);
+    EcoMug().SetHSphereRadius(r / m);
 }
 
 auto EcoMugCosmicRayMuon::HSphereCenterPosition(G4ThreeVector x0) -> void {
-    EcoMuG().SetHSphereCenterPosition(ToEcoMug(x0 / m));
+    EcoMug().SetHSphereCenterPosition(ToEcoMug(x0 / m));
 }
 
 auto EcoMugCosmicRayMuon::MaxTheta(double thetaMax) -> void {
-    EcoMuG().SetMaximumTheta(thetaMax);
+    EcoMug().SetMaximumTheta(thetaMax);
 }
 
 auto EcoMugCosmicRayMuon::MinMomentum(double pMin) -> void {
-    EcoMuG().SetMinimumMomentum(pMin / GeV);
+    EcoMug().SetMinimumMomentum(pMin / GeV);
 }
 
 auto EcoMugCosmicRayMuon::MaxMomentum(double pMax) -> void {
-    EcoMuG().SetMaximumMomentum(pMax / GeV);
+    EcoMug().SetMaximumMomentum(pMax / GeV);
 }
 
 auto EcoMugCosmicRayMuon::GeneratePrimaryVertex(G4Event* event) -> void {
-    auto& ecoMug{EcoMuG()};
+    auto& ecoMug{EcoMug()};
 
     if (fReseedCounter++ == 0) {
         static_assert(sizeof(std::uint64_t) % sizeof(unsigned int) == 0);
@@ -1385,7 +1406,7 @@ auto EcoMugCosmicRayMuon::GeneratePrimaryVertex(G4Event* event) -> void {
 }
 
 auto EcoMugCosmicRayMuon::EstimatedTime(double nMuon, double horizontalFlux) -> double {
-    auto& ecoMug{EcoMuG()};
+    auto& ecoMug{EcoMug()};
     const auto oldFlux{ecoMug.GetHorizontalRate()};
     ecoMug.SetHorizontalRate(horizontalFlux / 1_m_2_s_1);
     const auto t{ecoMug.GetEstimatedTime(nMuon) * s};
