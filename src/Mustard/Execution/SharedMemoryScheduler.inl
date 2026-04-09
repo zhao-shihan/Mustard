@@ -30,15 +30,13 @@ SharedMemoryScheduler<T>::SharedMemoryScheduler() :
         Throw<std::runtime_error>("World communicator involves multiple shared memory domains");
     }
 
-    MPI_Info info;
-    MPI_Info_create(&info);
-    auto _{gsl::finally([&info] { MPI_Info_free(&info); })};
-    MPI_Info_set(info, "accumulate_ops", "same_op");
-    MPI_Info_set(info, "mpi_accumulate_granularity", std::to_string(sizeof(T)).c_str());
-    MPI_Info_set(info, "same_disp_unit", "true");
+    mplr::info winInfo;
+    winInfo.set("accumulate_ops", "same_op");
+    winInfo.set("mpi_accumulate_granularity", std::to_string(sizeof(T)));
+    winInfo.set("same_disp_unit", "true");
     const auto& intraNodeComm{mpiEnv.IntraNodeComm()};
     T* mainTaskID;
-    MPI_Win_allocate_shared(intraNodeComm.rank() == 0 ? sizeof(T) : 0, sizeof(T), info,
+    MPI_Win_allocate_shared(intraNodeComm.rank() == 0 ? sizeof(T) : 0, sizeof(T), winInfo.native_handle(),
                             intraNodeComm.native_handle(), &mainTaskID, &fMainTaskIDWindow);
     fMainTaskID = mainTaskID;
 }
