@@ -97,10 +97,10 @@ template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     const auto intraNodeFirstTaskID{std::reduce(
-        fS->fInterNodeBatchSize.cbegin(), fS->fInterNodeBatchSize.cbegin() + mpiEnv.LocalNodeID(),
+        fS->fInterNodeBatchSize.cbegin(), fS->fInterNodeBatchSize.cbegin() + mpiEnv.LocalNodeIdx(),
         fS->fTask.first)};
     auto intraNodeTaskID{intraNodeFirstTaskID + mpiEnv.LocalNode().size * fS->fIntraNodeBatchSize};
-    auto intraNodeTaskEnd{intraNodeFirstTaskID + fS->fInterNodeBatchSize[mpiEnv.LocalNodeID()]};
+    auto intraNodeTaskEnd{intraNodeFirstTaskID + fS->fInterNodeBatchSize[mpiEnv.LocalNodeIdx()]};
 
     fRecvFromCM.start();
     fSendToCM.start();
@@ -115,7 +115,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
                 fRecvFromCM.wait();
                 intraNodeTaskID = fTaskIDRecvFromCM;
                 if (intraNodeTaskID != fS->fTask.last) {
-                    intraNodeTaskEnd = intraNodeTaskID + fS->fInterNodeBatchSize[mpiEnv.LocalNodeID()];
+                    intraNodeTaskEnd = intraNodeTaskID + fS->fInterNodeBatchSize[mpiEnv.LocalNodeIdx()];
                     fRecvFromCM.start();
                     fSendToCM.start();
                 } else {
@@ -184,7 +184,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::PreLoopAction() -> void {
         });
 
     const auto intraNodeFirstTaskID{std::reduce(
-        fInterNodeBatchSize.cbegin(), fInterNodeBatchSize.cbegin() + mpiEnv.LocalNodeID(),
+        fInterNodeBatchSize.cbegin(), fInterNodeBatchSize.cbegin() + mpiEnv.LocalNodeIdx(),
         this->fTask.first)};
     this->fExecutingTask = intraNodeFirstTaskID + fIntraNodeComm.rank() * fIntraNodeBatchSize;
     fIntraNodeTaskCounter = 0;
@@ -207,14 +207,14 @@ auto ClusterAwareMasterWorkerScheduler<T>::PreTaskAction() -> void {
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerScheduler<T>::PostTaskAction() -> void {
-    if (++fIntraNodeTaskCounter == fIntraNodeBatchSize) {
-        fSendToNM.wait();
-        fRecvFromNM.wait();
-        this->fExecutingTask = fTaskIDRecvFromNM;
-        fIntraNodeTaskCounter = 0;
-    } else {
+    if (++fIntraNodeTaskCounter != fIntraNodeBatchSize) {
         ++this->fExecutingTask;
+        return;
     }
+    fSendToNM.wait();
+    fRecvFromNM.wait();
+    this->fExecutingTask = fTaskIDRecvFromNM;
+    fIntraNodeTaskCounter = 0;
 }
 
 template<std::integral T>

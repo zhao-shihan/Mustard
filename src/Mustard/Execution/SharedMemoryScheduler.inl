@@ -29,7 +29,6 @@ SharedMemoryScheduler<T>::SharedMemoryScheduler() :
     if (mpiEnv.OnCluster()) {
         Throw<std::runtime_error>("World communicator involves multiple shared memory domains");
     }
-
     mplr::info winInfo;
     winInfo.set("accumulate_ops", "same_op");
     winInfo.set("mpi_accumulate_granularity", std::to_string(sizeof(T)));
