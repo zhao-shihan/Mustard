@@ -23,8 +23,6 @@
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Utility/UseXoshiro.h++"
 
-#include <concepts>
-
 namespace Mustard::Env {
 
 template<unsigned AXoshiroWidth>
@@ -44,6 +42,10 @@ public:
     using PassiveSingleton<MonteCarloEnv>::Available;
     using PassiveSingleton<MonteCarloEnv>::Expired;
     using PassiveSingleton<MonteCarloEnv>::Instantiated;
+
+    auto RandomEngine() const -> auto& { return fXoshiro.RandomEngine(); }
+    auto CLHEPRandomEngine() const -> auto& { return fXoshiro.CLHEPRandomEngine(); }
+    auto ROOTRandomEngine() const -> auto& { return fXoshiro.ROOTRandomEngine(); }
 
 private:
     UseXoshiro<AXoshiroWidth> fXoshiro;
