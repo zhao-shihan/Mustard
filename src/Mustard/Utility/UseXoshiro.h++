@@ -18,7 +18,9 @@
 
 #pragma once
 
+#include "Mustard/CLHEPX/Random/Xoshiro.h++"
 #include "Mustard/CLI/CLI.h++"
+#include "Mustard/ROOTX/Math/Xoshiro.h++"
 
 #include "muc/optional"
 
@@ -47,6 +49,19 @@ namespace Mustard::inline Utility {
 /// @see ROOTX::Math::Xoshiro256PlusPlus, ROOTX::Math::Xoshiro512PlusPlus
 template<unsigned ABitWidth>
 class UseXoshiro {
+private:
+    /// @brief Xoshiro 256 random engine storage
+    struct Random256 {
+        CLHEPX::Random::Xoshiro256StarStar clhep;
+        ROOTX::Math::Xoshiro256PlusPlus root;
+    };
+
+    /// @brief Xoshiro 512 random engine storage
+    struct Random512 {
+        CLHEPX::Random::Xoshiro512StarStar clhep;
+        ROOTX::Math::Xoshiro512PlusPlus root;
+    };
+
 public:
     /// @brief Initialize with automatic seeding
     /// @param cli MonteCarloModule CLI interface for seed configuration (optional)
@@ -56,22 +71,22 @@ public:
     /// @brief Clean up and reset global engine pointers
     ~UseXoshiro();
 
-private:
-    /// @brief Xoshiro 256 random engine storage
-    struct Random256;
-    /// @brief Xoshiro 512 random engine storage
-    struct Random512;
-    /// @brief Random engine storage
-    using Random = std::conditional_t<
-        ABitWidth == 256,
-        Random256,
-        std::conditional_t<
-            ABitWidth == 512,
-            Random512,
-            void>>;
+    /// @brief Returns the underlying pseudo‑random bit generator (PRBG)
+    /// @return Reference to the Xoshiro PRBG (Xoshiro256PlusPlus or Xoshiro512PlusPlus)
+    auto RandomEngine() const -> auto& { return fRandom->clhep.UnderlyingPRBG(); }
+    /// @brief Returns the CLHEP random engine wrapper
+    /// @return Reference to the CLHEP Xoshiro** engine (Xoshiro256StarStar or Xoshiro512StarStar)
+    auto CLHEPRandomEngine() const -> auto& { return fRandom->clhep; }
+    /// @brief Returns the ROOT random engine
+    /// @return Reference to the ROOT Xoshiro++ engine (Xoshiro256PlusPlus or Xoshiro512PlusPlus)
+    auto ROOTRandomEngine() const -> auto& { return fRandom->root; }
 
 private:
-    std::unique_ptr<Random> fRandom; ///< Engine instances
+    using RandomEngineStorage = std::conditional_t<
+        ABitWidth == 256, Random256,
+        std::conditional_t<
+            ABitWidth == 512, Random512, void>>;
+    std::unique_ptr<RandomEngineStorage> fRandom; ///< Conditionally‑typed storage for CLHEP Xoshiro** and ROOT Xoshiro++ engines (selected by ABitWidth)
 };
 
 extern template class UseXoshiro<256>;

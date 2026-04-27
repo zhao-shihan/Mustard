@@ -102,6 +102,13 @@ public:
     virtual operator unsigned int() override { return fPRBG(); }
     /// @}
 
+    /// @brief Access underlying PRBG
+    /// @return Reference to the adapted Mustard PRBG
+    auto UnderlyingPRBG() -> PRBG& { return fPRBG; }
+    /// @brief Access underlying PRBG
+    /// @return Reference to the adapted Mustard PRBG
+    auto UnderlyingPRBG() const -> const PRBG& { return fPRBG; }
+
 private:
     /// @brief [Disabled] CLHEP state restoration method
     /// @return Input stream unchanged

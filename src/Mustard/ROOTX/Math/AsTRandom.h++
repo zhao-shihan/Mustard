@@ -72,6 +72,13 @@ public:
     /// @param array Pre-allocated output buffer
     virtual auto RndmArray(Int_t n, Double_t* array) -> void override;
 
+    /// @brief Access underlying PRBG
+    /// @return Reference to the adapted Mustard PRBG
+    auto UnderlyingPRBG() -> PRBG& { return fPRBG; }
+    /// @brief Access underlying PRBG
+    /// @return Reference to the adapted Mustard PRBG
+    auto UnderlyingPRBG() const -> const PRBG& { return fPRBG; }
+
 private:
     /// @brief [Disabled] TRandom requires GetSeed() but PRBGs are stateless
     /// @return Always 0

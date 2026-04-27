@@ -16,47 +16,28 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/CLHEPX/Random/Xoshiro.h++"
 #include "Mustard/CLI/Module/MonteCarloModule.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
-#include "Mustard/ROOTX/Math/Xoshiro.h++"
 #include "Mustard/Utility/UseXoshiro.h++"
 
 #include "CLHEP/Random/Random.h"
 
-#include "TRandom.h"
-
-#include "mplr/mplr.hpp"
-
 #include "muc/array"
 
-#include <memory>
-#include <random>
+#include <bit>
 
 namespace Mustard::inline Utility {
 
 template<unsigned ABitWidth>
-struct UseXoshiro<ABitWidth>::Random256 {
-    CLHEPX::Random::Xoshiro256StarStar clhep;
-    ROOTX::Math::Xoshiro256PlusPlus root;
-};
-
-template<unsigned ABitWidth>
-struct UseXoshiro<ABitWidth>::Random512 {
-    CLHEPX::Random::Xoshiro512StarStar clhep;
-    ROOTX::Math::Xoshiro512PlusPlus root;
-};
-
-template<unsigned ABitWidth>
 UseXoshiro<ABitWidth>::UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli) :
-    fRandom{std::make_unique<Random>()} {
+    fRandom{std::make_unique<RandomEngineStorage>()} {
     // Set random engines
     CLHEP::HepRandom::setTheEngine(&fRandom->clhep);
     delete gRandom, gRandom = &fRandom->root;
     try {
         // Seed random engines from CLI (if option set)
         dynamic_cast<const CLI::MonteCarloModule&>(cli.value().get()).SeedRandomIfFlagged();
-    } catch (const std::exception&) {
+    } catch (const std::bad_optional_access&) {
         // Default seeding. Try to decorrelate Xoshiro++ from Xoshiro**
         gRandom->SetSeed(std::mt19937_64{std::bit_cast<std::uint64_t>(
             muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}());
