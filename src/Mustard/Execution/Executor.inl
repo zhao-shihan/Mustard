@@ -28,7 +28,7 @@ Executor<T>::Executor(std::string executionName, std::string opName, std::string
 
 template<std::integral T>
 Executor<T>::Executor(std::unique_ptr<Scheduler<T>> scheduler) :
-    Executor{"Run", "Executing", "task", std::move(scheduler)} {}
+    Executor{"Run", "Execution", "task", std::move(scheduler)} {}
 
 template<std::integral T>
 Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
@@ -151,6 +151,22 @@ template<std::integral T>
 auto Executor<T>::ExecutionName(std::string name) -> void {
     std::visit([&](auto&& impl) {
         impl.ExecutionName(std::move(name));
+    },
+               *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::OperationName() const -> const std::string& {
+    return std::visit([&](auto&& impl) -> const auto& {
+        return impl.OperationName();
+    },
+                      *fImpl);
+}
+
+template<std::integral T>
+auto Executor<T>::OperationName(std::string name) -> void {
+    std::visit([&](auto&& impl) {
+        impl.OperationName(std::move(name));
     },
                *fImpl);
 }

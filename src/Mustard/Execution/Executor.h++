@@ -65,6 +65,8 @@ public:
 
     auto ExecutionName() const -> const std::string&;
     auto ExecutionName(std::string name) -> void;
+    auto OperationName() const -> const std::string&;
+    auto OperationName(std::string name) -> void;
     auto TaskName() const -> const std::string&;
     auto TaskName(std::string name) -> void;
 

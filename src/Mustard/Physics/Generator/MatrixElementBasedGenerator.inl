@@ -69,13 +69,16 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
 
     // Set task name
     auto originalExecutionName{executor.ExecutionName()};
+    auto originalOperationName{executor.OperationName()};
     auto originalTaskName{executor.TaskName()};
-    auto _{gsl::finally([&] {
+    const auto _{gsl::finally([&] {
         executor.ExecutionName(std::move(originalExecutionName));
+        executor.OperationName(std::move(originalOperationName));
         executor.TaskName(std::move(originalTaskName));
     })};
     executor.ExecutionName("Integration");
-    executor.TaskName("Sample");
+    executor.OperationName("Summation");
+    executor.TaskName("sample");
 
     // Start integration
     const auto Integrand{[this](const Event& event) {
