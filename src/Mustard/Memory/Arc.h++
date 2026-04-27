@@ -22,8 +22,6 @@
 
 #include "gtl/intrusive.hpp"
 
-#include "muc/concepts"
-
 #include <concepts>
 #include <utility>
 
@@ -43,8 +41,10 @@ class ArcObj : public ClassSpecificAllocation,
                public gtl::intrusive_ref_counter<ArcObj<T>, gtl::thread_safe_counter>,
                public T {
 public:
-    /// @brief Inherit all T constructors
+    /// @brief Inherit all T constructors.
     using T::T;
+    /// @brief Inherit all T assignment operators.
+    using T::operator=;
 };
 
 } // namespace impl
@@ -57,9 +57,18 @@ public:
 /// allocation/deallocation functions, otherwise compilation will fail.
 /// @details
 /// Arc stores an impl::ArcObj<T> and shares ownership using intrusive reference counting.
-/// This is just an alias of gtl::intrusive_ptr.
 template<typename T>
-using Arc = gtl::intrusive_ptr<impl::ArcObj<T>>;
+class Arc : public gtl::intrusive_ptr<impl::ArcObj<T>> {
+public:
+    /// @brief The original element type 
+    using IntrudedType = T;
+
+public:
+    /// @brief Inherit all intrusive_ptr constructors.
+    using gtl::intrusive_ptr<impl::ArcObj<T>>::intrusive_ptr;
+    /// @brief Inherit all intrusive_ptr assignment operators.
+    using gtl::intrusive_ptr<impl::ArcObj<T>>::operator=;
+};
 
 /// @brief Construct an Arc-managed object.
 /// @tparam T User object type.
