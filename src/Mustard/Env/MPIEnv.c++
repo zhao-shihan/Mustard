@@ -44,7 +44,7 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
     PassiveSingleton<MPIEnv>{this},
     fIntraNodeComm{},
     fInterNodeComm{},
-    fLocalNodeID{},
+    fLocalNodeIdx{},
     fNodeList{} {
     mplr::init(argc, argv);
 
@@ -57,8 +57,8 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                                             IntraNodeColor::Leader :
                                             IntraNodeColor::Other};
 
-    fLocalNodeID = fInterNodeComm.is_valid() ? fInterNodeComm.rank() : 0;
-    fIntraNodeComm.bcast(0, fLocalNodeID);
+    fLocalNodeIdx = fInterNodeComm.is_valid() ? fInterNodeComm.rank() : 0;
+    fIntraNodeComm.bcast(0, fLocalNodeIdx);
 
     auto nNode{fInterNodeComm.is_valid() ? fInterNodeComm.size() : 0};
     fIntraNodeComm.bcast(0, nNode);
