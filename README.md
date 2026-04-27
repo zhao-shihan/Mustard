@@ -45,7 +45,7 @@ Mustard requires the following external libraries to be installed on your system
 | :---------------------------------------- | :---------- | :---------------------------- |
 | [**Eigen**](https://eigen.tuxfamily.org/) | 3.4.0       |                               |
 | [**Geant4**](https://geant4.org/)         | 11.0.0      | Requires GDML support         |
-| [**ROOT**](https://root.cern/)            | 6.30.00     | Requires `gdml` component     |
+| [**ROOT**](https://root.cern/)            | 6.36.00     |                               |
 | [**MPI**](https://www.mpi-forum.org/)     | 3.1         | MPICH, OpenMPI, or equivalent |
 
 The following dependencies are required, but built-in if not found.
