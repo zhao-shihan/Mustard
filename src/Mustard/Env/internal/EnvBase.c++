@@ -55,15 +55,15 @@ EnvBase::EnvBase() :
 
     CheckFundamentalType();
 
-    std::set_terminate(internal::TerminateHandler);
+    std::set_terminate(TerminateHandler);
 
 #if MUSTARD_SIGNAL_HANDLER
-    std::signal(SIGABRT, internal::Mustard_SIGABRT_Handler);
-    std::signal(SIGFPE, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGILL, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGINT, internal::Mustard_SIGINT_SIGTERM_Handler);
-    std::signal(SIGSEGV, internal::Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGTERM, internal::Mustard_SIGINT_SIGTERM_Handler);
+    std::signal(SIGABRT, Mustard_SIGABRT_Handler);
+    std::signal(SIGFPE, Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGILL, Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGINT, Mustard_SIGINT_SIGTERM_Handler);
+    std::signal(SIGSEGV, Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
+    std::signal(SIGTERM, Mustard_SIGINT_SIGTERM_Handler);
 #endif
 
     if (static bool gInstantiated{false};

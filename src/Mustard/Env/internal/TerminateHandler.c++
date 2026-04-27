@@ -16,12 +16,13 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/IO/Print.h++"
 
 #include "muc/utility"
 
 #include "fmt/color.h"
 
+#include <csignal>
 #include <exception>
 #include <string_view>
 #include <typeinfo>

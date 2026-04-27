@@ -31,6 +31,8 @@
 #    include <cstdlib>
 #    include <ctime>
 
+namespace Mustard::Env::internal {
+
 extern "C" {
 
 auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
@@ -51,10 +53,10 @@ auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
             Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGINT:
-                Print<'E'>(stderr, ts, "{}***** INTERRUPT (SIGINT) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** INTERRUPT (SIGINT received)\n", lineHeader);
                 break;
             case SIGTERM:
-                Print<'E'>(stderr, ts, "{}***** TERMINATE (SIGTERM) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** TERMINATE (SIGTERM received)\n", lineHeader);
                 break;
             }
             if (mplr::available()) {
@@ -87,7 +89,7 @@ auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
                               ""};
     const auto ts{fmt::emphasis::bold | fg(fmt::color::orange)};
     Print<'E'>(stderr, "\n");
-    Print<'E'>(stderr, ts, "{}***** ABORT (SIGABRT) received\n", lineHeader);
+    Print<'E'>(stderr, ts, "{}***** ABORT (SIGABRT received)\n", lineHeader);
     if (mplr::available()) {
         Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
                    lineHeader, mplr::comm_world().rank(), mplr::processor_name());
@@ -119,13 +121,13 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
             Print<'E'>(stderr, "\n");
             switch (sig) {
             case SIGFPE:
-                Print<'E'>(stderr, ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE received)\n", lineHeader);
                 break;
             case SIGILL:
-                Print<'E'>(stderr, ts, "{}***** ILLEGAL INSTRUCTION (SIGILL) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** ILLEGAL INSTRUCTION (SIGILL received)\n", lineHeader);
                 break;
             case SIGSEGV:
-                Print<'E'>(stderr, ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV) received\n", lineHeader);
+                Print<'E'>(stderr, ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV received)\n", lineHeader);
                 break;
             }
             if (mplr::available()) {
@@ -144,5 +146,7 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
 }
 
 } // extern "C"
+
+} // namespace Mustard::Env::internal
 
 #endif
