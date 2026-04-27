@@ -20,16 +20,14 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/Geant4Module.h++"
-#include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/MonteCarloEnv.h++"
+#include "Mustard/Env/MPIMonteCarloEnv.h++"
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include <concepts>
 
 namespace Mustard::Env {
 
-class Geant4Env : virtual public MPIEnv,
-                  virtual public MonteCarloEnv<512>,
+class Geant4Env : virtual public MPIMonteCarloEnv<512>,
                   public PassiveSingleton<Geant4Env> {
 protected:
     Geant4Env(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,

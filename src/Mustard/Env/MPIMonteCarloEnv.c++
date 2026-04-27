@@ -16,40 +16,35 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/CLI/Module/DetectorDescriptionModule.h++"
-#include "Mustard/CLI/Module/Geant4Module.h++"
-#include "Mustard/Env/Geant4Env.h++"
+#include "Mustard/Env/MPIMonteCarloEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "mplr/mplr.hpp"
 
 namespace Mustard::Env {
 
-Geant4Env::Geant4Env(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
-                     enum VerboseLevel verboseLevel,
-                     bool showBannerHint) :
+template<unsigned AXoshiroWidth>
+MPIMonteCarloEnv<AXoshiroWidth>::MPIMonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
+                                                  enum VerboseLevel verboseLevel,
+                                                  bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
-    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
-    MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
-    PassiveSingleton<Geant4Env>{this} {
-    if (not dynamic_cast<CLI::Geant4Module*>(&cli)) {
-        Mustard::MasterPrintWarning("Geant4 CLI module (Mustard::CLI::Geant4Module) not found");
-    }
-    if (const auto ddCLI{dynamic_cast<CLI::DetectorDescriptionModule<>*>(&cli)}) {
-        ddCLI->DetectorDescriptionIOIfFlagged();
-    }
-}
+    MonteCarloEnv<AXoshiroWidth>{{}, argc, argv, cli, verboseLevel, showBannerHint},
+    PassiveSingleton<MPIMonteCarloEnv>{this} {}
 
-Geant4Env::Geant4Env(int argc, char* argv[], CLI::CLI<>& cli,
-                     enum VerboseLevel verboseLevel,
-                     bool showBannerHint) :
-    Geant4Env{{}, argc, argv, cli, verboseLevel, showBannerHint} {
-    if (fShowBanner and mplr::comm_world().rank() == 0) {
+template<unsigned AXoshiroWidth>
+MPIMonteCarloEnv<AXoshiroWidth>::MPIMonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
+                                                  enum VerboseLevel verboseLevel,
+                                                  bool showBannerHint) :
+    MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
+    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();
     }
 }
+
+template class MPIMonteCarloEnv<256>;
+template class MPIMonteCarloEnv<512>;
 
 } // namespace Mustard::Env
