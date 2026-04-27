@@ -54,7 +54,7 @@ public:
     auto deallocate(value_type* p, std::size_t n) noexcept -> void;
 
     template<typename U>
-    constexpr auto operator==(const Allocator<U>&) const noexcept -> auto { return true; }
+    constexpr auto operator==(const Allocator<U>&) const noexcept -> bool { return true; }
 };
 
 } // namespace Mustard::inline Memory
