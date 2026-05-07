@@ -206,8 +206,10 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
 
     // determine initial trial points
     if (nTrialPts == 1) {
-        // default to 1 point for every pi/5 interval; minimum 5 points
-        const auto nDefault{static_cast<int>((x2 - x1) / (pi / 5)) + 1};
+        // default to 1 point for every pi/10 interval; minimum 5 points
+        // Use pi/10 here because the function is 2 times more oscillating than in the helix-point case
+        // (here distance with sincos(2x) term while in the helix-point only with sincos(x))
+        const auto nDefault{static_cast<int>((x2 - x1) / (pi / 10)) + 1};
         nTrialPts = std::max(5, nDefault);
     }
     if (nTrialPts > 0) {
