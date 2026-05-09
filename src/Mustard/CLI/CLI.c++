@@ -31,7 +31,7 @@ namespace Mustard::CLI {
 
 CLI<>::CLI() :
     fArgcArgv{},
-    fArgParser{internal::MakeDefaultArgParser()} {
+    fArgParser{impl::MakeDefaultArgParser()} {
     if (static bool gInstantiated{}; gInstantiated) {
         Throw<std::logic_error>("Trying to construct CLI twice");
     } else {

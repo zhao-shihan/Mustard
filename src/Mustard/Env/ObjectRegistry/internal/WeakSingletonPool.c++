@@ -23,7 +23,7 @@
 
 #include <utility>
 
-namespace Mustard::Env::inline ObjectRegistry::internal {
+namespace Mustard::Env::inline ObjectRegistry::impl {
 
 WeakSingletonPool* WeakSingletonPool::fgInstance{};
 bool WeakSingletonPool::fgInstantiated{};
@@ -62,4 +62,4 @@ auto WeakSingletonPool::Instance() -> WeakSingletonPool& {
     return *fgInstance;
 }
 
-} // namespace Mustard::Env::inline ObjectRegistry::internal
+} // namespace Mustard::Env::inline ObjectRegistry::impl

@@ -36,7 +36,7 @@
 
 namespace Mustard::Detector::Field {
 
-namespace internal {
+namespace impl {
 
 template<bool AChangeEnergy>
 class G4EMFieldBase : public G4ElectroMagneticField {
@@ -44,14 +44,14 @@ public:
     auto DoesFieldChangeEnergy() const -> G4bool override final { return AChangeEnergy; }
 };
 
-} // namespace internal
+} // namespace impl
 
 template<ElectromagneticField AField, bool AEMFieldChangeEnergy = true>
 class AsG4Field : public std::conditional_t<MagneticField<AField>,
                                             G4MagneticField,
                                             std::conditional_t<ElectricField<AField>,
                                                                G4ElectricField,
-                                                               internal::G4EMFieldBase<AEMFieldChangeEnergy>>>,
+                                                               impl::G4EMFieldBase<AEMFieldChangeEnergy>>>,
                   public AField {
 public:
     using AField::AField;

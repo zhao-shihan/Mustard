@@ -42,13 +42,13 @@ class PassiveSingleton;
 
 /// @brief Base mixin for externally owned singleton-like objects.
 /// @tparam ADerived Final derived type.
-/// @details The object registers itself into `internal::WeakSingletonPool` on
+/// @details The object registers itself into `impl::WeakSingletonPool` on
 /// construction. Access is status-driven and does not force object creation.
 /// @note Registration uses a shared indirection node from the global pool, so
 /// code in different dynamic libraries can observe the same object pointer when
 /// they are running in the same Mustard environment.
 template<typename ADerived>
-class WeakSingleton : public internal::WeakSingletonBase {
+class WeakSingleton : public impl::WeakSingletonBase {
     friend class PassiveSingleton<ADerived>;
 
 protected:

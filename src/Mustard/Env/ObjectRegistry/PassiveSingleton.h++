@@ -41,7 +41,7 @@ namespace Mustard::Env::inline ObjectRegistry {
 /// code in different dynamic libraries can observe the same object pointer when
 /// they are running in the same Mustard environment.
 template<typename ADerived>
-class PassiveSingleton : public internal::PassiveSingletonBase,
+class PassiveSingleton : public impl::PassiveSingletonBase,
                          public WeakSingleton<ADerived> {
 private:
     using Base = WeakSingleton<ADerived>;

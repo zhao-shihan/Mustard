@@ -64,9 +64,9 @@ auto MasterPrintError(std::string_view message, const std::source_location& loca
 template<std::constructible_from<std::string> AException>
 [[noreturn]] auto Throw(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
-namespace internal {
+namespace impl {
 auto PrettyException(std::string_view message, const std::source_location& location) -> std::string;
-} // namespace internal
+} // namespace impl
 
 } // namespace Mustard::inline IO
 

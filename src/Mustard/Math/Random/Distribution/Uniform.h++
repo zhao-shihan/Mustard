@@ -33,7 +33,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<muc::arithmetic T, template<typename> typename AUniform>
 class BasicUniformParameter final : public DistributionParameterBase<BasicUniformParameter<T, AUniform>, AUniform<T>> {
@@ -105,7 +105,7 @@ protected:
     typename Base::ParameterType fParameter;
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Generates uniform random floating-point value on a compact (including end-point) interval.
 /// @tparam T The value type.
@@ -113,12 +113,12 @@ template<std::floating_point T = double>
 class UniformCompact;
 
 template<std::floating_point T>
-using UniformCompactParameter = internal::BasicUniformParameter<T, UniformCompact>;
+using UniformCompactParameter = impl::BasicUniformParameter<T, UniformCompact>;
 
 template<std::floating_point T>
-class UniformCompact final : public internal::UniformBase<UniformCompact, T> {
+class UniformCompact final : public impl::UniformBase<UniformCompact, T> {
 public:
-    using internal::UniformBase<UniformCompact, T>::UniformBase;
+    using impl::UniformBase<UniformCompact, T>::UniformBase;
 
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T;
@@ -148,14 +148,14 @@ using Uniform = std::conditional_t<std::floating_point<T>,
                                    UniformInteger<std::conditional_t<std::integral<T>, T, int>>>;
 
 template<muc::arithmetic T>
-using UniformParameter = internal::BasicUniformParameter<T, Uniform>;
+using UniformParameter = impl::BasicUniformParameter<T, Uniform>;
 
 /// @brief Generates uniform random floating-point value on an open (excluding end-point) interval.
 /// @tparam T The value type.
 template<std::floating_point T>
-class UniformReal final : public internal::UniformBase<Uniform, T> {
+class UniformReal final : public impl::UniformBase<Uniform, T> {
 public:
-    using internal::UniformBase<Uniform, T>::UniformBase;
+    using impl::UniformBase<Uniform, T>::UniformBase;
 
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> auto { return Impl(g, p); }
@@ -173,9 +173,9 @@ UniformReal(T, U) -> UniformReal<std::common_type_t<T, U>>;
 /// @brief Generates uniform random integral value on a interval.
 /// @tparam T The value type.
 template<std::integral T>
-class UniformInteger final : public internal::UniformBase<Uniform, T> {
+class UniformInteger final : public impl::UniformBase<Uniform, T> {
 public:
-    using internal::UniformBase<Uniform, T>::UniformBase;
+    using impl::UniformBase<Uniform, T>::UniformBase;
 
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T;

@@ -34,7 +34,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector3FloatingPoint T, template<typename> typename AGaussian3DDiagnoal>
 class BasicGaussian3DDiagnoalParameter final : public DistributionParameterBase<BasicGaussian3DDiagnoalParameter<T, AGaussian3DDiagnoal>,
@@ -128,7 +128,7 @@ protected:
     typename Base::ParameterType fParameter;
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief
 /// @tparam T The result vector type. It must be 2-dimensional and has floating-point type.
@@ -136,16 +136,16 @@ template<Concept::NumericVector3FloatingPoint T = muc::array3d>
 class Gaussian3DDiagnoal;
 
 template<Concept::NumericVector3FloatingPoint T>
-using Gaussian3DDiagnoalParameter = internal::BasicGaussian3DDiagnoalParameter<T, Gaussian3DDiagnoal>;
+using Gaussian3DDiagnoalParameter = impl::BasicGaussian3DDiagnoalParameter<T, Gaussian3DDiagnoal>;
 
 template<Concept::NumericVector3FloatingPoint T>
-class Gaussian3DDiagnoal final : public internal::Gaussian3DDiagnoalBase<Gaussian3DDiagnoal, T> {
+class Gaussian3DDiagnoal final : public impl::Gaussian3DDiagnoalBase<Gaussian3DDiagnoal, T> {
 private:
-    using Base = internal::Gaussian3DDiagnoalBase<Gaussian3DDiagnoal, T>;
+    using Base = impl::Gaussian3DDiagnoalBase<Gaussian3DDiagnoal, T>;
     using VT = typename Base::VT;
 
 public:
-    using internal::Gaussian3DDiagnoalBase<Gaussian3DDiagnoal, T>::Gaussian3DDiagnoalBase;
+    using impl::Gaussian3DDiagnoalBase<Gaussian3DDiagnoal, T>::Gaussian3DDiagnoalBase;
 
     constexpr void Reset() { fSaved = false; }
 
@@ -177,16 +177,16 @@ template<Concept::NumericVector3FloatingPoint T = muc::array3d>
 class Gaussian3DDiagnoalFast;
 
 template<Concept::NumericVector3FloatingPoint T>
-using Gaussian3DDiagnoalFastParameter = internal::BasicGaussian3DDiagnoalParameter<T, Gaussian3DDiagnoalFast>;
+using Gaussian3DDiagnoalFastParameter = impl::BasicGaussian3DDiagnoalParameter<T, Gaussian3DDiagnoalFast>;
 
 template<Concept::NumericVector3FloatingPoint T>
-class Gaussian3DDiagnoalFast final : public internal::Gaussian3DDiagnoalBase<Gaussian3DDiagnoalFast, T> {
+class Gaussian3DDiagnoalFast final : public impl::Gaussian3DDiagnoalBase<Gaussian3DDiagnoalFast, T> {
 private:
-    using Base = internal::Gaussian3DDiagnoalBase<Gaussian3DDiagnoalFast, T>;
+    using Base = impl::Gaussian3DDiagnoalBase<Gaussian3DDiagnoalFast, T>;
     using VT = typename Base::VT;
 
 public:
-    using internal::Gaussian3DDiagnoalBase<Gaussian3DDiagnoalFast, T>::Gaussian3DDiagnoalBase;
+    using impl::Gaussian3DDiagnoalBase<Gaussian3DDiagnoalFast, T>::Gaussian3DDiagnoalBase;
 
     constexpr void Reset() { fSaved = false; }
 

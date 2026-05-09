@@ -34,7 +34,7 @@
 
 #include <concepts>
 
-namespace Mustard::Geant4X::inline Decay::internal {
+namespace Mustard::Geant4X::inline Decay::impl {
 
 template<typename Decay>
 class ExtendDecayIt : public Decay {
@@ -44,6 +44,6 @@ public:
     virtual auto DecayIt(const G4Track& aTrack, const G4Step&) -> G4VParticleChange* override;
 };
 
-} // namespace Mustard::Geant4X::inline Decay::internal
+} // namespace Mustard::Geant4X::inline Decay::impl
 
 #include "Mustard/Geant4X/Decay/internal/ExtendDecayIt.inl"

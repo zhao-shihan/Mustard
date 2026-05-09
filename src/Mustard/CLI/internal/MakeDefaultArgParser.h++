@@ -22,8 +22,8 @@
 
 #include <memory>
 
-namespace Mustard::CLI::internal {
+namespace Mustard::CLI::impl {
 
 auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser>;
 
-} // namespace Mustard::CLI::internal
+} // namespace Mustard::CLI::impl

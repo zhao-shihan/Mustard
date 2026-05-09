@@ -29,7 +29,7 @@
 
 namespace Mustard::Geant4X::inline Run {
 
-namespace internal {
+namespace impl {
 
 class FlipG4cout {
 protected:
@@ -40,11 +40,11 @@ class PreG4RunManagerInitFlipG4cout : private FlipG4cout {};
 
 class PostG4RunManagerInitFlipG4cout : private FlipG4cout {};
 
-} // namespace internal
+} // namespace impl
 
-class MPIRunManager : private internal::PreG4RunManagerInitFlipG4cout,
+class MPIRunManager : private impl::PreG4RunManagerInitFlipG4cout,
                       public G4RunManager,
-                      private internal::PostG4RunManagerInitFlipG4cout {
+                      private impl::PostG4RunManagerInitFlipG4cout {
 public:
     MPIRunManager();
     virtual ~MPIRunManager() = default;

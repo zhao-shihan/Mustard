@@ -34,7 +34,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<std::floating_point T, template<typename> typename AExponential>
 class BasicExponentialParameter final : public DistributionParameterBase<BasicExponentialParameter<T, AExponential>,
@@ -106,7 +106,7 @@ protected:
     typename Base::ParameterType fParameter;
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Generates random floating-points of exponential distribution.
 /// @tparam T The type of the result.
@@ -114,12 +114,12 @@ template<std::floating_point T = double>
 class Exponential;
 
 template<std::floating_point T>
-using ExponentialParameter = internal::BasicExponentialParameter<T, Exponential>;
+using ExponentialParameter = impl::BasicExponentialParameter<T, Exponential>;
 
 template<std::floating_point T>
-class Exponential final : public internal::ExponentialBase<Exponential, T> {
+class Exponential final : public impl::ExponentialBase<Exponential, T> {
 public:
-    using internal::ExponentialBase<Exponential, T>::ExponentialBase;
+    using impl::ExponentialBase<Exponential, T>::ExponentialBase;
 
     MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
     MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
@@ -146,12 +146,12 @@ template<std::floating_point T = double>
 class ExponentialFast;
 
 template<std::floating_point T>
-using ExponentialFastParameter = internal::BasicExponentialParameter<T, ExponentialFast>;
+using ExponentialFastParameter = impl::BasicExponentialParameter<T, ExponentialFast>;
 
 template<std::floating_point T>
-class ExponentialFast final : public internal::ExponentialBase<ExponentialFast, T> {
+class ExponentialFast final : public impl::ExponentialBase<ExponentialFast, T> {
 public:
-    using internal::ExponentialBase<ExponentialFast, T>::ExponentialBase;
+    using impl::ExponentialBase<ExponentialFast, T>::ExponentialBase;
 
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const ExponentialFastParameter<T>& p) -> auto { return Impl(g, p); }

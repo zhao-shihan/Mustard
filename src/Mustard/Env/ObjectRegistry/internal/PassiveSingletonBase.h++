@@ -20,7 +20,7 @@
 
 #include "Mustard/Utility/NonCopyableBase.h++"
 
-namespace Mustard::Env::inline ObjectRegistry::internal {
+namespace Mustard::Env::inline ObjectRegistry::impl {
 
 /// @brief Implementation detail of Mustard::Env::PassiveSingleton.
 /// @details Not API. Used as a lightweight tag and non-copyable base for
@@ -33,4 +33,4 @@ protected:
     ~PassiveSingletonBase() = default;
 };
 
-} // namespace Mustard::Env::inline ObjectRegistry::internal
+} // namespace Mustard::Env::inline ObjectRegistry::impl

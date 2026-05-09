@@ -45,7 +45,7 @@
 
 namespace Mustard::Parallel {
 
-namespace internal {
+namespace impl {
 namespace {
 
 /// @brief Generates a set of unique seeds for MPI ranks using a master RNG
@@ -79,7 +79,7 @@ auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> gtl::flat_hash_set<T> {
 }
 
 } // namespace
-} // namespace internal
+} // namespace impl
 
 auto ReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> void {
     if (not mplr::available()) {
@@ -113,7 +113,7 @@ auto ReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> v
                 } while (seed == 0 or seed == std::numeric_limits<unsigned>::max());
                 return seed;
             });
-            const auto uniqueSeed{internal::MasterMakeUniqueSeedSeries<unsigned long>(xsr256Seed)};
+            const auto uniqueSeed{impl::MasterMakeUniqueSeedSeries<unsigned long>(xsr256Seed)};
             Ensures(uniqueSeed.size() == seedSend.size());
             for (gsl::index i{}; const auto& s : uniqueSeed) {
                 get<0>(seedSend[i]) = false;
@@ -126,7 +126,7 @@ auto ReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> v
             std::ranges::generate(xsr256Seed, [tRandom] {
                 return tRandom->Integer(-2) + 1;
             });
-            const auto uniqueSeed{internal::MasterMakeUniqueSeedSeries<unsigned>(xsr256Seed)};
+            const auto uniqueSeed{impl::MasterMakeUniqueSeedSeries<unsigned>(xsr256Seed)};
             Ensures(uniqueSeed.size() == seedSend.size());
             for (gsl::index i{}; const auto& s : uniqueSeed) {
                 get<2>(seedSend[i]) = false;

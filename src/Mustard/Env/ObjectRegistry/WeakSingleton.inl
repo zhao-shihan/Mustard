@@ -27,8 +27,8 @@ template<typename ADerived>
 WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
     WeakSingletonBase{} {
     static_assert(WeakSingletonified<ADerived>);
-    std::scoped_lock lock{internal::WeakSingletonPool::RecursiveMutex()};
-    auto& pool{internal::WeakSingletonPool::Instance()};
+    std::scoped_lock lock{impl::WeakSingletonPool::RecursiveMutex()};
+    auto& pool{impl::WeakSingletonPool::Instance()};
     if (pool.Contains<ADerived>()) {
         Throw<std::runtime_error>(fmt::format("Trying to construct {} (weak singleton in environment) twice",
                                               muc::try_demangle(typeid(ADerived).name())));
@@ -53,9 +53,9 @@ MUSTARD_ALWAYS_INLINE auto WeakSingleton<ADerived>::Status() -> enum Status {
 
 template<typename ADerived>
 MUSTARD_NOINLINE auto WeakSingleton<ADerived>::LoadInstance() -> enum Status {
-    std::scoped_lock lock{internal::WeakSingletonPool::RecursiveMutex()};
+    std::scoped_lock lock{impl::WeakSingletonPool::RecursiveMutex()};
     if (fgInstancePtr == nullptr) {
-        if (const auto sharedNode{internal::WeakSingletonPool::Instance().Find<ADerived>()}) {
+        if (const auto sharedNode{impl::WeakSingletonPool::Instance().Find<ADerived>()}) {
             fgInstancePtr = sharedNode;
         } else {
             return Status::NotInstantiated;

@@ -18,7 +18,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<std::floating_point T, template<typename> typename AExponential>
 constexpr BasicExponentialParameter<T, AExponential>::BasicExponentialParameter() :
@@ -53,7 +53,7 @@ constexpr ExponentialBase<ADerived, T>::ExponentialBase(const typename Base::Par
     Base{},
     fParameter{p} {}
 
-} // namespace internal
+} // namespace impl
 
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(TheLog) \
     static_assert(Uniform<T>::Stateless());                                    \
@@ -66,7 +66,7 @@ MUSTARD_ALWAYS_INLINE auto Exponential<T>::Impl(auto& g, const ExponentialParame
 
 template<std::floating_point T>
 MUSTARD_ALWAYS_INLINE constexpr auto ExponentialFast<T>::Impl(auto& g, const ExponentialFastParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(Math::impl::FastLogOn01)
 }
 
 } // namespace Mustard::inline Math::Random::inline Distribution

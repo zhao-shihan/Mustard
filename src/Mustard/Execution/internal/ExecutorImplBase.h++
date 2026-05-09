@@ -42,7 +42,7 @@
 #include <string_view>
 #include <utility>
 
-namespace Mustard::inline Execution::internal {
+namespace Mustard::inline Execution::impl {
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
@@ -110,6 +110,6 @@ protected:
     ExecutionInfoType fExecutionInfo;
 };
 
-} // namespace Mustard::inline Execution::internal
+} // namespace Mustard::inline Execution::impl
 
 #include "Mustard/Execution/internal/ExecutorImplBase.inl"

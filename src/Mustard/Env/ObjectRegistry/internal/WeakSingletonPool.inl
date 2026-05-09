@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Env::inline ObjectRegistry::internal {
+namespace Mustard::Env::inline ObjectRegistry::impl {
 
 template<WeakSingletonified AWeakSingleton>
 [[nodiscard]] auto WeakSingletonPool::Find() const -> std::shared_ptr<void*> {
@@ -41,4 +41,4 @@ template<WeakSingletonified AWeakSingleton>
     return instancePtr;
 }
 
-} // namespace Mustard::Env::inline ObjectRegistry::internal
+} // namespace Mustard::Env::inline ObjectRegistry::impl

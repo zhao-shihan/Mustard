@@ -35,11 +35,11 @@ Executor<T>::Executor(std::string executionName, std::string opName, std::string
     fImpl{[&] {
         if (not mplr::available() or mplr::comm_world().size() == 1) {
             return std::make_unique<Impl>(
-                std::in_place_type<internal::SequentialExecutorImpl<T>>,
+                std::in_place_type<impl::SequentialExecutorImpl<T>>,
                 std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler));
         }
         return std::make_unique<Impl>(
-            std::in_place_type<internal::ParallelExecutorImpl<T>>,
+            std::in_place_type<impl::ParallelExecutorImpl<T>>,
             std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler));
     }()} {}
 

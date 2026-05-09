@@ -21,7 +21,7 @@
 #include "Mustard/Memory/ClassSpecificAllocation.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
-namespace Mustard::Env::inline ObjectRegistry::internal {
+namespace Mustard::Env::inline ObjectRegistry::impl {
 
 /// @brief Implementation detail of Mustard::Env::Singleton.
 /// @details Not API. Combines non-copyable semantics with special
@@ -40,4 +40,4 @@ protected:
     ~SingletonBase() = default;
 };
 
-} // namespace Mustard::Env::inline ObjectRegistry::internal
+} // namespace Mustard::Env::inline ObjectRegistry::impl

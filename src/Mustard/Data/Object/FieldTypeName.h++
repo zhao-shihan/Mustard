@@ -46,13 +46,13 @@ auto FieldTypeName(const T&) -> auto { return FieldTypeName<T>(); }
 /// @brief Returns the compact field type name for a Field.
 /// @tparam T Wrapper type whose nested payload type is used for the name.
 template<typename T>
-    requires internal::IsValue<T>::value
+    requires impl2::IsValue<T>::value
 auto FieldTypeName() -> auto { return FieldTypeName<typename T::Type>(); }
 
 /// @brief Returns the compact field type name for a Field.
 /// @tparam T Wrapper type whose nested payload type is used for the name.
 template<typename T>
-    requires internal::IsValue<T>::value
+    requires impl2::IsValue<T>::value
 auto FieldTypeName(const T&) -> auto { return FieldTypeName<T>(); }
 
 } // namespace Mustard::Data::inline Object

@@ -45,7 +45,7 @@
 
 namespace Mustard::Env::inline ObjectRegistry {
 
-namespace internal {
+namespace impl {
 
 /// @brief Implementation detail of Mustard::Env::Singleton.
 /// @details Not API. Stores singleton indirection nodes keyed by dynamic type.
@@ -96,13 +96,13 @@ private:
     static std::recursive_mutex fgRecursiveMutex;
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Internal type-erased construction/disposal helper for singletons.
 /// @note Singletons should declare SingletonFactory as a friend
 /// to allow SingletonFactory to construct and destruct them.
 class SingletonFactory : public NonConstructibleBase {
-    friend class internal::SingletonPool;
+    friend class impl::SingletonPool;
 
     /// @brief Allocates and constructs one singleton instance.
     /// @tparam ASingleton Singleton type.

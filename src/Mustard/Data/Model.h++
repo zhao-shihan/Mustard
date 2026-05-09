@@ -36,12 +36,12 @@
 
 namespace Mustard::Data {
 
-namespace internal {
+namespace impl {
 
 /// @brief Marker base type used to identify tuple model types.
 struct ModelSignature : NonConstructibleBase {};
 
-namespace internal {
+namespace impl {
 
 /// @brief Concept requiring a std::tuple whose element field names are unique.
 /// @details Each tuple element type is expected to expose a static Name used for uniqueness checks.
@@ -55,12 +55,12 @@ concept UniqueStdTuple = requires {
     }(gslx::make_index_sequence<std::tuple_size_v<T>>{}));
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Common implementation base for all Model specializations.
 /// @tparam ADerived Concrete model type.
 /// @tparam AStdTuple Underlying schema tuple type.
-template<typename ADerived, internal::UniqueStdTuple AStdTuple>
+template<typename ADerived, impl::UniqueStdTuple AStdTuple>
 class ModelBase : public ModelSignature {
 public:
     /// @brief Underlying schema tuple type.
@@ -99,26 +99,26 @@ private:
     static const std::vector<std::string> fNameVector;
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Types allowed as Model parameters.
 /// @details A parameter can be an existing model type or a Value type.
 template<typename T>
-concept Modelizable = std::derived_from<T, internal::ModelSignature> or
-                      internal::IsValue<T>::value;
+concept Modelizable = std::derived_from<T, impl::ModelSignature> or
+                      impl2::IsValue<T>::value;
 
 /// @brief Empty Model specialization.
 template<Modelizable...>
 struct Model
-    : internal::ModelBase<Model<>,
+    : impl::ModelBase<Model<>,
                           std::tuple<>> {};
 
 /// @brief Model specialization that prepends an existing model.
 /// @tparam AModel Existing model.
 /// @tparam AOthers Remaining modelizable items.
-template<std::derived_from<internal::ModelSignature> AModel, Modelizable... AOthers>
+template<std::derived_from<impl::ModelSignature> AModel, Modelizable... AOthers>
 struct Model<AModel, AOthers...>
-    : internal::ModelBase<Model<AModel, AOthers...>,
+    : impl::ModelBase<Model<AModel, AOthers...>,
                           muc::tuple_concat_t<typename AModel::StdTuple,
                                               typename Model<AOthers...>::StdTuple>> {};
 
@@ -129,7 +129,7 @@ struct Model<AModel, AOthers...>
 /// @tparam AOthers Remaining modelizable items.
 template<ValueAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription, Modelizable... AOthers>
 struct Model<Value<T, AName, ADescription>, AOthers...>
-    : internal::ModelBase<Model<Value<T, AName, ADescription>, AOthers...>,
+    : impl::ModelBase<Model<Value<T, AName, ADescription>, AOthers...>,
                           muc::tuple_concat_t<std::tuple<Value<T, AName, ADescription>>,
                                               typename Model<AOthers...>::StdTuple>> {};
 
@@ -138,7 +138,7 @@ struct Model<Value<T, AName, ADescription>, AOthers...>
 /// The purpose of inheriting from Model and create a new type is to produce
 /// a more human-readable compiler error/warning messages.
 template<typename M>
-concept Modelized = std::derived_from<M, internal::ModelSignature> and
+concept Modelized = std::derived_from<M, impl::ModelSignature> and
                     not muc::instantiated_from<M, Model>;
 
 /// @brief Take fields from a model by field name, producing a new model.

@@ -67,7 +67,7 @@ auto File<std::FILE>::Get() const -> std::FILE* {
 ProcessSpecificFile<std::FILE>::ProcessSpecificFile(std::filesystem::path filePath, gsl::czstring mode) :
     File{FilePathOption::ProcessSpecific, std::move(filePath), mode} {}
 
-namespace internal {
+namespace impl {
 
 template<std::derived_from<std::ios_base> F>
 FStream<F>::FStream(std::filesystem::path filePath, F::openmode mode) :
@@ -98,15 +98,15 @@ template class FStream<std::wofstream>;
 template class FStream<std::fstream>;
 template class FStream<std::wfstream>;
 
-} // namespace internal
+} // namespace impl
 
 template<muc::character C>
 File<std::basic_ifstream<C>>::File(std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_ifstream<C>>{std::move(filePath), mode} {}
+    impl::FStream<std::basic_ifstream<C>>{std::move(filePath), mode} {}
 
 template<muc::character C>
 File<std::basic_ifstream<C>>::File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_ifstream<C>>{pathOption, std::move(filePath), mode} {}
+    impl::FStream<std::basic_ifstream<C>>{pathOption, std::move(filePath), mode} {}
 
 template class File<std::ifstream>;
 template class File<std::wifstream>;
@@ -120,11 +120,11 @@ template class ProcessSpecificFile<std::wifstream>;
 
 template<muc::character C>
 File<std::basic_ofstream<C>>::File(std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_ofstream<C>>{std::move(filePath), mode} {}
+    impl::FStream<std::basic_ofstream<C>>{std::move(filePath), mode} {}
 
 template<muc::character C>
 File<std::basic_ofstream<C>>::File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_ofstream<C>>{pathOption, std::move(filePath), mode} {}
+    impl::FStream<std::basic_ofstream<C>>{pathOption, std::move(filePath), mode} {}
 
 template class File<std::ofstream>;
 template class File<std::wofstream>;
@@ -138,11 +138,11 @@ template class ProcessSpecificFile<std::wofstream>;
 
 template<muc::character C>
 File<std::basic_fstream<C>>::File(std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_fstream<C>>{std::move(filePath), mode} {}
+    impl::FStream<std::basic_fstream<C>>{std::move(filePath), mode} {}
 
 template<muc::character C>
 File<std::basic_fstream<C>>::File(FilePathOption pathOption, std::filesystem::path filePath, Type::openmode mode) :
-    internal::FStream<std::basic_fstream<C>>{pathOption, std::move(filePath), mode} {}
+    impl::FStream<std::basic_fstream<C>>{pathOption, std::move(filePath), mode} {}
 
 template class File<std::fstream>;
 template class File<std::wfstream>;

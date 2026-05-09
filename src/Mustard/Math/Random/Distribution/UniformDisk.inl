@@ -18,7 +18,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector2Any T, template<typename> typename AUniformDisk>
 constexpr BasicUniformDiskParameter<T, AUniformDisk>::BasicUniformDiskParameter() :
@@ -79,7 +79,7 @@ constexpr UniformDiskBase<T, AUniformDisk>::UniformDiskBase(const typename Base:
     Base{},
     fParameter{p} {}
 
-} // namespace internal
+} // namespace impl
 
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_UNIFORM_DISK_GENERATOR(rejection) \
     T r;                                                                   \

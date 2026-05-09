@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Geant4X::inline Decay::internal {
+namespace Mustard::Geant4X::inline Decay::impl {
 
 // To properly bias the decay, we have no choice but copy the whole implementation.
 // Lines marked with /* ++ */ are added or modified by us.
@@ -260,4 +260,4 @@ auto ExtendDecayIt<Decay>::DecayIt(const G4Track& aTrack, const G4Step&) -> G4VP
     return &this->fParticleChangeForDecay;
 }
 
-} // namespace Mustard::Geant4X::inline Decay::internal
+} // namespace Mustard::Geant4X::inline Decay::impl

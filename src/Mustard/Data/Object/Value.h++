@@ -170,7 +170,7 @@ private:
     T fObject;
 };
 
-namespace internal {
+namespace impl2 {
 
 /// @brief Type trait to identify Value specializations.
 /// @tparam Any type to test.
@@ -186,7 +186,7 @@ template<ValueAcceptable T, muc::ceta_string AName, muc::ceta_string ADescriptio
 struct IsValue<Value<T, AName, ADescription>>
     : std::true_type {};
 
-} // namespace internal
+} // namespace impl2
 
 } // namespace Mustard::Data::inline Object
 

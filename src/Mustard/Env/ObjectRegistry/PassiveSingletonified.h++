@@ -36,7 +36,7 @@ concept PassiveSingletonified =
     requires {
         { T::Instance() } -> std::same_as<T&>;
         requires std::derived_from<T, PassiveSingleton<T>>;
-        requires not std::is_base_of_v<internal::SingletonBase, T>;
+        requires not std::is_base_of_v<impl::SingletonBase, T>;
         requires Concept::NonCopyable<T>;
     };
 

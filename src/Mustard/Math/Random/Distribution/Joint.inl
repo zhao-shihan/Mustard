@@ -18,19 +18,19 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<typename... Ts>
 CartesianProductMargin<Ts...>::CartesianProductMargin(const Ts&... objects) :
-    internal::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...>{{objects}...} {}
+    impl::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...>{{objects}...} {}
 
-} // namespace internal
+} // namespace impl
 
 template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 constexpr JointParameterInterface<ADerived, ADistribution, Ds...>::JointParameterInterface() :
     DistributionParameterBase<ADerived, ADistribution>{},
-    internal::CartesianProductMargin<typename Ds::ParameterType...>{} {
+    impl::CartesianProductMargin<typename Ds::ParameterType...>{} {
     static_assert(std::derived_from<ADerived, JointParameterInterface<ADerived, ADistribution, Ds...>>);
 }
 
@@ -38,7 +38,7 @@ template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 constexpr JointParameterInterface<ADerived, ADistribution, Ds...>::JointParameterInterface(const typename Ds::ParameterType&... p) :
     DistributionParameterBase<ADerived, ADistribution>{},
-    internal::CartesianProductMargin<typename Ds::ParameterType...>{p...} {}
+    impl::CartesianProductMargin<typename Ds::ParameterType...>{p...} {}
 
 template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
@@ -62,7 +62,7 @@ template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr JointInterface<ADerived, AParameter, T, Ds...>::JointInterface() :
     RandomNumberDistributionBase<ADerived, AParameter, T>{},
-    internal::CartesianProductMargin<Ds...>{} {
+    impl::CartesianProductMargin<Ds...>{} {
     static_assert(std::derived_from<ADerived, JointInterface<ADerived, AParameter, T, Ds...>>);
     static_assert(std::derived_from<AParameter, JointParameterInterface<AParameter, ADerived, Ds...>>);
 }
@@ -71,13 +71,13 @@ template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr JointInterface<ADerived, AParameter, T, Ds...>::JointInterface(const typename Ds::ParameterType&... p) :
     RandomNumberDistributionBase<ADerived, AParameter, T>{},
-    internal::CartesianProductMargin<Ds...>{Ds{p}...} {}
+    impl::CartesianProductMargin<Ds...>{Ds{p}...} {}
 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr JointInterface<ADerived, AParameter, T, Ds...>::JointInterface(const AParameter& p) :
     RandomNumberDistributionBase<ADerived, AParameter, T>{},
-    internal::CartesianProductMargin<Ds...>{std::make_from_tuple<internal::CartesianProductMargin<Ds...>>(p)} {}
+    impl::CartesianProductMargin<Ds...>{std::make_from_tuple<impl::CartesianProductMargin<Ds...>>(p)} {}
 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)

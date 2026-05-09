@@ -37,7 +37,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector2FloatingPoint T, template<typename> typename AGaussian2DDiagnoal>
 class BasicGaussian2DDiagnoalParameter final : public DistributionParameterBase<BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>,
@@ -121,7 +121,7 @@ protected:
     typename Base::ParameterType fParameter;
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief
 /// @tparam T The result vector type. It must be 2-dimensional and has floating-point type.
@@ -129,16 +129,16 @@ template<Concept::NumericVector2FloatingPoint T = muc::array2d>
 class Gaussian2DDiagnoal;
 
 template<Concept::NumericVector2FloatingPoint T>
-using Gaussian2DDiagnoalParameter = internal::BasicGaussian2DDiagnoalParameter<T, Gaussian2DDiagnoal>;
+using Gaussian2DDiagnoalParameter = impl::BasicGaussian2DDiagnoalParameter<T, Gaussian2DDiagnoal>;
 
 template<Concept::NumericVector2FloatingPoint T>
-class Gaussian2DDiagnoal final : public internal::Gaussian2DDiagnoalBase<Gaussian2DDiagnoal, T> {
+class Gaussian2DDiagnoal final : public impl::Gaussian2DDiagnoalBase<Gaussian2DDiagnoal, T> {
 private:
-    using Base = internal::Gaussian2DDiagnoalBase<Gaussian2DDiagnoal, T>;
+    using Base = impl::Gaussian2DDiagnoalBase<Gaussian2DDiagnoal, T>;
     using VT = typename Base::VT;
 
 public:
-    using internal::Gaussian2DDiagnoalBase<Gaussian2DDiagnoal, T>::Gaussian2DDiagnoalBase;
+    using impl::Gaussian2DDiagnoalBase<Gaussian2DDiagnoal, T>::Gaussian2DDiagnoalBase;
 
     constexpr void Reset() {}
 
@@ -166,16 +166,16 @@ template<Concept::NumericVector2FloatingPoint T = muc::array2d>
 class Gaussian2DDiagnoalFast;
 
 template<Concept::NumericVector2FloatingPoint T>
-using Gaussian2DDiagnoalFastParameter = internal::BasicGaussian2DDiagnoalParameter<T, Gaussian2DDiagnoalFast>;
+using Gaussian2DDiagnoalFastParameter = impl::BasicGaussian2DDiagnoalParameter<T, Gaussian2DDiagnoalFast>;
 
 template<Concept::NumericVector2FloatingPoint T>
-class Gaussian2DDiagnoalFast final : public internal::Gaussian2DDiagnoalBase<Gaussian2DDiagnoalFast, T> {
+class Gaussian2DDiagnoalFast final : public impl::Gaussian2DDiagnoalBase<Gaussian2DDiagnoalFast, T> {
 private:
-    using Base = internal::Gaussian2DDiagnoalBase<Gaussian2DDiagnoalFast, T>;
+    using Base = impl::Gaussian2DDiagnoalBase<Gaussian2DDiagnoalFast, T>;
     using VT = typename Base::VT;
 
 public:
-    using internal::Gaussian2DDiagnoalBase<Gaussian2DDiagnoalFast, T>::Gaussian2DDiagnoalBase;
+    using impl::Gaussian2DDiagnoalBase<Gaussian2DDiagnoalFast, T>::Gaussian2DDiagnoalBase;
 
     constexpr void Reset() {}
 

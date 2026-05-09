@@ -33,7 +33,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector2Any T, template<typename> typename AUniformRectangle, template<typename> typename AUniform>
 class BasicUniformRectangleParameter final : public JointParameterInterface<BasicUniformRectangleParameter<T, AUniformRectangle, AUniform>,
@@ -101,21 +101,21 @@ public:
     constexpr auto SupremumY(VT supY) -> void { ParameterY({InfimumY(), supY}); }
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Generates 2D uniform random vector on a compact (including boundary) rectangular region.
 /// @tparam T The result vector type. It must be 2-dimensional and has floating-point type.
 template<Concept::NumericVector2FloatingPoint T = muc::array2d>
-class UniformCompactRectangle final : public internal::UniformRectangleBase<UniformCompactRectangle, T, UniformCompact> {
+class UniformCompactRectangle final : public impl::UniformRectangleBase<UniformCompactRectangle, T, UniformCompact> {
 public:
-    using internal::UniformRectangleBase<UniformCompactRectangle, T, UniformCompact>::UniformRectangleBase;
+    using impl::UniformRectangleBase<UniformCompactRectangle, T, UniformCompact>::UniformRectangleBase;
 };
 
 template<typename T, typename U>
 UniformCompactRectangle(std::initializer_list<T>, std::initializer_list<U>) -> UniformCompactRectangle<std::array<std::common_type_t<T, U>, 2>>;
 
 template<std::floating_point T>
-using UniformCompactRectangleParameter = internal::BasicUniformRectangleParameter<T, UniformCompactRectangle, UniformCompact>;
+using UniformCompactRectangleParameter = impl::BasicUniformRectangleParameter<T, UniformCompactRectangle, UniformCompact>;
 
 /// @brief Generates 2D uniform random vector on a open (excluding boundary) rectangular region.
 /// @tparam T The result vector type. It must be 2-dimensional and has floating-point type.
@@ -135,21 +135,21 @@ using UniformRectangle = std::conditional_t<std::floating_point<VectorValueType<
                                             UniformIntegerRectangle<std::conditional_t<std::integral<VectorValueType<T>>, T, muc::array2i>>>;
 
 template<Concept::NumericVector2Any T>
-using UniformRectangleParameter = internal::BasicUniformRectangleParameter<T, UniformRectangle, Uniform>;
+using UniformRectangleParameter = impl::BasicUniformRectangleParameter<T, UniformRectangle, Uniform>;
 
 template<Concept::NumericVector2FloatingPoint T>
-class UniformRealRectangle final : public internal::UniformRectangleBase<UniformRealRectangle, T, Uniform> {
+class UniformRealRectangle final : public impl::UniformRectangleBase<UniformRealRectangle, T, Uniform> {
 public:
-    using internal::UniformRectangleBase<UniformRealRectangle, T, Uniform>::UniformRectangleBase;
+    using impl::UniformRectangleBase<UniformRealRectangle, T, Uniform>::UniformRectangleBase;
 };
 
 template<typename T, typename U>
 UniformRealRectangle(std::initializer_list<T>, std::initializer_list<U>) -> UniformRealRectangle<std::array<std::common_type_t<T, U>, 2>>;
 
 template<Concept::NumericVector2Integral T>
-class UniformIntegerRectangle final : public internal::UniformRectangleBase<UniformIntegerRectangle, T, Uniform> {
+class UniformIntegerRectangle final : public impl::UniformRectangleBase<UniformIntegerRectangle, T, Uniform> {
 public:
-    using internal::UniformRectangleBase<UniformIntegerRectangle, T, Uniform>::UniformRectangleBase;
+    using impl::UniformRectangleBase<UniformIntegerRectangle, T, Uniform>::UniformRectangleBase;
 };
 
 template<typename T, typename U>

@@ -297,9 +297,8 @@ concept SubModel = requires {
     /* ... */
 };
 
-template<typename T1, typename T2>
-concept SubTuple = TupleLike<T1> and TupleLike<T2> and
-                   SubModel<typename T1::Model, typename T2::Model>;
+template<typename T, typename M>
+concept SubTuple = TupleLike<T> and SubModel<typename T::Model, M>;
 ```
 
 ## Naming Conventions
@@ -378,7 +377,8 @@ auto Name(std::string val) -> void { fName = val; }   // setter
 
 ### Namespaces
 - **`PascalCase` for all namespaces**, excepts
-- `namespace internal` for implementation detail
+  - `namespace impl` for implementation detail, or
+  - `namespace impl1`, `namespace impl2` and so on if there are name conflicts
 
 ```cpp
 namespace MACE::Detector::Definition {
@@ -389,11 +389,11 @@ namespace MACE::Detector::Definition {
 
 namespace Mustard::inline Reconstruction::MMSTracking::inline Finder {
 
-namespace internal {
+namespace impl {
 
 /* ... */
 
-} // namespace internal
+} // namespace impl
 
 /* ... */
 
@@ -427,7 +427,7 @@ namespace Mustard::inline Reconstruction::MMSTracking::inline Finder {
 
 ### Anonymous Namespaces
 - Only use for introducing **internal linkage** (**do not use** when there should be or possibly should be external linkage):
-- When used in conjunction with `namespace internal`, place `namespace internal` outside the anonymous namespace
+- When used in conjunction with `namespace impl`, place `namespace impl` outside the anonymous namespace
 
 ```cpp
 namespace Mustard::Geant4X::inline Generator {
@@ -444,7 +444,7 @@ class Class1 {
 
 } // namespace
 
-namespace internal {
+namespace impl {
 namespace {
 
 class Class1 {
@@ -452,7 +452,7 @@ class Class1 {
 };
 
 } // namespace
-} // namespace internal
+} // namespace impl
 
 } // namespace Mustard::Geant4X::inline Generator
 ```
@@ -883,7 +883,7 @@ const auto& [p0, _1, _2, p3, p4]{momenta};
 ```
 
 ### Smart Pointers and Memory Management
-- **Use smart pointers (`std::unique_ptr`, `std::shared_ptr`) for ownership**
+- **Use smart pointers (`std::unique_ptr`, `std::shared_ptr`, `Mustard::Arc`) for ownership**
 - Use `gsl::not_null` for non-nullable pointers
 - **Prefer references over pointers when ownership is not transferred**
 
@@ -1232,7 +1232,7 @@ using namespace std::string_literals;
 
 ```cpp
 fmt::format("Cannot open file '{}' with mode '{}'", outputPath, mode)
-fmt::format("Entries of provided event split ({}) is inconsistent with the dataset ({})",
+fmt::format("Entries of provided RDF event info ({}) is inconsistent with the dataset ({})",
             nEntry, nEntryRDF)
 ```
 
@@ -1416,7 +1416,7 @@ public:
 - [ ] Never use `using namespace` in header files
 - [ ] Limit `using` declarations to implementation files
 - [ ] Use anonymous namespaces only for internal linkage
-- [ ] Place `namespace internal` outside anonymous namespaces
+- [ ] Place `namespace impl` outside anonymous namespaces
 
 ### Documentation and Comments
 - [ ] Use Doxygen-style `///` comments for public APIs

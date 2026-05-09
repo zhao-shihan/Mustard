@@ -58,9 +58,9 @@ MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Status() -> enum Status {
 
 template<typename ADerived>
 MUSTARD_NOINLINE auto Singleton<ADerived>::LoadInstance() -> enum Status {
-    std::scoped_lock lock{internal::SingletonPool::RecursiveMutex()};
+    std::scoped_lock lock{impl::SingletonPool::RecursiveMutex()};
     if (fgInstancePtr == nullptr) {
-        auto& pool{internal::SingletonPool::Instance()};
+        auto& pool{impl::SingletonPool::Instance()};
         if (auto instancePtr{pool.Find<ADerived>()}) {
             fgInstancePtr = std::move(instancePtr);
         } else {

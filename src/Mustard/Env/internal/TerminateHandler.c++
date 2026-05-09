@@ -27,7 +27,7 @@
 #include <string_view>
 #include <typeinfo>
 
-namespace Mustard::Env::internal {
+namespace Mustard::Env::impl {
 
 [[noreturn]] auto TerminateHandler() -> void {
     const auto exception{std::current_exception()};
@@ -65,4 +65,4 @@ namespace Mustard::Env::internal {
     std::abort();
 }
 
-} // namespace Mustard::Env::internal
+} // namespace Mustard::Env::impl

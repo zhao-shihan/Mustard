@@ -33,7 +33,7 @@
 #include <limits>
 #include <numbers>
 
-namespace Mustard::inline Math::internal {
+namespace Mustard::inline Math::impl {
 
 template<std::floating_point T>
 MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> auto {
@@ -62,4 +62,4 @@ MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> auto {
     }
 }
 
-} // namespace Mustard::inline Math::internal
+} // namespace Mustard::inline Math::impl

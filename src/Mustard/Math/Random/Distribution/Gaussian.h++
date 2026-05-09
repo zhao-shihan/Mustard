@@ -31,7 +31,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<std::floating_point T, template<typename> typename AGaussian>
 class BasicGaussianParameter final : public DistributionParameterBase<BasicGaussianParameter<T, AGaussian>,
@@ -107,7 +107,7 @@ protected:
     typename Base::ParameterType fParameter;
 };
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Reference: Luc Devroye, Non-Uniform Random Variates Generation,
 /// Chapter V, Section 4.4 (See http://luc.devroye.org/rnbookindex.html).
@@ -116,12 +116,12 @@ template<std::floating_point T = double>
 class Gaussian;
 
 template<std::floating_point T>
-using GaussianParameter = internal::BasicGaussianParameter<T, Gaussian>;
+using GaussianParameter = impl::BasicGaussianParameter<T, Gaussian>;
 
 template<std::floating_point T>
-class Gaussian final : public internal::GaussianBase<T, Gaussian> {
+class Gaussian final : public impl::GaussianBase<T, Gaussian> {
 public:
-    using internal::GaussianBase<T, Gaussian>::GaussianBase;
+    using impl::GaussianBase<T, Gaussian>::GaussianBase;
 
     constexpr auto Reset() -> void { fSaved = false; }
 
@@ -160,12 +160,12 @@ template<std::floating_point T = double>
 class GaussianFast;
 
 template<std::floating_point T>
-using GaussianFastParameter = internal::BasicGaussianParameter<T, GaussianFast>;
+using GaussianFastParameter = impl::BasicGaussianParameter<T, GaussianFast>;
 
 template<std::floating_point T>
-class GaussianFast final : public internal::GaussianBase<T, GaussianFast> {
+class GaussianFast final : public impl::GaussianBase<T, GaussianFast> {
 public:
-    using internal::GaussianBase<T, GaussianFast>::GaussianBase;
+    using impl::GaussianBase<T, GaussianFast>::GaussianBase;
 
     constexpr auto Reset() -> void { fSaved = false; }
 

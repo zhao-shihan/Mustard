@@ -34,7 +34,7 @@
 #include <string>
 #include <utility>
 
-namespace Mustard::inline Execution::internal {
+namespace Mustard::inline Execution::impl {
 
 template<std::integral T>
 class SequentialExecutorImpl final : public ExecutorImplBase<T> {
@@ -50,6 +50,6 @@ private:
     ProgressBar fProgressBar;
 };
 
-} // namespace Mustard::inline Execution::internal
+} // namespace Mustard::inline Execution::impl
 
 #include "Mustard/Execution/internal/SequentialExecutorImpl.inl"

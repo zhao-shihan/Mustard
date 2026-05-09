@@ -25,13 +25,13 @@
 namespace Mustard::Env {
 
 inline namespace ObjectRegistry {
-namespace internal {
+namespace impl {
 class WeakSingletonPool;
 class SingletonPool;
-} // namespace internal
+} // namespace impl
 } // namespace ObjectRegistry
 
-namespace internal {
+namespace impl {
 
 class EnvBase : public NonCopyableBase {
 protected:
@@ -42,10 +42,10 @@ private:
     static auto CheckFundamentalType() -> void;
 
 private:
-    std::unique_ptr<ObjectRegistry::internal::WeakSingletonPool> fWeakSingletonPool;
-    std::unique_ptr<ObjectRegistry::internal::SingletonPool> fSingletonPool;
+    std::unique_ptr<ObjectRegistry::impl::WeakSingletonPool> fWeakSingletonPool;
+    std::unique_ptr<ObjectRegistry::impl::SingletonPool> fSingletonPool;
 };
 
-} // namespace internal
+} // namespace impl
 
 } // namespace Mustard::Env

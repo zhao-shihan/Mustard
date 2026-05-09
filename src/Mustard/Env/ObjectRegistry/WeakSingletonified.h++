@@ -35,8 +35,8 @@ class WeakSingleton;
 template<typename T>
 concept IndirectlyWeakSingletonified =
     requires {
-        requires std::is_base_of_v<internal::WeakSingletonBase, T>;
-        requires not std::is_base_of_v<internal::SingletonBase, T>;
+        requires std::is_base_of_v<impl::WeakSingletonBase, T>;
+        requires not std::is_base_of_v<impl::SingletonBase, T>;
         requires Concept::NonCopyable<T>;
     };
 

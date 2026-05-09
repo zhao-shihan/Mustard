@@ -21,7 +21,7 @@
 #include <queue>
 #include <ranges>
 
-namespace Mustard::Env::inline ObjectRegistry::internal {
+namespace Mustard::Env::inline ObjectRegistry::impl {
 
 std::recursive_mutex SingletonPool::fgRecursiveMutex{};
 
@@ -46,4 +46,4 @@ SingletonPool::~SingletonPool() {
     }
 }
 
-} // namespace Mustard::Env::inline ObjectRegistry::internal
+} // namespace Mustard::Env::inline ObjectRegistry::impl

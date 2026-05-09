@@ -23,7 +23,7 @@
 
 #include <cstdlib>
 
-namespace Mustard::CLI::internal {
+namespace Mustard::CLI::impl {
 
 auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
     auto argParser{std::make_unique<argparse::ArgumentParser>("", versionString, argparse::default_arguments::none)};
@@ -66,4 +66,4 @@ auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser> {
     return argParser;
 }
 
-} // namespace Mustard::CLI::internal
+} // namespace Mustard::CLI::impl

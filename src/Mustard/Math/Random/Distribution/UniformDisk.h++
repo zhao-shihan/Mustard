@@ -38,7 +38,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector2Any T, template<typename> typename AUniformDisk>
 class BasicUniformDiskParameter final : public DistributionParameterBase<BasicUniformDiskParameter<T, AUniformDisk>,
@@ -135,18 +135,18 @@ protected:
     typename Base::ParameterType fParameter;
 };
 
-} // namespace internal
+} // namespace impl
 
 template<Concept::NumericVector2Any T = muc::array2d>
 class UniformCompactDisk;
 
 template<Concept::NumericVector2Any T>
-using UniformCompactDiskParameter = internal::BasicUniformDiskParameter<T, UniformCompactDisk>;
+using UniformCompactDiskParameter = impl::BasicUniformDiskParameter<T, UniformCompactDisk>;
 
 template<Concept::NumericVector2Any T>
-class UniformCompactDisk final : public internal::UniformDiskBase<T, UniformCompactDisk> {
+class UniformCompactDisk final : public impl::UniformDiskBase<T, UniformCompactDisk> {
 public:
-    using internal::UniformDiskBase<T, UniformCompactDisk>::UniformDiskBase;
+    using impl::UniformDiskBase<T, UniformCompactDisk>::UniformDiskBase;
 
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactDiskParameter<T>& p) -> auto { return Impl(g, p); }
@@ -169,12 +169,12 @@ template<Concept::NumericVector2Any T = muc::array2d>
 class UniformDisk;
 
 template<Concept::NumericVector2Any T>
-using UniformDiskParameter = internal::BasicUniformDiskParameter<T, UniformDisk>;
+using UniformDiskParameter = impl::BasicUniformDiskParameter<T, UniformDisk>;
 
 template<Concept::NumericVector2Any T>
-class UniformDisk final : public internal::UniformDiskBase<T, UniformDisk> {
+class UniformDisk final : public impl::UniformDiskBase<T, UniformDisk> {
 public:
-    using internal::UniformDiskBase<T, UniformDisk>::UniformDiskBase;
+    using impl::UniformDiskBase<T, UniformDisk>::UniformDiskBase;
 
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
     MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformDiskParameter<T>& p) -> auto { return Impl(g, p); }

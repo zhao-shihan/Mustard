@@ -27,7 +27,7 @@
 
 namespace Mustard::Detector::Field {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector3D T>
 struct BEFieldValue {
@@ -35,13 +35,13 @@ struct BEFieldValue {
     T E;
 };
 
-} // namespace internal
+} // namespace impl
 
 template<typename ADerived>
 class ElectromagneticFieldBase {
 public:
     template<Concept::NumericVector3D T>
-    using F = internal::BEFieldValue<T>;
+    using F = impl::BEFieldValue<T>;
 
 protected:
     constexpr ElectromagneticFieldBase();

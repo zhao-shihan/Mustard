@@ -18,7 +18,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<std::floating_point T, template<typename> typename AGaussian>
 constexpr BasicGaussianParameter<T, AGaussian>::BasicGaussianParameter(T mu, T sigma) :
@@ -50,7 +50,7 @@ constexpr GaussianBase<T, AGaussian>::GaussianBase(const typename Base::Paramete
     Base{},
     fParameter{p} {}
 
-} // namespace internal
+} // namespace impl
 
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET(Suffix)       \
     if ((fSaved = not fSaved)) {                                                  \

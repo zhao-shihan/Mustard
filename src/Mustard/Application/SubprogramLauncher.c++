@@ -44,7 +44,7 @@ struct SubprogramLauncher::State {
 
 SubprogramLauncher::SubprogramLauncher() :
     fState{std::make_unique_for_overwrite<State>()} {
-    fState->command = CLI::internal::MakeDefaultArgParser();
+    fState->command = CLI::impl::MakeDefaultArgParser();
 }
 
 SubprogramLauncher::~SubprogramLauncher() = default;

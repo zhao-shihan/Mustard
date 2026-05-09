@@ -110,7 +110,7 @@ auto ExtendedDecayWithSpin::PostStepDoIt(const G4Track& aTrack, const G4Step& aS
     return pParticleChangeForDecay;
 }
 
-namespace internal {
+namespace impl {
 namespace {
 
 // A crazy access to private G4DecayWithSpin::Spin_Precession
@@ -124,7 +124,7 @@ template struct StealSpinPrecession<&G4DecayWithSpin::Spin_Precession>;
 auto SpinPrecession(G4DecayWithSpin& self, const G4Step& step, G4ThreeVector B, G4double dt) -> G4ThreeVector;
 
 } // namespace
-} // namespace internal
+} // namespace impl
 
 // Since G4DecayWithSpin explicitly use G4Decay::DecayIt instead of virtual DecayIt call,
 // we have no choice but copy the whole implementation, to properly bias the decay.
@@ -209,7 +209,7 @@ auto ExtendedDecayWithSpin::AtRestDoIt(const G4Track& aTrack, const G4Step& aSte
             // Call the spin precession only for non-zero mag. field
             if (B.mag2() > 0.)
                 parent_polarization =
-                    internal::SpinPrecession(*this, aStep, B, fRemainderLifeTime); /* ++ */
+                    impl::SpinPrecession(*this, aStep, B, fRemainderLifeTime); /* ++ */
         }
     }
 

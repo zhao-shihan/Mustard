@@ -18,7 +18,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<muc::arithmetic T, template<typename> typename AUniform>
 constexpr BasicUniformParameter<T, AUniform>::BasicUniformParameter() :
@@ -61,7 +61,7 @@ constexpr UniformBase<ADerived, T>::UniformBase(const typename Base::ParameterTy
     Base{},
     fParameter{p} {}
 
-} // namespace internal
+} // namespace impl
 
 template<std::floating_point T>
 MUSTARD_ALWAYS_INLINE constexpr auto UniformCompact<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T {

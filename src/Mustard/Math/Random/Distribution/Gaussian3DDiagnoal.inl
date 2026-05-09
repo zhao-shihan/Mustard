@@ -18,7 +18,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector3FloatingPoint T, template<typename> typename AGaussian3DDiagnoal>
 constexpr BasicGaussian3DDiagnoalParameter<T, AGaussian3DDiagnoal>::BasicGaussian3DDiagnoalParameter() : // clang-format off
@@ -65,7 +65,7 @@ constexpr Gaussian3DDiagnoalBase<ADerived, T>::Gaussian3DDiagnoalBase(const type
     Base{},
     fParameter{p} {}
 
-} // namespace internal
+} // namespace impl
 
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_3D_DIAGNOAL_GENERATOR_SNIPPET(Suffix) \
     static_assert(Gaussian2DDiagnoal##Suffix<std::array<VT, 2>>::Stateless());          \

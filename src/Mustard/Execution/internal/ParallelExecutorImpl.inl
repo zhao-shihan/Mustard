@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Execution::internal {
+namespace Mustard::inline Execution::impl {
 
 template<std::integral T>
 ParallelExecutorImpl<T>::ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
@@ -158,4 +158,4 @@ auto ParallelExecutorImpl<T>::PostTaskReport(T iEnded) const -> void {
           }());
 }
 
-} // namespace Mustard::inline Execution::internal
+} // namespace Mustard::inline Execution::impl

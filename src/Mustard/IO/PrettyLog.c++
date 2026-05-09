@@ -31,7 +31,7 @@
 
 namespace Mustard::inline IO {
 
-namespace internal {
+namespace impl {
 namespace {
 
 auto PrettyLogHead(std::string_view prefix, const std::source_location& location) -> std::string {
@@ -53,11 +53,11 @@ auto PrettyException(std::string_view message, const std::source_location& locat
     return fmt::format("{}: {}", PrettyLogHead("", location), message);
 }
 
-} // namespace internal
+} // namespace impl
 
 auto PrintInfo(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::deep_sky_blue)};
-    Print<'I'>(stderr, ts, "{}: ", internal::PrettyLogHead("Information from ", location));
+    Print<'I'>(stderr, ts, "{}: ", impl::PrettyLogHead("Information from ", location));
     Print<'I'>(stderr, ts | fmt::emphasis::bold, "{}", message);
     Print<'I'>(stderr, "\n");
 }
@@ -65,7 +65,7 @@ auto PrintInfo(std::string_view message, const std::source_location& location) -
 auto PrintWarning(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::white) | bg(fmt::color::dark_orange)};
     Print<'W'>(stderr, ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
-    Print<'W'>(stderr, ts, " {}: ", internal::PrettyLogHead("Warning from ", location));
+    Print<'W'>(stderr, ts, " {}: ", impl::PrettyLogHead("Warning from ", location));
     Print<'W'>(stderr, ts | fmt::emphasis::bold, "{}", message);
     Print<'W'>(stderr, "\n");
 }
@@ -73,7 +73,7 @@ auto PrintWarning(std::string_view message, const std::source_location& location
 auto PrintError(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::white) | bg(fmt::color::tomato)};
     Print<'E'>(stderr, ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
-    Print<'E'>(stderr, ts, " {}: ", internal::PrettyLogHead("Error from ", location));
+    Print<'E'>(stderr, ts, " {}: ", impl::PrettyLogHead("Error from ", location));
     Print<'E'>(stderr, ts | fmt::emphasis::bold, "{}", message);
     Print<'E'>(stderr, "\n");
 }

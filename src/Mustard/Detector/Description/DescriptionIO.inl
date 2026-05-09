@@ -18,7 +18,7 @@
 
 namespace Mustard::Detector::Description {
 
-namespace internal {
+namespace impl {
 namespace {
 
 template<gsl::index i, typename T>
@@ -43,7 +43,7 @@ constexpr void StaticForEach(auto&&... args) {
 }
 
 } // namespace
-} // namespace internal
+} // namespace impl
 
 template<Description... Ds>
 auto DescriptionIO::Import(const std::filesystem::path& yamlPath) -> void {
@@ -68,32 +68,32 @@ auto DescriptionIO::ToString() -> std::string {
 template<muc::tuple_like T>
 auto DescriptionIO::Import(const std::filesystem::path& yamlPath) -> void {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
-    internal::StaticForEach<0, descriptions.size(),
-                            internal::FillDescriptionArray, T>(descriptions);
+    impl::StaticForEach<0, descriptions.size(),
+                            impl::FillDescriptionArray, T>(descriptions);
     ImportImpl(yamlPath, descriptions);
 }
 
 template<muc::tuple_like T>
 auto DescriptionIO::Export(const std::filesystem::path& yamlPath, const std::string& fileComment) -> std::filesystem::path {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
-    internal::StaticForEach<0, descriptions.size(),
-                            internal::FillDescriptionArray, T>(descriptions);
+    impl::StaticForEach<0, descriptions.size(),
+                            impl::FillDescriptionArray, T>(descriptions);
     return ExportImpl(yamlPath, fileComment, descriptions);
 }
 
 template<muc::tuple_like T>
 auto DescriptionIO::Emport(const std::filesystem::path& yamlPath, const std::string& fileComment) -> std::pair<std::filesystem::path, std::filesystem::path> {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
-    internal::StaticForEach<0, descriptions.size(),
-                            internal::FillDescriptionArray, T>(descriptions);
+    impl::StaticForEach<0, descriptions.size(),
+                            impl::FillDescriptionArray, T>(descriptions);
     return EmportImpl(yamlPath, fileComment, descriptions);
 }
 
 template<muc::tuple_like T>
 auto DescriptionIO::ToString() -> std::string {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
-    internal::StaticForEach<0, descriptions.size(),
-                            internal::FillDescriptionArray, T>(descriptions);
+    impl::StaticForEach<0, descriptions.size(),
+                            impl::FillDescriptionArray, T>(descriptions);
     return ToStringImpl(descriptions);
 }
 

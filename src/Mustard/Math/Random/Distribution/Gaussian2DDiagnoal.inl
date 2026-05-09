@@ -18,7 +18,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector2FloatingPoint T, template<typename> typename AGaussian2DDiagnoal>
 constexpr BasicGaussian2DDiagnoalParameter<T, AGaussian2DDiagnoal>::BasicGaussian2DDiagnoalParameter() : // clang-format off
@@ -57,7 +57,7 @@ constexpr Gaussian2DDiagnoalBase<ADerived, T>::Gaussian2DDiagnoalBase(const type
     Base{},
     fParameter{p} {}
 
-} // namespace internal
+} // namespace impl
 
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(TheLog) \
     T u;                                                                                \
@@ -80,7 +80,7 @@ MUSTARD_ALWAYS_INLINE auto Gaussian2DDiagnoal<T>::Impl(auto& g, const Gaussian2D
 
 template<Concept::NumericVector2FloatingPoint T>
 MUSTARD_ALWAYS_INLINE auto Gaussian2DDiagnoalFast<T>::Impl(auto& g, const Gaussian2DDiagnoalFastParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET(Math::impl::FastLogOn01)
 }
 
 #undef MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_2D_DIAGNOAL_GENERATOR_SNIPPET

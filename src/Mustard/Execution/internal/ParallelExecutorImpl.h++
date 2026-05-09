@@ -47,7 +47,7 @@
 #include <utility>
 #include <vector>
 
-namespace Mustard::inline Execution::internal {
+namespace Mustard::inline Execution::impl {
 
 template<std::integral T>
 class ParallelExecutorImpl final : public ExecutorImplBase<T> {
@@ -70,6 +70,6 @@ private:
     std::vector<ExecutionInfoType> fExecutionInfoList;
 };
 
-} // namespace Mustard::inline Execution::internal
+} // namespace Mustard::inline Execution::impl
 
 #include "Mustard/Execution/internal/ParallelExecutorImpl.inl"

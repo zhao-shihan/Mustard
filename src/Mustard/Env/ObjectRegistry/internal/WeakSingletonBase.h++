@@ -21,7 +21,7 @@
 #include "Mustard/Memory/ClassSpecificAllocation.h++"
 #include "Mustard/Utility/NonCopyableBase.h++"
 
-namespace Mustard::Env::inline ObjectRegistry::internal {
+namespace Mustard::Env::inline ObjectRegistry::impl {
 
 /// @brief Implementation detail of Mustard::Env::WeakSingleton.
 /// @details Not API. Provides a common marker and allocation behavior for
@@ -35,4 +35,4 @@ protected:
     ~WeakSingletonBase() = default;
 };
 
-} // namespace Mustard::Env::inline ObjectRegistry::internal
+} // namespace Mustard::Env::inline ObjectRegistry::impl

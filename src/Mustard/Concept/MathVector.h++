@@ -29,7 +29,7 @@
 
 namespace Mustard::Concept {
 
-namespace internal {
+namespace impl {
 
 template<typename T>
 concept ExtraRequirementsForMathVector =
@@ -46,13 +46,13 @@ concept ExtraRequirementsForMathVector =
         { v / c } -> std::convertible_to<T>;
     };
 
-} // namespace internal
+} // namespace impl
 
 template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept MathVector =
     requires {
         requires NumericVector<T, F, N>;
-        requires internal::ExtraRequirementsForMathVector<T>;
+        requires impl::ExtraRequirementsForMathVector<T>;
     };
 
 template<typename T, typename F>
@@ -78,7 +78,7 @@ template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept MathVectorIntegral =
     requires {
         requires NumericVectorIntegral<T, N>;
-        requires internal::ExtraRequirementsForMathVector<T>;
+        requires impl::ExtraRequirementsForMathVector<T>;
     };
 
 template<typename T>
@@ -92,7 +92,7 @@ template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept MathVectorFloatingPoint =
     requires {
         requires NumericVectorFloatingPoint<T, N>;
-        requires internal::ExtraRequirementsForMathVector<T>;
+        requires impl::ExtraRequirementsForMathVector<T>;
     };
 
 template<typename T>
@@ -106,7 +106,7 @@ template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept MathVectorAny =
     requires {
         requires NumericVectorAny<T, N>;
-        requires internal::ExtraRequirementsForMathVector<T>;
+        requires impl::ExtraRequirementsForMathVector<T>;
     };
 
 template<typename T>

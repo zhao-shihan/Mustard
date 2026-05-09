@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::inline Execution::internal {
+namespace Mustard::inline Execution::impl {
 
 template<std::integral T>
 SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
@@ -86,4 +86,4 @@ auto SequentialExecutorImpl<T>::PrintExecutionSummary() const -> void {
           executed, Seconds{time}.count(), Seconds{processorTime}.count());
 }
 
-} // namespace Mustard::inline Execution::internal
+} // namespace Mustard::inline Execution::impl

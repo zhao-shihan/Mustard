@@ -33,7 +33,7 @@
 
 namespace Mustard::Env {
 
-class BasicEnv : virtual public internal::EnvBase,
+class BasicEnv : virtual public impl::EnvBase,
                  public PassiveSingleton<BasicEnv> {
 protected:
     struct NoBanner {};

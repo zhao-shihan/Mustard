@@ -34,7 +34,7 @@
 
 namespace Mustard::Geant4X::inline Run {
 
-namespace internal {
+namespace impl {
 
 FlipG4cout::FlipG4cout() {
     if (mplr::comm_world().rank() != 0 or
@@ -44,12 +44,12 @@ FlipG4cout::FlipG4cout() {
     }
 }
 
-} // namespace internal
+} // namespace impl
 
 MPIRunManager::MPIRunManager() :
-    internal::PreG4RunManagerInitFlipG4cout{},
+    impl::PreG4RunManagerInitFlipG4cout{},
     G4RunManager{},
-    internal::PostG4RunManagerInitFlipG4cout{},
+    impl::PostG4RunManagerInitFlipG4cout{},
     fExecutor{"G4Run", "Simulation", "G4Event"},
     fMessengerRegister{this} {
     printModulo = -1;

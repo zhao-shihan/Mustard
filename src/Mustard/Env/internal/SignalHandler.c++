@@ -31,7 +31,7 @@
 #    include <cstdlib>
 #    include <ctime>
 
-namespace Mustard::Env::internal {
+namespace Mustard::Env::impl {
 
 extern "C" {
 
@@ -147,6 +147,6 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
 
 } // extern "C"
 
-} // namespace Mustard::Env::internal
+} // namespace Mustard::Env::impl
 
 #endif

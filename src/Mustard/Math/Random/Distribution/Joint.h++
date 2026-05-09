@@ -37,9 +37,9 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
-namespace internal {
+namespace impl {
 
 template<gsl::index I, typename T>
 struct Margin {
@@ -52,25 +52,25 @@ template<gsl::index... Is, typename... Ts>
     requires(sizeof...(Is) == sizeof...(Ts))
 struct CartesianProductMarginBase<gslx::index_sequence<Is...>, Ts...> : Margin<Is, Ts>... {};
 
-} // namespace internal
+} // namespace impl
 
 template<typename... Ts>
-struct CartesianProductMargin : internal::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...> {
+struct CartesianProductMargin : impl::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...> {
     CartesianProductMargin() = default;
     CartesianProductMargin(const Ts&... objects);
 
     template<gsl::index I>
-    constexpr auto Margin() const -> const auto& { return static_cast<const internal::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
+    constexpr auto Margin() const -> const auto& { return static_cast<const impl::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
     template<gsl::index I>
-    constexpr auto Margin() -> auto& { return static_cast<internal::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
+    constexpr auto Margin() -> auto& { return static_cast<impl::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
 };
 
-} // namespace internal
+} // namespace impl
 
 template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 class JointParameterInterface : public DistributionParameterBase<ADerived, ADistribution>,
-                                public internal::CartesianProductMargin<typename Ds::ParameterType...> {
+                                public impl::CartesianProductMargin<typename Ds::ParameterType...> {
 public:
     constexpr JointParameterInterface();
     constexpr JointParameterInterface(const typename Ds::ParameterType&... p);
@@ -100,7 +100,7 @@ private:
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 class JointInterface : public RandomNumberDistributionBase<ADerived, AParameter, T>,
-                       public internal::CartesianProductMargin<Ds...> {
+                       public impl::CartesianProductMargin<Ds...> {
 public:
     constexpr JointInterface();
     constexpr JointInterface(const typename Ds::ParameterType&... p);

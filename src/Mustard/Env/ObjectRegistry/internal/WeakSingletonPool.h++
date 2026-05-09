@@ -38,7 +38,7 @@
 #include <typeindex>
 #include <typeinfo>
 
-namespace Mustard::Env::inline ObjectRegistry::internal {
+namespace Mustard::Env::inline ObjectRegistry::impl {
 
 /// @brief Implementation detail of Mustard::Env::WeakSingleton.
 /// @details Not API. Stores weak singleton indirection nodes keyed by dynamic type.
@@ -96,6 +96,6 @@ private:
     static std::recursive_mutex fgRecursiveMutex;
 };
 
-} // namespace Mustard::Env::inline ObjectRegistry::internal
+} // namespace Mustard::Env::inline ObjectRegistry::impl
 
 #include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.inl"

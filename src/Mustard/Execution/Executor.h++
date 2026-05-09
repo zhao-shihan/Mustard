@@ -38,7 +38,7 @@ template<std::integral T>
 class Executor final {
 public:
     using Index = T;
-    using ExecutionInfoType = typename internal::ExecutorImplBase<T>::ExecutionInfoType;
+    using ExecutionInfoType = typename impl::ExecutorImplBase<T>::ExecutionInfoType;
 
 public:
     Executor(std::string_view scheduler = DefaultSchedulerCode());
@@ -77,8 +77,8 @@ public:
     auto PrintExecutionSummary() const -> void;
 
 private:
-    using Impl = std::variant<internal::ParallelExecutorImpl<T>,
-                              internal::SequentialExecutorImpl<T>>;
+    using Impl = std::variant<impl::ParallelExecutorImpl<T>,
+                              impl::SequentialExecutorImpl<T>>;
 
 private:
     std::unique_ptr<Impl> fImpl;

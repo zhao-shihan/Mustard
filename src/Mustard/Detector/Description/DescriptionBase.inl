@@ -45,7 +45,7 @@ auto DescriptionBase<>::ExportValue(YAML::Node& node, const AValue& value, std::
     UnpackToLeafNodeForExporting(node, std::forward<decltype(names)>(names)...) = static_cast<AWriteAs>(value);
 }
 
-namespace internal {
+namespace impl {
 namespace {
 
 constexpr void TupleForEach(auto&& tuple, auto&& func) {
@@ -57,13 +57,13 @@ constexpr void TupleForEach(auto&& tuple, auto&& func) {
 }
 
 } // namespace
-} // namespace internal
+} // namespace impl
 
 auto DescriptionBase<>::UnpackToLeafNodeForImporting(const YAML::Node& node, std::convertible_to<std::string> auto&&... names) -> std::optional<const YAML::Node> {
     try {
         std::array<YAML::Node, sizeof...(names)> leafNodes;
         gsl::index i{};
-        internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
+        impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
                                [&node, &leafNodes, &i](auto&& name) {
                                    leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
                                    ++i;
@@ -77,7 +77,7 @@ auto DescriptionBase<>::UnpackToLeafNodeForImporting(const YAML::Node& node, std
 auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, std::convertible_to<std::string> auto&&... names) const -> YAML::Node {
     std::array<YAML::Node, sizeof...(names)> leafNodes;
     gsl::index i{};
-    internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
+    impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
                            [&node, &leafNodes, &i](auto&& name) {
                                leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
                                ++i;
@@ -87,7 +87,7 @@ auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, std::conv
 
 auto DescriptionBase<>::PrintNodeNotFoundNotice(std::convertible_to<std::string> auto&&... names) const -> void {
     auto info{fmt::format("Notice: YAML node '{}", fName)};
-    internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
+    impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
                            [&info](auto&& name) {
                                info.append(fmt::format(".{}", name));
                            });

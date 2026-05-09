@@ -24,7 +24,7 @@
 
 namespace Mustard::Geant4X::inline Decay {
 
-class ExtendedDecay : public internal::ExtendDecayIt<G4Decay> {
+class ExtendedDecay : public impl::ExtendDecayIt<G4Decay> {
 public:
     ExtendedDecay(const G4String& processName = "ExtendedDecay");
 };

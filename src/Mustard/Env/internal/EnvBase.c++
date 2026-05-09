@@ -42,7 +42,7 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void;
 
 #endif
 
-namespace Mustard::Env::internal {
+namespace Mustard::Env::impl {
 
 [[noreturn]] auto TerminateHandler() -> void;
 
@@ -73,8 +73,8 @@ EnvBase::EnvBase() :
         gInstantiated = true;
     }
 
-    fWeakSingletonPool = std::make_unique<ObjectRegistry::internal::WeakSingletonPool>();
-    fSingletonPool = std::make_unique<ObjectRegistry::internal::SingletonPool>();
+    fWeakSingletonPool = std::make_unique<ObjectRegistry::impl::WeakSingletonPool>();
+    fSingletonPool = std::make_unique<ObjectRegistry::impl::SingletonPool>();
 }
 
 EnvBase::~EnvBase() = default;
@@ -129,4 +129,4 @@ auto EnvBase::CheckFundamentalType() -> void {
     }
 }
 
-} // namespace Mustard::Env::internal
+} // namespace Mustard::Env::impl

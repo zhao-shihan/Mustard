@@ -132,7 +132,7 @@ public:
     ProcessSpecificFile(std::filesystem::path filePath, gsl::czstring mode);
 };
 
-namespace internal {
+namespace impl {
 
 /// @internal
 /// @brief Internal base for C++ fstream wrappers
@@ -179,12 +179,12 @@ extern template class FStream<std::wofstream>;
 extern template class FStream<std::fstream>;
 extern template class FStream<std::wfstream>;
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Specialization for `std::basic_ifstream`
 /// @tparam C Character type (char, wchar_t)
 template<muc::character C>
-class File<std::basic_ifstream<C>> : public internal::FStream<std::basic_ifstream<C>> {
+class File<std::basic_ifstream<C>> : public impl::FStream<std::basic_ifstream<C>> {
 public:
     using Type = std::basic_ifstream<C>; ///< Wrapped file type
 
@@ -226,7 +226,7 @@ extern template class ProcessSpecificFile<std::wifstream>;
 /// @brief Specialization for `std::basic_ofstream`
 /// @tparam C Character type (char, wchar_t)
 template<muc::character C>
-class File<std::basic_ofstream<C>> : public internal::FStream<std::basic_ofstream<C>> {
+class File<std::basic_ofstream<C>> : public impl::FStream<std::basic_ofstream<C>> {
 public:
     using Type = std::basic_ofstream<C>; ///< Wrapped file type
 
@@ -268,7 +268,7 @@ extern template class ProcessSpecificFile<std::wofstream>;
 /// @brief Specialization for `std::basic_fstream`
 /// @tparam C Character type (char, wchar_t)
 template<muc::character C>
-class File<std::basic_fstream<C>> : public internal::FStream<std::basic_fstream<C>> {
+class File<std::basic_fstream<C>> : public impl::FStream<std::basic_fstream<C>> {
 public:
     using Type = std::basic_fstream<C>; ///< Wrapped file type
 

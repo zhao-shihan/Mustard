@@ -37,8 +37,8 @@ concept Singletonified =
     requires {
         { T::Instance() } -> std::same_as<T&>;
         requires std::derived_from<T, Singleton<T>>;
-        requires std::derived_from<T, internal::SingletonBase>;
-        requires not std::is_base_of_v<internal::WeakSingletonBase, T>;
+        requires std::derived_from<T, impl::SingletonBase>;
+        requires not std::is_base_of_v<impl::WeakSingletonBase, T>;
         requires Concept::NonCopyable<T>;
         requires std::is_final_v<T>;
         requires not std::is_default_constructible_v<T>; // try to constrain to private or protected constructor
