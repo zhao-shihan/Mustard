@@ -20,31 +20,32 @@
 
 #include <concepts>
 #include <cstdint>
+#include <limits>
 
 namespace Mustard::ROOTX {
 
-/// @brief Concept defining fundamental types persistable in ROOT TTree branches.
+/// @brief Concept defining fundamental types persistable in ROOT RNTuple fields.
 ///
 /// This concept checks whether a type `T` is one of the core fundamental types that ROOT can
-/// persist in TTree. It is primarily used for template constraints where only basic data types are
-/// accepted (e.g., serialization, type checking).
+/// persist in RNTuple fields. It is primarily used for template constraints where only basic
+/// data types are accepted (e.g., serialization, type checking).
 ///
 /// @tparam T Type to check against
-/// @see https://root.cern/doc/master/classTTree.html for ROOT fundamental types persistable in TTree
+/// @see https://root.cern/doc/master/md_tree_2ntuple_2doc_2BinaryFormatSpecification.html
+/// for ROOT fundamental types persistable in RNTuple
 template<typename T>
-concept TTreePersistableFundamental =
+concept RNTuplePersistableFundamental =
+    std::same_as<T, bool> or
     std::same_as<T, char> or
+    std::same_as<T, std::int8_t> or
     std::same_as<T, std::uint8_t> or
     std::same_as<T, std::int16_t> or
     std::same_as<T, std::uint16_t> or
     std::same_as<T, std::int32_t> or
     std::same_as<T, std::uint32_t> or
-    std::same_as<T, float> or
-    std::same_as<T, double> or
     std::same_as<T, std::int64_t> or
     std::same_as<T, std::uint64_t> or
-    std::same_as<T, long> or
-    std::same_as<T, unsigned long> or
-    std::same_as<T, bool>;
+    (std::same_as<T, float> and std::numeric_limits<float>::is_iec559) or
+    (std::same_as<T, double> and std::numeric_limits<double>::is_iec559);
 
 } // namespace Mustard::ROOTX

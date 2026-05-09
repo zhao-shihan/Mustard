@@ -18,47 +18,40 @@
 
 #pragma once
 
-#include "Mustard/Data/TupleModel.h++"
-#include "Mustard/Data/Value.h++"
+#include "Mustard/Data/Model.h++"
+#include "Mustard/Data/Object/Value.h++"
 
 #include <vector>
 
 namespace Mustard::Data {
 
 /// @brief Vertex data model for event generators.
-/// GeneratedEvent = GeneratedVertex U GeneratedKinematics.
-/// @see `GeneratedEvent`
-using GeneratedVertex = Mustard::Data::TupleModel<
-    Mustard::Data::Value<float, "w", "Vertex weight">,
-    Mustard::Data::Value<double, "t0", "Vertex time">,
-    Mustard::Data::Value<float, "x", "Vertex X position">,
-    Mustard::Data::Value<float, "y", "Vertex Y position">,
-    Mustard::Data::Value<float, "z", "Vertex Z position">>;
-
-namespace internal {
-
-using UnweightedGeneratedKinematics = Mustard::Data::TupleModel<
-    Mustard::Data::Value<std::vector<int>, "pdgID", "Particle PDG IDs">,
-    Mustard::Data::Value<std::vector<float>, "E", "Total energy">,
-    Mustard::Data::Value<std::vector<float>, "px", "Momentum X components">,
-    Mustard::Data::Value<std::vector<float>, "py", "Momentum Y components">,
-    Mustard::Data::Value<std::vector<float>, "pz", "Momentum Z components">>;
-
-} // namespace internal
+/// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
+/// @see `GeneratedVertex`
+using GeneratedGeometryVertex = Model<
+    Value<float, "w", "Vertex weight">,
+    Value<double, "t0", "Vertex time">,
+    Value<float, "x", "Vertex X position">,
+    Value<float, "y", "Vertex Y position">,
+    Value<float, "z", "Vertex Z position">>;
 
 /// @brief Kinematics data model for event generators.
-/// GeneratedEvent = GeneratedVertex U GeneratedKinematics.
-/// @see `GeneratedEvent`
-using GeneratedKinematics = Mustard::Data::TupleModel<
-    Mustard::Data::Value<float, "w", "Vertex weight">,
-    internal::UnweightedGeneratedKinematics>;
+/// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
+/// @see `GeneratedVertex`
+using GeneratedKinematics = Model<
+    Value<float, "w", "Vertex weight">,
+    Value<std::vector<int>, "pdgID", "Particle PDG IDs">,
+    Value<std::vector<float>, "E", "Total energy">,
+    Value<std::vector<float>, "px", "Momentum X component">,
+    Value<std::vector<float>, "py", "Momentum Y component">,
+    Value<std::vector<float>, "pz", "Momentum Z component">>;
 
 /// @brief Event data model for event generators.
-/// GeneratedEvent = GeneratedVertex U GeneratedKinematics.
+/// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
 /// This model is intended to be used with `Geant4X::DataReaderPrimaryGenerator`
 /// @see `Geant4X::DataReaderPrimaryGenerator` for a compatible G4 generator
-using GeneratedEvent = Mustard::Data::TupleModel<
-    GeneratedVertex,
-    internal::UnweightedGeneratedKinematics>;
+using GeneratedVertex = Model<
+    GeneratedGeometryVertex,
+    Drop<GeneratedKinematics, "w">>;
 
 } // namespace Mustard::Data

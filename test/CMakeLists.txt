@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License along with
 # Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-add_subdirectory(Physics)
 add_subdirectory(Concept)
+add_subdirectory(Data)
 add_subdirectory(Env)
 add_subdirectory(Execution)
 add_subdirectory(Math)
+add_subdirectory(Physics)
 add_subdirectory(Utility)
