@@ -232,28 +232,17 @@ auto RDFEntryReader<Ms...>::NextEntry() const -> Entry {
 template<Modelized... Ms>
 auto RDFEntryReader<Ms...>::ReaderKernel(std::optional<DataFrameType>&&) -> void {
     while (true) {
-        // Start async read for each sub-reader
-        std::tuple<std::future<typename RDFEntryReader<Ms>::Data>...> asyncRead;
-        const auto startAsyncRead{[&]<gsl::index K>() {
+        // Get data from sub-readers and move into current read data
+        this->fData->resize(this->Last() - this->First());
+        const auto getReadData{[&]<gsl::index K>() {
             if (get<K>(fSubReader)->Exhausted()) {
                 return;
             }
             const auto nEntry{get<K>(fSubReader)->NEntry()};
             const auto first{std::min(this->First(), nEntry)};
             const auto last{std::min(this->Last(), nEntry)};
-            get<K>(asyncRead) = get<K>(fSubReader)->AsyncRead(first, last);
-        }};
-        [&]<gsl::index... Ks>(gslx::index_sequence<Ks...>) {
-            (..., startAsyncRead.template operator()<Ks>());
-        }(gslx::make_index_sequence<N{}>{});
-        // Get data for current read
-        this->fData->resize(this->Last() - this->First());
-        const auto getReadData{[&]<gsl::index K>() {
-            if (not get<K>(asyncRead).valid()) {
-                return;
-            }
-            auto iData{this->fData->begin()};
-            for (auto&& entryData : get<K>(asyncRead).get()) {
+            for (auto iData{this->fData->begin()};
+                 auto&& entryData : get<K>(fSubReader)->Read(first, last)) {
                 get<K>(*iData++) = std::move(entryData);
             }
         }};
@@ -417,19 +406,6 @@ auto RDFEventReader<T, Ms...>::ReaderKernel(std::optional<DataFrameType>&&) -> v
                 (..., adjustSubReadRangeLast.template operator()<Ks>());
             }(gslx::make_index_sequence<N{}>{});
         }
-        // Trigger sub-reader to read in required local event index range for each RDF
-        std::tuple<std::future<typename RDFEventReader<T, Ms>::Data>...> asyncRead;
-        const auto startAsyncRead{[&]<gsl::index K>() {
-            auto& [localFirst, localLast]{subReadRange[K]};
-            localFirst = std::max(localFirst, get<K>(fSubReader)->NextEvtIdx());
-            localLast = std::max(localLast, localFirst);
-            if (not get<K>(fSubReader)->Exhausted()) {
-                get<K>(asyncRead) = get<K>(fSubReader)->AsyncRead(localFirst, localLast);
-            }
-        }};
-        [&]<gsl::index... Ks>(gslx::index_sequence<Ks...>) {
-            (..., startAsyncRead.template operator()<Ks>());
-        }(gslx::make_index_sequence<N{}>{});
         // Data for current read (globIdx -> event)
         gtl::flat_hash_map<Index, typename Data::value_type> data;
         data.reserve(this->Last() - this->First()); // Reserve space for current read data to avoid rehashing during insertion
@@ -457,20 +433,22 @@ auto RDFEventReader<T, Ms...>::ReaderKernel(std::optional<DataFrameType>&&) -> v
         }(gslx::make_index_sequence<N{}>{});
         // Move newly read events into current read data or passed events.
         const auto getSubReadData{[&]<gsl::index K>() {
-            if (not get<K>(asyncRead).valid()) {
-                return; // No read triggered for this RDF
+            auto& [localFirst, localLast]{subReadRange[K]};
+            localFirst = std::max(localFirst, get<K>(fSubReader)->NextEvtIdx());
+            localLast = std::max(localLast, localFirst);
+            if (get<K>(fSubReader)->Exhausted()) {
+                return; // No more event for this RDF, skip reading.
             }
-            auto localIdx{subReadRange[K].first};
-            for (auto&& event : get<K>(asyncRead).get()) {
-                const auto globIdx{fRDFEventInfo->ToGlobEvtIdx(localIdx, K)};
+            for (auto&& event : get<K>(fSubReader)->Read(localFirst, localLast)) {
+                const auto globIdx{fRDFEventInfo->ToGlobEvtIdx(localFirst, K)};
                 if (this->First() <= globIdx and globIdx < this->Last()) {
                     get<K>(data[globIdx]) = std::move(event);
                 } else {
                     get<K>(misalignedEvent).emplace(globIdx, std::move(event));
                 }
-                ++localIdx;
+                ++localFirst;
             }
-            Ensures(localIdx == subReadRange[K].last);
+            Ensures(localFirst == localLast);
             // Check misaligned event count and emit warning or throw exception if necessary.
             const auto nMisalignedEvent{ssize(get<K>(misalignedEvent))};
             if (not fMisalignedEventCountWarningEmitted[K]) [[likely]] {
