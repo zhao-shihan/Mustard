@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -100,18 +100,19 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     if (cwdError) {
         cwd = "<Error getting current working directory>";
     }
-    Print(fmt::emphasis::bold,
-          " ______  ___             _____              _________\n"
-          " ___   |/  /___  __________  /______ _____________  /\n"
-          " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
-          " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n"
-          " /_/  /_/  \\____/ /____/ \\__/ \\____/ /_/    \\____/   {}\n"
-          "\n",
+    Print(fmt::emphasis::bold, R"Mustard(
+ ______  ___             _____              _________
+ ___   |/  /___  __________  /______ _____________  /
+ __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / 
+ _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version
+ /_/  /_/  \_____\/____/ \__/ \_____\/_/    \_____\  {}
+
+)Mustard",
           versionString);
     Print(fmt::emphasis::bold | fmt::emphasis::italic,
           " An offline software framework for HEP experiments\n");
     Print(fmt::emphasis::bold,
-          " Copyright (C) 2020-2025  Mustard developers\n"
+          " Copyright (C) 2020-2026  Shihan Zhao and contributors\n"
           "\n"
           " Compiled by {} C++ compiler {}\n"
           " Start at {}\n"
