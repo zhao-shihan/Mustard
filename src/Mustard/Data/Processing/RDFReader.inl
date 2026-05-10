@@ -375,8 +375,11 @@ auto RDFEventReader<T, Ms...>::MisalignedEventCountFatalThreshold(Index n) -> vo
 
 template<std::integral T, Modelized... Ms>
 auto RDFEventReader<T, Ms...>::ReaderKernel(std::optional<DataFrameType>&&) -> void {
-    // Misaligned events storage (globIdx -> event)
-    std::tuple<gtl::flat_hash_map<Index, ArcTupleVector<Ms>>...> misalignedEvent;
+    // Misaligned events storage (globIdx -> event), min-heap ordered by globIdx
+    constexpr auto globIdxMinHeapComp{[](const auto& lhs, const auto& rhs) {
+        return lhs.first > rhs.first;
+    }};
+    std::tuple<std::vector<std::pair<Index, ArcTupleVector<Ms>>>...> misalignedEvent;
     // Main loop to read events one by one by global event index (globIdx)
     while (true) {
         // Find event-block index range to read
@@ -407,24 +410,19 @@ auto RDFEventReader<T, Ms...>::ReaderKernel(std::optional<DataFrameType>&&) -> v
             }(gslx::make_index_sequence<N{}>{});
         }
         // Data for current read (globIdx -> event)
-        gtl::flat_hash_map<Index, typename Data::value_type> data;
-        data.reserve(this->Last() - this->First()); // Reserve space for current read data to avoid rehashing during insertion
+        this->fData->resize(this->Last() - this->First());
         // Move previously passed events into current read data.
         const auto retrievePassedEvent{[&]<gsl::index K>() {
-            // Move previouly passed events for this RDF into current read data,
-            gtl::vector<Index> globIdxToErase; // Store global event indices to erase after iteration to avoid invalidating iterators
-            globIdxToErase.reserve(get<K>(misalignedEvent).size());
-            for (auto&& [globIdx, event] : get<K>(misalignedEvent)) {
+            while (not get<K>(misalignedEvent).empty()) {
+                auto& [globIdx, event]{get<K>(misalignedEvent).front()};
                 if (globIdx >= this->Last()) {
-                    continue; // Not passed, keep it in misaligned event storage for future reads.
+                    break;
                 }
                 if (globIdx >= this->First()) {
-                    get<K>(data[globIdx]) = std::move(event);
+                    get<K>((*this->fData)[globIdx - this->First()]) = std::move(event);
                 }
-                globIdxToErase.emplace_back(globIdx);
-            }
-            for (auto globIdx : std::as_const(globIdxToErase)) {
-                get<K>(misalignedEvent).erase(globIdx);
+                std::ranges::pop_heap(get<K>(misalignedEvent), globIdxMinHeapComp);
+                get<K>(misalignedEvent).pop_back();
             }
             // fmt::print(stderr, "{}{}", get<K>(misalignedEvent).size(), K == 2 ? '\n' : ',');
         }};
@@ -442,9 +440,10 @@ auto RDFEventReader<T, Ms...>::ReaderKernel(std::optional<DataFrameType>&&) -> v
             for (auto&& event : get<K>(fSubReader)->Read(localFirst, localLast)) {
                 const auto globIdx{fRDFEventInfo->ToGlobEvtIdx(localFirst, K)};
                 if (this->First() <= globIdx and globIdx < this->Last()) {
-                    get<K>(data[globIdx]) = std::move(event);
+                    get<K>((*this->fData)[globIdx - this->First()]) = std::move(event);
                 } else {
-                    get<K>(misalignedEvent).emplace(globIdx, std::move(event));
+                    get<K>(misalignedEvent).emplace_back(globIdx, std::move(event));
+                    std::ranges::push_heap(get<K>(misalignedEvent), globIdxMinHeapComp);
                 }
                 ++localFirst;
             }
@@ -473,13 +472,6 @@ auto RDFEventReader<T, Ms...>::ReaderKernel(std::optional<DataFrameType>&&) -> v
         [&]<gsl::index... Ks>(gslx::index_sequence<Ks...>) {
             (..., getSubReadData.template operator()<Ks>());
         }(gslx::make_index_sequence<N{}>{});
-        // Move data into result vector in global event index order.
-        this->fData->reserve(this->Last() - this->First());
-        for (auto globIdx{this->First()}; globIdx < this->Last(); ++globIdx) {
-            const auto it{data.find(globIdx)};
-            Ensures(it != data.cend());
-            this->fData->emplace_back(std::move(it->second));
-        }
         // Exit or wait for next read
         this->fNext = this->Last();
         if (this->Last() == NEvent()) {
