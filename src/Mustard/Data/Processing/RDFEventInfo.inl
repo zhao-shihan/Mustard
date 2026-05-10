@@ -346,7 +346,7 @@ auto MultiRDFEventInfo<T, N, U>::BuildData() const -> Data {
     for (gsl::index k{}; k < nRDF; ++k) {
         evtIDToLocalIdx[k].reserve(RDF(k).NEvent());
         for (U localIdx{}; localIdx < muc::to_signed(RDF(k).NEvent()); ++localIdx) {
-            evtIDToLocalIdx[k].try_emplace(RDF(k).EventID(localIdx), localIdx);
+            evtIDToLocalIdx[k].emplace(RDF(k).EventID(localIdx), localIdx);
         }
     }
 
