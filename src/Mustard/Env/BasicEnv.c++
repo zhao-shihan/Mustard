@@ -100,14 +100,13 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     if (cwdError) {
         cwd = "<Error getting current working directory>";
     }
-    Print(fmt::emphasis::bold, R"Mustard(
- ______  ___             _____              _________
- ___   |/  /___  __________  /______ _____________  /
- __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / 
- _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version
- /_/  /_/  \_____\/____/ \__/ \_____\/_/    \_____\  {}
-
-)Mustard",
+    Print(fmt::emphasis::bold,
+          " ______  ___             _____              _________\n"
+          " ___   |/  /___  __________  /______ _____________  /\n"
+          " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
+          " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n" // clang-format off
+        R"( /_/  /_/  \_____\/____/ \__/ \_____\/_/    \_____\  {})""\n" // clang-format on
+          "\n",
           versionString);
     Print(fmt::emphasis::bold | fmt::emphasis::italic,
           " An offline software framework for HEP experiments\n");
