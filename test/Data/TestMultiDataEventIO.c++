@@ -18,7 +18,7 @@
 #include "Mustard/Data/Container/ArcTupleVector.h++"
 #include "Mustard/Data/Model.h++"
 #include "Mustard/Data/Object/Tuple.h++"
-#include "Mustard/Data/Processing/RDFReader.h++"
+#include "Mustard/Data/Processing/RDFEventReader.h++"
 #include "Mustard/Data/Processing/RNTupleWriter.h++"
 #include "Mustard/Data/Processing/TTreeWriter.h++"
 #include "Mustard/Env/MonteCarloEnv.h++"
@@ -276,9 +276,9 @@ auto main(int argc, char* argv[]) -> int {
 
         // Build filtered list of non-empty expected events
         std::vector<Mustard::Data::ArcTupleVector<Model>> expectedNonEmpty;
-        for (const auto& ev : expectedEventData) {
-            if (not ev.empty()) {
-                expectedNonEmpty.push_back(ev);
+        for (auto& event : std::as_const(expectedEventData)) {
+            if (not event.empty()) {
+                expectedNonEmpty.push_back(event);
             }
         }
 
@@ -286,14 +286,7 @@ auto main(int argc, char* argv[]) -> int {
             return fail(fmt::format("{} event count mismatch. expected={}, actual={}", sourceName, expectedNonEmpty.size(), count));
         }
 
-        decltype(reader.Read(0, count)) data;
-        constexpr auto readChunkSize{256};
-        for (int offset{}; offset < count; offset += readChunkSize) {
-            auto chunk{reader.Read(offset, std::min(offset + readChunkSize, count))};
-            data.insert(data.end(),
-                        std::make_move_iterator(chunk.begin()),
-                        std::make_move_iterator(chunk.end()));
-        }
+        const auto data{reader.ReadNext(count)};
         if (data.size() != expectedNonEmpty.size()) {
             return fail(fmt::format("{} read size mismatch. expected={}, actual={}", sourceName, expectedNonEmpty.size(), data.size()));
         }
@@ -348,7 +341,7 @@ auto main(int argc, char* argv[]) -> int {
     gtl::flat_hash_set<int> expectedEventIDSetC;
     const auto makeExpectedEventIDSet{[&](const auto& expectedEventData, auto& eventIDSet) {
         eventIDSet.reserve(expectedEventData.size());
-        for (const auto& event : expectedEventData) {
+        for (auto&& event : std::as_const(expectedEventData)) {
             eventIDSet.insert(Get<"EvtID">(*event[0]));
         }
     }};
@@ -357,14 +350,7 @@ auto main(int argc, char* argv[]) -> int {
     makeExpectedEventIDSet(expectedEventDataC, expectedEventIDSetC);
 
     const auto multiCount{multiReader.NEvent()};
-    decltype(multiReader)::Data multiData;
-    constexpr auto readChunkSize{256};
-    for (int offset{}; offset < multiCount; offset += readChunkSize) {
-        auto chunk{multiReader.Read(offset, std::min(offset + readChunkSize, multiCount))};
-        multiData.insert(multiData.end(),
-                         std::make_move_iterator(chunk.begin()),
-                         std::make_move_iterator(chunk.end()));
-    }
+    const auto multiData{multiReader.ReadNext(multiCount)};
 
     gtl::flat_hash_set<int> actualEventIDSetA;
     gtl::flat_hash_set<int> actualEventIDSetB;
@@ -397,6 +383,94 @@ auto main(int argc, char* argv[]) -> int {
         if (not std::ranges::all_of(eventIDABC, [&](int id) { return id == eventIDABC[0]; })) {
             return fail("Multi-model RDFEventReader returned entries with mismatched EvtID across models in an event");
         }
+    }
+
+    // Test Reset, ReadNext, SkipNext, and Exhaust for multi RDFEventReader
+    const auto testMultiEventReaderReset{[&](std::array<std::string_view, 3> dataName,
+                                             std::string_view sourceName) -> int {
+        std::array<ROOT::RDF::RNode, 3> rdfs{
+            ROOT::RDataFrame{dataName[0], fileName},
+            ROOT::RDataFrame{dataName[1], fileName},
+            ROOT::RDataFrame{dataName[2], fileName},
+        };
+        Mustard::Data::RDFEventReader<int, TestingModelA, TestingModelB, TestingModelC> reader{rdfs, "EvtID"};
+
+        reader.Exhaust();
+        if (not reader.Exhausted()) {
+            return fail(fmt::format("{} not exhausted after Exhaust()", sourceName));
+        }
+
+        reader.Reset();
+
+        const auto multiCount{reader.NEvent()};
+        if (multiCount <= 0) {
+            return fail(fmt::format("{} event count is {} after reset", sourceName, multiCount));
+        }
+
+        // Helper: validate cross-model EvtID alignment for a single event tuple and its sub-events.
+        // Returns EXIT_SUCCESS when all non-empty sub-events share the same EvtID, and no null entry exists.
+        const auto checkEvtIDAlignment{[&](const auto& eventTuple, std::string_view context) -> int {
+            const auto& [eventA, eventB, eventC]{eventTuple};
+            if (eventA.empty() and eventB.empty() and eventC.empty()) {
+                return fail(fmt::format("{} {} returned empty events for all models", sourceName, context));
+            }
+            gtl::vector<int> evtIDs;
+            evtIDs.reserve(3);
+            for (const auto& event : {std::cref(eventA), std::cref(eventB), std::cref(eventC)}) {
+                if (event.get().empty()) { continue; }
+                if (event.get()[0] == nullptr) {
+                    return fail(fmt::format("{} {} returned null entry", sourceName, context));
+                }
+                evtIDs.push_back(Get<"EvtID">(*event.get()[0]));
+            }
+            if (not evtIDs.empty() and not std::ranges::all_of(evtIDs, [&](int id) { return id == evtIDs[0]; })) {
+                return fail(fmt::format("{} {} cross-model EvtID mismatch", sourceName, context));
+            }
+            return EXIT_SUCCESS;
+        }};
+
+        // ReadNext(): single event tuple
+        if (checkEvtIDAlignment(reader.ReadNext(), "ReadNext()") != EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+
+        // ReadNext(2): batch of event tuples
+        auto batch{reader.ReadNext(2)};
+        if (batch.size() != 2) {
+            return fail(fmt::format("{} ReadNext(2) size mismatch. expected=2, actual={}",
+                                    sourceName, batch.size()));
+        }
+        for (gsl::index i{}; i < 2; ++i) {
+            if (checkEvtIDAlignment(batch[i], fmt::format("ReadNext(2)[{}]", i)) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+        }
+
+        // SkipNext(): skip 1 event
+        reader.SkipNext();
+
+        // SkipNext(2): skip 2 events
+        reader.SkipNext(2);
+
+        // Read one more event tuple (should be at event index 1 + 2 + 1 + 2 = 6)
+        if (checkEvtIDAlignment(reader.ReadNext(), "ReadNext() after skip") != EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+
+        // Exhaust the rest
+        reader.Exhaust();
+        if (not reader.Exhausted()) {
+            return fail(fmt::format("{} not exhausted after Exhaust()", sourceName));
+        }
+
+        return EXIT_SUCCESS;
+    }};
+
+    if (testMultiEventReaderReset({ntupleNameA, ntupleNameB, ntupleNameC}, "MultiRDFEventReader+Reset(RNTuple)") != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    if (testMultiEventReaderReset({treeNameA, treeNameB, treeNameC}, "MultiRDFEventReader+Reset(TTree)") != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;

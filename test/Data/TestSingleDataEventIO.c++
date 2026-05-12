@@ -18,7 +18,7 @@
 #include "Mustard/Data/Container/ArcTupleVector.h++"
 #include "Mustard/Data/Model.h++"
 #include "Mustard/Data/Object/Tuple.h++"
-#include "Mustard/Data/Processing/RDFReader.h++"
+#include "Mustard/Data/Processing/RDFEventReader.h++"
 #include "Mustard/Data/Processing/RNTupleWriter.h++"
 #include "Mustard/Data/Processing/TTreeWriter.h++"
 #include "Mustard/Env/MonteCarloEnv.h++"
@@ -176,14 +176,14 @@ auto main(int argc, char* argv[]) -> int {
 
     const auto validateWithRDFEventReader{[&](std::string_view dataName, std::string_view sourceName) -> int {
         ROOT::RDataFrame rdf{dataName, fileName};
-        Mustard::Data::RDFEventReader<std::int32_t, TestingModel> reader{rdf, "EvtID"};
+        Mustard::Data::RDFEventReader<int, TestingModel> reader{rdf, "EvtID"};
         const auto count{reader.NEvent()};
 
         // Build filtered list of non‑empty expected events
         std::vector<Mustard::Data::ArcTupleVector<TestingModel>> expectedNonEmpty;
-        for (const auto& ev : expectedEventData) {
-            if (not ev.empty()) {
-                expectedNonEmpty.push_back(ev);
+        for (auto&& event : std::as_const(expectedEventData)) {
+            if (not event.empty()) {
+                expectedNonEmpty.push_back(event);
             }
         }
 
@@ -191,14 +191,7 @@ auto main(int argc, char* argv[]) -> int {
             return fail(fmt::format("{} event count mismatch. expected={}, actual={}", sourceName, expectedNonEmpty.size(), count));
         }
 
-        decltype(reader)::Data data;
-        constexpr auto readChunkSize{256};
-        for (int offset{}; offset < count; offset += readChunkSize) {
-            auto chunk{reader.Read(offset, std::min(offset + readChunkSize, count))};
-            data.insert(data.end(),
-                        std::make_move_iterator(chunk.begin()),
-                        std::make_move_iterator(chunk.end()));
-        }
+        const auto data{reader.ReadNext(count)};
         if (data.size() != expectedNonEmpty.size()) {
             return fail(fmt::format("{} read size mismatch. expected={}, actual={}", sourceName, expectedNonEmpty.size(), data.size()));
         }
@@ -224,6 +217,100 @@ auto main(int argc, char* argv[]) -> int {
         return EXIT_FAILURE;
     }
     if (validateWithRDFEventReader(treeName, "RDFEventReader(TTree)") != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+
+    // Build filtered list of non-empty expected events (needed for Reset test)
+    std::vector<Mustard::Data::ArcTupleVector<TestingModel>> expectedNonEmpty;
+    for (auto&& event : std::as_const(expectedEventData)) {
+        if (not event.empty()) {
+            expectedNonEmpty.push_back(event);
+        }
+    }
+
+    // Helper to verify an event matches expected
+    const auto verifyEvent{[&](gsl::index evtIdx, const auto& actualEvent, std::string_view sourceName) -> int {
+        if (actualEvent.size() != expectedNonEmpty[evtIdx].size()) {
+            Mustard::PrintError(fmt::format("{} event {} entry count mismatch. expected={}, actual={}",
+                                            sourceName, evtIdx, expectedNonEmpty[evtIdx].size(), actualEvent.size()));
+            return fail(fmt::format("{} event {} entry count mismatch", sourceName, evtIdx));
+        }
+        for (gsl::index j{}; j < ssize(actualEvent); ++j) {
+            if (actualEvent[j] == nullptr) {
+                return fail(fmt::format("{} returned null entry at event {}, entry {}", sourceName, evtIdx, j));
+            }
+            if (checkEvent(*actualEvent[j], *expectedNonEmpty[evtIdx][j], sourceName) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+        }
+        return EXIT_SUCCESS;
+    }};
+
+    // Test Reset, ReadNext, SkipNext, and Exhaust
+    const auto testEventReaderReset{[&](std::string_view dataName, std::string_view sourceName) -> int {
+        ROOT::RDataFrame rdf{dataName, fileName};
+        Mustard::Data::RDFEventReader<int, TestingModel> reader{rdf, "EvtID"};
+
+        if (reader.NEvent() != ssize(expectedNonEmpty)) {
+            return fail(fmt::format("{} event count mismatch before reset. expected={}, actual={}",
+                                    sourceName, expectedNonEmpty.size(), reader.NEvent()));
+        }
+
+        reader.Exhaust();
+        if (not reader.Exhausted()) {
+            return fail(fmt::format("{} not exhausted after Exhaust()", sourceName));
+        }
+
+        reader.Reset();
+
+        if (reader.NEvent() != ssize(expectedNonEmpty)) {
+            return fail(fmt::format("{} event count mismatch after reset. expected={}, actual={}",
+                                    sourceName, expectedNonEmpty.size(), reader.NEvent()));
+        }
+
+        // ReadNext(): single event
+        auto event0{reader.ReadNext()};
+        if (verifyEvent(0, event0, sourceName) != EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+
+        // ReadNext(3): batch of events
+        auto batch{reader.ReadNext(3)};
+        if (batch.size() != 3) {
+            return fail(fmt::format("{} ReadNext(3) size mismatch. expected=3, actual={}",
+                                    sourceName, batch.size()));
+        }
+        for (gsl::index i{}; i < 3; ++i) {
+            if (verifyEvent(1 + i, batch[i], sourceName) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+        }
+
+        // SkipNext(): skip 1 event
+        reader.SkipNext();
+
+        // SkipNext(3): skip 3 events
+        reader.SkipNext(3);
+
+        // Read one more event (should be at event index 1 + 3 + 1 + 3 = 8)
+        auto event8{reader.ReadNext()};
+        if (verifyEvent(8, event8, sourceName) != EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+
+        // Exhaust the rest
+        reader.Exhaust();
+        if (not reader.Exhausted()) {
+            return fail(fmt::format("{} not exhausted after Exhaust()", sourceName));
+        }
+
+        return EXIT_SUCCESS;
+    }};
+
+    if (testEventReaderReset(ntupleName, "RDFEventReader+Reset(RNTuple)") != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    if (testEventReaderReset(treeName, "RDFEventReader+Reset(TTree)") != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 

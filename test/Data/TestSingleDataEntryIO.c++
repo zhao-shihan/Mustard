@@ -18,7 +18,7 @@
 #include "Mustard/Data/Container/ArcTupleVector.h++"
 #include "Mustard/Data/Model.h++"
 #include "Mustard/Data/Object/Tuple.h++"
-#include "Mustard/Data/Processing/RDFReader.h++"
+#include "Mustard/Data/Processing/RDFEntryReader.h++"
 #include "Mustard/Data/Processing/RNTupleWriter.h++"
 #include "Mustard/Data/Processing/TTreeWriter.h++"
 #include "Mustard/Env/BasicEnv.h++"
@@ -149,17 +149,11 @@ auto main(int argc, char* argv[]) -> int {
             return fail(fmt::format("{} entry count mismatch. expected={}, actual={}", sourceName, expected.size(), count));
         }
 
-        decltype(reader.Read(0, count)) data;
-        constexpr auto readChunkSize{256};
-        for (gsl::index offset{}; offset < count; offset += readChunkSize) {
-            auto chunk{reader.Read(offset, std::min(offset + readChunkSize, count))};
-            data.insert(data.end(),
-                        std::make_move_iterator(chunk.begin()),
-                        std::make_move_iterator(chunk.end()));
-        }
+        const auto data{reader.ReadNext(count)};
         if (data.size() != expected.size()) {
             return fail(fmt::format("{} read size mismatch. expected={}, actual={}", sourceName, expected.size(), data.size()));
         }
+
         for (gsl::index i{}; i < ssize(data); ++i) {
             if (data[i] == nullptr) {
                 return fail(fmt::format("{} returned null entry at index {}", sourceName, i));
@@ -175,6 +169,78 @@ auto main(int argc, char* argv[]) -> int {
         return EXIT_FAILURE;
     }
     if (validateWithRDFEntryReader(treeName, "RDFEntryReader(TTree)") != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+
+    // Test Reset, ReadNext, SkipNext, and Exhaust
+    const auto testResetReadNextSkipExhaust{[&](std::string_view dataName, std::string_view sourceName) -> int {
+        ROOT::RDataFrame rdf{dataName, fileName};
+        Mustard::Data::RDFEntryReader<TestingModel> reader{rdf};
+
+        reader.Exhaust();
+        if (not reader.Exhausted()) {
+            return fail(fmt::format("{} not exhausted after Exhaust()", sourceName));
+        }
+
+        reader.Reset();
+
+        if (reader.NEntry() != ssize(expected)) {
+            return fail(fmt::format("{} entry count mismatch after reset. expected={}, actual={}",
+                                    sourceName, expected.size(), reader.NEntry()));
+        }
+
+        // ReadNext(): single entry
+        auto entry0{reader.ReadNext()};
+        if (entry0 == nullptr) {
+            return fail(fmt::format("{} ReadNext() returned null", sourceName));
+        }
+        if (checkRow(0, *entry0, sourceName) != EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+
+        // ReadNext(3): batch
+        auto batch{reader.ReadNext(3)};
+        if (batch.size() != 3) {
+            return fail(fmt::format("{} ReadNext(3) size mismatch. expected=3, actual={}",
+                                    sourceName, batch.size()));
+        }
+        for (gsl::index i{}; i < 3; ++i) {
+            if (batch[i] == nullptr) {
+                return fail(fmt::format("{} ReadNext(3) returned null at index {}", sourceName, i));
+            }
+            if (checkRow(1 + i, *batch[i], sourceName) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+        }
+
+        // SkipNext(): skip 1 entry
+        reader.SkipNext();
+
+        // SkipNext(5): skip 5 entries
+        reader.SkipNext(5);
+
+        // Read one more to verify position (should be at index 1 + 3 + 1 + 5 = 10)
+        auto entry10{reader.ReadNext()};
+        if (entry10 == nullptr) {
+            return fail(fmt::format("{} ReadNext() after skip returned null", sourceName));
+        }
+        if (checkRow(10, *entry10, sourceName) != EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+
+        // Exhaust the rest
+        reader.Exhaust();
+        if (not reader.Exhausted()) {
+            return fail(fmt::format("{} not exhausted after Exhaust()", sourceName));
+        }
+
+        return EXIT_SUCCESS;
+    }};
+
+    if (testResetReadNextSkipExhaust(ntupleName, "RDFEntryReader+Reset(RNTuple)") != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    if (testResetReadNextSkipExhaust(treeName, "RDFEntryReader+Reset(TTree)") != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 

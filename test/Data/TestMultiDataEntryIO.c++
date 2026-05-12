@@ -18,7 +18,7 @@
 #include "Mustard/Data/Container/ArcTupleVector.h++"
 #include "Mustard/Data/Model.h++"
 #include "Mustard/Data/Object/Tuple.h++"
-#include "Mustard/Data/Processing/RDFReader.h++"
+#include "Mustard/Data/Processing/RDFEntryReader.h++"
 #include "Mustard/Data/Processing/RNTupleWriter.h++"
 #include "Mustard/Data/Processing/TTreeWriter.h++"
 #include "Mustard/Env/BasicEnv.h++"
@@ -237,15 +237,7 @@ auto main(int argc, char* argv[]) -> int {
         if (count != ssize(expected)) {
             return fail(fmt::format("{} entry count mismatch. expected={}, actual={}", sourceName, expected.size(), count));
         }
-        using ReadResult = decltype(reader.Read(0, count));
-        ReadResult data;
-        constexpr auto readChunkSize{256};
-        for (gsl::index offset{}; offset < count; offset += readChunkSize) {
-            auto chunk{reader.Read(offset, std::min(offset + readChunkSize, count))};
-            data.insert(data.end(),
-                        std::make_move_iterator(chunk.begin()),
-                        std::make_move_iterator(chunk.end()));
-        }
+        const auto data{reader.ReadNext(count)};
         if (data.size() != expected.size()) {
             return fail(fmt::format("{} read size mismatch. expected={}, actual={}", sourceName, expected.size(), data.size()));
         }
@@ -275,17 +267,12 @@ auto main(int argc, char* argv[]) -> int {
         if (count != static_cast<gsl::index>(expectedCount)) {
             return fail(fmt::format("{} entry count mismatch. expected={}, actual={}", sourceName, expectedCount, count));
         }
-        decltype(reader.Read(0, count)) data;
-        constexpr auto readChunkSize{256};
-        for (gsl::index offset{}; offset < count; offset += readChunkSize) {
-            auto chunk{reader.Read(offset, std::min(offset + readChunkSize, count))};
-            data.insert(data.end(),
-                        std::make_move_iterator(chunk.begin()),
-                        std::make_move_iterator(chunk.end()));
-        }
+
+        const auto data{reader.ReadNext(count)};
         if (data.size() != static_cast<std::size_t>(count)) {
             return fail(fmt::format("{} read size mismatch. expected={}, actual={}", sourceName, count, data.size()));
         }
+
         // Check each entry
         for (gsl::index i{}; i < count; ++i) {
             const auto& tuple{data[i]};
@@ -358,6 +345,94 @@ auto main(int argc, char* argv[]) -> int {
         return EXIT_FAILURE;
     }
     if (validateMultiRDFEntryReader({treeNameA, treeNameB, treeNameC}, "MultiRDFEntryReader(TTree)") != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+
+    // Test Reset, ReadNext, SkipNext, and Exhaust for multi RDFEntryReader
+    const auto testMultiReaderReset{[&](std::array<std::string_view, 3> dataName,
+                                        std::string_view sourceName) -> int {
+        std::array<ROOT::RDF::RNode, 3> rdfs{
+            ROOT::RDataFrame{dataName[0], fileName},
+            ROOT::RDataFrame{dataName[1], fileName},
+            ROOT::RDataFrame{dataName[2], fileName},
+        };
+        Mustard::Data::RDFEntryReader<TestingModelA, TestingModelB, TestingModelC> reader{rdfs};
+
+        reader.Exhaust();
+        if (not reader.Exhausted()) {
+            return fail(fmt::format("{} not exhausted after Exhaust()", sourceName));
+        }
+
+        reader.Reset();
+
+        const auto count{reader.NEntry()};
+        const auto expectedCount{std::max({nEntryA, nEntryB, nEntryC})};
+        if (count != static_cast<gsl::index>(expectedCount)) {
+            return fail(fmt::format("{} entry count mismatch after reset. expected={}, actual={}",
+                                    sourceName, expectedCount, count));
+        }
+
+        // Helper: validate all 3 models in a single tuple at a given row index
+        const auto checkAllModelsInTuple{[&](const auto& tuple, gsl::index rowIdx) -> int {
+            if (auto& slot = std::get<0>(tuple); slot == nullptr) {
+                return fail(fmt::format("{} ModelA is null at index {}", sourceName, rowIdx));
+            } else if (checkRowA(rowIdx, *slot, sourceName) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+            if (auto& slot = std::get<1>(tuple); slot == nullptr) {
+                return fail(fmt::format("{} ModelB is null at index {}", sourceName, rowIdx));
+            } else if (checkRowB(rowIdx, *slot, sourceName) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+            if (auto& slot = std::get<2>(tuple); slot == nullptr) {
+                return fail(fmt::format("{} ModelC is null at index {}", sourceName, rowIdx));
+            } else if (checkRowC(rowIdx, *slot, sourceName) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+            return EXIT_SUCCESS;
+        }};
+
+        // ReadNext(): single tuple entry
+        if (checkAllModelsInTuple(reader.ReadNext(), 0) != EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+
+        // ReadNext(3): batch
+        auto batch{reader.ReadNext(3)};
+        if (batch.size() != 3) {
+            return fail(fmt::format("{} ReadNext(3) size mismatch. expected=3, actual={}",
+                                    sourceName, batch.size()));
+        }
+        for (gsl::index i{}; i < 3; ++i) {
+            if (checkAllModelsInTuple(batch[i], 1 + i) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+        }
+
+        // SkipNext(): skip 1 entry
+        reader.SkipNext();
+
+        // SkipNext(5): skip 5 entries
+        reader.SkipNext(5);
+
+        // Read one more (should be at index 1 + 3 + 1 + 5 = 10)
+        if (checkAllModelsInTuple(reader.ReadNext(), 10) != EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+
+        // Exhaust the rest
+        reader.Exhaust();
+        if (not reader.Exhausted()) {
+            return fail(fmt::format("{} not exhausted after Exhaust()", sourceName));
+        }
+
+        return EXIT_SUCCESS;
+    }};
+
+    if (testMultiReaderReset({ntupleNameA, ntupleNameB, ntupleNameC}, "MultiRDFEntryReader+Reset(RNTuple)") != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    if (testMultiReaderReset({treeNameA, treeNameB, treeNameC}, "MultiRDFEntryReader+Reset(TTree)") != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 
