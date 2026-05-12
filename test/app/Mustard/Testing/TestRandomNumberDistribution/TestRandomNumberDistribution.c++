@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/CLI/BasicCLI.h++"
+#include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
@@ -31,16 +33,21 @@ namespace Mustard::Testing {
 TestRandomNumberDistribution::TestRandomNumberDistribution() :
     Subprogram{"TestRandomNumberDistribution", "Test Mustard::Random::RandomNumberDistribution."} {}
 
-auto TestRandomNumberDistribution::Main(int, char* argv[]) const -> int {
+auto TestRandomNumberDistribution::Main(int argc, char* argv[]) const -> int {
+    Mustard::CLI::BasicCLI<> cli;
+    cli->add_argument("x1").help("Lower bound.").default_value(0.).required().nargs(1).scan<'g', double>();
+    cli->add_argument("x2").help("Upper bound.").default_value(1.).required().nargs(1).scan<'g', double>();
+    Mustard::Env::BasicEnv env{argc, argv, cli};
+
     Random::Xoshiro256Plus rng;
     // Random::MT1993732 rng;
 
     using RNG = decltype(rng);
 
-    auto x1 = std::stod(argv[1]);
-    auto x2 = std::stod(argv[2]);
-    auto a = x1;
-    for (auto i = 0ULL; i < 2000000000ULL; ++i) {
+    const auto x1{cli->get<double>("x1")};
+    const auto x2{cli->get<double>("x2")};
+    auto a{x1};
+    for (auto i{0ull}; i < 1'000'000'000ull; ++i) {
         do {
             const auto u = static_cast<decltype(a)>(1 / static_cast<long double>(RNG::Max() - RNG::Min())) *
                            (rng() - RNG::Min());

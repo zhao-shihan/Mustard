@@ -24,6 +24,7 @@
 
 #include "muc/algorithm"
 #include "muc/numeric"
+#include "muc/utility"
 
 #include "gsl/gsl"
 
@@ -81,7 +82,7 @@ auto CheckIndexList(int truthN, const std::vector<int>& localIndexList) -> void 
 
 auto TestExecutor::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
-    cli->add_argument("n").help("Number of tasks.").nargs(1).scan<'i', int>();
+    cli->add_argument("n").help("Number of tasks.").default_value(10'000'000).required().nargs(1).scan<'i', int>();
     Mustard::Env::MPIEnv env{argc, argv, cli};
 
     const auto n{cli->get<int>("n")};
@@ -112,7 +113,7 @@ auto TestExecutor::Main(int argc, char* argv[]) const -> int {
     localIndexList.clear();
     executor.Run(n, [&](auto i) {
         localIndexList.emplace_back(i);
-        std::this_thread::sleep_for(500ms);
+        muc::cpu_relax();
     });
     executor.PrintExecutionSummary();
     CheckIndexList(n, localIndexList);
@@ -124,7 +125,7 @@ auto TestExecutor::Main(int argc, char* argv[]) const -> int {
     localIndexList.clear();
     executor.Run(n, [&](auto i) {
         localIndexList.emplace_back(i);
-        std::this_thread::sleep_for(500ms);
+        muc::cpu_relax();
     });
     executor.PrintExecutionSummary();
     CheckIndexList(n, localIndexList);

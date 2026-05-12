@@ -15,6 +15,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/CLHEPX/Random/Xoshiro.h++"
+#include "Mustard/CLI/BasicCLI.h++"
+#include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256StarStar.h++"
@@ -32,7 +34,10 @@ namespace Mustard::Testing {
 TestCLHEPXXoshiro256StarStar::TestCLHEPXXoshiro256StarStar() :
     Subprogram{"TestCLHEPXXoshiro256StarStar", "Test Mustard::CLHEPX::Random::Xoshiro256StarStar and benchmark."} {}
 
-auto TestCLHEPXXoshiro256StarStar::Main(int /*argc*/, char* /*argv*/[]) const -> int {
+auto TestCLHEPXXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
+    Mustard::CLI::BasicCLI<> cli;
+    Mustard::Env::BasicEnv env{argc, argv, cli};
+
     Random::Xoshiro256StarStar xoshiro256SS(0x123456);
     CLHEPX::Random::Wrap<Random::Xoshiro256StarStar> xoshiro256SSX(0x123456);
 

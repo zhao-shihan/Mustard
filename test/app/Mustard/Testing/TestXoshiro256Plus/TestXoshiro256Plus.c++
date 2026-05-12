@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/CLI/BasicCLI.h++"
+#include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/MT1993732.h++"
@@ -35,7 +37,10 @@ namespace Mustard::Testing {
 TestXoshiro256Plus::TestXoshiro256Plus() :
     Subprogram{"TestXoshiro256Plus", "Test Mustard::Random::Xoshiro256Plus and benchmark."} {}
 
-auto TestXoshiro256Plus::Main(int /*argc*/, char* /*argv*/[]) const -> int {
+auto TestXoshiro256Plus::Main(int argc, char* argv[]) const -> int {
+    Mustard::CLI::BasicCLI<> cli;
+    Mustard::Env::BasicEnv env{argc, argv, cli};
+
     Random::MT1993732 mt1993732;
     Random::Xoshiro256Plus xoshiro256Plus;
 

@@ -32,7 +32,7 @@ TestExecutorSequential::TestExecutorSequential() :
 
 auto TestExecutorSequential::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
-    cli->add_argument("n").help("Number of tasks.").nargs(1).scan<'i', unsigned long long>();
+    cli->add_argument("n").help("Number of tasks.").default_value(1'000'000ull).required().nargs(1).scan<'i', unsigned long long>();
     Mustard::Env::BasicEnv env{argc, argv, cli};
 
     Executor<unsigned long long> executor;

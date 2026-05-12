@@ -15,7 +15,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/CLI/BasicCLI.h++"
-#include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/Testing/TestSingleton/TestSingleton.h++"
 
@@ -37,7 +37,7 @@ TestSingleton::TestSingleton() :
 
 auto TestSingleton::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
-    Mustard::Env::BasicEnv env{argc, argv, cli};
+    Mustard::Env::MPIEnv env{argc, argv, cli};
 
     NullSingleton::Instance();
     return EXIT_SUCCESS;

@@ -34,17 +34,15 @@ TestCreateTemporaryFile::TestCreateTemporaryFile() :
 
 auto TestCreateTemporaryFile::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
-    cli->add_argument("pattern").help("Temporary file pattern.").nargs(1);
-    cli->add_argument("prefix").help("Temporary file prefix.").nargs(1);
+    cli->add_argument("signature").help("Temporary file signature.").default_value("mustard-test").required().nargs(1);
+    cli->add_argument("extension").help("Temporary file extension.").default_value(".txt").required().nargs(1);
     Mustard::Env::MPIEnv env{argc, argv, cli};
 
-    const auto path{CreateTemporaryFile(cli->get("pattern"), cli->get("prefix"))};
+    const auto path{CreateTemporaryFile(cli->get("signature"), cli->get("extension"))};
     PrintLn("{}", path);
     if (not std::filesystem::exists(path)) {
         Throw<std::runtime_error>("bug");
     }
-
-    std::getchar();
 
     return EXIT_SUCCESS;
 }

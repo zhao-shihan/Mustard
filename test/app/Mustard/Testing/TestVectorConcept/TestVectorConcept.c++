@@ -14,8 +14,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/CLI/BasicCLI.h++"
 #include "Mustard/Concept/MathVector.h++"
 #include "Mustard/Concept/NumericVector.h++"
+#include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Testing/TestVectorConcept/TestVectorConcept.h++"
@@ -98,7 +100,10 @@ static_assert(not Concept::MathVector<TEveVector4F, float, 4>);
 TestVectorConcept::TestVectorConcept() :
     Subprogram{"TestVectorConcept", "Test Mustard::Concept vector concepts."} {}
 
-auto TestVectorConcept::Main(int /*argc*/, char* /*argv*/[]) const -> int {
+auto TestVectorConcept::Main(int argc, char* argv[]) const -> int {
+    Mustard::CLI::BasicCLI<> cli;
+    Mustard::Env::BasicEnv env{argc, argv, cli};
+
     PrintLn("I'm compiled, I'm passed.");
     return EXIT_SUCCESS;
 }

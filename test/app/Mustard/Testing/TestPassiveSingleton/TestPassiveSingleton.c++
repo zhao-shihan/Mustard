@@ -15,7 +15,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/CLI/BasicCLI.h++"
-#include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Testing/TestPassiveSingleton/TestPassiveSingleton.h++"
 
@@ -32,7 +32,7 @@ TestPassiveSingleton::TestPassiveSingleton() :
 
 auto TestPassiveSingleton::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
-    Mustard::Env::BasicEnv env{argc, argv, cli};
+    Mustard::Env::MPIEnv env{argc, argv, cli};
 
     NullPassiveSingleton::Instance();
     return EXIT_SUCCESS;

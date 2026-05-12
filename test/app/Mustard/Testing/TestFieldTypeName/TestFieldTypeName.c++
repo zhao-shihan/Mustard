@@ -14,8 +14,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/CLI/BasicCLI.h++"
 #include "Mustard/Data/Object/Field.h++"
 #include "Mustard/Data/Object/FieldTypeName.h++"
+#include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Testing/TestFieldTypeName/TestFieldTypeName.h++"
 
 #include <array>
@@ -59,7 +61,10 @@ auto ExpectObjectName(const T& object, std::string_view expected) -> bool {
 
 } // namespace
 
-auto TestFieldTypeName::Main(int, char*[]) const -> int {
+auto TestFieldTypeName::Main(int argc, char* argv[]) const -> int {
+    Mustard::CLI::BasicCLI<> cli;
+    Mustard::Env::BasicEnv env{argc, argv, cli};
+
     using namespace Mustard::Data;
 
     if (not ExpectTypeName<bool>("b")) {

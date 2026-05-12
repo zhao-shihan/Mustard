@@ -19,6 +19,8 @@
 #include "Mustard/IO/File.h++"
 #include "Mustard/Testing/TestFile/TestFile.h++"
 
+#include "mplr/mplr.hpp"
+
 #include <memory>
 #include <vector>
 
@@ -29,37 +31,52 @@ TestFile::TestFile() :
 
 auto TestFile::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
-    cli->add_argument("path").help("File path.").nargs(1);
+    cli->add_argument("path").help("File path.").default_value("test_file").required().nargs(1);
+    cli->add_argument("extension").help("File extension.").default_value("root").required().nargs(1);
     Mustard::Env::MPIEnv env{argc, argv, cli};
 
     const auto path{cli->get("path")};
+    const auto extension{cli->get("extension")};
 
     std::vector<std::unique_ptr<Mustard::File<>>> file;
-    file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(path, "w"));
-    file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(path, "r"));
-    file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(path, "a"));
-    file.emplace_back(std::make_unique<Mustard::File<std::ifstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::File<std::ofstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::File<std::fstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::File<std::wifstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::File<std::wofstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::File<std::wfstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::File<TFile>>(path, "READ"));
-    file.emplace_back(std::make_unique<Mustard::File<TFile>>(path, "UPDATE"));
-    file.emplace_back(std::make_unique<Mustard::File<TFile>>(path, "RECREATE"));
+    if (mplr::comm_world().size() == 1) {
+        int i{};
+        file.emplace_back(std::make_unique<Mustard::File<TFile>>(fmt::format("{}_{}.{}", path, i++, extension), "RECREATE"));
+        file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(fmt::format("{}_{}.{}", path, i++, extension), "w"));
+        file.emplace_back(std::make_unique<Mustard::File<std::ifstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+        file.emplace_back(std::make_unique<Mustard::File<std::ofstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+        file.emplace_back(std::make_unique<Mustard::File<std::fstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+        file.emplace_back(std::make_unique<Mustard::File<std::wifstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+        file.emplace_back(std::make_unique<Mustard::File<std::wofstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+        file.emplace_back(std::make_unique<Mustard::File<std::wfstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+    }
+    int i{};
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(fmt::format("{}_{}.{}", path, i++, extension), "RECREATE"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(fmt::format("{}_{}.{}", path, i++, extension), "w"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::ifstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::ofstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::fstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wifstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wofstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wfstream>>(fmt::format("{}_{}.{}", path, i++, extension)));
 
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(path, "w"));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(path, "r"));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(path, "a"));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::ifstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::ofstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::fstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wifstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wofstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::wfstream>>(path));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(path, "READ"));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(path, "UPDATE"));
-    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(path, "RECREATE"));
+    file.clear(); // Close files
+
+    if (mplr::comm_world().size() == 1) {
+        file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(fmt::format("{}_0.{}", path, extension), "a"));
+        file.emplace_back(std::make_unique<Mustard::File<TFile>>(fmt::format("{}_0.{}", path, extension), "UPDATE"));
+    }
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(fmt::format("{}_0.{}", path, extension), "a"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(fmt::format("{}_0.{}", path, extension), "UPDATE"));
+
+    file.clear(); // Close files
+
+    if (mplr::comm_world().size() == 1) {
+        file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(fmt::format("{}_0.{}", path, extension), "r"));
+        file.emplace_back(std::make_unique<Mustard::File<TFile>>(fmt::format("{}_0.{}", path, extension), "READ"));
+    }
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<std::FILE>>(fmt::format("{}_0.{}", path, extension), "r"));
+    file.emplace_back(std::make_unique<Mustard::ProcessSpecificFile<TFile>>(fmt::format("{}_0.{}", path, extension), "READ"));
 
     return EXIT_SUCCESS;
 }

@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/CLI/MonteCarloCLI.h++"
+#include "Mustard/Env/MonteCarloEnv.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian2DDiagnoal.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian3DDiagnoal.h++"
-#include "Mustard/Math/Random/Generator/MT1993764.h++"
 #include "Mustard/Testing/TestGaussian/TestGaussian.h++"
 
 #include "ROOT/RDataFrame.hxx"
@@ -30,26 +31,33 @@ TestGaussian::TestGaussian() :
     Subprogram{"TestGaussian", "Test Mustard::Random::Gaussian and its variants."} {}
 
 auto TestGaussian::Main(int argc, char* argv[]) const -> int {
-    Random::MT1993764 mt1993764;
+    Mustard::CLI::MonteCarloCLI<> cli;
+    cli->add_argument("n").help("Number of entries.").default_value(1'000'000ull).required().nargs(1).scan<'i', unsigned long long>();
+    cli->add_argument("--mu1").help("Mean of 1D Gaussian.").default_value(0.).nargs(1).scan<'g', double>();
+    cli->add_argument("--sigma1").help("Sigma of 1D Gaussian.").default_value(1.).nargs(1).scan<'g', double>();
+    cli->add_argument("--mu2").help("Mean 2 of 2D Gaussian.").default_value(1.).nargs(1).scan<'g', double>();
+    cli->add_argument("--sigma2").help("Sigma 2 of 2D Gaussian.").default_value(2.).nargs(1).scan<'g', double>();
+    cli->add_argument("--mu3").help("Mean 3 of 3D Gaussian.").default_value(2.).nargs(1).scan<'g', double>();
+    cli->add_argument("--sigma3").help("Sigma 3 of 3D Gaussian.").default_value(3.).nargs(1).scan<'g', double>();
+    Mustard::Env::MonteCarloEnv<256> env{argc, argv, cli};
 
-    const auto n = std::stod(argv[1]);
-    const auto mu1 = argc > 2 ? std::stod(argv[2]) : 0;
-    const auto sigma1 = argc > 3 ? std::stod(argv[3]) : 1;
-    const auto mu2 = argc > 4 ? std::stod(argv[4]) : 0;
-    const auto sigma2 = argc > 5 ? std::stod(argv[5]) : 1;
-    const auto mu3 = argc > 6 ? std::stod(argv[6]) : 0;
-    const auto sigma3 = argc > 7 ? std::stod(argv[7]) : 1;
+    const auto n{cli->get<unsigned long long>("n")};
+    const auto mu1{cli->get<double>("--mu1")};
+    const auto sigma1{cli->get<double>("--sigma1")};
+    const auto mu2{cli->get<double>("--mu2")};
+    const auto sigma2{cli->get<double>("--sigma2")};
+    const auto mu3{cli->get<double>("--mu3")};
+    const auto sigma3{cli->get<double>("--sigma3")};
 
-    ROOT::RDataFrame dataFrame(n);
-    dataFrame
-        .Define("g1",
-                [&] { return Random::Gaussian(mu1, sigma1)(mt1993764); })
-        .Define("g2",
-                [&] { return Random::Gaussian2DDiagnoal({mu1, sigma1}, {mu2, sigma2})(mt1993764); })
-        .Define("g3",
-                [&] { return Random::Gaussian3DDiagnoal({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3})(mt1993764); })
+    Random::Gaussian gaussian1D{mu1, sigma1};
+    Random::Gaussian2DDiagnoal gaussian2D({mu1, sigma1}, {mu2, sigma2});
+    Random::Gaussian3DDiagnoal gaussian3D({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3});
 
-        .Snapshot("gaussian", "gaussian.root");
+    ROOT::RDataFrame{n}
+        .Define("g1", [&] { return gaussian1D(env.RandomEngine()); })
+        .Define("g2", [&] { return gaussian2D(env.RandomEngine()); })
+        .Define("g3", [&] { return gaussian3D(env.RandomEngine()); })
+        .Snapshot("gaussian", "test_gaussian.root");
 
     return EXIT_SUCCESS;
 }

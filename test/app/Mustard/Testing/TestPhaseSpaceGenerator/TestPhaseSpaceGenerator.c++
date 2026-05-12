@@ -15,7 +15,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/CLI/MonteCarloCLI.h++"
-#include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Env/MPIMonteCarloEnv.h++"
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/File.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
@@ -39,11 +39,10 @@ TestPhaseSpaceGenerator::TestPhaseSpaceGenerator() :
 
 auto TestPhaseSpaceGenerator::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::MonteCarloCLI<> cli;
-    cli->add_argument("n").help("Number of events to generate.").nargs(1).scan<'i', unsigned long long>();
-    cli->add_argument("-o", "--output").help("Output file path.").default_value("test_phase_space_result.root").required().nargs(1);
-    cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("NEW").required().nargs(1);
-    Mustard::Env::MPIEnv env{argc, argv, cli};
-    Mustard::UseXoshiro<256> random;
+    cli->add_argument("n").help("Number of events to generate.").default_value(10'000'000ull).nargs(1).scan<'i', unsigned long long>();
+    cli->add_argument("-o", "--output").help("Output file path.").default_value("test_phase_space_generator.root").required().nargs(1);
+    cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("RECREATE").required().nargs(1);
+    Mustard::Env::MPIMonteCarloEnv<256> env{argc, argv, cli};
 
     Mustard::ProcessSpecificFile<TFile> file{cli->get("--output"), cli->get("--output-mode")};
 

@@ -15,6 +15,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/CLHEPX/Random/MersenneTwister.h++"
+#include "Mustard/CLI/BasicCLI.h++"
+#include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/MT1993764.h++"
@@ -32,7 +34,10 @@ namespace Mustard::Testing {
 TestCLHEPXMT1993764::TestCLHEPXMT1993764() :
     Subprogram{"TestCLHEPXMT1993764", "Test Mustard::CLHEPX::Random::MT1993764 and benchmark."} {}
 
-auto TestCLHEPXMT1993764::Main(int /*argc*/, char* /*argv*/[]) const -> int {
+auto TestCLHEPXMT1993764::Main(int argc, char* argv[]) const -> int {
+    Mustard::CLI::BasicCLI<> cli;
+    Mustard::Env::BasicEnv env{argc, argv, cli};
+
     Random::MT1993764 mt64{0x123456};
     Mustard::CLHEPX::Random::MT1993764 mt64x{0x123456};
 
