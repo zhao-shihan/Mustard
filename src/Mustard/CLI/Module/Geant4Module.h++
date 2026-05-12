@@ -25,11 +25,26 @@
 
 namespace Mustard::CLI::inline Module {
 
+/// @brief CLI module for Geant4 programs.
+///
+/// Geant4Module registers the --macro and -i (interactive) arguments.
+/// It provides helper methods to query whether a macro file is specified
+/// and whether the session should run in interactive mode.
 class Geant4Module : public ModuleBase {
 public:
+    /// @brief Construct and register Geant4 CLI arguments.
+    /// @param cli  Owning CLI instance.
     Geant4Module(gsl::not_null<CLI<>*> cli);
 
+    /// @brief Check if a macro file was specified via --macro.
+    /// @return The macro file path if present, std::nullopt otherwise.
     auto Macro() const -> auto { return TheCLI()->present("macro"); }
+
+    /// @brief Determine whether the session is interactive.
+    ///
+    /// A session is considered interactive if no macro file was provided,
+    /// or if the -i flag was explicitly given even with a macro file.
+    /// @return true if interactive mode should be used.
     auto IsInteractive() const -> auto { return not Macro().has_value() or TheCLI()->get<bool>("-i"); }
 };
 

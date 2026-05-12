@@ -26,6 +26,15 @@
 
 namespace Mustard::CLI {
 
+/// @brief CLI alias that always includes BasicModule.
+///
+/// BasicCLI provides a convenient shorthand for creating a CLI that
+/// includes the BasicModule (verbose level, banner control) plus any
+/// additional modules.
+///
+/// @tparam AExtraModules  Additional ModuleBase-derived types (must be unique).
+///
+/// Equivalent to CLI<BasicModule, AExtraModules...>.
 template<std::derived_from<ModuleBase>... AExtraModules>
 using BasicCLI = CLI<BasicModule,
                      AExtraModules...>;

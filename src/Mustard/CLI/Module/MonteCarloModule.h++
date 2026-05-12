@@ -24,7 +24,12 @@
 
 namespace Mustard::CLI::inline Module {
 
-/// @brief CLI module for Monte Carlo program
+/// @brief CLI module for Monte Carlo programs.
+///
+/// MonteCarloModule registers the --seed flag and provides
+/// SeedRandomIfFlagged() to apply the user-specified random seed.
+/// After seeding, the caller must propagate the seed to all parallel
+/// workers via Parallel::ReseedRandomEngine().
 class MonteCarloModule : public ModuleBase {
 public:
     /// @brief Construct Monte Carlo CLI module

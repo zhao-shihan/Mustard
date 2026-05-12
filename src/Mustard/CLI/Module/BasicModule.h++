@@ -28,15 +28,27 @@
 
 namespace Mustard::CLI::inline Module {
 
+/// @brief Basic CLI module providing verbose level and banner control.
+///
+/// BasicModule registers the verbosity command-line argument and provides
+/// methods to query the verbose level and whether the application banner
+/// should be displayed.
 class BasicModule : public ModuleBase {
 public:
+    /// @brief Construct and register verbosity argument.
+    /// @param cli  Owning CLI instance.
     BasicModule(gsl::not_null<CLI<>*> cli);
 
+    /// @brief Get the verbose level if verbosity was specified.
+    /// @return VerboseLevel enum value, or std::nullopt.
     auto VerboseLevel() const -> std::optional<Env::VerboseLevel>;
+
+    /// @brief Check whether the banner should be shown.
+    /// @return true if verbose level is Debug or higher.
     auto ShowBanner() const -> bool;
 
 private:
-    std::underlying_type_t<Env::VerboseLevel> fVerboseLevelValue;
+    std::underlying_type_t<Env::VerboseLevel> fVerboseLevelValue; ///< Raw value of the parsed verbose level.
 };
 
 } // namespace Mustard::CLI::inline Module

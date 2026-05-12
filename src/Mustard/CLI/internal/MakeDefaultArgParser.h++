@@ -24,6 +24,13 @@
 
 namespace Mustard::CLI::impl {
 
+/// @brief Create the default argument parser with standard flags.
+///
+/// Returns a unique_ptr to an argparse::ArgumentParser pre-configured
+/// with the standard Mustard command-line arguments (e.g. --help).
+/// Used by CLI<> and SubprogramLauncher during construction.
+///
+/// @return A unique_ptr to the configured ArgumentParser.
 auto MakeDefaultArgParser() -> std::unique_ptr<argparse::ArgumentParser>;
 
 } // namespace Mustard::CLI::impl

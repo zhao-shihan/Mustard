@@ -38,15 +38,29 @@
 
 namespace Mustard::CLI::inline Module {
 
+/// @brief CLI module for Geant4 reference physics list selection.
+///
+/// Registers the --physics-list argument and provides PhysicsList() to
+/// create (and cache) a G4VModularPhysicsList via G4PhysListFactory.
+/// The selected list is validated against Geant4's reference physics lists.
+///
+/// @tparam ADefault  Compile-time string specifying the default physics list name.
 template<muc::ceta_string ADefault>
 class Geant4ReferencePhysicsListModule : public ModuleBase {
 public:
+    /// @brief Construct and register --physics-list argument with a default.
+    /// @param cli  Owning CLI instance.
     Geant4ReferencePhysicsListModule(gsl::not_null<CLI<>*> cli);
 
+    /// @brief Get or create the physics list from the --physics-list argument.
+    /// @return Pointer to the constructed G4VModularPhysicsList.
+    /// @throws std::runtime_error if the selected list is not a valid reference physics list.
+    ///
+    /// The result is cached; subsequent calls return the same pointer.
     auto PhysicsList() -> G4VModularPhysicsList*;
 
 private:
-    G4VModularPhysicsList* fReferencePhysicsList;
+    G4VModularPhysicsList* fReferencePhysicsList; ///< Cached physics list, or nullptr if not yet created.
 };
 
 } // namespace Mustard::CLI::inline Module

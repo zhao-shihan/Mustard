@@ -26,6 +26,15 @@
 
 namespace Mustard::CLI {
 
+/// @brief CLI alias for Geant4-based simulation applications.
+///
+/// Geant4CLI builds on MonteCarloCLI by adding Geant4Module, which
+/// provides macro file specification and interactive mode detection.
+/// Suitable for any HEP simulation that uses Geant4.
+///
+/// @tparam AExtraModules  Additional ModuleBase-derived types (must be unique).
+///
+/// Equivalent to CLI<BasicModule, MonteCarloModule, Geant4Module, AExtraModules...>.
 template<std::derived_from<ModuleBase>... AExtraModules>
 using Geant4CLI = MonteCarloCLI<Geant4Module,
                                 AExtraModules...>;
