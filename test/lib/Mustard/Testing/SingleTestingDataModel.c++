@@ -19,7 +19,9 @@
 
 #include "fmt/format.h"
 
-inline auto MakeEntry(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModel> {
+namespace Mustard::Testing {
+
+auto MakeEntry(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModel> {
     auto event{Mustard::Data::MakeArcTuple<TestingModel>()};
     F<"EvtID">(*event) = static_cast<std::int32_t>(evtID);
     const auto i{evtID * 10 + entryIdx};
@@ -43,3 +45,5 @@ inline auto MakeEntry(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::A
     F<"tu8str">(*event) = {std::uint8_t(9 + i), 6.25 + i, fmt::format("t{}", i)};
     return event;
 }
+
+} // namespace Mustard::Testing

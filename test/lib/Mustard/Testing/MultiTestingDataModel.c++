@@ -19,6 +19,8 @@
 
 #include "fmt/format.h"
 
+namespace Mustard::Testing {
+
 auto MakeEntryA(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelA> {
     auto entry{Mustard::Data::MakeArcTuple<TestingModelA>()};
     F<"EvtID">(*entry) = static_cast<std::int32_t>(evtID);
@@ -64,3 +66,5 @@ auto MakeEntryC(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTupl
     F<"tbchi32">(*entry) = {(i % 2 == 0), 'Z' - (i % 26), static_cast<std::int32_t>(i * 10)};
     return entry;
 }
+
+} // namespace Mustard::Testing
