@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Data/Object/Value.h++"
-#include "Mustard/Data/Object/ValueAcceptable.h++"
+#include "Mustard/Data/Object/Field.h++"
+#include "Mustard/Data/Object/FieldAcceptable.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/utility"
@@ -33,26 +33,26 @@
 
 namespace Mustard::Data::inline Object {
 
-/// @brief Returns the compact field type name for a value-acceptable payload type.
+/// @brief Returns the compact field type name for a field-acceptable payload type.
 /// @tparam T Payload type.
-template<ValueAcceptable T>
+template<FieldAcceptable T>
 auto FieldTypeName() -> std::string;
 
-/// @brief Returns the compact field type name for a value-acceptable payload object.
+/// @brief Returns the compact field type name for a field-acceptable payload object.
 /// @tparam T Payload type.
-template<ValueAcceptable T>
+template<FieldAcceptable T>
 auto FieldTypeName(const T&) -> auto { return FieldTypeName<T>(); }
 
 /// @brief Returns the compact field type name for a Field.
 /// @tparam T Wrapper type whose nested payload type is used for the name.
 template<typename T>
-    requires impl2::IsValue<T>::value
+    requires impl2::IsField<T>::value
 auto FieldTypeName() -> auto { return FieldTypeName<typename T::Type>(); }
 
 /// @brief Returns the compact field type name for a Field.
 /// @tparam T Wrapper type whose nested payload type is used for the name.
 template<typename T>
-    requires impl2::IsValue<T>::value
+    requires impl2::IsField<T>::value
 auto FieldTypeName(const T&) -> auto { return FieldTypeName<T>(); }
 
 } // namespace Mustard::Data::inline Object

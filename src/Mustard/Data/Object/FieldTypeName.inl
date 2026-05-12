@@ -18,7 +18,7 @@
 
 namespace Mustard::Data::inline Object {
 
-template<ValueAcceptable T>
+template<FieldAcceptable T>
 auto FieldTypeName() -> std::string {
     if constexpr (std::same_as<T, bool>) {
         return "b";

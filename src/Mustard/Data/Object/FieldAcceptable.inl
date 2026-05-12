@@ -19,33 +19,33 @@
 namespace Mustard::Data::inline Object::impl3 {
 
 template<typename T>
-consteval auto ValueAcceptableImpl() -> bool {
+consteval auto FieldAcceptableImpl() -> bool {
     if constexpr (ROOTX::RNTuplePersistableFundamental<T> or
                   std::same_as<T, std::string> or
                   impl::IsStdBitset<T>{}) {
         return true;
     } else if constexpr (impl::IsStdPair<T>{}) {
-        return ValueAcceptableImpl<typename T::first_type>() and
-               ValueAcceptableImpl<typename T::second_type>();
+        return FieldAcceptableImpl<typename T::first_type>() and
+               FieldAcceptableImpl<typename T::second_type>();
     } else if constexpr (impl::IsStdTuple<T>{}) {
         return []<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
-            return (... and ValueAcceptableImpl<std::tuple_element_t<Is, T>>());
+            return (... and FieldAcceptableImpl<std::tuple_element_t<Is, T>>());
         }(gslx::make_index_sequence<std::tuple_size_v<T>>{});
     } else if constexpr (impl::IsStdVector<T>{} or
                          impl::IsStdArray<T>{} or
                          impl::IsStdOptional<T>{}) {
-        return ValueAcceptableImpl<typename T::value_type>();
+        return FieldAcceptableImpl<typename T::value_type>();
     } else if constexpr (impl::IsStdSet<T>{} or
                          impl::IsStdUnorderedSet<T>{} or
                          impl::IsStdMultiSet<T>{} or
                          impl::IsStdUnorderedMultiSet<T>{}) {
-        return ValueAcceptableImpl<typename T::key_type>();
+        return FieldAcceptableImpl<typename T::key_type>();
     } else if constexpr (impl::IsStdMap<T>{} or
                          impl::IsStdUnorderedMap<T>{} or
                          impl::IsStdMultiMap<T>{} or
                          impl::IsStdUnorderedMultiMap<T>{}) {
-        return ValueAcceptableImpl<typename T::key_type>() and
-               ValueAcceptableImpl<typename T::mapped_type>();
+        return FieldAcceptableImpl<typename T::key_type>() and
+               FieldAcceptableImpl<typename T::mapped_type>();
     } else {
         return false;
     }

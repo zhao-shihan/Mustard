@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Data/Object/Field.h++"
 #include "Mustard/Data/Object/FieldTypeName.h++"
-#include "Mustard/Data/Object/Value.h++"
 #include "Mustard/Testing/TestFieldTypeName/TestFieldTypeName.h++"
 
 #include <array>
@@ -154,7 +154,7 @@ auto TestFieldTypeName::Main(int, char*[]) const -> int {
         return EXIT_FAILURE;
     }
 
-    using WrappedVector = Value<std::vector<std::int32_t>, "vi32">;
+    using WrappedVector = Field<std::vector<std::int32_t>, "vi32">;
     const WrappedVector wrappedVector{};
     if (not ExpectTypeName<WrappedVector>("vec<i32>")) {
         return EXIT_FAILURE;
@@ -163,7 +163,7 @@ auto TestFieldTypeName::Main(int, char*[]) const -> int {
         return EXIT_FAILURE;
     }
 
-    using WrappedTuple = Value<std::tuple<bool, std::string>, "tbstr">;
+    using WrappedTuple = Field<std::tuple<bool, std::string>, "tbstr">;
     const WrappedTuple wrappedTuple{};
     if (not ExpectTypeName<WrappedTuple>("tup<b,str>")) {
         return EXIT_FAILURE;

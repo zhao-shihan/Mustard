@@ -22,8 +22,8 @@
 #include "RtypesCore.h"
 
 #include "mplr/mplr.hpp"
-#include "gsl/gsl"
 
+#include "gsl/gsl"
 
 #include <future>
 

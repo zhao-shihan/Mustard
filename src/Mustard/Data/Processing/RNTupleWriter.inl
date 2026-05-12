@@ -30,15 +30,15 @@ RNTupleWriter<M>::RNTupleWriter(const std::string& name) :
     // Exeception will be thrown if the value types are not supported by RNTuple.
     auto model{ROOT::RNTupleModel::Create()};
     const auto createField{[&]<gsl::index I>() {
-        using Value = std::tuple_element_t<I, typename M::StdTuple>;
-        using Type = typename Value::Type;
+        using Field = std::tuple_element_t<I, typename M::StdTuple>;
+        using Type = typename Field::Type;
         std::string description;
-        if constexpr (Value::Description()) {
-            description = fmt::format("({}) {}", FieldTypeName<Type>(), Value::Description().sv());
+        if constexpr (Field::Description()) {
+            description = fmt::format("({}) {}", FieldTypeName<Type>(), Field::Description().sv());
         } else {
             description = FieldTypeName<Type>();
         }
-        std::get<I>(fFieldTuple) = model->template MakeField<Type>(Value::Name(), description);
+        std::get<I>(fFieldTuple) = model->template MakeField<Type>(Field::Name(), description);
     }};
     [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         (..., createField.template operator()<Is>());

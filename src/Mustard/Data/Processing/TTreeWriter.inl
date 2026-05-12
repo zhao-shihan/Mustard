@@ -46,16 +46,16 @@ TTreeWriter<M>::TTreeWriter(const std::string& name) :
     fTree->GetDirectory()->Remove(&*fTree); // avoid automatic deletion of the tree
     // Create branches
     const auto createBranch{[this]<gsl::index I>() {
-        using Value = std::tuple_element_t<I, typename M::StdTuple>;
-        using Type = typename Value::Type;
-        Type& object{*fEntry.template F<Value::Name()>()};
-        const auto branch{fTree->Branch(Value::Name(), &object)};
+        using Field = std::tuple_element_t<I, typename M::StdTuple>;
+        using Type = typename Field::Type;
+        Type& object{*fEntry.template F<Field::Name()>()};
+        const auto branch{fTree->Branch(Field::Name(), &object)};
         if (branch == nullptr) {
-            Throw<std::runtime_error>(fmt::format("Failed to create branch for '{}' field '{}'", FieldTypeName<Value>(), Value::Name().sv()));
+            Throw<std::runtime_error>(fmt::format("Failed to create branch for '{}' field '{}'", FieldTypeName<Field>(), Field::Name().sv()));
         }
         std::string description;
-        if constexpr (Value::Description()) {
-            description = fmt::format("({}) {}", FieldTypeName<Type>(), Value::Description().sv());
+        if constexpr (Field::Description()) {
+            description = fmt::format("({}) {}", FieldTypeName<Type>(), Field::Description().sv());
         } else {
             description = FieldTypeName<Type>();
         }

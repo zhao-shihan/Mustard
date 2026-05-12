@@ -17,9 +17,6 @@
 #pragma once
 
 #include "Mustard/Data/Model.h++"
-#include "Mustard/Data/Object/Tuple.h++"
-
-#include "fmt/format.h"
 
 #include <cstdint>
 #include <tuple>
@@ -36,47 +33,24 @@
 
 struct TestingModel
     : Mustard::Data::Model<
-          Mustard::Data::Value<std::int32_t, "EvtID">,
-          Mustard::Data::Value<bool, "b">,
-          Mustard::Data::Value<char, "ch">,
-          Mustard::Data::Value<std::uint8_t, "u8">,
-          Mustard::Data::Value<std::int16_t, "i16">,
-          Mustard::Data::Value<std::uint16_t, "u16">,
-          Mustard::Data::Value<std::int32_t, "i32">,
-          Mustard::Data::Value<std::uint32_t, "u32">,
-          Mustard::Data::Value<std::int64_t, "i64">,
-          Mustard::Data::Value<std::uint64_t, "u64">,
-          Mustard::Data::Value<float, "f32">,
-          Mustard::Data::Value<double, "f64">,
-          Mustard::Data::Value<std::string, "str">,
-          Mustard::Data::Value<std::vector<std::int32_t>, "vi32">,
-          Mustard::Data::Value<std::vector<double>, "vf64">,
-          Mustard::Data::Value<std::vector<std::string>, "vstr">,
-          Mustard::Data::Value<std::array<std::uint16_t, 3>, "au16">,
-          Mustard::Data::Value<std::pair<std::int32_t, float>, "pi32f">,
-          Mustard::Data::Value<std::tuple<std::uint8_t, double, std::string>, "tu8str">> {};
+          Mustard::Data::Field<std::int32_t, "EvtID">,
+          Mustard::Data::Field<bool, "b">,
+          Mustard::Data::Field<char, "ch">,
+          Mustard::Data::Field<std::uint8_t, "u8">,
+          Mustard::Data::Field<std::int16_t, "i16">,
+          Mustard::Data::Field<std::uint16_t, "u16">,
+          Mustard::Data::Field<std::int32_t, "i32">,
+          Mustard::Data::Field<std::uint32_t, "u32">,
+          Mustard::Data::Field<std::int64_t, "i64">,
+          Mustard::Data::Field<std::uint64_t, "u64">,
+          Mustard::Data::Field<float, "f32">,
+          Mustard::Data::Field<double, "f64">,
+          Mustard::Data::Field<std::string, "str">,
+          Mustard::Data::Field<std::vector<std::int32_t>, "vi32">,
+          Mustard::Data::Field<std::vector<double>, "vf64">,
+          Mustard::Data::Field<std::vector<std::string>, "vstr">,
+          Mustard::Data::Field<std::array<std::uint16_t, 3>, "au16">,
+          Mustard::Data::Field<std::pair<std::int32_t, float>, "pi32f">,
+          Mustard::Data::Field<std::tuple<std::uint8_t, double, std::string>, "tu8str">> {};
 
-inline auto MakeEntry(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModel> {
-    auto event{Mustard::Data::MakeArcTuple<TestingModel>()};
-    F<"EvtID">(*event) = static_cast<std::int32_t>(evtID);
-    const auto i{evtID * 10 + entryIdx};
-    F<"b">(*event) = (i % 2 == 0);
-    F<"ch">(*event) = 'A' + i;
-    F<"u8">(*event) = 2 + i;
-    F<"i16">(*event) = -100 - i;
-    F<"u16">(*event) = 100 + i;
-    F<"i32">(*event) = -1000 - i;
-    F<"u32">(*event) = 1000 + i;
-    F<"i64">(*event) = -10000 - i;
-    F<"u64">(*event) = 10000 + i;
-    F<"f32">(*event) = 1.25f + i;
-    F<"f64">(*event) = 2.5 + i;
-    F<"str">(*event) = fmt::format("row-{}", i % 16);
-    F<"vi32">(*event) = {std::int32_t(i), std::int32_t(i + 1), std::int32_t(i + 2)};
-    F<"vf64">(*event) = {0.5 + i, 1.5 + i};
-    F<"vstr">(*event) = {fmt::format("x{}", i % 16), fmt::format("y{}", i % 16)};
-    F<"au16">(*event) = {std::uint16_t(10 + i), std::uint16_t(20 + i), std::uint16_t(30 + i)};
-    F<"pi32f">(*event) = {std::int32_t(7 + i), 3.0f + i};
-    F<"tu8str">(*event) = {std::uint8_t(9 + i), 6.25 + i, fmt::format("t{}", i)};
-    return event;
-}
+auto MakeEntry(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModel>;

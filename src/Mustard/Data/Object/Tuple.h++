@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Data/Model.h++"
-#include "Mustard/Data/Object/Value.h++"
+#include "Mustard/Data/Object/Field.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Arc.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
@@ -184,7 +184,7 @@ public:
         fTuple{std::move(tuple.fTuple)} {}
 
     /// @brief Constructs from forwarded values matching the underlying schema tuple constructor.
-    /// @tparam ...Us Value argument types.
+    /// @tparam ...Us Field argument types.
     /// @param values Constructor arguments for the underlying storage tuple.
     template<typename... Us>
         requires std::constructible_from<typename M::StdTuple, Us&&...>
@@ -203,7 +203,7 @@ public:
     template<muc::ceta_string AName>
     constexpr auto F() const&& -> decltype(auto) { return std::move(*this).template GetImpl<M::template Index<AName>()>(); }
 
-    /// @brief Gets a field by name and converts it to a different type via Value::As.
+    /// @brief Gets a field by name and converts it to a different type via Field::As.
     /// @tparam U The target type.
     /// @tparam AName The compile-time field name.
     /// @return Converted value of the field.
@@ -254,7 +254,7 @@ public:
     template<muc::ceta_string AName>
     friend constexpr auto F(const Tuple<M>&& t) -> decltype(auto) { return std::move(t).template F<AName>(); }
 
-    /// @brief ADL helper returning a named field converted via Value::As.
+    /// @brief ADL helper returning a named field converted via Field::As.
     template<muc::ceta_string AName, typename U>
     friend constexpr auto F(const Tuple<M>& t) -> decltype(auto) { return t.template F<AName, U>(); }
     template<muc::ceta_string AName, typename U>

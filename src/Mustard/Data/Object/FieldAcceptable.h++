@@ -32,7 +32,7 @@ namespace Mustard::Data::inline Object {
 namespace impl3 {
 
 template<typename T>
-consteval auto ValueAcceptableImpl() -> bool;
+consteval auto FieldAcceptableImpl() -> bool;
 
 } // namespace impl3
 
@@ -66,8 +66,8 @@ consteval auto ValueAcceptableImpl() -> bool;
 /// @see https://root.cern/doc/master/md_tree_2ntuple_2doc_2BinaryFormatSpecification.html
 /// for all types persistable in RNTuple
 template<typename T>
-concept ValueAcceptable = impl3::ValueAcceptableImpl<T>();
+concept FieldAcceptable = impl3::FieldAcceptableImpl<T>();
 
 } // namespace Mustard::Data::inline Object
 
-#include "Mustard/Data/Object/ValueAcceptable.inl"
+#include "Mustard/Data/Object/FieldAcceptable.inl"

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Data/Object/ValueAcceptable.h++"
+#include "Mustard/Data/Object/FieldAcceptable.h++"
 #include "Mustard/Utility/VectorAssign.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
@@ -35,34 +35,34 @@ namespace Mustard::Data::inline Object {
 
 /// @brief Named field wrapper used as the atomic schema element of Model and Tuple.
 /// @details
-/// Value binds a runtime payload type to compile-time field metadata.
-/// Model stores Value specializations in its StdTuple schema, and Tuple stores corresponding
-/// runtime objects and exposes typed access through Get and Value::As.
+/// Field binds a runtime payload type to compile-time field metadata.
+/// Model stores Field specializations in its StdTuple schema, and Tuple stores corresponding
+/// runtime objects and exposes typed access through Get and Field::As.
 /// @tparam T Wrapped payload type.
 /// @tparam AName Compile-time field name.
 /// @tparam ADescription Optional compile-time field description.
-template<ValueAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription = nullptr>
-class [[nodiscard]] Value final {
+template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription = nullptr>
+class [[nodiscard]] Field final {
 public:
     /// @brief Wrapped payload type alias.
     using Type = T;
 
 public:
     /// @brief Default-constructs the wrapped payload.
-    constexpr Value() = default;
+    constexpr Field() = default;
 
     /// @brief Constructs payload directly from a forwarded source object.
     /// @tparam U Source type, defaulting to payload type.
     /// @param object Source object.
     template<typename U = T>
-    constexpr Value(U&& object) noexcept(std::is_nothrow_constructible_v<T, U&&>);
+    constexpr Field(U&& object) noexcept(std::is_nothrow_constructible_v<T, U&&>);
 
     /// @brief Constructs payload via VectorCast for compatible vector-like sources.
     /// @tparam U Source type.
     /// @param object Source object.
     template<typename U>
         requires requires(U&& object) { VectorCast<T>(std::forward<U>(object)); }
-    constexpr Value(U&& object);
+    constexpr Field(U&& object);
 
     /// @brief Assigns payload directly from a forwarded source object.
     /// @tparam U Source type, defaulting to payload type.
@@ -102,14 +102,14 @@ public:
     /// @brief Pointer-like access to payload.
     constexpr auto operator->() -> T* { return std::addressof(fObject); }
 
-    /// @brief Converts payload to target type without consuming this Value.
+    /// @brief Converts payload to target type without consuming this Field.
     /// @details Used by Tuple::F<AName, U>() for typed field extraction.
     /// @tparam U Target type.
     /// @return Converted value, or const payload reference for identity conversion.
     template<typename U>
     constexpr auto As() const& -> std::conditional_t<std::same_as<T, U>, const T&, U>;
 
-    /// @brief Converts payload to target type while consuming this Value.
+    /// @brief Converts payload to target type while consuming this Field.
     /// @tparam U Target type.
     /// @return Converted value.
     template<typename U>
@@ -140,29 +140,29 @@ public:
         requires requires(const T fObject) { std::move(fObject)[std::forward<decltype(i)>(i)]; }
     { return std::move(fObject)[std::forward<decltype(i)>(i)]; }
 
-    /// @brief Equality compares wrapped payloads across different Value field declarations.
+    /// @brief Equality compares wrapped payloads across different Field field declarations.
     /// @tparam U Compared payload type.
     /// @tparam N Compared field name.
     /// @tparam D Compared field description.
-    /// @param that Compared Value.
+    /// @param that Compared Field.
     /// @return true when wrapped payloads are equal.
-    template<ValueAcceptable U, muc::ceta_string N, muc::ceta_string D>
-    constexpr auto operator==(const Value<U, N, D>& that) const -> bool { return **this == *that; }
+    template<FieldAcceptable U, muc::ceta_string N, muc::ceta_string D>
+    constexpr auto operator==(const Field<U, N, D>& that) const -> bool { return **this == *that; }
 
-    /// @brief Three-way compares wrapped payloads across different Value field declarations.
+    /// @brief Three-way compares wrapped payloads across different Field field declarations.
     /// @tparam U Compared payload type.
     /// @tparam N Compared field name.
     /// @tparam D Compared field description.
-    /// @param that Compared Value.
+    /// @param that Compared Field.
     /// @return Ordering result of wrapped payload comparison.
-    template<ValueAcceptable U, muc::ceta_string N, muc::ceta_string D>
-    constexpr auto operator<=>(const Value<U, N, D>& that) const -> auto { return **this <=> *that; }
+    template<FieldAcceptable U, muc::ceta_string N, muc::ceta_string D>
+    constexpr auto operator<=>(const Field<U, N, D>& that) const -> auto { return **this <=> *that; }
 
-    /// @brief Returns compile-time field name carried by this Value.
+    /// @brief Returns compile-time field name carried by this Field.
     /// @details This metadata is used by Model::Index and Tuple::F<AName>().
     static constexpr auto Name() -> const auto& { return AName; }
 
-    /// @brief Returns compile-time field description carried by this Value.
+    /// @brief Returns compile-time field description carried by this Field.
     static constexpr auto Description() -> const auto& { return ADescription; }
 
 private:
@@ -172,22 +172,22 @@ private:
 
 namespace impl2 {
 
-/// @brief Type trait to identify Value specializations.
+/// @brief Type trait to identify Field specializations.
 /// @tparam Any type to test.
 template<typename>
-struct IsValue
+struct IsField
     : std::false_type {};
 
-/// @brief Value specialization of IsValue.
+/// @brief Field specialization of IsField.
 /// @tparam T Wrapped payload type.
 /// @tparam AName Field name.
 /// @tparam ADescription Field description.
-template<ValueAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription>
-struct IsValue<Value<T, AName, ADescription>>
+template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription>
+struct IsField<Field<T, AName, ADescription>>
     : std::true_type {};
 
 } // namespace impl2
 
 } // namespace Mustard::Data::inline Object
 
-#include "Mustard/Data/Object/Value.inl"
+#include "Mustard/Data/Object/Field.inl"

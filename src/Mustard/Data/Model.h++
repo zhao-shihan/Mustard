@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Data/Object/Value.h++"
+#include "Mustard/Data/Object/Field.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
@@ -82,7 +82,7 @@ public:
     /// @brief Field type alias resolved by compile-time field name.
     /// @tparam AName Field name.
     template<muc::ceta_string AName>
-    using ValueAt = std::tuple_element_t<Index<AName>(), StdTuple>;
+    using FieldAt = std::tuple_element_t<Index<AName>(), StdTuple>;
 
 private:
     /// @brief Helper path used to terminate constexpr recursion flow.
@@ -102,16 +102,16 @@ private:
 } // namespace impl
 
 /// @brief Types allowed as Model parameters.
-/// @details A parameter can be an existing model type or a Value type.
+/// @details A parameter can be an existing model type or a Field type.
 template<typename T>
 concept Modelizable = std::derived_from<T, impl::ModelSignature> or
-                      impl2::IsValue<T>::value;
+                      impl2::IsField<T>::value;
 
 /// @brief Empty Model specialization.
 template<Modelizable...>
 struct Model
     : impl::ModelBase<Model<>,
-                          std::tuple<>> {};
+                      std::tuple<>> {};
 
 /// @brief Model specialization that prepends an existing model.
 /// @tparam AModel Existing model.
@@ -119,19 +119,19 @@ struct Model
 template<std::derived_from<impl::ModelSignature> AModel, Modelizable... AOthers>
 struct Model<AModel, AOthers...>
     : impl::ModelBase<Model<AModel, AOthers...>,
-                          muc::tuple_concat_t<typename AModel::StdTuple,
-                                              typename Model<AOthers...>::StdTuple>> {};
+                      muc::tuple_concat_t<typename AModel::StdTuple,
+                                          typename Model<AOthers...>::StdTuple>> {};
 
-/// @brief Model specialization that prepends one Value field.
-/// @tparam T Value payload type.
+/// @brief Model specialization that prepends one Field field.
+/// @tparam T Field payload type.
 /// @tparam AName Field name.
 /// @tparam ADescription Field description.
 /// @tparam AOthers Remaining modelizable items.
-template<ValueAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription, Modelizable... AOthers>
-struct Model<Value<T, AName, ADescription>, AOthers...>
-    : impl::ModelBase<Model<Value<T, AName, ADescription>, AOthers...>,
-                          muc::tuple_concat_t<std::tuple<Value<T, AName, ADescription>>,
-                                              typename Model<AOthers...>::StdTuple>> {};
+template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription, Modelizable... AOthers>
+struct Model<Field<T, AName, ADescription>, AOthers...>
+    : impl::ModelBase<Model<Field<T, AName, ADescription>, AOthers...>,
+                      muc::tuple_concat_t<std::tuple<Field<T, AName, ADescription>>,
+                                          typename Model<AOthers...>::StdTuple>> {};
 
 /// @brief Concept for concrete model types.
 /// @note To define a model, inherit from a Model directly via the Model template.
@@ -149,8 +149,8 @@ struct Take
     : decltype(std::apply(
           []<typename... Vs>(std::type_identity<Vs>...) -> std::type_identity<Model<Vs...>> { return {}; },
           muc::tuple_concat_t<std::conditional_t<
-              M::template ValueAt<ANames>::Name() == ANames,
-              std::tuple<std::type_identity<typename M::template ValueAt<ANames>>>,
+              M::template FieldAt<ANames>::Name() == ANames,
+              std::tuple<std::type_identity<typename M::template FieldAt<ANames>>>,
               std::tuple<>>...>{}))::type{};
 
 /// @brief Drop fields from a model by field name, producing a new model.
@@ -161,9 +161,9 @@ struct Drop
     : decltype(std::apply(
           []<typename... Vs>(std::type_identity<Vs>...) -> std::type_identity<Model<Vs...>> { return {}; },
           muc::tuple_concat_t<std::conditional_t<
-              M::template ValueAt<ANames>::Name() == ANames,
+              M::template FieldAt<ANames>::Name() == ANames,
               std::tuple<>,
-              std::tuple<std::type_identity<typename M::template ValueAt<ANames>>>>...>{}))::type{};
+              std::tuple<std::type_identity<typename M::template FieldAt<ANames>>>>...>{}))::type{};
 
 /// @brief Concept requiring that model M1 is a sub-model of M2 by field-name inclusion.
 template<typename M1, typename M2>

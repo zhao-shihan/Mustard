@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Data/Model.h++"
-#include "Mustard/Data/Object/Value.h++"
+#include "Mustard/Data/Object/Field.h++"
 
 #include <vector>
 
@@ -29,22 +29,22 @@ namespace Mustard::Data {
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
 /// @see `GeneratedVertex`
 using GeneratedGeometryVertex = Model<
-    Value<float, "w", "Vertex weight">,
-    Value<double, "t0", "Vertex time">,
-    Value<float, "x", "Vertex X position">,
-    Value<float, "y", "Vertex Y position">,
-    Value<float, "z", "Vertex Z position">>;
+    Field<float, "w", "Vertex weight">,
+    Field<double, "t0", "Vertex time">,
+    Field<float, "x", "Vertex X position">,
+    Field<float, "y", "Vertex Y position">,
+    Field<float, "z", "Vertex Z position">>;
 
 /// @brief Kinematics data model for event generators.
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
 /// @see `GeneratedVertex`
 using GeneratedKinematics = Model<
-    Value<float, "w", "Vertex weight">,
-    Value<std::vector<int>, "pdgID", "Particle PDG IDs">,
-    Value<std::vector<float>, "E", "Total energy">,
-    Value<std::vector<float>, "px", "Momentum X component">,
-    Value<std::vector<float>, "py", "Momentum Y component">,
-    Value<std::vector<float>, "pz", "Momentum Z component">>;
+    Field<float, "w", "Vertex weight">,
+    Field<std::vector<int>, "pdgID", "Particle PDG IDs">,
+    Field<std::vector<float>, "E", "Total energy">,
+    Field<std::vector<float>, "px", "Momentum X component">,
+    Field<std::vector<float>, "py", "Momentum Y component">,
+    Field<std::vector<float>, "pz", "Momentum Z component">>;
 
 /// @brief Event data model for event generators.
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.

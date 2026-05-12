@@ -17,9 +17,6 @@
 #pragma once
 
 #include "Mustard/Data/Model.h++"
-#include "Mustard/Data/Object/Tuple.h++"
-
-#include "fmt/format.h"
 
 #include <cstdint>
 #include <tuple>
@@ -36,83 +33,41 @@
 
 struct TestingModelA
     : Mustard::Data::Model<
-          Mustard::Data::Value<std::int32_t, "EvtID">,
-          Mustard::Data::Value<std::int32_t, "i32">,
-          Mustard::Data::Value<double, "f64">,
-          Mustard::Data::Value<std::string, "str">,
-          Mustard::Data::Value<bool, "b">,
-          Mustard::Data::Value<char, "ch">,
-          Mustard::Data::Value<std::int64_t, "i64">,
-          Mustard::Data::Value<std::uint32_t, "u32">,
-          Mustard::Data::Value<float, "f32">,
-          Mustard::Data::Value<std::vector<std::int32_t>, "vi32">> {};
+          Mustard::Data::Field<std::int32_t, "EvtID">,
+          Mustard::Data::Field<std::int32_t, "i32">,
+          Mustard::Data::Field<double, "f64">,
+          Mustard::Data::Field<std::string, "str">,
+          Mustard::Data::Field<bool, "b">,
+          Mustard::Data::Field<char, "ch">,
+          Mustard::Data::Field<std::int64_t, "i64">,
+          Mustard::Data::Field<std::uint32_t, "u32">,
+          Mustard::Data::Field<float, "f32">,
+          Mustard::Data::Field<std::vector<std::int32_t>, "vi32">> {};
 
 struct TestingModelB
     : Mustard::Data::Model<
-          Mustard::Data::Value<std::int32_t, "EvtID">,
-          Mustard::Data::Value<float, "f32">,
-          Mustard::Data::Value<bool, "b">,
-          Mustard::Data::Value<std::vector<int>, "vi">,
-          Mustard::Data::Value<std::vector<double>, "vf64">,
-          Mustard::Data::Value<std::vector<std::string>, "vstr">,
-          Mustard::Data::Value<std::uint8_t, "u8">,
-          Mustard::Data::Value<std::int16_t, "i16">,
-          Mustard::Data::Value<std::pair<float, double>, "pf32f64">,
-          Mustard::Data::Value<std::tuple<std::uint16_t, bool, std::string>, "tu16bstr">> {};
+          Mustard::Data::Field<std::int32_t, "EvtID">,
+          Mustard::Data::Field<float, "f32">,
+          Mustard::Data::Field<bool, "b">,
+          Mustard::Data::Field<std::vector<int>, "vi">,
+          Mustard::Data::Field<std::vector<double>, "vf64">,
+          Mustard::Data::Field<std::vector<std::string>, "vstr">,
+          Mustard::Data::Field<std::uint8_t, "u8">,
+          Mustard::Data::Field<std::int16_t, "i16">,
+          Mustard::Data::Field<std::pair<float, double>, "pf32f64">,
+          Mustard::Data::Field<std::tuple<std::uint16_t, bool, std::string>, "tu16bstr">> {};
 
 struct TestingModelC
     : Mustard::Data::Model<
-          Mustard::Data::Value<std::int32_t, "EvtID">,
-          Mustard::Data::Value<std::array<double, 3>, "a3f64">,
-          Mustard::Data::Value<std::pair<int, int>, "p11">,
-          Mustard::Data::Value<std::array<std::uint32_t, 4>, "a4u32">,
-          Mustard::Data::Value<std::string, "str">,
-          Mustard::Data::Value<std::int64_t, "i64">,
-          Mustard::Data::Value<double, "f64">,
-          Mustard::Data::Value<std::tuple<bool, char, std::int32_t>, "tbchi32">> {};
+          Mustard::Data::Field<std::int32_t, "EvtID">,
+          Mustard::Data::Field<std::array<double, 3>, "a3f64">,
+          Mustard::Data::Field<std::pair<int, int>, "p11">,
+          Mustard::Data::Field<std::array<std::uint32_t, 4>, "a4u32">,
+          Mustard::Data::Field<std::string, "str">,
+          Mustard::Data::Field<std::int64_t, "i64">,
+          Mustard::Data::Field<double, "f64">,
+          Mustard::Data::Field<std::tuple<bool, char, std::int32_t>, "tbchi32">> {};
 
-inline auto MakeEntryA(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelA> {
-    auto entry{Mustard::Data::MakeArcTuple<TestingModelA>()};
-    F<"EvtID">(*entry) = static_cast<std::int32_t>(evtID);
-    const auto i{evtID * 10 + entryIdx};
-    F<"i32">(*entry) = -1000 - i;
-    F<"f64">(*entry) = 2.5 + i;
-    F<"str">(*entry) = fmt::format("modelA-{}", i);
-    F<"b">(*entry) = (i % 2 == 0);
-    F<"ch">(*entry) = 'A' + (i % 26);
-    F<"i64">(*entry) = -10000 - i;
-    F<"u32">(*entry) = 1000 + i;
-    F<"f32">(*entry) = 1.25f + i;
-    F<"vi32">(*entry) = {std::int32_t(i), std::int32_t(i + 1), std::int32_t(i + 2)};
-    return entry;
-}
-
-inline auto MakeEntryB(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelB> {
-    auto entry{Mustard::Data::MakeArcTuple<TestingModelB>()};
-    F<"EvtID">(*entry) = static_cast<std::int32_t>(evtID);
-    const auto i{evtID * 10 + entryIdx};
-    F<"f32">(*entry) = 0.5f + i;
-    F<"b">(*entry) = (i % 3 == 0);
-    F<"vi">(*entry) = {int(i), int(i * 2), int(i * 3)};
-    F<"vf64">(*entry) = {0.1 + i, 0.2 + i, 0.3 + i};
-    F<"vstr">(*entry) = {fmt::format("b{}", i), fmt::format("c{}", i)};
-    F<"u8">(*entry) = i % 256;
-    F<"i16">(*entry) = -500 - i;
-    F<"pf32f64">(*entry) = {1.0f + i, 2.0 + i};
-    F<"tu16bstr">(*entry) = {std::uint16_t(100 + i), (i % 4 == 0), fmt::format("tuple{}", i)};
-    return entry;
-}
-
-inline auto MakeEntryC(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelC> {
-    auto entry{Mustard::Data::MakeArcTuple<TestingModelC>()};
-    F<"EvtID">(*entry) = static_cast<std::int32_t>(evtID);
-    const auto i{evtID * 10 + entryIdx};
-    F<"a3f64">(*entry) = {1.0 + i, 2.0 + i, 3.0 + i};
-    F<"p11">(*entry) = {i, -i};
-    F<"a4u32">(*entry) = {std::uint32_t(10 + i), std::uint32_t(20 + i), std::uint32_t(30 + i), std::uint32_t(40 + i)};
-    F<"str">(*entry) = fmt::format("modelC-{}", i);
-    F<"i64">(*entry) = 10000 + i;
-    F<"f64">(*entry) = 3.14159 + i;
-    F<"tbchi32">(*entry) = {(i % 2 == 0), 'Z' - (i % 26), static_cast<std::int32_t>(i * 10)};
-    return entry;
-}
+auto MakeEntryA(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelA>;
+auto MakeEntryB(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelB>;
+auto MakeEntryC(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelC>;
