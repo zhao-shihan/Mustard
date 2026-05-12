@@ -220,8 +220,3 @@ auto RDFReader<T, D, N>::ReaderThreadFunction() -> void {
 }
 
 } // namespace Mustard::Data::inline Processing
-
-#include "Mustard/Data/Processing/MultiRDFEntryReader.inl"
-#include "Mustard/Data/Processing/MultiRDFEventReader.inl"
-#include "Mustard/Data/Processing/SingleRDFEntryReader.inl"
-#include "Mustard/Data/Processing/SingleRDFEventReader.inl"

@@ -22,6 +22,8 @@
 #include "Mustard/Data/Model.h++"
 #include "Mustard/Data/Object/Tuple.h++"
 #include "Mustard/Data/Processing/CountRDFEntry.h++"
+#include "Mustard/Data/Processing/RDFEntryReader.h++"
+#include "Mustard/Data/Processing/RDFEventReader.h++"
 #include "Mustard/Data/Processing/RDFReader.h++"
 #include "Mustard/Data/Processing/impl3/ProcessorBase.h++"
 #include "Mustard/Execution/Executor.h++"
