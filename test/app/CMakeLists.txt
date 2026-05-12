@@ -14,8 +14,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-add_subdirectory(app)
-add_subdirectory(lib)
-
-add_executable(MustardTest MustardTest.c++)
-target_link_libraries(MustardTest Mustard::Mustard MustardTesting MustardTestingApp)
+file(GLOB_RECURSE mustard_testing_app_src ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/*.c++)
+add_library(MustardTestingApp STATIC ${mustard_testing_app_src})
+target_include_directories(MustardTestingApp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(MustardTestingApp Mustard::Mustard MustardTesting)
