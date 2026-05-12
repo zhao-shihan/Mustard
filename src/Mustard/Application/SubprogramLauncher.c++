@@ -78,12 +78,10 @@ auto SubprogramLauncher::Launch(int argc, char* argv[]) -> int {
         fmt::println(stderr, "Try {} --help", argv[0]);
         std::exit(EXIT_FAILURE);
     }
-    const auto iSubprogram{
-        std::ranges::find_if(fState->subprogram,
-                             [this](auto&& p) {
-                                 const auto& [_, subcommand]{p.second};
-                                 return fState->command->is_subcommand_used(*subcommand);
-                             })};
+    const auto iSubprogram{std::ranges::find_if(fState->subprogram, [this](auto&& p) {
+        const auto& [_, subcommand]{p.second};
+        return fState->command->is_subcommand_used(*subcommand);
+    })};
     if (iSubprogram == fState->subprogram.cend()) {
         fmt::print("{}", fState->command->help().view());
         std::exit(EXIT_FAILURE);
