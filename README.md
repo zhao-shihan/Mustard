@@ -35,7 +35,7 @@ This section guides you through building Mustard from source.
 
 - **C++ compiler:** GCC ≥ 13 or LLVM Clang ≥ 16 or equivalent
 - **C++ standard library:** libstdc++ ≥ 13 or equivalent
-- **Build system:** CMake ≥ 3.21, and GNU Make or Ninja or equivalent
+- **Build system:** CMake ≥ 3.24, and GNU Make or Ninja or equivalent
 
 #### Required dependencies
 

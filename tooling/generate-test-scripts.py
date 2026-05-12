@@ -147,8 +147,9 @@ def generate_build_step(compiler_c, compiler_cxx):
             -DCMAKE_C_COMPILER={compiler_c} \\
             -DCMAKE_C_FLAGS='-march=native' \\
             -DCMAKE_CXX_COMPILER={compiler_cxx} \\
-            -DCMAKE_CXX_FLAGS='-march=native'\\
-            -DMUSTARD_UNITY_BUILD=ON \\
+            -DCMAKE_CXX_FLAGS='-march=native' \\
+            -DBUILD_TESTING=OFF \\
+            -DMUSTARD_BUILD_TESTING=ON \\
             -DMUSTARD_FULL_UNITY_BUILD=ON
           ninja"""
 

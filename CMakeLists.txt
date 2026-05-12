@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.24)
 
 # Enable MSVC_RUNTIME_LIBRARY target property
 # See https://cmake.org/cmake/help/latest/policy/CMP0091.html
@@ -23,11 +23,9 @@ cmake_policy(SET CMP0091 NEW)
 # See https://discourse.cmake.org/t/what-is-the-correct-way-to-set-options-of-a-project-before-fetch-content/268/6
 # See also https://cmake.org/cmake/help/latest/policy/CMP0077.html
 cmake_policy(SET CMP0077 NEW)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
-    # ExternalProject_Add sets the timestamps of extracted contents to the time of extraction
-    # See https://cmake.org/cmake/help/latest/policy/CMP0135.html
-    cmake_policy(SET CMP0135 NEW)
-endif()
+# ExternalProject_Add sets the timestamps of extracted contents to the time of extraction
+# See https://cmake.org/cmake/help/latest/policy/CMP0135.html
+cmake_policy(SET CMP0135 NEW)
 
 set(MUSTARD_VERSION_MAJOR 0)
 set(MUSTARD_VERSION_MINOR 26)
@@ -57,6 +55,7 @@ include(CMakeDependentOption)
 # Options (ON/OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(BUILD_TESTING "Enable tests" ${PROJECT_IS_TOP_LEVEL})
+option(MUSTARD_BUILD_TESTING "Enable tests for Mustard" ${BUILD_TESTING})
 option(MUSTARD_BUILTIN_ARGPARSE "Use built-in argparse (network or pre-downloaded source is required)." OFF)
 option(MUSTARD_BUILTIN_BACKWARD "Use built-in backward-cpp (recommended, network or pre-downloaded source is required)." ON)
 option(MUSTARD_BUILTIN_EFM "Use built-in EFM (network or pre-downloaded source is required)." OFF)
@@ -202,7 +201,7 @@ endif()
 include(${MUSTARD_PROJECT_CMAKE_DIR}/MustardCompileConfig.cmake)
 
 add_subdirectory(src)
-if(BUILD_TESTING)
+if(MUSTARD_BUILD_TESTING)
     add_subdirectory(test)
 endif()
 add_subdirectory(tooling)
