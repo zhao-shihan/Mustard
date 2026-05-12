@@ -37,7 +37,7 @@ public:
     template<std::derived_from<Subprogram> ASubprogram>
     auto AddSubprogram() -> void { AddSubprogram(std::make_unique<ASubprogram>()); }
     auto AddSubprogram(std::unique_ptr<Subprogram> subprogram) -> void;
-    auto LaunchMain(int argc, char* argv[]) -> int;
+    auto Launch(int argc, char* argv[]) -> int;
 
 private:
     struct State;

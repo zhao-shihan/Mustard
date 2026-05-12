@@ -66,7 +66,7 @@ auto SubprogramLauncher::AddSubprogram(std::unique_ptr<Subprogram> subprogram) -
     fState->subprogram.try_emplace(subprogramType, std::move(subprogram), std::move(subcommand));
 }
 
-auto SubprogramLauncher::LaunchMain(int argc, char* argv[]) -> int {
+auto SubprogramLauncher::Launch(int argc, char* argv[]) -> int {
     if (fState == nullptr) {
         Throw<std::logic_error>("Subprogram has been launched");
     }
