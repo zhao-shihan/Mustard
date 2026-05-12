@@ -278,7 +278,7 @@ public:
     /// @brief Access per-RDF event-block metadata.
     /// @pre @p kRDF is in @c [0,N).
     auto RDF(gsl::index kRDF) const -> const auto& { return *fPerRDFEventInfo[kRDF]; }
-    /// @brief Shared pointer to per-RDF event-block metadata.
+    /// @brief Arc pointer to per-RDF event-block metadata.
     /// @pre @p kRDF is in @c [0,N).
     auto PerRDFEventInfo(gsl::index kRDF) const -> auto { return fPerRDFEventInfo.at(kRDF); }
 

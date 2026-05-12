@@ -146,20 +146,23 @@ auto Processor<AExecutor>::RunImpl(RDFReader<T, D, N>& reader, Index n, std::str
             return;
         }
         const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)};
-        if (not asyncRead.valid()) { // first batch
+        if (not asyncRead.valid()) [[unlikely]] { // first batch
             asyncRead = reader.AsyncRead(iFirst, iLast);
-        } else { // common case, process previous batch while reading next batch
-            auto batchData{asyncRead.get()};
-            asyncRead = reader.AsyncRead(iFirst, iLast);
-            processBatch(std::move(batchData));
+            return;
         }
+        // common case, process previous batch while reading next batch
+        auto batchData{asyncRead.get()};
+        asyncRead = reader.AsyncRead(iFirst, iLast);
+        processBatch(std::move(batchData));
     });
     if (asyncRead.valid()) {
         processBatch(asyncRead.get()); // process last batch
     }
     // In parallel processing, only one process will exhaust the data (the one that processes the last batch);
     // others need to exhaust explicitly to mute warning from reader
-    reader.Exhaust();
+    if (not reader.Exhausted()) {
+        reader.Exhaust();
+    }
     return nProcessed;
 }
 

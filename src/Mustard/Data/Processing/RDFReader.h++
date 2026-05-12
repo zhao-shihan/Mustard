@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Data/Container/ArcTupleHashMap.h++"
 #include "Mustard/Data/Container/ArcTupleVector.h++"
 #include "Mustard/Data/Model.h++"
 #include "Mustard/Data/Object/Tuple.h++"
@@ -36,6 +35,8 @@
 
 #include "gtl/vector.hpp"
 
+#include "muc/future"
+
 #include "gsl/gsl"
 
 #include "fmt/format.h"
@@ -46,7 +47,6 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <future>
 #include <ranges>
 #include <semaphore>
 #include <stdexcept>
@@ -70,18 +70,32 @@ protected:
     using DataFrameType = std::conditional_t<N == 1, ROOT::RDF::RNode, std::array<ROOT::RDF::RNode, N>>;
 
 protected:
-    explicit RDFReader(Index size, std::optional<DataFrameType> rdf = {});
+    explicit RDFReader(Index size, DataFrameType rdf);
     virtual ~RDFReader() = default;
 
 public:
     [[nodiscard]] auto AsyncRead(Index first, Index last) -> std::future<Data>;
-    [[nodiscard]] auto Read(Index first, Index last) -> Data;
-    auto Exhaust() -> void;
+    [[nodiscard]] auto AsyncReadNext(Index n) -> std::future<Data>;
+    [[nodiscard]] auto AsyncReadNext() -> std::future<typename Data::value_type>;
+    [[nodiscard]] auto AsyncSkipTo(Index idx) -> std::future<void>;
+    [[nodiscard]] auto AsyncSkipNext(Index n = 1) -> std::future<void>;
+    [[nodiscard]] auto AsyncExhaust() -> std::future<void>;
+
+    [[nodiscard]] auto Read(Index first, Index last) -> Data { return AsyncRead(first, last).get(); }
+    [[nodiscard]] auto ReadNext(Index n) -> Data { return AsyncReadNext(n).get(); }
+    [[nodiscard]] auto ReadNext() -> typename Data::value_type { return AsyncReadNext().get(); }
+    auto SkipTo(Index idx) -> void { AsyncSkipTo(idx).get(); }
+    auto SkipNext(Index n = 1) -> void { AsyncSkipNext(n).get(); }
+    auto Exhaust() -> void { AsyncExhaust().get(); }
+
+    virtual auto Reset() -> void;
 
     auto Reading() const -> auto { return fReading; }
     auto Exhausted() const -> auto { return fExhausted.test(); }
 
 protected:
+    [[nodiscard]] auto UncheckedAsyncRead(Index first, Index last) -> std::future<Data>;
+
     auto First() const -> auto { return fFirst; };
     auto Last() const -> auto { return fLast; };
     auto Size() const -> auto { return fSize; }
@@ -91,9 +105,11 @@ protected:
     auto DestructorAction() -> void;
 
 private:
-    virtual auto ReaderKernel(std::optional<DataFrameType>&& rdf) -> void = 0;
+    auto ReaderThreadFunction() -> void;
+    virtual auto ReaderKernel() -> void = 0;
 
 protected:
+    DataFrameType fRDF;
     Index fNext; ///< Next entry/event index
     Arc<Data> fData;
 
@@ -114,6 +130,9 @@ class RDFEntryReader;
 
 template<Modelized M>
 class RDFEntryReader<M> : public RDFReader<gsl::index, ArcTuple<M>, 1> {
+    template<Modelized...>
+    friend class RDFEntryReader; // for accessing UncheckedAsyncRead
+
 private:
     using Base = RDFReader<gsl::index, ArcTuple<M>, 1>;
 
@@ -132,7 +151,7 @@ public:
     auto NextEntry() const -> Entry;
 
 private:
-    auto ReaderKernel(std::optional<DataFrameType>&& rdf) -> void override;
+    auto ReaderKernel() -> void override;
 };
 
 template<Modelized... Ms>
@@ -152,6 +171,8 @@ public:
     explicit RDFEntryReader(DataFrameType rdf, const std::array<Entry, N{}>& nRDFEntry);
     ~RDFEntryReader() override { this->DestructorAction(); }
 
+    auto Reset() -> void override;
+
     auto NEntry() const -> auto { return this->Size(); }
     auto NextEntry() const -> Entry;
 
@@ -160,7 +181,7 @@ public:
     auto SubReader() const -> const auto& { return get<K>(fSubReader).value(); }
 
 private:
-    auto ReaderKernel(std::optional<DataFrameType>&& rdf) -> void override;
+    auto ReaderKernel() -> void override;
 
 private:
     std::tuple<std::optional<RDFEntryReader<Ms>>...> fSubReader;
@@ -171,6 +192,9 @@ class RDFEventReader;
 
 template<std::integral T, Modelized M>
 class RDFEventReader<T, M> : public RDFReader<std::make_signed_t<T>, ArcTupleVector<M>, 1> {
+    template<std::integral, Modelized...>
+    friend class RDFEventReader; // for accessing UncheckedAsyncRead
+
 private:
     using Base = RDFReader<std::make_signed_t<T>, ArcTupleVector<M>, 1>;
 
@@ -193,7 +217,7 @@ public:
     auto RDFEventInfo() const -> auto { return fRDFEventInfo; }
 
 private:
-    auto ReaderKernel(std::optional<DataFrameType>&& rdf) -> void override;
+    auto ReaderKernel() -> void override;
 
 private:
     Entry fEntry;
@@ -219,6 +243,8 @@ public:
     explicit RDFEventReader(DataFrameType rdf, Arc<MultiRDFEventInfo<T, N{}>> rdfEventInfo);
     ~RDFEventReader() override { this->DestructorAction(); }
 
+    auto Reset() -> void override;
+
     auto NEvent() const -> auto { return this->Size(); }
     auto NextEvtIdx() const -> Index;
 
@@ -234,7 +260,7 @@ public:
     auto MisalignedEventCountFatalThreshold(Index n) -> void;
 
 private:
-    auto ReaderKernel(std::optional<DataFrameType>&& rdf) -> void override;
+    auto ReaderKernel() -> void override;
 
 private:
     Arc<MultiRDFEventInfo<T, N{}>> fRDFEventInfo;
