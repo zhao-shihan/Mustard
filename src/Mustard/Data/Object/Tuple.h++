@@ -57,10 +57,10 @@ concept TupleLike = requires {
     { T::Size() } -> std::same_as<std::size_t>;
     requires T::Size() >= 0;
     requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
-        return (... and requires(T t) { t.template Get<std::tuple_element_t<Is, typename T::Model::StdTuple>::Name()>(); });
+        return (... and requires(T t) { t.template F<std::tuple_element_t<Is, typename T::Model::StdTuple>::Name()>(); });
     }(gslx::make_index_sequence<T::Size()>{}));
     requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
-        return (... and requires(const T t) { t.template Get<std::tuple_element_t<Is, typename T::Model::StdTuple>::Name()>(); });
+        return (... and requires(const T t) { t.template F<std::tuple_element_t<Is, typename T::Model::StdTuple>::Name()>(); });
     }(gslx::make_index_sequence<T::Size()>{}));
 };
 
@@ -195,22 +195,22 @@ public:
     /// @tparam AName The compile-time field name.
     /// @return Returns a field reference preserving value category.
     template<muc::ceta_string AName>
-    constexpr auto Get() const& -> decltype(auto) { return GetImpl<M::template Index<AName>()>(); }
+    constexpr auto F() const& -> decltype(auto) { return GetImpl<M::template Index<AName>()>(); }
     template<muc::ceta_string AName>
-    constexpr auto Get() & -> decltype(auto) { return GetImpl<M::template Index<AName>()>(); }
+    constexpr auto F() & -> decltype(auto) { return GetImpl<M::template Index<AName>()>(); }
     template<muc::ceta_string AName>
-    constexpr auto Get() && -> decltype(auto) { return std::move(*this).template GetImpl<M::template Index<AName>()>(); }
+    constexpr auto F() && -> decltype(auto) { return std::move(*this).template GetImpl<M::template Index<AName>()>(); }
     template<muc::ceta_string AName>
-    constexpr auto Get() const&& -> decltype(auto) { return std::move(*this).template GetImpl<M::template Index<AName>()>(); }
+    constexpr auto F() const&& -> decltype(auto) { return std::move(*this).template GetImpl<M::template Index<AName>()>(); }
 
     /// @brief Gets a field by name and converts it to a different type via Value::As.
     /// @tparam U The target type.
     /// @tparam AName The compile-time field name.
     /// @return Converted value of the field.
     template<muc::ceta_string AName, typename U>
-    constexpr auto Get() const& -> decltype(auto) { return Get<AName>().template As<U>(); }
+    constexpr auto F() const& -> decltype(auto) { return F<AName>().template As<U>(); }
     template<muc::ceta_string AName, typename U>
-    constexpr auto Get() && -> decltype(auto) { return std::move(*this).template Get<AName>().template As<U>(); }
+    constexpr auto F() && -> decltype(auto) { return std::move(*this).template F<AName>().template As<U>(); }
 
     /// @brief Converts this tuple to a compile-time sub-tuple type.
     /// @tparam ATuple Target tuple type.
@@ -246,29 +246,29 @@ public:
 
     /// @brief ADL helper forwarding to member Get.
     template<muc::ceta_string AName>
-    friend constexpr auto Get(const Tuple<M>& t) -> decltype(auto) { return t.template Get<AName>(); }
+    friend constexpr auto F(const Tuple<M>& t) -> decltype(auto) { return t.template F<AName>(); }
     template<muc::ceta_string AName>
-    friend constexpr auto Get(Tuple<M>& t) -> decltype(auto) { return t.template Get<AName>(); }
+    friend constexpr auto F(Tuple<M>& t) -> decltype(auto) { return t.template F<AName>(); }
     template<muc::ceta_string AName>
-    friend constexpr auto Get(Tuple<M>&& t) -> decltype(auto) { return std::move(t).template Get<AName>(); }
+    friend constexpr auto F(Tuple<M>&& t) -> decltype(auto) { return std::move(t).template F<AName>(); }
     template<muc::ceta_string AName>
-    friend constexpr auto Get(const Tuple<M>&& t) -> decltype(auto) { return std::move(t).template Get<AName>(); }
+    friend constexpr auto F(const Tuple<M>&& t) -> decltype(auto) { return std::move(t).template F<AName>(); }
 
     /// @brief ADL helper returning a named field converted via Value::As.
     template<muc::ceta_string AName, typename U>
-    friend constexpr auto Get(const Tuple<M>& t) -> decltype(auto) { return t.template Get<AName, U>(); }
+    friend constexpr auto F(const Tuple<M>& t) -> decltype(auto) { return t.template F<AName, U>(); }
     template<muc::ceta_string AName, typename U>
-    friend constexpr auto Get(Tuple<M>&& t) -> decltype(auto) { return std::move(t).template Get<AName, U>(); }
+    friend constexpr auto F(Tuple<M>&& t) -> decltype(auto) { return std::move(t).template F<AName, U>(); }
 
     /// @brief std::get-compatible ADL helper by compile-time index.
     template<gsl::index I>
-    friend constexpr auto get(const Tuple<M>& t) -> decltype(auto) { return t.template Get<std::tuple_element_t<I, Tuple<M>>::Name()>(); }
+    friend constexpr auto get(const Tuple<M>& t) -> decltype(auto) { return t.template F<std::tuple_element_t<I, Tuple<M>>::Name()>(); }
     template<gsl::index I>
-    friend constexpr auto get(Tuple<M>& t) -> decltype(auto) { return t.template Get<std::tuple_element_t<I, Tuple<M>>::Name()>(); }
+    friend constexpr auto get(Tuple<M>& t) -> decltype(auto) { return t.template F<std::tuple_element_t<I, Tuple<M>>::Name()>(); }
     template<gsl::index I>
-    friend constexpr auto get(Tuple<M>&& t) -> decltype(auto) { return std::move(t).template Get<std::tuple_element_t<I, Tuple<M>>::Name()>(); }
+    friend constexpr auto get(Tuple<M>&& t) -> decltype(auto) { return std::move(t).template F<std::tuple_element_t<I, Tuple<M>>::Name()>(); }
     template<gsl::index I>
-    friend constexpr auto get(const Tuple<M>&& t) -> decltype(auto) { return std::move(t).template Get<std::tuple_element_t<I, Tuple<M>>::Name()>(); }
+    friend constexpr auto get(const Tuple<M>&& t) -> decltype(auto) { return std::move(t).template F<std::tuple_element_t<I, Tuple<M>>::Name()>(); }
 
     /// @brief ADL helper forwarding to member As.
     template<SubTuple<M> ATuple>

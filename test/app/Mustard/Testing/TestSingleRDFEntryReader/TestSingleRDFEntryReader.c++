@@ -108,7 +108,7 @@ auto TestSingleRDFEntryReader::Main(int argc, char* argv[]) const -> int {
         Mustard::PrintError(fmt::format("{} row {} mismatch details:", sourceName, i));
         std::size_t mismatchCount{};
         const auto logMismatch{[&]<muc::ceta_string AName>() {
-            if (Get<AName>(actual) != Get<AName>(*expected[i])) {
+            if (F<AName>(actual) != F<AName>(*expected[i])) {
                 ++mismatchCount;
                 Mustard::PrintError(fmt::format("  - field '{}' mismatch", AName.sv()));
             }

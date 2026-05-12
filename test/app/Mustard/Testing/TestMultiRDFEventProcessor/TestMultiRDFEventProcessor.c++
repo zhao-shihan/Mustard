@@ -96,7 +96,7 @@ auto TestMultiRDFEventProcessor::Main(int argc, char* argv[]) const -> int {
             auto eventID{-1};
             const auto checkSingleEvent{[&](const auto& event) {
                 for (auto&& entry : std::as_const(event)) {
-                    const auto thisEventID{Get<"EvtID">(*entry)};
+                    const auto thisEventID{F<"EvtID">(*entry)};
                     if (eventID == -1) {
                         eventID = thisEventID;
                         continue;

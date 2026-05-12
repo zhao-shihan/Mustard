@@ -179,7 +179,7 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
         Mustard::PrintError(fmt::format("{} entry mismatch details:", sourceName));
         std::size_t mismatchCount{};
         const auto logMismatch{[&]<muc::ceta_string AName>() {
-            if (Get<AName>(actual) != Get<AName>(expectedEntry)) {
+            if (F<AName>(actual) != F<AName>(expectedEntry)) {
                 ++mismatchCount;
                 Mustard::PrintError(fmt::format("  - field '{}' mismatch", AName.sv()));
             }
@@ -209,7 +209,7 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
         Mustard::PrintError(fmt::format("{} entry mismatch details:", sourceName));
         std::size_t mismatchCount{};
         const auto logMismatch{[&]<muc::ceta_string AName>() {
-            if (Get<AName>(actual) != Get<AName>(expectedEntry)) {
+            if (F<AName>(actual) != F<AName>(expectedEntry)) {
                 ++mismatchCount;
                 Mustard::PrintError(fmt::format("  - field '{}' mismatch", AName.sv()));
             }
@@ -239,7 +239,7 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
         Mustard::PrintError(fmt::format("{} entry mismatch details:", sourceName));
         std::size_t mismatchCount{};
         const auto logMismatch{[&]<muc::ceta_string AName>() {
-            if (Get<AName>(actual) != Get<AName>(expectedEntry)) {
+            if (F<AName>(actual) != F<AName>(expectedEntry)) {
                 ++mismatchCount;
                 Mustard::PrintError(fmt::format("  - field '{}' mismatch", AName.sv()));
             }
@@ -334,7 +334,7 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
     const auto makeExpectedEventIDSet{[&](const auto& expectedEventData, auto& eventIDSet) {
         eventIDSet.reserve(expectedEventData.size());
         for (auto&& event : std::as_const(expectedEventData)) {
-            eventIDSet.insert(Get<"EvtID">(*event[0]));
+            eventIDSet.insert(F<"EvtID">(*event[0]));
         }
     }};
     makeExpectedEventIDSet(expectedEventDataA, expectedEventIDSetA);
@@ -363,10 +363,10 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
             if (std::ranges::any_of(event, [](const auto& entry) { return entry == nullptr; })) {
                 return fail("Multi-model RDFEventReader returned null entry in an event");
             }
-            if (not std::ranges::all_of(event, [&](const auto& entry) { return Get<"EvtID">(*entry) == Get<"EvtID">(*event[0]); })) {
+            if (not std::ranges::all_of(event, [&](const auto& entry) { return F<"EvtID">(*entry) == F<"EvtID">(*event[0]); })) {
                 return fail("Multi-model RDFEventReader returned entries with mismatched EvtID in an event");
             }
-            eventIDSet.insert(eventIDABC.emplace_back(Get<"EvtID">(*event[0])));
+            eventIDSet.insert(eventIDABC.emplace_back(F<"EvtID">(*event[0])));
             return EXIT_SUCCESS;
         }};
         checkEvent(eventA, actualEventIDSetA);
@@ -415,7 +415,7 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
                 if (event[0] == nullptr) {
                     return fail(fmt::format("{} {} returned null entry", sourceName, context));
                 }
-                evtIDs.push_back(Get<"EvtID">(*event[0]));
+                evtIDs.push_back(F<"EvtID">(*event[0]));
                 return EXIT_SUCCESS;
             }};
             if (checkOne(eventA) != EXIT_SUCCESS) {

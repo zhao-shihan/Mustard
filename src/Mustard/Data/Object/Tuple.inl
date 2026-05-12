@@ -39,7 +39,7 @@ constexpr auto Tuple<M>::operator==(const ATuple& that) const -> bool {
         if constexpr (nameI != nameJ) {
             return true; // skip non-matching fields
         } else {
-            return this->template Get<nameI>() == that.template Get<nameJ>(); // ADL fails here; use member Get
+            return this->template F<nameI>() == that.template F<nameJ>(); // ADL fails here; use member Get
         }
     }};
     const auto fieldTupleCompare{[&fieldFieldCompare]<gsl::index I>() constexpr {
@@ -62,7 +62,7 @@ constexpr auto Tuple<M>::AsImpl() const -> ATuple {
                 constexpr auto nameI{std::tuple_element_t<I, Tuple>::Name()};
                 constexpr auto nameJ{std::tuple_element_t<Js, ATuple>::Name()};
                 if constexpr (nameI == nameJ) {
-                    tuple.template Get<nameJ>() = this->template Get<nameI>(); // ADL fails here; use member Get
+                    tuple.template F<nameJ>() = this->template F<nameI>(); // ADL fails here; use member Get
                 }
             }());
         }(gslx::make_index_sequence<ATuple::Size()>{}, std::integral_constant<gsl::index, Is>{}));

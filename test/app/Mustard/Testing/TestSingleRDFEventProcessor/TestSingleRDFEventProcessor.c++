@@ -62,8 +62,8 @@ auto TestSingleRDFEventProcessor::Main(int argc, char* argv[]) const -> int {
             if (event.empty()) {
                 Mustard::Throw<std::runtime_error>(fmt::format("{} empty event found. source={}", sourceName, dataName));
             }
-            const auto eventID{Get<"EvtID">(*event[0])};
-            if (not std::ranges::all_of(event, [&](const auto& e) { return Get<"EvtID">(*e) == eventID; })) {
+            const auto eventID{F<"EvtID">(*event[0])};
+            if (not std::ranges::all_of(event, [&](const auto& e) { return F<"EvtID">(*e) == eventID; })) {
                 Mustard::Throw<std::runtime_error>(fmt::format("{} event ID mismatch within the same event. eventID={}, source={}", sourceName, *eventID, dataName));
             }
             localEventIDList.push_back(eventID);

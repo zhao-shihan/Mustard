@@ -103,7 +103,7 @@ public:
     constexpr auto operator->() -> T* { return std::addressof(fObject); }
 
     /// @brief Converts payload to target type without consuming this Value.
-    /// @details Used by Tuple::Get<AName, U>() for typed field extraction.
+    /// @details Used by Tuple::F<AName, U>() for typed field extraction.
     /// @tparam U Target type.
     /// @return Converted value, or const payload reference for identity conversion.
     template<typename U>
@@ -159,7 +159,7 @@ public:
     constexpr auto operator<=>(const Value<U, N, D>& that) const -> auto { return **this <=> *that; }
 
     /// @brief Returns compile-time field name carried by this Value.
-    /// @details This metadata is used by Model::Index and Tuple::Get<AName>().
+    /// @details This metadata is used by Model::Index and Tuple::F<AName>().
     static constexpr auto Name() -> const auto& { return AName; }
 
     /// @brief Returns compile-time field description carried by this Value.

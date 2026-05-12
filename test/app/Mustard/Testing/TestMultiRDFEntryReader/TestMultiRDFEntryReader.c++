@@ -152,7 +152,7 @@ auto TestMultiRDFEntryReader::Main(int argc, char* argv[]) const -> int {
         Mustard::PrintError(fmt::format("{} row {} mismatch details:", sourceName, i));
         std::size_t mismatchCount{};
         const auto logMismatch{[&]<muc::ceta_string AName>() {
-            if (Get<AName>(actual) != Get<AName>(*expectedA[i])) {
+            if (F<AName>(actual) != F<AName>(*expectedA[i])) {
                 ++mismatchCount;
                 Mustard::PrintError(fmt::format("  - field '{}' mismatch", AName.sv()));
             }
@@ -180,7 +180,7 @@ auto TestMultiRDFEntryReader::Main(int argc, char* argv[]) const -> int {
         Mustard::PrintError(fmt::format("{} row {} mismatch details:", sourceName, i));
         std::size_t mismatchCount{};
         const auto logMismatch{[&]<muc::ceta_string AName>() {
-            if (Get<AName>(actual) != Get<AName>(*expectedB[i])) {
+            if (F<AName>(actual) != F<AName>(*expectedB[i])) {
                 ++mismatchCount;
                 Mustard::PrintError(fmt::format("  - field '{}' mismatch", AName.sv()));
             }
@@ -208,7 +208,7 @@ auto TestMultiRDFEntryReader::Main(int argc, char* argv[]) const -> int {
         Mustard::PrintError(fmt::format("{} row {} mismatch details:", sourceName, i));
         std::size_t mismatchCount{};
         const auto logMismatch{[&]<muc::ceta_string AName>() {
-            if (Get<AName>(actual) != Get<AName>(*expectedC[i])) {
+            if (F<AName>(actual) != F<AName>(*expectedC[i])) {
                 ++mismatchCount;
                 Mustard::PrintError(fmt::format("  - field '{}' mismatch", AName.sv()));
             }

@@ -48,7 +48,7 @@ TTreeWriter<M>::TTreeWriter(const std::string& name) :
     const auto createBranch{[this]<gsl::index I>() {
         using Value = std::tuple_element_t<I, typename M::StdTuple>;
         using Type = typename Value::Type;
-        Type& object{*fEntry.template Get<Value::Name()>()};
+        Type& object{*fEntry.template F<Value::Name()>()};
         const auto branch{fTree->Branch(Value::Name(), &object)};
         if (branch == nullptr) {
             Throw<std::runtime_error>(fmt::format("Failed to create branch for '{}' field '{}'", FieldTypeName<Value>(), Value::Name().sv()));

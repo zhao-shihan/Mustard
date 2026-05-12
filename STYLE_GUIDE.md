@@ -280,12 +280,12 @@ const auto eta{std::sqrt(x + epsilon)};
 
 // √ Good
 constexpr auto CompareTrackID{[](const auto& hit1, const auto& hit2) {
-    return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
+    return F<"TrkID">(*hit1) < F<"TrkID">(*hit2);
 }};
 // × Bad
 constexpr auto CompareTrackID{
     [](const auto& hit1, const auto& hit2) {
-        return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
+        return F<"TrkID">(*hit1) < F<"TrkID">(*hit2);
     }};
 ```
 
@@ -1190,7 +1190,7 @@ const auto alpha{1 / 137.035999084};
 // √ Good
 auto SortTrack1(std::vector<Track>& event) -> void {
     constexpr auto CompareTrackID{[](const auto& hit1, const auto& hit2) {
-        return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
+        return F<"TrkID">(*hit1) < F<"TrkID">(*hit2);
     }};
     std::ranges::sort(event, CompareTrackID);
 }
@@ -1199,7 +1199,7 @@ auto SortTrack1(std::vector<Track>& event) -> void {
 namespace {
 
 auto CompareTrackID(const auto& hit1, const auto& hit2) -> auto {
-    return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
+    return F<"TrkID">(*hit1) < F<"TrkID">(*hit2);
 }
 
 } // namespace
