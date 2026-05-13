@@ -2,21 +2,23 @@
 
 parexec() {
     local use_hwthreads=false
+    local filtered_args=()
     for arg in "$@"; do
         case $arg in
             --use-hwthreads)
                 use_hwthreads=true
                 ;;
             *)
+                filtered_args+=("$arg")
                 ;;
         esac
     done
     if $use_hwthreads; then
         # Use hardware threads (hyperthreading included)
         if mpiexec --version 2>/dev/null | grep -q "Open MPI"; then
-            mpiexec --allow-run-as-root --use-hwthread-cpus "$@"
+            mpiexec --allow-run-as-root --use-hwthread-cpus "${filtered_args[@]}"
         else
-            mpiexec -n "$(nproc)" "$@"
+            mpiexec -n "$(nproc)" "${filtered_args[@]}"
         fi
     else
         # Use physical cores (default)
@@ -29,9 +31,9 @@ parexec() {
             n_physical_cores=1  # Ensure at least 1 core
         fi
         if mpiexec --version 2>/dev/null | grep -q "Open MPI"; then
-            mpiexec --allow-run-as-root -n "$n_physical_cores" "$@"
+            mpiexec --allow-run-as-root -n "$n_physical_cores" "${filtered_args[@]}"
         else
-            mpiexec -n "$n_physical_cores" "$@"
+            mpiexec -n "$n_physical_cores" "${filtered_args[@]}"
         fi
     fi
 }
