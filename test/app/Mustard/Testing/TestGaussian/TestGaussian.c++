@@ -15,13 +15,21 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/CLI/MonteCarloCLI.h++"
-#include "Mustard/Env/MonteCarloEnv.h++"
+#include "Mustard/Data/Model.h++"
+#include "Mustard/Data/Object/Field.h++"
+#include "Mustard/Data/Object/Tuple.h++"
+#include "Mustard/Data/Processing/Writer.h++"
+#include "Mustard/Env/MPIMonteCarloEnv.h++"
+#include "Mustard/Execution/Executor.h++"
+#include "Mustard/IO/File.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian2DDiagnoal.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian3DDiagnoal.h++"
 #include "Mustard/Testing/TestGaussian/TestGaussian.h++"
 
-#include "ROOT/RDataFrame.hxx"
+#include "TFile.h"
+
+#include "muc/array"
 
 #include <cstdlib>
 
@@ -39,7 +47,7 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("--sigma2").help("Sigma 2 of 2D Gaussian.").default_value(2.).nargs(1).scan<'g', double>();
     cli->add_argument("--mu3").help("Mean 3 of 3D Gaussian.").default_value(2.).nargs(1).scan<'g', double>();
     cli->add_argument("--sigma3").help("Sigma 3 of 3D Gaussian.").default_value(3.).nargs(1).scan<'g', double>();
-    Mustard::Env::MonteCarloEnv<256> env{argc, argv, cli};
+    Mustard::Env::MPIMonteCarloEnv<256> env{argc, argv, cli};
 
     const auto n{cli->get<unsigned long long>("n")};
     const auto mu1{cli->get<double>("--mu1")};
@@ -53,11 +61,21 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
     Random::Gaussian2DDiagnoal gaussian2D({mu1, sigma1}, {mu2, sigma2});
     Random::Gaussian3DDiagnoal gaussian3D({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3});
 
-    ROOT::RDataFrame{n}
-        .Define("g1", [&] { return gaussian1D(env.RandomEngine()); })
-        .Define("g2", [&] { return gaussian2D(env.RandomEngine()); })
-        .Define("g3", [&] { return gaussian3D(env.RandomEngine()); })
-        .Snapshot("gaussian", "test_gaussian.root");
+    struct Result
+        : Data::Model<
+              Data::Field<double, "g1">,
+              Data::Field<muc::array2d, "g2">,
+              Data::Field<muc::array3d, "g3">> {};
+
+    ProcessSpecificFile<TFile> file{"test_gaussian.root", "RECREATE"};
+    Data::Writer<Result> writer{"Gaussian"};
+    Mustard::Executor<unsigned long long>{}.Run(n, [&](unsigned long long) {
+        Data::Tuple<Result> entry;
+        F<"g1">(entry) = gaussian1D(env.RandomEngine());
+        F<"g2">(entry) = gaussian2D(env.RandomEngine());
+        F<"g3">(entry) = gaussian3D(env.RandomEngine());
+        writer.Fill(entry);
+    });
 
     return EXIT_SUCCESS;
 }
