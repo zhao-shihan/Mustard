@@ -225,9 +225,7 @@ jobs:
           mkdir build && cd build
           cmake -G Ninja .. \\
             -DCMAKE_C_COMPILER=${{{{ matrix.compiler.cc }}}} \\
-            -DCMAKE_C_FLAGS='-march=native' \\
             -DCMAKE_CXX_COMPILER=${{{{ matrix.compiler.cxx }}}} \\
-            -DCMAKE_CXX_FLAGS='-march=native' \\
             -DBUILD_TESTING=OFF \\
             -DMUSTARD_BUILD_TESTING=ON \\
             -DMUSTARD_FULL_UNITY_BUILD=ON \\
