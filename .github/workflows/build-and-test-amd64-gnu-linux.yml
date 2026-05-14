@@ -7,7 +7,7 @@ on:
     branches:
       - "**"
     paths:
-      - ".github/workflows/build-and-test.yml"
+      - ".github/workflows/build-and-test-amd64-gnu-linux.yml"
       - "src/**"
       - "test/**"
       - "**/CMakeLists.txt"
@@ -17,7 +17,7 @@ on:
     branches:
       - "**"
     paths:
-      - ".github/workflows/build-and-test.yml"
+      - ".github/workflows/build-and-test-amd64-gnu-linux.yml"
       - "src/**"
       - "test/**"
       - "**/CMakeLists.txt"
@@ -31,7 +31,7 @@ jobs:
   # Build stage -- 4 jobs total (GCC/Clang x mpich/openmpi)
   # -----------------------------------------------------------------------
   build:
-    name: Build (${{ matrix.compiler.name }}, ${{ matrix.image.name }})
+    name: Build (AMD64 GNU/Linux, ${{ matrix.compiler.name }}, ${{ matrix.image.name }})
     timeout-minutes: 180
     runs-on: ubuntu-latest
     strategy:
@@ -69,7 +69,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.compiler.name }}-${{ matrix.image.name }}
+          name: build-amd64-gnu-linux-${{ matrix.compiler.name }}-${{ matrix.image.name }}
           path: |
             build/test/MustardTest
             build/test/parexec.sh
@@ -81,7 +81,7 @@ jobs:
   # Test stage -- one job per (compiler, image, test sequence)
   # -----------------------------------------------------------------------
   test:
-    name: ${{ matrix.test }} (${{ matrix.compiler }}, ${{ matrix.image }})
+    name: ${{ matrix.test }} (AMD64 GNU/Linux, ${{ matrix.compiler }}, ${{ matrix.image }})
     needs: build
     timeout-minutes: 30
     runs-on: ubuntu-latest
@@ -134,7 +134,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: build-${{ matrix.compiler.name }}-${{ matrix.image.name }}
+          name: build-amd64-gnu-linux-${{ matrix.compiler.name }}-${{ matrix.image.name }}
           path: build/test
 
       - name: Run test sequence

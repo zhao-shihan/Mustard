@@ -17,8 +17,8 @@
 """Generate GitHub Actions CI workflow and local test runner from test-config.cfg.
 
 Generates:
-  - .github/workflows/build-and-test.yml   (single CI workflow: 4 builds + N test jobs)
-  - tooling/run-tests.sh                   (local serial test runner)
+  - .github/workflows/build-and-test-amd64-gnu-linux.yml   (single CI workflow: 4 builds + N test jobs)
+  - tooling/run-tests.sh                                   (local serial test runner)
 
 Design:
   - Build stage: 4 jobs (GCC/Clang x mpich/openmpi), each uploads a build artifact.
@@ -144,7 +144,7 @@ def _indent(text, level):
 
 
 def generate_build_and_test_yml(sequences):
-    """Generate the single build-and-test.yml workflow content.
+    """Generate the single build-and-test-amd64-gnu-linux.yml workflow content.
 
     Build stage: 4 jobs (GCC/Clang x mpich/openmpi), each uploading a build artifact.
     Test stage:  N jobs via matrix (compiler x image x test-sequence), each
@@ -175,7 +175,7 @@ on:
     branches:
       - "**"
     paths:
-      - ".github/workflows/build-and-test.yml"
+      - ".github/workflows/build-and-test-amd64-gnu-linux.yml"
       - "src/**"
       - "test/**"
       - "**/CMakeLists.txt"
@@ -185,7 +185,7 @@ on:
     branches:
       - "**"
     paths:
-      - ".github/workflows/build-and-test.yml"
+      - ".github/workflows/build-and-test-amd64-gnu-linux.yml"
       - "src/**"
       - "test/**"
       - "**/CMakeLists.txt"
@@ -315,7 +315,7 @@ def main():
     print(f"Generated: {run_sh_path}")
 
     # 2. Single CI workflow
-    workflow_path = os.path.join(WORKFLOW_DIR, "build-and-test.yml")
+    workflow_path = os.path.join(WORKFLOW_DIR, "build-and-test-amd64-gnu-linux.yml")
     workflow_yml = generate_build_and_test_yml(sequences)
     with open(workflow_path, "w", encoding="utf-8") as f:
         f.write(workflow_yml)
