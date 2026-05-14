@@ -249,7 +249,7 @@ jobs:
   # Test stage -- one job per (compiler, image, test sequence)
   # -----------------------------------------------------------------------
   test:
-    name: ${{{{ matrix.test }}}} (AMD64 GNU/Linux, ${{{{ matrix.compiler }}}}, ${{{{ matrix.image }}}})
+    name: ${{{{ matrix.test }}}} (AMD64 GNU/Linux, ${{{{ matrix.compiler.name }}}}, ${{{{ matrix.image.name }}}})
     needs: build
     timeout-minutes: 30
     runs-on: ubuntu-latest
