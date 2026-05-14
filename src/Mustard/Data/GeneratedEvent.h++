@@ -29,22 +29,22 @@ namespace Mustard::Data {
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
 /// @see `GeneratedVertex`
 using GeneratedGeometryVertex = Model<
-    Field<float, "w", "Vertex weight">,
-    Field<double, "t0", "Vertex time">,
-    Field<float, "x", "Vertex X position">,
-    Field<float, "y", "Vertex Y position">,
-    Field<float, "z", "Vertex Z position">>;
+    Field<double, float, "w", "Vertex weight">,
+    Field<double, double, "t0", "Vertex time">,
+    Field<double, float, "x", "Vertex X position">,
+    Field<double, float, "y", "Vertex Y position">,
+    Field<double, float, "z", "Vertex Z position">>;
 
 /// @brief Kinematics data model for event generators.
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
 /// @see `GeneratedVertex`
 using GeneratedKinematics = Model<
-    Field<float, "w", "Vertex weight">,
-    Field<std::vector<int>, "pdgID", "Particle PDG IDs">,
-    Field<std::vector<float>, "E", "Total energy">,
-    Field<std::vector<float>, "px", "Momentum X component">,
-    Field<std::vector<float>, "py", "Momentum Y component">,
-    Field<std::vector<float>, "pz", "Momentum Z component">>;
+    Field<double, float, "w", "Vertex weight">,
+    Field<std::vector<int>, std::vector<std::int32_t>, "pdgID", "Particle PDG IDs">,
+    Field<std::vector<double>, std::vector<float>, "E", "Total energy">,
+    Field<std::vector<double>, std::vector<float>, "px", "Momentum X component">,
+    Field<std::vector<double>, std::vector<float>, "py", "Momentum Y component">,
+    Field<std::vector<double>, std::vector<float>, "pz", "Momentum Z component">>;
 
 /// @brief Event data model for event generators.
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.

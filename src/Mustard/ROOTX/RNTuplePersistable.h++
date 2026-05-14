@@ -19,24 +19,49 @@
 #pragma once
 
 #include "Mustard/Data/impl/TypeTraits.h++"
-#include "Mustard/ROOTX/RNTuplePersistableFundamental.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "gsl/gsl"
 
 #include <concepts>
+#include <cstdint>
+#include <limits>
 #include <type_traits>
 
-namespace Mustard::Data::inline Object {
+namespace Mustard::ROOTX {
 
-namespace impl3 {
+/// @brief Concept defining fundamental types persistable in ROOT RNTuple fields.
+///
+/// This concept checks whether a type `T` is one of the core fundamental types that ROOT can
+/// persist in RNTuple fields. It is primarily used for template constraints where only basic
+/// data types are accepted (e.g., serialization, type checking).
+///
+/// @tparam T Type to check against
+/// @see https://root.cern/doc/master/md_tree_2ntuple_2doc_2BinaryFormatSpecification.html
+/// for ROOT fundamental types persistable in RNTuple
+template<typename T>
+concept RNTuplePersistableFundamental =
+    std::same_as<T, bool> or
+    std::same_as<T, char> or
+    std::same_as<T, std::int8_t> or
+    std::same_as<T, std::uint8_t> or
+    std::same_as<T, std::int16_t> or
+    std::same_as<T, std::uint16_t> or
+    std::same_as<T, std::int32_t> or
+    std::same_as<T, std::uint32_t> or
+    std::same_as<T, std::int64_t> or
+    std::same_as<T, std::uint64_t> or
+    (std::same_as<T, float> and std::numeric_limits<float>::is_iec559) or
+    (std::same_as<T, double> and std::numeric_limits<double>::is_iec559);
+
+namespace impl {
 
 template<typename T>
-consteval auto FieldAcceptableImpl() -> bool;
+consteval auto RNTuplePersistableImpl() -> bool;
 
-} // namespace impl3
+} // namespace impl
 
-/// @brief Concept for payload types storable in Field.
+/// @brief Concept for types persistable in ROOT RNTuple fields.
 ///
 /// Accepted categories (recursively for nested value types):
 /// - RNTuple-persistable fundamental types, std::string, and std::bitset.
@@ -47,7 +72,6 @@ consteval auto FieldAcceptableImpl() -> bool;
 /// - std::map/std::unordered_map/std::multimap/std::unordered_multimap
 ///   when both key_type and mapped_type are acceptable.
 /// All other types are rejected by this concept.
-/// This concept is used by Field and, transitively, by Model specializations that carry Field fields.
 ///
 /// @note Literal long and unsigned long are not accepted semantically (as their sizes are platform-dependent).
 /// @note All types accepted by this concept are accepted by ROOT RNTuple, but some of them may not be
@@ -66,8 +90,8 @@ consteval auto FieldAcceptableImpl() -> bool;
 /// @see https://root.cern/doc/master/md_tree_2ntuple_2doc_2BinaryFormatSpecification.html
 /// for all types persistable in RNTuple
 template<typename T>
-concept FieldAcceptable = impl3::FieldAcceptableImpl<T>();
+concept RNTuplePersistable = impl::RNTuplePersistableImpl<T>();
 
-} // namespace Mustard::Data::inline Object
+} // namespace Mustard::ROOTX
 
-#include "Mustard/Data/Object/FieldAcceptable.inl"
+#include "Mustard/ROOTX/RNTuplePersistable.inl"

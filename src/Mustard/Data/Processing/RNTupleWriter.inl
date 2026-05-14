@@ -21,7 +21,7 @@ namespace Mustard::Data::inline Processing {
 template<Modelized M>
 RNTupleWriter<M>::RNTupleWriter(const std::string& name) :
     NonCopyableBase{},
-    fFieldTuple{},
+    fEntry{},
     fWriter{} {
     if (not gDirectory->IsWritable()) [[unlikely]] {
         PrintWarning("Current ROOT directory is not writable. Please ensure a writable file is opened.");
@@ -31,14 +31,14 @@ RNTupleWriter<M>::RNTupleWriter(const std::string& name) :
     auto model{ROOT::RNTupleModel::Create()};
     const auto createField{[&]<gsl::index I>() {
         using Field = std::tuple_element_t<I, typename M::StdTuple>;
-        using Type = typename Field::Type;
+        using PersistentType = typename Field::PersistentType;
         std::string description;
         if constexpr (Field::Description()) {
-            description = fmt::format("({}) {}", FieldTypeName<Type>(), Field::Description().sv());
+            description = fmt::format("({}) {}", FieldTypeName<PersistentType>(), Field::Description().sv());
         } else {
-            description = FieldTypeName<Type>();
+            description = FieldTypeName<PersistentType>();
         }
-        std::get<I>(fFieldTuple) = model->template MakeField<Type>(Field::Name(), description);
+        std::get<I>(fEntry) = model->template MakeField<PersistentType>(Field::Name(), description);
     }};
     [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         (..., createField.template operator()<Is>());
@@ -103,8 +103,13 @@ template<Modelized M>
 template<typename ATuple>
     requires std::same_as<std::remove_cvref_t<ATuple>, Tuple<M>>
 auto RNTupleWriter<M>::FillImpl(ATuple&& tuple) -> void {
+    const auto assignEntry{[&]<gsl::index I>() {
+        using Field = std::tuple_element_t<I, typename M::StdTuple>;
+        using PersistentType = typename Field::PersistentType;
+        *std::get<I>(fEntry) = std::forward<ATuple>(tuple).template F<Field::Name(), PersistentType>();
+    }};
     [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
-        (..., (*get<Is>(fFieldTuple) = *get<Is>(std::forward<ATuple>(tuple))));
+        (..., assignEntry.template operator()<Is>());
     }(gslx::make_index_sequence<M::Size()>{});
     fWriter->Fill();
 }

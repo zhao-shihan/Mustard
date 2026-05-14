@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Data/Object/Field.h++"
-#include "Mustard/Data/Object/FieldAcceptable.h++"
+#include "Mustard/ROOTX/RNTuplePersistable.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/utility"
@@ -35,25 +35,37 @@ namespace Mustard::Data::inline Object {
 
 /// @brief Returns the compact field type name for a field-acceptable payload type.
 /// @tparam T Payload type.
-template<FieldAcceptable T>
+template<ROOTX::RNTuplePersistable T>
 auto FieldTypeName() -> std::string;
 
 /// @brief Returns the compact field type name for a field-acceptable payload object.
 /// @tparam T Payload type.
-template<FieldAcceptable T>
+template<ROOTX::RNTuplePersistable T>
 auto FieldTypeName(const T&) -> auto { return FieldTypeName<T>(); }
 
-/// @brief Returns the compact field type name for a Field.
+/// @brief Returns the compact field type name for a Field (in-memory type).
 /// @tparam T Wrapper type whose nested payload type is used for the name.
 template<typename T>
     requires impl2::IsField<T>::value
 auto FieldTypeName() -> auto { return FieldTypeName<typename T::Type>(); }
 
-/// @brief Returns the compact field type name for a Field.
+/// @brief Returns the compact field type name for a Field (in-memory type).
 /// @tparam T Wrapper type whose nested payload type is used for the name.
 template<typename T>
     requires impl2::IsField<T>::value
 auto FieldTypeName(const T&) -> auto { return FieldTypeName<T>(); }
+
+/// @brief Returns the compact field type name for a Field's persistent storage type.
+/// @tparam T Wrapper type whose nested persistent storage type is used for the name.
+template<typename T>
+    requires impl2::IsField<T>::value
+auto FieldPersistentTypeName() -> auto { return FieldTypeName<typename T::PersistentType>(); }
+
+/// @brief Returns the compact field type name for a Field's persistent storage type.
+/// @tparam T Wrapper type whose nested persistent storage type is used for the name.
+template<typename T>
+    requires impl2::IsField<T>::value
+auto FieldPersistentTypeName(const T&) -> auto { return FieldPersistentTypeName<T>(); }
 
 } // namespace Mustard::Data::inline Object
 

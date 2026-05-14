@@ -47,17 +47,17 @@ TTreeWriter<M>::TTreeWriter(const std::string& name) :
     // Create branches
     const auto createBranch{[this]<gsl::index I>() {
         using Field = std::tuple_element_t<I, typename M::StdTuple>;
-        using Type = typename Field::Type;
-        Type& object{*fEntry.template F<Field::Name()>()};
+        using PersistentType = typename Field::PersistentType;
+        PersistentType& object{std::get<I>(fEntry)};
         const auto branch{fTree->Branch(Field::Name(), &object)};
         if (branch == nullptr) {
-            Throw<std::runtime_error>(fmt::format("Failed to create branch for '{}' field '{}'", FieldTypeName<Field>(), Field::Name().sv()));
+            Throw<std::runtime_error>(fmt::format("Failed to create branch for '{}' field '{}'", FieldPersistentTypeName<Field>(), Field::Name().sv()));
         }
         std::string description;
         if constexpr (Field::Description()) {
-            description = fmt::format("({}) {}", FieldTypeName<Type>(), Field::Description().sv());
+            description = fmt::format("({}) {}", FieldTypeName<PersistentType>(), Field::Description().sv());
         } else {
-            description = FieldTypeName<Type>();
+            description = FieldTypeName<PersistentType>();
         }
         branch->SetTitle(description.c_str());
     }};
@@ -116,7 +116,14 @@ template<Modelized M>
 template<typename ATuple>
     requires std::same_as<std::remove_cvref_t<ATuple>, Tuple<M>>
 auto TTreeWriter<M>::FillImpl(ATuple&& tuple) -> void {
-    fEntry = std::forward<ATuple>(tuple);
+    const auto assignEntry{[&]<gsl::index I>() {
+        using Field = std::tuple_element_t<I, typename M::StdTuple>;
+        using PersistentType = typename Field::PersistentType;
+        std::get<I>(fEntry) = std::forward<ATuple>(tuple).template F<Field::Name(), PersistentType>();
+    }};
+    [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+        (..., assignEntry.template operator()<Is>());
+    }(gslx::make_index_sequence<M::Size()>{});
     fTree->Fill();
 }
 

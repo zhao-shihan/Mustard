@@ -48,7 +48,10 @@ namespace Mustard::Data::inline Processing {
 /// @tparam M Mustard data model type used by @c Tuple and @c ArcTuple.
 ///
 /// Tree branches are created once during construction by walking the fields in
-/// @c M::StdTuple and binding them to an internal entry buffer.
+/// @c M::StdTuple and binding them to an internal persistent-type entry buffer.
+/// Each field's in-memory type (@c Field::Type) is converted to the
+/// corresponding persistent storage type (@c Field::PersistentType) via
+/// @c Field::As before filling.
 ///
 /// @par Typical usage
 /// @code{.cpp}
@@ -125,7 +128,16 @@ private:
     auto FillImpl(ATuple&& tuple) -> void;
 
 private:
-    Tuple<M> fEntry;
+    /// @brief Maps a std::tuple of Field types to a std::tuple of PersistentTypes.
+    template<typename AStdTuple>
+    struct PersistentEntryTuple;
+    template<typename... AFields>
+    struct PersistentEntryTuple<std::tuple<AFields...>> {
+        using Type = std::tuple<typename AFields::PersistentType...>;
+    };
+
+private:
+    typename PersistentEntryTuple<typename M::StdTuple>::Type fEntry;
     std::optional<TTree> fTree;
 };
 

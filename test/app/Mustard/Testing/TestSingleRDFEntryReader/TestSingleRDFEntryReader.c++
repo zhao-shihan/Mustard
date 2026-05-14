@@ -129,7 +129,7 @@ auto TestSingleRDFEntryReader::Main(int argc, char* argv[]) const -> int {
         logMismatch.operator()<"vi32">();
         logMismatch.operator()<"vf64">();
         logMismatch.operator()<"vstr">();
-        logMismatch.operator()<"au16">();
+        logMismatch.operator()<"a3u16">();
         logMismatch.operator()<"pi32f">();
         logMismatch.operator()<"tu8str">();
 

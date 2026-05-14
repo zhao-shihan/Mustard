@@ -32,6 +32,7 @@
 
 #include "fmt/format.h"
 
+#include <concepts>
 #include <cstddef>
 #include <memory>
 #include <ranges>
@@ -47,9 +48,11 @@ namespace Mustard::Data::inline Processing {
 /// @tparam M Mustard data model type used by @c Tuple and @c ArcTuple.
 ///
 /// Fields are created once during construction via @c ROOT::RNTupleModel::MakeField.
-/// Each call to @ref Fill copies or moves values from the provided tuple into
-/// model-owned field objects and then commits one entry through
-/// @c ROOT::RNTupleWriter::Fill().
+/// Each call to @ref Fill copies or moves values from the provided tuple,
+/// converting each field from its in-memory type (@c Field::Type) to the
+/// corresponding persistent storage type (@c Field::PersistentType) via
+/// @c Field::As, before committing one
+/// entry through @c ROOT::RNTupleWriter::Fill().
 ///
 /// @par Typical usage
 /// @code{.cpp}
@@ -127,11 +130,11 @@ private:
     struct SharedPtrTuple;
     template<typename... AValues>
     struct SharedPtrTuple<std::tuple<AValues...>> {
-        using Type = std::tuple<std::shared_ptr<typename AValues::Type>...>;
+        using Type = std::tuple<std::shared_ptr<typename AValues::PersistentType>...>;
     };
 
 private:
-    typename SharedPtrTuple<typename M::StdTuple>::Type fFieldTuple;
+    typename SharedPtrTuple<typename M::StdTuple>::Type fEntry;
     std::unique_ptr<ROOT::RNTupleWriter> fWriter;
 };
 

@@ -123,14 +123,15 @@ struct Model<AModel, AOthers...>
                                           typename Model<AOthers...>::StdTuple>> {};
 
 /// @brief Model specialization that prepends one Field field.
-/// @tparam T Field payload type.
+/// @tparam T Field payload type (in-memory type).
+/// @tparam U Field persistent storage type.
 /// @tparam AName Field name.
 /// @tparam ADescription Field description.
 /// @tparam AOthers Remaining modelizable items.
-template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription, Modelizable... AOthers>
-struct Model<Field<T, AName, ADescription>, AOthers...>
-    : impl::ModelBase<Model<Field<T, AName, ADescription>, AOthers...>,
-                      muc::tuple_concat_t<std::tuple<Field<T, AName, ADescription>>,
+template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription, Modelizable... AOthers>
+struct Model<Field<T, U, AName, ADescription>, AOthers...>
+    : impl::ModelBase<Model<Field<T, U, AName, ADescription>, AOthers...>,
+                      muc::tuple_concat_t<std::tuple<Field<T, U, AName, ADescription>>,
                                           typename Model<AOthers...>::StdTuple>> {};
 
 /// @brief Concept for concrete model types.

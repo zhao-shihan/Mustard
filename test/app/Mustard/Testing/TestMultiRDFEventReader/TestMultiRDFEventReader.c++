@@ -217,7 +217,7 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
         logMismatch.operator()<"EvtID">();
         logMismatch.operator()<"f32">();
         logMismatch.operator()<"b">();
-        logMismatch.operator()<"vi">();
+        logMismatch.operator()<"vi32">();
         logMismatch.operator()<"vf64">();
         logMismatch.operator()<"vstr">();
         logMismatch.operator()<"u8">();
@@ -246,7 +246,7 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
         }};
         logMismatch.operator()<"EvtID">();
         logMismatch.operator()<"a3f64">();
-        logMismatch.operator()<"p11">();
+        logMismatch.operator()<"pi32i32">();
         logMismatch.operator()<"a4u32">();
         logMismatch.operator()<"str">();
         logMismatch.operator()<"i64">();

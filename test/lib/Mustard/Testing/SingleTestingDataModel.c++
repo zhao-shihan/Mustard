@@ -40,7 +40,7 @@ auto MakeEntry(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple
     F<"vi32">(*event) = {std::int32_t(i), std::int32_t(i + 1), std::int32_t(i + 2)};
     F<"vf64">(*event) = {0.5 + i, 1.5 + i};
     F<"vstr">(*event) = {fmt::format("x{}", i % 16), fmt::format("y{}", i % 16)};
-    F<"au16">(*event) = {std::uint16_t(10 + i), std::uint16_t(20 + i), std::uint16_t(30 + i)};
+    F<"a3u16">(*event) = {std::uint16_t(10 + i), std::uint16_t(20 + i), std::uint16_t(30 + i)};
     F<"pi32f">(*event) = {std::int32_t(7 + i), 3.0f + i};
     F<"tu8str">(*event) = {std::uint8_t(9 + i), 6.25 + i, fmt::format("t{}", i)};
     return event;

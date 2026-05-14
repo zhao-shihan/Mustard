@@ -18,7 +18,7 @@
 
 namespace Mustard::Data::inline Object {
 
-template<FieldAcceptable T>
+template<ROOTX::RNTuplePersistable T>
 auto FieldTypeName() -> std::string {
     if constexpr (std::same_as<T, bool>) {
         return "b";

@@ -35,25 +35,25 @@ namespace Mustard::Testing {
 
 struct TestingModel
     : Mustard::Data::Model<
-          Mustard::Data::Field<std::int32_t, "EvtID">,
-          Mustard::Data::Field<bool, "b">,
-          Mustard::Data::Field<char, "ch">,
-          Mustard::Data::Field<std::uint8_t, "u8">,
-          Mustard::Data::Field<std::int16_t, "i16">,
-          Mustard::Data::Field<std::uint16_t, "u16">,
-          Mustard::Data::Field<std::int32_t, "i32">,
-          Mustard::Data::Field<std::uint32_t, "u32">,
-          Mustard::Data::Field<std::int64_t, "i64">,
-          Mustard::Data::Field<std::uint64_t, "u64">,
-          Mustard::Data::Field<float, "f32">,
-          Mustard::Data::Field<double, "f64">,
-          Mustard::Data::Field<std::string, "str">,
-          Mustard::Data::Field<std::vector<std::int32_t>, "vi32">,
-          Mustard::Data::Field<std::vector<double>, "vf64">,
-          Mustard::Data::Field<std::vector<std::string>, "vstr">,
-          Mustard::Data::Field<std::array<std::uint16_t, 3>, "au16">,
-          Mustard::Data::Field<std::pair<std::int32_t, float>, "pi32f">,
-          Mustard::Data::Field<std::tuple<std::uint8_t, double, std::string>, "tu8str">> {};
+          Mustard::Data::Field<int, std::int32_t, "EvtID">,
+          Mustard::Data::Field<bool, bool, "b">,
+          Mustard::Data::Field<char, char, "ch">,
+          Mustard::Data::Field<unsigned int, std::uint8_t, "u8">,
+          Mustard::Data::Field<int, std::int16_t, "i16">,
+          Mustard::Data::Field<unsigned int, std::uint16_t, "u16">,
+          Mustard::Data::Field<int, std::int32_t, "i32">,
+          Mustard::Data::Field<unsigned int, std::uint32_t, "u32">,
+          Mustard::Data::Field<long long, std::int64_t, "i64">,
+          Mustard::Data::Field<unsigned long long, std::uint64_t, "u64">,
+          Mustard::Data::Field<double, float, "f32">,
+          Mustard::Data::Field<double, double, "f64">,
+          Mustard::Data::Field<std::string, std::string, "str">,
+          Mustard::Data::Field<std::vector<int>, std::vector<std::int32_t>, "vi32">,
+          Mustard::Data::Field<std::vector<double>, std::vector<double>, "vf64">,
+          Mustard::Data::Field<std::vector<std::string>, std::vector<std::string>, "vstr">,
+          Mustard::Data::Field<std::array<unsigned int, 3>, std::array<std::uint16_t, 3>, "a3u16">,
+          Mustard::Data::Field<std::pair<int, double>, std::pair<std::int32_t, float>, "pi32f">,
+          Mustard::Data::Field<std::tuple<unsigned int, double, std::string>, std::tuple<std::uint8_t, double, std::string>, "tu8str">> {};
 
 auto MakeEntry(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModel>;
 

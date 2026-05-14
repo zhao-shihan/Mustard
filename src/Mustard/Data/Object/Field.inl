@@ -18,57 +18,74 @@
 
 namespace Mustard::Data::inline Object {
 
-template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription>
-template<typename U>
-constexpr Field<T, AName, ADescription>::Field(U&& object) noexcept(std::is_nothrow_constructible_v<T, U&&>) :
-    fObject(std::forward<U>(object)) {}
+template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
+template<typename V>
+constexpr Field<T, U, AName, ADescription>::Field(V&& object) noexcept(std::is_nothrow_constructible_v<T, V&&>) :
+    fObject(std::forward<V>(object)) {}
 
-template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription>
-template<typename U>
-    requires requires(U&& object) { VectorCast<T>(std::forward<U>(object)); }
-constexpr Field<T, AName, ADescription>::Field(U&& object) :
-    fObject(VectorCast<T>(std::forward<U>(object))) {}
+template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
+template<VectorConvertibleTo<T> V>
+constexpr Field<T, U, AName, ADescription>::Field(V&& object) :
+    fObject(VectorCast<T>(std::forward<V>(object))) {}
 
-template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription>
-template<typename U>
-constexpr auto Field<T, AName, ADescription>::operator=(U&& object) noexcept(std::is_nothrow_assignable_v<T, U&&>) -> auto& {
-    fObject = std::forward<U>(object);
+template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
+template<typename V>
+constexpr auto Field<T, U, AName, ADescription>::operator=(V&& object) noexcept(std::is_nothrow_assignable_v<T, V&&>) -> auto& {
+    fObject = std::forward<V>(object);
     return *this;
 }
 
-template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription>
-template<typename U>
-    requires requires(T fObject, U&& object) { VectorAssign(fObject, std::forward<U>(object)); }
-constexpr auto Field<T, AName, ADescription>::operator=(U&& object) -> auto& {
-    VectorAssign(fObject, std::forward<U>(object));
+template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
+template<typename V>
+    requires VectorAssignableFrom<T&, V&&>
+constexpr auto Field<T, U, AName, ADescription>::operator=(V&& object) -> auto& {
+    VectorAssign(fObject, std::forward<V>(object));
     return *this;
 }
 
-template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription>
-template<typename U>
-constexpr auto Field<T, AName, ADescription>::As() const& -> std::conditional_t<std::same_as<T, U>, const T&, U> {
-    if constexpr (std::same_as<T, U> or std::convertible_to<const T&, U>) {
+template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
+template<typename V>
+constexpr auto Field<T, U, AName, ADescription>::As() const& -> std::conditional_t<std::same_as<T, V>, const T&, V> {
+    if constexpr (std::same_as<T, V> or std::convertible_to<const T&, V>) {
         return fObject;
-    } else if constexpr (std::convertible_to<const T&, U>) {
-        return static_cast<U>(fObject);
-    } else if constexpr (requires { VectorCast<U>(fObject); }) {
-        return VectorCast<U>(fObject);
+    } else if constexpr (std::constructible_from<V, const T&>) {
+        return static_cast<V>(fObject);
+    } else if constexpr (requires { V(std::ranges::begin(fObject),
+                                      std::ranges::end(fObject)); }) {
+        return V(std::ranges::begin(fObject),
+                 std::ranges::end(fObject));
+    } else if constexpr (std::default_initializable<V> and
+                         requires(V object) { std::ranges::copy(fObject, std::ranges::begin(object)); }) {
+        V object;
+        std::ranges::copy(fObject, std::ranges::begin(object));
+        return object;
+    } else if constexpr (VectorConvertibleTo<const T&, V>) {
+        return VectorCast<V>(fObject);
     } else {
-        static_assert(muc::dependent_false<U>, "Field::As<U>() cannot convert payload to the target type U.");
+        static_assert(muc::dependent_false<V>, "Field::As<V>() cannot convert payload to the target type V.");
     }
 }
 
-template<FieldAcceptable T, muc::ceta_string AName, muc::ceta_string ADescription>
-template<typename U>
-constexpr auto Field<T, AName, ADescription>::As() && -> U {
-    if constexpr (std::convertible_to<T, U>) {
+template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
+template<typename V>
+constexpr auto Field<T, U, AName, ADescription>::As() && -> std::conditional_t<std::same_as<T, V>, T&&, V> {
+    if constexpr (std::same_as<T, V> or std::convertible_to<T, V>) {
         return std::move(fObject);
-    } else if constexpr (requires { static_cast<U>(std::move(fObject)); }) {
-        return static_cast<U>(std::move(fObject));
-    } else if constexpr (requires { VectorCast<U>(std::move(fObject)); }) {
-        return VectorCast<U>(std::move(fObject));
+    } else if constexpr (std::constructible_from<V, T>) {
+        return static_cast<V>(std::move(fObject));
+    } else if constexpr (requires { V(std::move_iterator{std::ranges::begin(fObject)},
+                                      std::move_iterator{std::ranges::end(fObject)}); }) {
+        return V(std::move_iterator{std::ranges::begin(fObject)},
+                 std::move_iterator{std::ranges::end(fObject)});
+    } else if constexpr (std::default_initializable<V> and
+                         requires(V object) { std::ranges::move(fObject, std::ranges::begin(object)); }) {
+        V object;
+        std::ranges::move(fObject, std::ranges::begin(object));
+        return object;
+    } else if constexpr (VectorConvertibleTo<T, V>) {
+        return VectorCast<V>(std::move(fObject));
     } else {
-        static_assert(muc::dependent_false<U>, "Field::As<U>() cannot convert payload to the target type U.");
+        static_assert(muc::dependent_false<V>, "Field::As<V>() cannot convert payload to the target type V.");
     }
 }
 

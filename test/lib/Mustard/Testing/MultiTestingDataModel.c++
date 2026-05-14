@@ -43,7 +43,7 @@ auto MakeEntryB(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTupl
     const auto i{evtID * 10 + entryIdx};
     F<"f32">(*entry) = 0.5f + i;
     F<"b">(*entry) = (i % 3 == 0);
-    F<"vi">(*entry) = {int(i), int(i * 2), int(i * 3)};
+    F<"vi32">(*entry) = {int(i), int(i * 2), int(i * 3)};
     F<"vf64">(*entry) = {0.1 + i, 0.2 + i, 0.3 + i};
     F<"vstr">(*entry) = {fmt::format("b{}", i), fmt::format("c{}", i)};
     F<"u8">(*entry) = i % 256;
@@ -58,7 +58,7 @@ auto MakeEntryC(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTupl
     F<"EvtID">(*entry) = static_cast<std::int32_t>(evtID);
     const auto i{evtID * 10 + entryIdx};
     F<"a3f64">(*entry) = {1.0 + i, 2.0 + i, 3.0 + i};
-    F<"p11">(*entry) = {i, -i};
+    F<"pi32i32">(*entry) = {i, -i};
     F<"a4u32">(*entry) = {std::uint32_t(10 + i), std::uint32_t(20 + i), std::uint32_t(30 + i), std::uint32_t(40 + i)};
     F<"str">(*entry) = fmt::format("modelC-{}", i);
     F<"i64">(*entry) = 10000 + i;

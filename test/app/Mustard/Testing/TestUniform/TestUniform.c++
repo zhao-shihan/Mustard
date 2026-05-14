@@ -62,12 +62,12 @@ auto TestUniform::Main(int argc, char* argv[]) const -> int {
 
     struct Result
         : Data::Model<
-              Data::Field<double, "uc">,
-              Data::Field<double, "ur">,
-              Data::Field<int, "ui">,
-              Data::Field<muc::array2d, "ucr">,
-              Data::Field<muc::array2d, "urr">,
-              Data::Field<muc::array2i, "uir">> {};
+              Data::Field<double, double, "uc">,
+              Data::Field<double, double, "ur">,
+              Data::Field<int, std::int32_t, "ui">,
+              Data::Field<std::array<double, 2>, std::array<double, 2>, "ucr">,
+              Data::Field<std::array<double, 2>, std::array<double, 2>, "urr">,
+              Data::Field<std::array<int, 2>, std::array<std::int32_t, 2>, "uir">> {};
 
     ProcessSpecificFile<TFile> file{"test_uniform.root", "RECREATE"};
     Data::Writer<Result> writer{"Uniform"};

@@ -159,7 +159,7 @@ auto TestFieldTypeName::Main(int argc, char* argv[]) const -> int {
         return EXIT_FAILURE;
     }
 
-    using WrappedVector = Field<std::vector<std::int32_t>, "vi32">;
+    using WrappedVector = Field<std::vector<int>, std::vector<std::int32_t>, "vi32">;
     const WrappedVector wrappedVector{};
     if (not ExpectTypeName<WrappedVector>("vec<i32>")) {
         return EXIT_FAILURE;
@@ -168,7 +168,7 @@ auto TestFieldTypeName::Main(int argc, char* argv[]) const -> int {
         return EXIT_FAILURE;
     }
 
-    using WrappedTuple = Field<std::tuple<bool, std::string>, "tbstr">;
+    using WrappedTuple = Field<std::tuple<bool, std::string>, std::tuple<bool, std::string>, "tbstr">;
     const WrappedTuple wrappedTuple{};
     if (not ExpectTypeName<WrappedTuple>("tup<b,str>")) {
         return EXIT_FAILURE;
