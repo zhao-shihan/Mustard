@@ -153,6 +153,14 @@ if(MUSTARD_ENABLE_MSVC_STD_CONFORMITY AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS=1)
 endif()
 
+if(MUSTARD_WERROR)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|IntelLLVM)$")
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Werror)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /WX)
+    endif()
+endif()
+
 # =============================================================================
 # GTL-induced compile options for Mustard
 # =============================================================================

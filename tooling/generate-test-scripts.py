@@ -14,12 +14,16 @@
 # You should have received a copy of the GNU General Public License along with
 # Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-"""Generate GitHub Actions workflow YAML files and run-tests.sh from test-config.cfg.
+"""Generate GitHub Actions CI workflow and local test runner from test-config.cfg.
 
-Each line in test-config.cfg produces:
-  - tooling/run-tests.sh (local serial test runner)
-  - .github/workflows/<lowercase-test-names>-with-gcc.yml
-  - .github/workflows/<lowercase-test-names>-with-clang.yml
+Generates:
+  - .github/workflows/build-and-test.yml   (single CI workflow: 4 builds + N test jobs)
+  - tooling/run-tests.sh                   (local serial test runner)
+
+Design:
+  - Build stage: 4 jobs (GCC/Clang x mpich/openmpi), each uploads a build artifact.
+  - Test stage: ~100 jobs via matrix, each downloads the matching artifact and runs
+    a single test sequence.  This avoids redundant builds and limits total builds to 4.
 
 Usage:
     python3 tooling/generate-test-scripts.py
@@ -27,15 +31,19 @@ Usage:
 
 import os
 import sys
+import textwrap
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 CONFIG_FILE = os.path.join(SCRIPT_DIR, "test-config.cfg")
 WORKFLOW_DIR = os.path.join(PROJECT_ROOT, ".github", "workflows")
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 def check_prerequisites():
-    """Ensure the script is run from a directory containing .github/workflows."""
+    """Ensure .github/workflows exists."""
     if not os.path.isdir(WORKFLOW_DIR):
         print(
             "Error: .github/workflows directory not found. "
@@ -47,7 +55,7 @@ def check_prerequisites():
 
 
 def parse_config():
-    """Parse test-config.cfg and return a list of test sequences.
+    """Parse test-config.cfg -> list of sequences.
 
     Each sequence is a list of (exec_type, test_name) tuples,
     where exec_type is 'seqexec' or 'parexec'.
@@ -58,34 +66,49 @@ def parse_config():
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            # Split by "->" to get ordered steps
             steps = [s.strip() for s in line.split("->")]
-            parsed_steps = []
+            parsed = []
             for step in steps:
                 parts = step.split()
                 if len(parts) < 2:
-                    print(
-                        f"Warning: skipping malformed line: {line}", file=sys.stderr)
+                    print(f"Warning: skipping malformed line: {line}", file=sys.stderr)
                     continue
-                exec_type = parts[0]  # seqexec or parexec
-                test_name = parts[1]
-                parsed_steps.append((exec_type, test_name))
-            if parsed_steps:
-                sequences.append(parsed_steps)
+                parsed.append((parts[0], parts[1]))
+            if parsed:
+                sequences.append(parsed)
     return sequences
 
 
-def generate_run_tests_sh(sequences):
-    """Generate a bash script (run-tests.sh) that executes all tests from config serially.
-
-    Exits with the first non-zero return code encountered.
+def test_sequence_key(steps):
+    """Unique key for a test sequence, e.g. 'TestUniform' or
+    'TestMultiRDFEntryReader-TestMultiRDFEntryProcessor-TestMultiRDFEntryProcessor'.
     """
-    # Check whether any step uses parexec
-    needs_parexec = any(
-        exec_type == "parexec"
-        for seq in sequences
-        for exec_type, _ in seq
-    )
+    return "-".join(name for _, name in steps)
+
+
+def test_sequence_commands(steps):
+    """Return a list of bash command lines for a test sequence."""
+    cmds = []
+    for exec_type, test_name in steps:
+        if exec_type == "seqexec":
+            cmds.append(f"./MustardTest {test_name}")
+        else:  # parexec
+            cmds.append(f"parexec --use-hwthreads ./MustardTest {test_name}")
+    return cmds
+
+
+def needs_parexec(steps):
+    """Whether any step in the sequence uses parexec."""
+    return any(et == "parexec" for et, _ in steps)
+
+
+# ---------------------------------------------------------------------------
+# Generators
+# ---------------------------------------------------------------------------
+
+def generate_run_tests_sh(sequences):
+    """Generate a local bash script that executes all test sequences serially."""
+    has_parexec = any(needs_parexec(s) for s in sequences)
 
     lines = [
         "#!/usr/bin/env bash",
@@ -94,107 +117,65 @@ def generate_run_tests_sh(sequences):
         "set -euo pipefail",
         "",
     ]
-
-    if needs_parexec:
+    if has_parexec:
         lines.append('source parexec.sh')
         lines.append('')
 
     for steps in sequences:
-        # Build a descriptive comment line
         names = "/".join(name for _, name in steps)
         lines.append(f'echo "Running {names}..."')
         for exec_type, test_name in steps:
             if exec_type == "seqexec":
                 lines.append(f'echo "  -> ./MustardTest {test_name}"')
                 lines.append(f'./MustardTest {test_name}')
-            elif exec_type == "parexec":
-                lines.append(
-                    f'echo "  -> parexec ./MustardTest {test_name}"')
-                lines.append(
-                    f'parexec ./MustardTest {test_name}')
+            else:
+                lines.append(f'echo "  -> parexec ./MustardTest {test_name}"')
+                lines.append(f'parexec ./MustardTest {test_name}')
         lines.append('')
 
     lines.append('echo "All tests passed."')
     return "\n".join(lines) + "\n"
 
 
-def generate_workflow_filename(test_names):
-    """Generate the workflow filename from test names.
+def _indent(text, level):
+    """Indent a multi-line string by *level* 2-space steps."""
+    prefix = " " * (level * 2)
+    return textwrap.indent(text, prefix)
 
-    e.g. ['TestMultiRDFEntryReader', 'TestMultiRDFEntryProcessor']
-      -> 'testmultirdfentryreader-testmultirdfentryprocessor'
+
+def generate_build_and_test_yml(sequences):
+    """Generate the single build-and-test.yml workflow content.
+
+    Build stage: 4 jobs (GCC/Clang x mpich/openmpi), each uploading a build artifact.
+    Test stage:  N jobs via matrix (compiler x image x test-sequence), each
+                downloading the matching artifact and running its test sequence.
     """
-    return "-".join(name.lower() for name in test_names)
+    # --- test matrix entries & case block ---
+    test_keys = []
+    case_lines = []
+    for steps in sequences:
+        key = test_sequence_key(steps)
+        test_keys.append(key)
+        cmds = test_sequence_commands(steps)
+        case_lines.append(f'    "{key}")')
+        for c in cmds:
+            case_lines.append(f"      {c}")
+        case_lines.append("      ;;")
 
+    # Build without extra indentation; _indent() will add the correct amount
+    test_matrix_json = "\n".join(f"- {k}" for k in test_keys)
+    case_block = "\n".join(case_lines)
 
-def generate_workflow_name(test_names, compiler_name):
-    """Generate the human-readable workflow name.
+    yaml = f"""# NOTE: This file is auto-generated by tooling/generate-test-scripts.py
 
-    e.g. (['TestMultiRDFEntryReader', 'TestMultiRDFEntryProcessor'], 'GCC')
-      -> 'TestMultiRDFEntryReader/TestMultiRDFEntryProcessor (AMD64 GNU/Linux GCC)'
-    """
-    test_path = "/".join(test_names)
-    return f"{test_path} (AMD64 GNU/Linux {compiler_name})"
-
-
-def generate_build_step(compiler_c, compiler_cxx):
-    """Generate the Build step YAML string for a given compiler."""
-    return f"""      - name: Build
-        run: |
-          . /environment
-          mkdir build && cd build
-          cmake -G Ninja .. \\
-            -DCMAKE_C_COMPILER={compiler_c} \\
-            -DCMAKE_C_FLAGS='-march=native' \\
-            -DCMAKE_CXX_COMPILER={compiler_cxx} \\
-            -DCMAKE_CXX_FLAGS='-march=native' \\
-            -DBUILD_TESTING=OFF \\
-            -DMUSTARD_BUILD_TESTING=ON \\
-            -DMUSTARD_FULL_UNITY_BUILD=ON
-          ninja"""
-
-
-def generate_run_step(steps):
-    """Generate the Run step YAML string from a list of (exec_type, test_name) steps."""
-    run_lines = []
-    # Check if any step uses parexec
-    needs_parexec = any(exec_type == "parexec" for exec_type, _ in steps)
-
-    run_lines.append("      - name: Run " +
-                     "/".join(name for _, name in steps))
-    run_lines.append("        run: |")
-    run_lines.append("          . /environment")
-    if needs_parexec:
-        run_lines.append("          source tooling/parexec.sh")
-    run_lines.append("          cd build/test")
-    for exec_type, test_name in steps:
-        if exec_type == "seqexec":
-            run_lines.append(f"          ./MustardTest {test_name}")
-        elif exec_type == "parexec":
-            run_lines.append(
-                f"          parexec --use-hwthreads ./MustardTest {test_name}")
-    return "\n".join(run_lines)
-
-
-def generate_workflow_yaml(steps, compiler_c, compiler_cxx, compiler_name):
-    """Generate the complete workflow YAML content."""
-    test_names = [name for _, name in steps]
-    filename = generate_workflow_filename(test_names)
-    workflow_name = generate_workflow_name(test_names, compiler_name)
-    job_id = f"{filename}-with-{compiler_name.lower()}"
-    build_step = generate_build_step(compiler_c, compiler_cxx)
-    run_step = generate_run_step(steps)
-
-    yaml_content = f"""# NOTE: This file is auto-generated by tooling/generate-test-scripts.py
-
-name: {workflow_name}
+name: Build and Test (AMD64 GNU/Linux)
 
 on:
   push:
     branches:
       - "**"
     paths:
-      - ".github/workflows/{filename}-with-{compiler_name.lower()}.yml"
+      - ".github/workflows/build-and-test.yml"
       - "src/**"
       - "test/**"
       - "**/CMakeLists.txt"
@@ -204,7 +185,7 @@ on:
     branches:
       - "**"
     paths:
-      - ".github/workflows/{filename}-with-{compiler_name.lower()}.yml"
+      - ".github/workflows/build-and-test.yml"
       - "src/**"
       - "test/**"
       - "**/CMakeLists.txt"
@@ -214,15 +195,22 @@ permissions:
   contents: read
 
 jobs:
-  {job_id}:
-    name: {workflow_name}
+  # -----------------------------------------------------------------------
+  # Build stage -- 4 jobs total (GCC/Clang x mpich/openmpi)
+  # -----------------------------------------------------------------------
+  build:
+    name: Build (${{{{ matrix.compiler.name }}}}, ${{{{ matrix.image.name }}}})
     timeout-minutes: 180
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
+        compiler:
+          - {{ cc: gcc, cxx: g++, name: GCC }}
+          - {{ cc: clang, cxx: clang++, name: Clang }}
         image:
-          - url: ghcr.io/zhao-shihan/rgb-docker:mpich
-          - url: ghcr.io/zhao-shihan/rgb-docker:openmpi
+          - {{ url: ghcr.io/zhao-shihan/rgb-docker:mpich, name: mpich }}
+          - {{ url: ghcr.io/zhao-shihan/rgb-docker:openmpi, name: openmpi }}
     container: ${{{{ matrix.image.url }}}}
     defaults:
       run:
@@ -231,52 +219,108 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-{build_step}
+      - name: Build
+        run: |
+          . /environment
+          mkdir build && cd build
+          cmake -G Ninja .. \\
+            -DCMAKE_C_COMPILER=${{{{ matrix.compiler.cc }}}} \\
+            -DCMAKE_C_FLAGS='-march=native' \\
+            -DCMAKE_CXX_COMPILER=${{{{ matrix.compiler.cxx }}}} \\
+            -DCMAKE_CXX_FLAGS='-march=native' \\
+            -DBUILD_TESTING=OFF \\
+            -DMUSTARD_BUILD_TESTING=ON \\
+            -DMUSTARD_FULL_UNITY_BUILD=ON \\
+            -DMUSTARD_WERROR=ON
+          ninja
 
-{run_step}
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{{{ matrix.compiler.name }}}}-${{{{ matrix.image.name }}}}
+          path: |
+            build/test/MustardTest
+            build/test/parexec.sh
+            build/test/*.root
+            build/test/test_file_*/
+          retention-days: 1
+
+  # -----------------------------------------------------------------------
+  # Test stage -- one job per (compiler, image, test sequence)
+  # -----------------------------------------------------------------------
+  test:
+    name: ${{{{ matrix.test }}}} (${{{{ matrix.compiler }}}}, ${{{{ matrix.image }}}})
+    needs: build
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - {{ name: GCC }}
+          - {{ name: Clang }}
+        image:
+          - {{ url: ghcr.io/zhao-shihan/rgb-docker:mpich, name: mpich }}
+          - {{ url: ghcr.io/zhao-shihan/rgb-docker:openmpi, name: openmpi }}
+        test:
+{_indent(test_matrix_json, 5)}
+    container: ${{{{ matrix.image.url }}}}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout code (for test data and scripts)
+        uses: actions/checkout@v6
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{{{ matrix.compiler.name }}}}-${{{{ matrix.image.name }}}}
+          path: build/test
+
+      - name: Run test sequence
+        run: |
+          . /environment
+          chmod +x build/test/MustardTest build/test/parexec.sh 2>/dev/null || true
+          source tooling/parexec.sh 2>/dev/null || true
+          cd build/test
+          case "${{{{ matrix.test }}}}" in
+{_indent(case_block, 6)}
+          esac
 """
-    return yaml_content
+    return yaml
 
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def main():
     check_prerequisites()
 
     sequences = parse_config()
-
     if not sequences:
         print("No valid test sequences found in test-config.cfg.", file=sys.stderr)
         sys.exit(1)
 
-    # Ensure the workflows directory exists
+    # Ensure output directories exist
     os.makedirs(WORKFLOW_DIR, exist_ok=True)
 
-    # Generate run-tests.sh in the script's own directory (tooling/)
-    run_test_sh_path = os.path.join(SCRIPT_DIR, "run-tests.sh")
-    run_test_sh_content = generate_run_tests_sh(sequences)
-    with open(run_test_sh_path, "w", encoding="utf-8") as f:
-        f.write(run_test_sh_content)
-    os.chmod(run_test_sh_path, 0o755)
-    print(f"Generated: {run_test_sh_path}")
+    # 1. Local test runner script
+    run_sh_path = os.path.join(SCRIPT_DIR, "run-tests.sh")
+    run_sh = generate_run_tests_sh(sequences)
+    with open(run_sh_path, "w", encoding="utf-8") as f:
+        f.write(run_sh)
+    os.chmod(run_sh_path, 0o755)
+    print(f"Generated: {run_sh_path}")
 
-    for steps in sequences:
-        test_names = [name for _, name in steps]
-        filename_base = generate_workflow_filename(test_names)
-
-        # Generate GCC workflow
-        gcc_yaml = generate_workflow_yaml(steps, "gcc", "g++", "GCC")
-        gcc_filename = f"{filename_base}-with-gcc.yml"
-        gcc_path = os.path.join(WORKFLOW_DIR, gcc_filename)
-        with open(gcc_path, "w", encoding="utf-8") as f:
-            f.write(gcc_yaml)
-        print(f"Generated: {gcc_path}")
-
-        # Generate Clang workflow
-        clang_yaml = generate_workflow_yaml(steps, "clang", "clang++", "Clang")
-        clang_filename = f"{filename_base}-with-clang.yml"
-        clang_path = os.path.join(WORKFLOW_DIR, clang_filename)
-        with open(clang_path, "w", encoding="utf-8") as f:
-            f.write(clang_yaml)
-        print(f"Generated: {clang_path}")
+    # 2. Single CI workflow
+    workflow_path = os.path.join(WORKFLOW_DIR, "build-and-test.yml")
+    workflow_yml = generate_build_and_test_yml(sequences)
+    with open(workflow_path, "w", encoding="utf-8") as f:
+        f.write(workflow_yml)
+    print(f"Generated: {workflow_path}")
+    print(f"  -> {len(sequences)} test sequences x 4 configs = {len(sequences)*4} test jobs")
 
 
 if __name__ == "__main__":

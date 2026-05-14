@@ -77,6 +77,7 @@ option(MUSTARD_USE_G4VIS "Build Geant4 applications of Mustard with available vi
 option(MUSTARD_USE_MIMALLOC "Using mimalloc as the underlying implementation of Mustard memory allocation library." ON)
 option(MUSTARD_USE_SHARED_MSVC_RT "Select the MSVC runtime library for use (MSVC only). ON for shared (.dll), OFF for static (.lib). If you run into link error related to MSVC runtime, you can try flip this." ON)
 option(MUSTARD_USE_STATIC_G4 "Attempt to link Geant4 static libraries if available, by finding the \"static\" component of G4. If \"static\" is not found, dynamic libraries will be linked." OFF)
+option(MUSTARD_WERROR "Treat Mustard compilation warnings as errors." OFF)
 cmake_dependent_option(MUSTARD_SHOW_MORE_COMPILER_WARNINGS "Show compiler warnings raise from external dependencies." OFF "NOT MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS" ON)
 cmake_dependent_option(MUSTARD_UNITY_BUILD "Build Mustard with unity build technique." OFF "NOT MUSTARD_FULL_UNITY_BUILD" ON)
 set(MUSTARD_BUILTIN_ARGPARSE_VERSION 3.2 CACHE STRING "Set built-in argparse version (if required).")
