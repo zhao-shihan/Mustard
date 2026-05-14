@@ -14,16 +14,23 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/CLI/BasicCLI.h++"
-#include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/CLI/MonteCarloCLI.h++"
+#include "Mustard/Data/Model.h++"
+#include "Mustard/Data/Object/Field.h++"
+#include "Mustard/Data/Object/Tuple.h++"
+#include "Mustard/Data/Processing/Writer.h++"
+#include "Mustard/Env/MPIMonteCarloEnv.h++"
+#include "Mustard/Execution/Executor.h++"
+#include "Mustard/IO/File.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Distribution/UniformRectangle.h++"
-#include "Mustard/Math/Random/Generator/MT1993764.h++"
 #include "Mustard/Testing/TestUniform/TestUniform.h++"
 
-#include "ROOT/RDataFrame.hxx"
+#include "TFile.h"
 
 #include "muc/array"
+
+#include <cstdlib>
 
 namespace Mustard::Testing {
 
@@ -31,46 +38,49 @@ TestUniform::TestUniform() :
     Subprogram{"TestUniform", "Test Mustard::Random::Uniform and its variants."} {}
 
 auto TestUniform::Main(int argc, char* argv[]) const -> int {
-    Mustard::CLI::BasicCLI<> cli;
+    Mustard::CLI::MonteCarloCLI<> cli;
     cli->add_argument("n").help("Number of entries.").default_value(1'000'000ull).required().nargs(1).scan<'i', unsigned long long>();
-    cli->add_argument("-a1", "--a1").help("Lower bound of 1D uniform.").default_value(0.).nargs(1).scan<'g', double>();
-    cli->add_argument("-b1", "--b1").help("Upper bound of 1D uniform.").default_value(1.).nargs(1).scan<'g', double>();
-    cli->add_argument("-a2", "--a2").help("Lower bound 2 of 2D uniform.").default_value(0.).nargs(1).scan<'g', double>();
-    cli->add_argument("-b2", "--b2").help("Upper bound 2 of 2D uniform.").default_value(1.).nargs(1).scan<'g', double>();
-    Mustard::Env::BasicEnv env{argc, argv, cli};
+    cli->add_argument("--a1").help("Lower bound of 1D uniform.").default_value(0.).nargs(1).scan<'g', double>();
+    cli->add_argument("--b1").help("Upper bound of 1D uniform.").default_value(1.).nargs(1).scan<'g', double>();
+    cli->add_argument("--a2").help("Lower bound 2 of 2D uniform.").default_value(0.).nargs(1).scan<'g', double>();
+    cli->add_argument("--b2").help("Upper bound 2 of 2D uniform.").default_value(1.).nargs(1).scan<'g', double>();
+    Mustard::Env::MPIMonteCarloEnv<256> env{argc, argv, cli};
 
-    Random::MT1993764 mt1993764;
+    const auto n{cli->get<unsigned long long>("n")};
+    const auto a1{cli->get<double>("--a1")};
+    const auto b1{cli->get<double>("--b1")};
+    const auto a2{cli->get<double>("--a2")};
+    const auto b2{cli->get<double>("--b2")};
 
-    const auto n = cli->get<unsigned long long>("n");
-    const auto a1 = cli->get<double>("--a1");
-    const auto b1 = cli->get<double>("--b1");
-    const auto a2 = cli->get<double>("--a2");
-    const auto b2 = cli->get<double>("--b2");
+    Random::UniformCompact<double> uniformCompact1D{a1, b1};
+    Random::Uniform<double> uniform1D{a1, b1};
+    Random::Uniform<int> uniformInt1D{int(a1), int(b1)};
 
-    ROOT::RDataFrame dataFrame(n);
-    dataFrame
-        .Define("uc",
-                [&] { return Random::UniformCompact<double>(a1, b1)(mt1993764); })
-        .Define("ur",
-                [&] { return Random::Uniform<double>(a1, b1)(mt1993764); })
-        .Define("ui",
-                [&] { return Random::Uniform<int>(a1, b1)(mt1993764); })
+    Random::UniformCompactRectangle<muc::array2d> uniformCompactRectangle({a1, b1}, {a2, b2});
+    Random::UniformRectangle<muc::array2d> uniformRectangle({a1, b1}, {a2, b2});
+    Random::UniformRectangle<muc::array2i> uniformIntRectangle({int(a1), int(b1)}, {int(a2), int(b2)});
 
-        .Define("ucr",
-                [&] { return Random::UniformCompactRectangle<muc::array2d>({a1, b1}, {a2, b2})(mt1993764); })
-        .Define("urr",
-                [&] { return Random::UniformRectangle<muc::array2d>({a1, b1}, {a2, b2})(mt1993764); })
-        .Define("uir",
-                [&] { return Random::UniformRectangle<muc::array2i>({(int)a1, (int)b1}, {(int)a2, (int)b2})(mt1993764); })
+    struct Result
+        : Data::Model<
+              Data::Field<double, "uc">,
+              Data::Field<double, "ur">,
+              Data::Field<int, "ui">,
+              Data::Field<muc::array2d, "ucr">,
+              Data::Field<muc::array2d, "urr">,
+              Data::Field<muc::array2i, "uir">> {};
 
-        // .Define("ucc",
-        //         [&] { return Random::UniformCompactCuboid<muc::array3d>({a1, b1}, {a2, b2}, {a3, b3})(mt1993764); })
-        // .Define("urc",
-        //         [&] { return Random::UniformCuboid<muc::array3d>({a1, b1}, {a2, b2}, {a3, b3})(mt1993764); })
-        // .Define("uic",
-        //         [&] { return Random::UniformCuboid<muc::array3i>({(int)a1, (int)b1}, {(int)a2, (int)b2}, {(int)a3, (int)b3})(mt1993764); })
-
-        .Snapshot("uniform", "test_uniform.root");
+    ProcessSpecificFile<TFile> file{"test_uniform.root", "RECREATE"};
+    Data::Writer<Result> writer{"Uniform"};
+    Mustard::Executor<unsigned long long>{}.Run(n, [&](unsigned long long) {
+        Data::Tuple<Result> entry;
+        F<"uc">(entry) = uniformCompact1D(env.RandomEngine());
+        F<"ur">(entry) = uniform1D(env.RandomEngine());
+        F<"ui">(entry) = uniformInt1D(env.RandomEngine());
+        F<"ucr">(entry) = uniformCompactRectangle(env.RandomEngine());
+        F<"urr">(entry) = uniformRectangle(env.RandomEngine());
+        F<"uir">(entry) = uniformIntRectangle(env.RandomEngine());
+        writer.Fill(entry);
+    });
 
     return EXIT_SUCCESS;
 }
