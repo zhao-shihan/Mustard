@@ -23,7 +23,11 @@ namespace Mustard::Testing {
 
 namespace {
 
-class NullPassiveSingleton : public Mustard::Env::PassiveSingleton<NullPassiveSingleton> {};
+class NullPassiveSingleton : public Mustard::Env::PassiveSingleton<NullPassiveSingleton> {
+public:
+    NullPassiveSingleton() :
+        PassiveSingleton{this} {}
+};
 
 } // namespace
 
@@ -34,6 +38,7 @@ auto TestPassiveSingleton::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     Mustard::Env::MPIEnv env{argc, argv, cli};
 
+    NullPassiveSingleton singleton;
     NullPassiveSingleton::Instance();
     return EXIT_SUCCESS;
 }
