@@ -42,7 +42,6 @@ concept NumericVector =
         requires SubscriptableTo<T, F&>;
         requires(SubscriptableTo<std::add_const_t<T>, const F&> or
                  SubscriptableTo<std::add_const_t<T>, F>);
-        requires sizeof(T) % sizeof(F) == 0;
         requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
             return requires(T v, std::array<F, sizeof...(Is)> u) {
                 ::delete ::new T{std::get<Is>(u)...};
@@ -51,7 +50,7 @@ concept NumericVector =
             };
         }(gslx::make_index_sequence<sizeof(T) / sizeof(F)>{}));
         requires(N == std::numeric_limits<std::size_t>::max() or
-                 sizeof(T) / sizeof(F) == N);
+                 (sizeof(T) % sizeof(F) == 0 and sizeof(T) / sizeof(F) == N));
     };
 
 template<typename T, typename F>
