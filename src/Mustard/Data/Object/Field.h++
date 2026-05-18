@@ -34,6 +34,69 @@
 
 namespace Mustard::Data::inline Object {
 
+namespace impl2 {
+
+/// @brief Concept checking whether @c AFrom can be converted to @c ATo through Field's conversion pipeline.
+///
+/// The pipeline is split by value category of @c AFrom&&:
+/// - For lvalue references: identity, @c static_cast, range construction, range copy, or VectorCast.
+/// - For rvalue references: identity via move, @c static_cast from moved, move-iterator construction,
+///   range move, or VectorCast from rvalue.
+///
+/// This concept is the building block for Field construction, assignment, and As() conversion.
+///
+/// @tparam AFrom Source type (decayed).
+/// @tparam ATo   Target type (decayed).
+template<typename AFrom, typename ATo>
+concept FieldConvertibleTo = requires(AFrom src, ATo dest) {
+    requires std::is_lvalue_reference_v<AFrom&&>;
+    requires std::same_as<std::decay_t<AFrom>, ATo> or std::convertible_to<const AFrom&, ATo> or
+                 requires { static_cast<ATo>(src); } or
+                 requires { ATo(std::ranges::begin(src), std::ranges::end(src)); } or
+                 (std::default_initializable<ATo> and
+                  requires { std::ranges::copy(src, std::ranges::begin(dest)); } and
+                  std::movable<ATo>) or
+                 VectorConvertibleTo<const AFrom&, ATo>;
+} or requires(AFrom src, ATo dest) {
+    requires std::is_rvalue_reference_v<AFrom&&>;
+    requires std::same_as<std::decay_t<AFrom>, ATo> or std::convertible_to<AFrom, ATo> or
+                 requires { static_cast<ATo>(std::move(src)); } or
+                 requires { ATo(std::move_iterator{std::ranges::begin(src)}, std::move_iterator{std::ranges::end(src)}); } or
+                 (std::default_initializable<ATo> and
+                  requires { std::ranges::move(src, std::ranges::begin(dest)); } and
+                  std::movable<ATo>) or
+                 VectorConvertibleTo<AFrom, ATo>;
+};
+
+/// @brief Single-dispatch conversion from @c AFrom to @c ATo, respecting value category.
+///
+/// Selects the cheapest applicable conversion path at compile time:
+/// identity/move, @c static_cast, range construction, range copy/move, or VectorCast.
+/// Identity conversion preserves the reference type via @c std::conditional_t.
+///
+/// @tparam ATo   Target type (decayed).
+/// @tparam AFrom Source type, must satisfy @c FieldConvertibleTo<ATo>.
+/// @param  src   Source object forwarded with its value category.
+/// @return Converted value, or identity reference when @c AFrom and @c ATo are the same type.
+template<typename ATo, FieldConvertibleTo<ATo> AFrom>
+constexpr auto FieldObjectCast(AFrom&& src) -> std::conditional_t<std::same_as<AFrom, ATo>, AFrom&&, ATo>;
+
+/// @brief Concept checking whether @c ALHS can be assigned from @c ARHS.
+///
+/// Satisfied when @c ALHS is an lvalue reference and either:
+/// - direct @c assignable_from holds, or
+/// - @c ALHS is movable and @c ARHS is @c FieldConvertibleTo the decayed lhs type.
+/// @tparam ALHS Left-hand side type (expected lvalue reference).
+/// @tparam ARHS Right-hand side source type.
+template<typename ALHS, typename ARHS>
+concept FieldAssignableFrom =
+    std::is_lvalue_reference_v<ALHS> and
+    (std::assignable_from<ALHS, ARHS> or
+     (std::movable<std::decay_t<ALHS>> and
+      FieldConvertibleTo<ARHS, std::decay_t<ALHS>>));
+
+} // namespace impl2
+
 /// @brief Named field wrapper used as the atomic schema element of Model and Tuple.
 ///
 /// Field binds a runtime payload type and a persistent storage type to compile-time field metadata.
@@ -59,29 +122,23 @@ public:
 public:
     /// @brief Default-constructs the wrapped payload.
     constexpr Field() = default;
-    /// @brief Constructs payload directly from a forwarded source object.
-    /// @tparam V Source type, defaulting to payload type.
-    /// @param object Source object.
-    template<typename V = T>
+    /// @brief Constructs payload from a forwarded source, dispatching via FieldObjectCast.
+    /// @details Handles identity, @c static_cast, range construction, range copy/move, and VectorCast
+    ///          through a single unified concept @c impl2::FieldConvertibleTo.
+    /// @tparam V Source type constrained by @c impl2::FieldConvertibleTo<T>, defaulting to @c T.
+    /// @param object Source object forwarded with its value category.
+    template<impl2::FieldConvertibleTo<T> V = T>
     constexpr Field(V&& object) noexcept(std::is_nothrow_constructible_v<T, V&&>);
-    /// @brief Constructs payload via VectorCast for compatible vector-like sources.
-    /// @tparam V Source type.
-    /// @param object Source object.
-    template<VectorConvertibleTo<T> V>
-    constexpr Field(V&& object);
-    /// @brief Assigns payload directly from a forwarded source object.
+
+    /// @brief Assigns payload from a forwarded source, dispatching via FieldObjectCast when needed.
+    /// @details Uses @c impl2::FieldAssignableFrom<T&, V&&> to unify direct assignment and
+    ///          move+convert assignment paths.
     /// @tparam V Source type, defaulting to payload type.
-    /// @param object Source object.
-    /// @return This object.
+    /// @param object Source object forwarded with its value category.
+    /// @return This object by lvalue reference.
     template<typename V = T>
-    constexpr auto operator=(V&& object) noexcept(std::is_nothrow_assignable_v<T, V&&>) -> auto&;
-    /// @brief Assigns payload via VectorAssign for compatible vector-like sources.
-    /// @tparam V Source type.
-    /// @param object Source object.
-    /// @return This object.
-    template<typename V>
-        requires VectorAssignableFrom<T&, V&&>
-    constexpr auto operator=(V&& object) -> auto&;
+        requires impl2::FieldAssignableFrom<T&, V&&>
+    constexpr auto operator=(V&& object) & noexcept(std::is_nothrow_assignable_v<T, V&&>) -> auto&;
 
     /// @brief Implicit conversion to const lvalue reference of payload.
     constexpr operator const T&() const& { return fObject; }
@@ -111,12 +168,14 @@ public:
     /// @tparam V Target type.
     /// @return Converted value, or const payload reference for identity conversion.
     template<typename V>
-    constexpr auto As() const& -> std::conditional_t<std::same_as<T, V>, const T&, V>;
+        requires impl2::FieldConvertibleTo<T, V>
+    constexpr auto As() const& -> decltype(auto) { return impl2::FieldObjectCast<V>(fObject); }
     /// @brief Converts payload to target type while consuming this Field.
     /// @tparam V Target type.
     /// @return Converted value.
     template<typename V>
-    constexpr auto As() && -> std::conditional_t<std::same_as<T, V>, T&&, V>;
+        requires impl2::FieldConvertibleTo<T, V>
+    constexpr auto As() && -> decltype(auto) { return impl2::FieldObjectCast<V>(std::move(fObject)); }
 
     /// @brief Forwards index operator to the wrapped payload.
     /// @param i Index or key forwarded to payload operator[].
