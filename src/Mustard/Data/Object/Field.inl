@@ -65,15 +65,15 @@ constexpr auto FieldObjectCast(AFrom&& src) -> std::conditional_t<std::same_as<A
 
 } // namespace impl2
 
-template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
+template<typename T, muc::ceta_string AName, ROOTX::RNTuplePersistable U, muc::ceta_string ADescription>
 template<impl2::FieldConvertibleTo<T> V>
-constexpr Field<T, U, AName, ADescription>::Field(V&& object) noexcept(std::is_nothrow_constructible_v<T, V&&>) :
+constexpr Field<T, AName, U, ADescription>::Field(V&& object) noexcept(std::is_nothrow_constructible_v<T, V&&>) :
     fObject(impl2::FieldObjectCast<T>(std::forward<V>(object))) {}
 
-template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
+template<typename T, muc::ceta_string AName, ROOTX::RNTuplePersistable U, muc::ceta_string ADescription>
 template<typename V>
     requires impl2::FieldAssignableFrom<T&, V&&>
-constexpr auto Field<T, U, AName, ADescription>::operator=(V&& object) & noexcept(std::is_nothrow_assignable_v<T, V&&>) -> auto& {
+constexpr auto Field<T, AName, U, ADescription>::operator=(V&& object) & noexcept(std::is_nothrow_assignable_v<T, V&&>) -> auto& {
     if constexpr (std::assignable_from<T&, V&&>) {
         fObject = std::forward<V>(object);
     } else if constexpr (std::movable<T> and impl2::FieldConvertibleTo<V&&, T>) {

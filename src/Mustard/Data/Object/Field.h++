@@ -108,10 +108,10 @@ concept FieldAssignableFrom =
 /// must be supported, where @c PersistentType is a directly persisted type.
 ///
 /// @tparam T Wrapped payload type (in-memory type). Does not need to satisfy @c ROOTX::RNTuplePersistable.
-/// @tparam U Persistent storage type used by Writer (TTree/RNTuple). Must satisfy @c ROOTX::RNTuplePersistable.
 /// @tparam AName Compile-time field name.
-/// @tparam ADescription Optional compile-time field description.
-template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription = nullptr>
+/// @tparam U Persistent storage type used by Writer (TTree/RNTuple). Must satisfy @c ROOTX::RNTuplePersistable. Defaults to @c T.
+/// @tparam ADescription Optional compile-time field description. Defaults to none.
+template<typename T, muc::ceta_string AName, ROOTX::RNTuplePersistable U = T, muc::ceta_string ADescription = nullptr>
 class [[nodiscard]] Field final {
 public:
     /// @brief Wrapped payload type alias (in-memory type).
@@ -204,22 +204,22 @@ public:
 
     /// @brief Equality compares wrapped payloads across different Field field declarations.
     /// @tparam V Compared payload type (in-memory type).
-    /// @tparam W Compared persistent storage type.
     /// @tparam N Compared field name.
+    /// @tparam W Compared persistent storage type.
     /// @tparam D Compared field description.
     /// @param that Compared Field.
     /// @return true when wrapped payloads are equal.
-    template<ROOTX::RNTuplePersistable V, ROOTX::RNTuplePersistable W, muc::ceta_string N, muc::ceta_string D>
-    constexpr auto operator==(const Field<V, W, N, D>& that) const -> bool { return **this == *that; }
+    template<ROOTX::RNTuplePersistable V, muc::ceta_string N, ROOTX::RNTuplePersistable W, muc::ceta_string D>
+    constexpr auto operator==(const Field<V, N, W, D>& that) const -> bool { return **this == *that; }
     /// @brief Three-way compares wrapped payloads across different Field field declarations.
     /// @tparam V Compared payload type (in-memory type).
-    /// @tparam W Compared persistent storage type.
     /// @tparam N Compared field name.
+    /// @tparam W Compared persistent storage type.
     /// @tparam D Compared field description.
     /// @param that Compared Field.
     /// @return Ordering result of wrapped payload comparison.
-    template<ROOTX::RNTuplePersistable V, ROOTX::RNTuplePersistable W, muc::ceta_string N, muc::ceta_string D>
-    constexpr auto operator<=>(const Field<V, W, N, D>& that) const -> auto { return **this <=> *that; }
+    template<ROOTX::RNTuplePersistable V, muc::ceta_string N, ROOTX::RNTuplePersistable W, muc::ceta_string D>
+    constexpr auto operator<=>(const Field<V, N, W, D>& that) const -> auto { return **this <=> *that; }
 
     /// @brief Returns compile-time field name carried by this Field.
     /// @details This metadata is used by Model::Index and Tuple::F<AName>().
@@ -242,11 +242,11 @@ struct IsField
 
 /// @brief Type trait to identify Field specializations.
 /// @tparam T Wrapped payload type (in-memory type).
-/// @tparam U Persistent storage type.
 /// @tparam AName Field name.
+/// @tparam U Persistent storage type.
 /// @tparam ADescription Field description.
-template<typename T, ROOTX::RNTuplePersistable U, muc::ceta_string AName, muc::ceta_string ADescription>
-struct IsField<Field<T, U, AName, ADescription>>
+template<typename T, muc::ceta_string AName, ROOTX::RNTuplePersistable U, muc::ceta_string ADescription>
+struct IsField<Field<T, AName, U, ADescription>>
     : std::true_type {};
 
 } // namespace impl2

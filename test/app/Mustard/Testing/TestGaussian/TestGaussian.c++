@@ -63,9 +63,9 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
 
     struct Result
         : Data::Model<
-              Data::Field<double, double, "g1">,
-              Data::Field<std::array<double, 2>, std::array<double, 2>, "g2">,
-              Data::Field<std::array<double, 3>, std::array<double, 3>, "g3">> {};
+              Data::Field<double, "g1", float>,
+              Data::Field<muc::array2d, "g2", muc::array2f>,
+              Data::Field<muc::array3d, "g3", muc::array3f>> {};
 
     ProcessSpecificFile<TFile> file{"test_gaussian.root", "RECREATE"};
     Data::Writer<Result> writer{"Gaussian"};

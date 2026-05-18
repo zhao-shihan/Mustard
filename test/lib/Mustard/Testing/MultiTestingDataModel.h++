@@ -18,7 +18,8 @@
 
 #include "Mustard/Data/Model.h++"
 
-#include <array>
+#include "muc/array"
+
 #include <cstdint>
 #include <tuple>
 #include <utility>
@@ -36,40 +37,40 @@ namespace Mustard::Testing {
 
 struct TestingModelA
     : Mustard::Data::Model<
-          Mustard::Data::Field<int, std::int32_t, "EvtID">,
-          Mustard::Data::Field<int, std::int32_t, "i32">,
-          Mustard::Data::Field<double, double, "f64">,
-          Mustard::Data::Field<std::string, std::string, "str">,
-          Mustard::Data::Field<bool, bool, "b">,
-          Mustard::Data::Field<char, char, "ch">,
-          Mustard::Data::Field<long long, std::int64_t, "i64">,
-          Mustard::Data::Field<unsigned, std::uint32_t, "u32">,
-          Mustard::Data::Field<double, float, "f32">,
-          Mustard::Data::Field<std::vector<int>, std::vector<std::int32_t>, "vi32">> {};
+          Mustard::Data::Field<int, "EvtID", std::int32_t>,
+          Mustard::Data::Field<int, "i32", std::int32_t>,
+          Mustard::Data::Field<double, "f64">,
+          Mustard::Data::Field<std::string, "str">,
+          Mustard::Data::Field<bool, "b">,
+          Mustard::Data::Field<char, "ch">,
+          Mustard::Data::Field<long long, "i64", std::int64_t>,
+          Mustard::Data::Field<unsigned, "u32", std::uint32_t>,
+          Mustard::Data::Field<double, "f32", float>,
+          Mustard::Data::Field<std::vector<int>, "vi32", std::vector<std::int32_t>>> {};
 
 struct TestingModelB
     : Mustard::Data::Model<
-          Mustard::Data::Field<int, std::int32_t, "EvtID">,
-          Mustard::Data::Field<double, float, "f32">,
-          Mustard::Data::Field<bool, bool, "b">,
-          Mustard::Data::Field<std::vector<int>, std::vector<std::int32_t>, "vi32">,
-          Mustard::Data::Field<std::vector<double>, std::vector<double>, "vf64">,
-          Mustard::Data::Field<std::vector<std::string>, std::vector<std::string>, "vstr">,
-          Mustard::Data::Field<unsigned, std::uint8_t, "u8">,
-          Mustard::Data::Field<int, std::int16_t, "i16">,
-          Mustard::Data::Field<std::pair<double, double>, std::pair<float, double>, "pf32f64">,
-          Mustard::Data::Field<std::tuple<unsigned, bool, std::string>, std::tuple<std::uint16_t, bool, std::string>, "tu16bstr">> {};
+          Mustard::Data::Field<int, "EvtID", std::int32_t>,
+          Mustard::Data::Field<double, "f32", float>,
+          Mustard::Data::Field<bool, "b">,
+          Mustard::Data::Field<std::vector<int>, "vi32", std::vector<std::int32_t>>,
+          Mustard::Data::Field<std::vector<double>, "vf64">,
+          Mustard::Data::Field<std::vector<std::string>, "vstr">,
+          Mustard::Data::Field<unsigned, "u8", std::uint8_t>,
+          Mustard::Data::Field<int, "i16", std::int16_t>,
+          Mustard::Data::Field<std::pair<double, double>, "pf32f64", std::pair<float, double>>,
+          Mustard::Data::Field<std::tuple<unsigned, bool, std::string>, "tu16bstr", std::tuple<std::uint16_t, bool, std::string>>> {};
 
 struct TestingModelC
     : Mustard::Data::Model<
-          Mustard::Data::Field<int, std::int32_t, "EvtID">,
-          Mustard::Data::Field<std::array<double, 3>, std::array<double, 3>, "a3f64">,
-          Mustard::Data::Field<std::pair<int, int>, std::pair<std::int32_t, std::int32_t>, "pi32i32">,
-          Mustard::Data::Field<std::array<unsigned, 4>, std::array<std::uint32_t, 4>, "a4u32">,
-          Mustard::Data::Field<std::string, std::string, "str">,
-          Mustard::Data::Field<long long, std::int64_t, "i64">,
-          Mustard::Data::Field<double, double, "f64">,
-          Mustard::Data::Field<std::tuple<bool, char, int>, std::tuple<bool, char, std::int32_t>, "tbchi32">> {};
+          Mustard::Data::Field<int, "EvtID", std::int32_t>,
+          Mustard::Data::Field<muc::array3d, "a3f64">,
+          Mustard::Data::Field<std::pair<int, int>, "pi32i32", std::pair<std::int32_t, std::int32_t>>,
+          Mustard::Data::Field<muc::array4u, "a4u32", muc::array4u32>,
+          Mustard::Data::Field<std::string, "str">,
+          Mustard::Data::Field<long long, "i64", std::int64_t>,
+          Mustard::Data::Field<double, "f64">,
+          Mustard::Data::Field<std::tuple<bool, char, int>, "tbchi32", std::tuple<bool, char, std::int32_t>>> {};
 
 auto MakeEntryA(int eventID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelA>;
 auto MakeEntryB(int eventID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelB>;
