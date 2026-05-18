@@ -68,7 +68,7 @@ auto RDFEventReader<T, M>::ReaderKernel() -> void {
     // Read function to read data into result vector of current event
     const auto read{[this]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         return [this](std::add_lvalue_reference_t<typename std::tuple_element_t<
-                          Is, typename M::StdTuple>::Type>... args) {
+                          Is, typename M::StdTuple>::PersistentType>... args) {
             this->fData->back().emplace_back(MakeArcTuple<M>(std::move(args)...)); // Append to current event
         };
     }(gslx::make_index_sequence<M::Size()>{})};

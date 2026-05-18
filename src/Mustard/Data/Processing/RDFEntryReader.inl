@@ -52,7 +52,7 @@ auto RDFEntryReader<M>::ReaderKernel() -> void {
     // Read function to read data into result vector
     const auto read{[this]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         return [this](std::add_lvalue_reference_t<typename std::tuple_element_t<
-                          Is, typename M::StdTuple>::Type>... args) {
+                          Is, typename M::StdTuple>::PersistentType>... args) {
             this->fData->emplace_back(MakeArcTuple<M>(std::move(args)...)); // Add a new entry
             ++this->fNext;
         };

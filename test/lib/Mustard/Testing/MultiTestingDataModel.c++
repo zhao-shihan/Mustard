@@ -21,10 +21,10 @@
 
 namespace Mustard::Testing {
 
-auto MakeEntryA(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelA> {
+auto MakeEntryA(int eventID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelA> {
     auto entry{Mustard::Data::MakeArcTuple<TestingModelA>()};
-    F<"EvtID">(*entry) = static_cast<std::int32_t>(evtID);
-    const auto i{evtID * 10 + entryIdx};
+    F<"EvtID">(*entry) = eventID;
+    const auto i{eventID * 10 + entryIdx};
     F<"i32">(*entry) = -1000 - i;
     F<"f64">(*entry) = 2.5 + i;
     F<"str">(*entry) = fmt::format("modelA-{}", i);
@@ -33,37 +33,37 @@ auto MakeEntryA(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTupl
     F<"i64">(*entry) = -10000 - i;
     F<"u32">(*entry) = 1000 + i;
     F<"f32">(*entry) = 1.25f + i;
-    F<"vi32">(*entry) = {std::int32_t(i), std::int32_t(i + 1), std::int32_t(i + 2)};
+    F<"vi32">(*entry) = std::array{i, i + 1, i + 2};
     return entry;
 }
 
-auto MakeEntryB(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelB> {
+auto MakeEntryB(int eventID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelB> {
     auto entry{Mustard::Data::MakeArcTuple<TestingModelB>()};
-    F<"EvtID">(*entry) = static_cast<std::int32_t>(evtID);
-    const auto i{evtID * 10 + entryIdx};
+    F<"EvtID">(*entry) = eventID;
+    const auto i{eventID * 10 + entryIdx};
     F<"f32">(*entry) = 0.5f + i;
     F<"b">(*entry) = (i % 3 == 0);
-    F<"vi32">(*entry) = {int(i), int(i * 2), int(i * 3)};
+    F<"vi32">(*entry) = std::array{i, i * 2, i * 3};
     F<"vf64">(*entry) = {0.1 + i, 0.2 + i, 0.3 + i};
     F<"vstr">(*entry) = {fmt::format("b{}", i), fmt::format("c{}", i)};
     F<"u8">(*entry) = i % 256;
-    F<"i16">(*entry) = -500 - i;
+    F<"i16">(*entry) = -500 - i % 30000;
     F<"pf32f64">(*entry) = {1.0f + i, 2.0 + i};
-    F<"tu16bstr">(*entry) = {std::uint16_t(100 + i), (i % 4 == 0), fmt::format("tuple{}", i)};
+    F<"tu16bstr">(*entry) = {(100 + i) % 65536, i % 4 == 0, fmt::format("tuple{}", i)};
     return entry;
 }
 
-auto MakeEntryC(gsl::index evtID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelC> {
+auto MakeEntryC(int eventID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModelC> {
     auto entry{Mustard::Data::MakeArcTuple<TestingModelC>()};
-    F<"EvtID">(*entry) = static_cast<std::int32_t>(evtID);
-    const auto i{evtID * 10 + entryIdx};
+    F<"EvtID">(*entry) = eventID;
+    const auto i{eventID * 10 + entryIdx};
     F<"a3f64">(*entry) = {1.0 + i, 2.0 + i, 3.0 + i};
     F<"pi32i32">(*entry) = {i, -i};
-    F<"a4u32">(*entry) = {std::uint32_t(10 + i), std::uint32_t(20 + i), std::uint32_t(30 + i), std::uint32_t(40 + i)};
+    F<"a4u32">(*entry) = std::array{10 + i, 20 + i, 30 + i, 40 + i};
     F<"str">(*entry) = fmt::format("modelC-{}", i);
     F<"i64">(*entry) = 10000 + i;
     F<"f64">(*entry) = 3.14159 + i;
-    F<"tbchi32">(*entry) = {(i % 2 == 0), 'Z' - (i % 26), static_cast<std::int32_t>(i * 10)};
+    F<"tbchi32">(*entry) = {(i % 2 == 0), 'Z' - (i % 26), static_cast<int>(i * 10)};
     return entry;
 }
 

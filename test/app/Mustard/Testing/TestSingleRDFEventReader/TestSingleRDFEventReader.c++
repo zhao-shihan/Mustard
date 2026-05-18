@@ -161,7 +161,7 @@ auto TestSingleRDFEventReader::Main(int argc, char* argv[]) const -> int {
         logMismatch.operator()<"vf64">();
         logMismatch.operator()<"vstr">();
         logMismatch.operator()<"a3u16">();
-        logMismatch.operator()<"pi32f">();
+        logMismatch.operator()<"pi32f32">();
         logMismatch.operator()<"tu8str">();
 
         if (mismatchCount == 0) {
