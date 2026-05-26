@@ -20,8 +20,8 @@ namespace Mustard::Data::inline Processing {
 
 template<muc::instantiated_from<Executor> AExecutor>
 Processor<AExecutor>::Processor(AExecutor executor) :
-    Base{},
-    fExecutor{std::move(executor)} {
+    fExecutor{std::move(executor)},
+    fBatchSizeProposal{100} {
     fExecutor.ExecutionName("Event loop");
     fExecutor.OperationName("Dispatch");
     fExecutor.TaskName("batch");
@@ -98,7 +98,7 @@ auto Processor<AExecutor>::RunImpl(RDFReader<T, D, N>& reader, Index n, std::str
     std::future<typename RDFReader<T, D, N>::Data> asyncRead;
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
     const auto worldCommSize{mplr::comm_world().size()};
-    const auto batch{this->CalculateBatchConfiguration(worldCommSize, n)};
+    const auto batch{CalculateBatchConfiguration(worldCommSize, n)};
     if (batch.remainder == 0) {
         MasterPrintLn("There are {} {} (proceeding as {}*{}).", n, what, batch.size, batch.count);
     } else {
@@ -112,7 +112,7 @@ auto Processor<AExecutor>::RunImpl(RDFReader<T, D, N>& reader, Index n, std::str
             invokeUserFunc(/*bypass =*/true, D{});
             return;
         }
-        const auto [iFirst, iLast]{this->CalculateIndexRange(k, batch)};
+        const auto [iFirst, iLast]{CalculateIndexRange(k, batch)};
         if (not asyncRead.valid()) [[unlikely]] { // first batch
             asyncRead = reader.AsyncRead(iFirst, iLast);
             return;
@@ -141,6 +141,34 @@ auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what)
         MasterPrintWarning(fmt::format("Number of processes ({}) are more than number of {} ({})", worldCommSize, what, n));
     }
     return byPassWillOccur;
+}
+
+template<muc::instantiated_from<Executor> AExecutor>
+auto Processor<AExecutor>::CalculateBatchConfiguration(Index nProcess, Index nTotal) const -> BatchConfiguration {
+    if (nTotal == 0) {
+        return {};
+    }
+    const auto nBatchProposal{std::llround(static_cast<double>(nTotal) / fBatchSizeProposal)};
+    const auto nBatch{std::clamp(gsl::narrow<Index>(nBatchProposal), std::min(nProcess, nTotal), nTotal)};
+    const auto batchSize{std::div(nTotal, nBatch)};
+    return {nBatch, batchSize.quot, batchSize.rem};
+}
+
+template<muc::instantiated_from<Executor> AExecutor>
+auto Processor<AExecutor>::CalculateIndexRange(Index iBatch, BatchConfiguration batch) -> std::pair<Index, Index> {
+    Expects(0 <= iBatch and iBatch < batch.count);
+    Index iFirst;
+    Index iLast;
+    if (iBatch < batch.remainder) {
+        // Distribute the remainder among the initial batches
+        const auto size{batch.size + 1};
+        iFirst = iBatch * size;
+        iLast = iFirst + size;
+    } else {
+        iFirst = batch.remainder + iBatch * batch.size;
+        iLast = iFirst + batch.size;
+    }
+    return {iFirst, iLast};
 }
 
 } // namespace Mustard::Data::inline Processing

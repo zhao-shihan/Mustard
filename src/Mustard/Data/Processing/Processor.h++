@@ -24,7 +24,6 @@
 #include "Mustard/Data/Processing/RDFEntryReader.h++"
 #include "Mustard/Data/Processing/RDFEventReader.h++"
 #include "Mustard/Data/Processing/RDFReader.h++"
-#include "Mustard/Data/Processing/impl3/ProcessorBase.h++"
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
@@ -41,6 +40,7 @@
 #include <array>
 #include <cmath>
 #include <concepts>
+#include <cstdlib>
 #include <functional>
 #include <future>
 #include <string_view>
@@ -66,10 +66,10 @@ namespace Mustard::Data::inline Processing {
 ///
 /// @tparam AExecutor MPI executor type, must be an instantiation of @ref Executor.
 template<muc::instantiated_from<Executor> AExecutor = Executor<gsl::index>>
-class Processor : public impl3::ProcessorBase<typename AExecutor::Index> {
-private:
-    using Base = impl3::ProcessorBase<typename AExecutor::Index>;
-    using typename Base::Index;
+class Processor {
+public:
+    /// @brief Index type
+    using Index = typename AExecutor::Index;
 
 public:
     /// @brief Construct a processor with the given executor.
@@ -116,6 +116,12 @@ public:
     /// @brief Mutable access to the underlying executor.
     auto Executor() -> auto& { return fExecutor; }
 
+    /// @brief Set the proposed batch size for work partitioning.
+    /// @param val Proposed batch size (clamped to at least 1).
+    auto BatchSizeProposal(Index val) -> void { fBatchSizeProposal = std::max(1, val); }
+    /// @brief Get the current proposed batch size.
+    auto BatchSizeProposal() const -> auto { return fBatchSizeProposal; }
+
 private:
     /// @brief Core execution loop shared by all @ref Run overloads.
     /// @tparam T Signed integral index type.
@@ -136,7 +142,28 @@ private:
     static auto ByPassOccurrenceCheck(Index n, std::string_view what) -> bool;
 
 private:
-    AExecutor fExecutor; ///< Underlying MPI executor for work dispatch.
+    /// @brief Batch partitioning configuration computed by @ref CalculateBatchConfiguration.
+    struct BatchConfiguration {
+        Index count{};     ///< Number of batches.
+        Index size{};      ///< Base number of items per batch.
+        Index remainder{}; ///< Number of initial batches that receive one extra item.
+    };
+
+private:
+    /// @brief Partition @p nTotal items across @p nProcess processes.
+    /// @param nProcess Number of MPI processes.
+    /// @param nTotal Total number of work items.
+    /// @return Batch configuration describing the partition.
+    auto CalculateBatchConfiguration(Index nProcess, Index nTotal) const -> BatchConfiguration;
+    /// @brief Compute the half-open index range @c [first, last) for batch @p iBatch.
+    /// @param iBatch Zero-based batch index.
+    /// @param batch Batch configuration from @ref CalculateBatchConfiguration.
+    /// @return Pair of @c [first, last) indices.
+    static auto CalculateIndexRange(Index iBatch, BatchConfiguration batch) -> std::pair<Index, Index>;
+
+private:
+    AExecutor fExecutor;      ///< Underlying MPI executor for work dispatch.
+    Index fBatchSizeProposal; ///< Proposed batch size for work partitioning.
 };
 
 } // namespace Mustard::Data::inline Processing
