@@ -69,8 +69,9 @@ auto TestSingleRDFEventProcessor::Main(int argc, char* argv[]) const -> int {
             localEventIDList.push_back(eventID);
         }};
 
+        Mustard::Data::RDFEventReader<int, TestingModel> reader{std::move(rdf), "EvtID"};
         Mustard::Data::Processor processor;
-        processor.Run<TestingModel>(rdf, int{}, "EvtID", collectEventIDs);
+        processor.Run(reader, collectEventIDs);
 
         gtl::vector<int> eventIDList;
         if (worldComm.rank() == 0) {

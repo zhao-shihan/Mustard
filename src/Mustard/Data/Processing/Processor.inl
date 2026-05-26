@@ -29,27 +29,12 @@ Processor<AExecutor>::Processor(AExecutor executor) :
 
 template<muc::instantiated_from<Executor> AExecutor>
 template<Modelized M>
-auto Processor<AExecutor>::Run(ROOT::RDF::RNode rdf, std::invocable<bool, ArcTuple<M>> auto&& f) -> Index {
-    RDFEntryReader<M> reader{std::move(rdf)};
-    return Run(reader, std::forward<decltype(f)>(f));
-}
-
-template<muc::instantiated_from<Executor> AExecutor>
-template<Modelized M>
 auto Processor<AExecutor>::Run(RDFEntryReader<M>& reader, std::invocable<bool, ArcTuple<M>> auto&& f) -> Index {
     const auto nEntry{gsl::narrow<Index>(reader.NEntry())};
     if (nEntry == 0) {
         return 0;
     }
     return RunImpl(reader, nEntry, "entries", std::forward<decltype(f)>(f));
-}
-
-template<muc::instantiated_from<Executor> AExecutor>
-template<Modelized... Ms>
-auto Processor<AExecutor>::Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf,
-                               std::invocable<bool, ArcTuple<Ms>...> auto&& f) -> Index {
-    RDFEntryReader<Ms...> reader{std::move(rdf)};
-    return Run(reader, std::forward<decltype(f)>(f));
 }
 
 template<muc::instantiated_from<Executor> AExecutor>
@@ -64,14 +49,6 @@ auto Processor<AExecutor>::Run(RDFEntryReader<Ms...>& reader, std::invocable<boo
 
 template<muc::instantiated_from<Executor> AExecutor>
 template<Modelized M, std::integral T>
-auto Processor<AExecutor>::Run(ROOT::RDF::RNode rdf, muc::type_tag<T>, std::string eventIDColumnNames,
-                               std::invocable<bool, ArcTupleVector<M>> auto&& f) -> Index {
-    RDFEventReader<T, M> reader{std::move(rdf), std::move(eventIDColumnNames)};
-    return Run(reader, std::forward<decltype(f)>(f));
-}
-
-template<muc::instantiated_from<Executor> AExecutor>
-template<Modelized M, std::integral T>
 auto Processor<AExecutor>::Run(RDFEventReader<T, M>& reader,
                                std::invocable<bool, ArcTupleVector<M>> auto&& f) -> Index {
     const auto nEvent{gsl::narrow<Index>(reader.NEvent())};
@@ -79,22 +56,6 @@ auto Processor<AExecutor>::Run(RDFEventReader<T, M>& reader,
         return 0;
     }
     return RunImpl(reader, nEvent, "events", std::forward<decltype(f)>(f));
-}
-
-template<muc::instantiated_from<Executor> AExecutor>
-template<Modelized... Ms, std::integral T>
-auto Processor<AExecutor>::Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf, muc::type_tag<T>, const std::string& eventIDColumnNames,
-                               std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index {
-    RDFEventReader<T, Ms...> reader{std::move(rdf), eventIDColumnNames};
-    return Run(reader, std::forward<decltype(f)>(f));
-}
-
-template<muc::instantiated_from<Executor> AExecutor>
-template<Modelized... Ms, std::integral T>
-auto Processor<AExecutor>::Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf, muc::type_tag<T>, std::array<std::string, sizeof...(Ms)> eventIDColumnNames,
-                               std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index {
-    RDFEventReader<T, Ms...> reader{std::move(rdf), std::move(eventIDColumnNames)};
-    return Run(reader, std::forward<decltype(f)>(f));
 }
 
 template<muc::instantiated_from<Executor> AExecutor>

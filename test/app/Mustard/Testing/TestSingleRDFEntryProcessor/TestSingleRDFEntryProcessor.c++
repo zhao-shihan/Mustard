@@ -64,8 +64,9 @@ auto TestSingleRDFEntryProcessor::Main(int argc, char* argv[]) const -> int {
             ++nEntryLocal;
         }};
 
+        Mustard::Data::RDFEntryReader<TestingModel> reader{std::move(rdf)};
         Mustard::Data::Processor processor;
-        processor.Run<TestingModel>(rdf, countEntries);
+        processor.Run(reader, countEntries);
 
         unsigned long long nEntry{};
         worldComm.reduce(std::plus{}, 0, nEntryLocal, nEntry);

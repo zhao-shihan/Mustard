@@ -90,8 +90,9 @@ auto TestMultiRDFEntryProcessor::Main(int argc, char* argv[]) const -> int {
             }
         }};
 
+        Mustard::Data::RDFEntryReader<TestingModelA, TestingModelB, TestingModelC> reader{std::move(allRDF)};
         Mustard::Data::Processor processor;
-        processor.Run<TestingModelA, TestingModelB, TestingModelC>(allRDF, countEntries);
+        processor.Run(reader, countEntries);
 
         muc::arrayull<3> nEntry{};
         worldComm.reduce(std::plus{}, 0, nEntryLocal.data(), nEntry.data(), mplr::contiguous_layout<unsigned long long>{3});

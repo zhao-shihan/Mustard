@@ -28,8 +28,6 @@
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "ROOT/RDataFrame.hxx"
-
 #include "mplr/mplr.hpp"
 
 #include "muc/tuple"
@@ -63,32 +61,14 @@ public:
     explicit Processor(AExecutor executor = {});
 
     template<Modelized M>
-    auto Run(ROOT::RDF::RNode rdf,
-             std::invocable<bool, ArcTuple<M>> auto&& f) -> Index;
-    template<Modelized M>
     auto Run(RDFEntryReader<M>& reader,
              std::invocable<bool, ArcTuple<M>> auto&& f) -> Index;
-
-    template<Modelized... Ms>
-    auto Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf,
-             std::invocable<bool, ArcTuple<Ms>...> auto&& f) -> Index;
     template<Modelized... Ms>
     auto Run(RDFEntryReader<Ms...>& reader,
              std::invocable<bool, ArcTuple<Ms>...> auto&& f) -> Index;
-
-    template<Modelized M, std::integral T>
-    auto Run(ROOT::RDF::RNode rdf, muc::type_tag<T>, std::string eventIDColumnName,
-             std::invocable<bool, ArcTupleVector<M>> auto&& f) -> Index;
     template<Modelized M, std::integral T>
     auto Run(RDFEventReader<T, M>& reader,
              std::invocable<bool, ArcTupleVector<M>> auto&& f) -> Index;
-
-    template<Modelized... Ms, std::integral T>
-    auto Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf, muc::type_tag<T>, const std::string& eventIDColumnName,
-             std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index;
-    template<Modelized... Ms, std::integral T>
-    auto Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf, muc::type_tag<T>, std::array<std::string, sizeof...(Ms)> eventIDColumnName,
-             std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index;
     template<Modelized... Ms, std::integral T>
     auto Run(RDFEventReader<T, Ms...>& reader,
              std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index;

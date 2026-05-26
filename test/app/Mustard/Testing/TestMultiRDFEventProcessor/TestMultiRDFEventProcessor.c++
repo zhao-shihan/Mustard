@@ -121,8 +121,9 @@ auto TestMultiRDFEventProcessor::Main(int argc, char* argv[]) const -> int {
             }
         }};
 
+        Mustard::Data::RDFEventReader<int, TestingModelA, TestingModelB, TestingModelC> reader{std::move(allRDF), "EvtID"};
         Mustard::Data::Processor processor;
-        processor.Run<TestingModelA, TestingModelB, TestingModelC>(allRDF, int{}, "EvtID", collectEventIDs);
+        processor.Run(reader, collectEventIDs);
 
         const auto gatherEventIDs{[&](const gtl::vector<int>& localList, gtl::vector<int>& gatheredList) {
             if (worldComm.rank() == 0) {
