@@ -21,14 +21,12 @@
 #include "Mustard/Data/Container/ArcTupleVector.h++"
 #include "Mustard/Data/Model.h++"
 #include "Mustard/Data/Object/Tuple.h++"
-#include "Mustard/Data/Processing/CountRDFEntry.h++"
 #include "Mustard/Data/Processing/RDFEntryReader.h++"
 #include "Mustard/Data/Processing/RDFEventReader.h++"
 #include "Mustard/Data/Processing/RDFReader.h++"
 #include "Mustard/Data/Processing/impl3/ProcessorBase.h++"
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Memory/Arc.h++"
 
 #include "ROOT/RDataFrame.hxx"
 
@@ -67,16 +65,22 @@ public:
     template<Modelized M>
     auto Run(ROOT::RDF::RNode rdf,
              std::invocable<bool, ArcTuple<M>> auto&& f) -> Index;
+    template<Modelized M>
+    auto Run(RDFEntryReader<M>& reader,
+             std::invocable<bool, ArcTuple<M>> auto&& f) -> Index;
 
     template<Modelized... Ms>
     auto Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf,
+             std::invocable<bool, ArcTuple<Ms>...> auto&& f) -> Index;
+    template<Modelized... Ms>
+    auto Run(RDFEntryReader<Ms...>& reader,
              std::invocable<bool, ArcTuple<Ms>...> auto&& f) -> Index;
 
     template<Modelized M, std::integral T>
     auto Run(ROOT::RDF::RNode rdf, muc::type_tag<T>, std::string eventIDColumnName,
              std::invocable<bool, ArcTupleVector<M>> auto&& f) -> Index;
     template<Modelized M, std::integral T>
-    auto Run(ROOT::RDF::RNode rdf, muc::type_tag<T>, Arc<SingleRDFEventInfo<T>> rdfEventInfo,
+    auto Run(RDFEventReader<T, M>& reader,
              std::invocable<bool, ArcTupleVector<M>> auto&& f) -> Index;
 
     template<Modelized... Ms, std::integral T>
@@ -86,7 +90,7 @@ public:
     auto Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf, muc::type_tag<T>, std::array<std::string, sizeof...(Ms)> eventIDColumnName,
              std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index;
     template<Modelized... Ms, std::integral T>
-    auto Run(std::array<ROOT::RDF::RNode, sizeof...(Ms)> rdf, muc::type_tag<T>, Arc<MultiRDFEventInfo<T, sizeof...(Ms)>> rdfEventInfo,
+    auto Run(RDFEventReader<T, Ms...>& reader,
              std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index;
 
     auto Executor() const -> const auto& { return fExecutor; }
