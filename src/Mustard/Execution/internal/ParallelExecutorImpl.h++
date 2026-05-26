@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Execution/Dispatcher.h++"
 #include "Mustard/Execution/internal/ExecutorImplBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
@@ -52,11 +52,11 @@ namespace Mustard::inline Execution::impl {
 template<std::integral T>
 class ParallelExecutorImpl final : public ExecutorImplBase<T> {
 public:
-    ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher);
 
     auto NProcess() const -> int { return mplr::comm_world().size(); }
 
-    auto Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto PrintExecutionSummary() const -> void;
 
 private:

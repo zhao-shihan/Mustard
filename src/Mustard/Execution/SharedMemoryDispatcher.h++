@@ -18,37 +18,45 @@
 
 #pragma once
 
-#include "Mustard/Execution/ClusterAwareMasterWorkerScheduler.h++"
-#include "Mustard/Execution/MasterWorkerScheduler.h++"
-#include "Mustard/Execution/Scheduler.h++"
-#include "Mustard/Execution/SequentialScheduler.h++"
-#include "Mustard/Execution/SharedMemoryScheduler.h++"
-#include "Mustard/Execution/StaticScheduler.h++"
+#include "Mustard/Execution/Dispatcher.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Parallel/MPIDataType.h++"
 
-#include "gtl/phmap.hpp"
+#include "mpi.h"
 
-#include "muc/algorithm"
-
-#include "fmt/ranges.h"
+#include "gsl/gsl"
 
 #include <algorithm>
+#include <cmath>
 #include <concepts>
-#include <functional>
-#include <memory>
+#include <stdexcept>
 #include <string>
-#include <string_view>
-#include <vector>
+#include <utility>
 
 namespace Mustard::inline Execution {
 
-auto DefaultSchedulerCode() -> std::string;
-
 template<std::integral T>
-auto MakeCodedScheduler(std::string_view scheduler) -> std::unique_ptr<Scheduler<T>>;
+class SharedMemoryDispatcher : public Dispatcher<T> {
+public:
+    SharedMemoryDispatcher();
+    ~SharedMemoryDispatcher();
 
-template<std::integral T>
-auto MakeDefaultScheduler() -> std::unique_ptr<Scheduler<T>>;
+    virtual auto PreLoopAction() -> void override;
+    virtual auto PreTaskAction() -> void override {}
+    virtual auto PostTaskAction() -> void override;
+    virtual auto PostLoopAction() -> void override {}
+
+    virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
+
+private:
+    volatile T* fMainTaskID;
+    MPI_Win fMainTaskIDWindow;
+    T fBatchSize;
+    T fTaskCounter;
+
+    static constexpr long double fgImbalancingFactor{1e-4};
+};
 
 } // namespace Mustard::inline Execution
 
-#include "Mustard/Execution/DefaultScheduler.inl"
+#include "Mustard/Execution/SharedMemoryDispatcher.inl"

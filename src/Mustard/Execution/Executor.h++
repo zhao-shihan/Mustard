@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Execution/DefaultScheduler.h++"
-#include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Execution/DefaultDispatcher.h++"
+#include "Mustard/Execution/Dispatcher.h++"
 #include "Mustard/Execution/internal/ExecutorImplBase.h++"
 #include "Mustard/Execution/internal/ParallelExecutorImpl.h++"
 #include "Mustard/Execution/internal/SequentialExecutorImpl.h++"
@@ -41,17 +41,17 @@ public:
     using ExecutionInfoType = typename impl::ExecutorImplBase<T>::ExecutionInfoType;
 
 public:
-    Executor(std::string_view scheduler = DefaultSchedulerCode());
-    Executor(std::string executionName, std::string opName, std::string taskName, std::string_view scheduler = DefaultSchedulerCode());
-    Executor(std::unique_ptr<Scheduler<T>> scheduler);
-    Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    Executor(std::string_view dispatcher = DefaultDispatcherCode());
+    Executor(std::string executionName, std::string opName, std::string taskName, std::string_view dispatcher = DefaultDispatcherCode());
+    Executor(std::unique_ptr<Dispatcher<T>> dispatcher);
+    Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher);
 
-    auto SwitchScheduler(std::string_view scheduler) -> void;
-    auto SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void;
+    auto SwitchDispatcher(std::string_view dispatcher) -> void;
+    auto SwitchDispatcher(std::unique_ptr<Dispatcher<T>> dispatcher) -> void;
 
     auto NProcess() const -> int;
 
-    auto Task() const -> struct Scheduler<T>::Task;
+    auto Task() const -> struct Dispatcher<T>::Task;
     auto NTask() const -> T;
     auto ExecutingTask() const -> T;
     auto NLocalExecutedTask() const -> T;
@@ -70,7 +70,7 @@ public:
     auto TaskName() const -> const std::string&;
     auto TaskName(std::string name) -> void;
 
-    auto Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto Run(T size, std::invocable<T> auto&& F) -> T;
 
     auto ExecutionInfo() const -> const ExecutionInfoType&;

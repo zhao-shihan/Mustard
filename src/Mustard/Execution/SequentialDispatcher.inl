@@ -16,38 +16,20 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Execution/DefaultScheduler.h++"
-
-#include "mplr/mplr.hpp"
-
-#include "envparse/parse.h++"
-
-#include <algorithm>
-
 namespace Mustard::inline Execution {
 
-auto DefaultSchedulerCode() -> std::string {
-    if (const auto envScheduler{envparse::parse<envparse::not_set_option::left_blank>("${MUSTARD_EXECUTION_SCHEDULER}")};
-        not envScheduler.empty()) {
-        return envScheduler;
+template<std::integral T>
+SequentialDispatcher<T>::SequentialDispatcher() :
+    Dispatcher<T>{} {
+    if (mplr::available() and mplr::comm_world().size() > 1) {
+        Throw<std::runtime_error>("Running with more than one process");
     }
-    if (not mplr::available()) {
-        return "seq";
-    }
-    const auto worldComm{mplr::comm_world()};
-    if (worldComm.size() == 1) {
-        return "seq";
-    }
-    const auto& mpiEnv{Env::MPIEnv::Instance()};
-    if (mpiEnv.ClusterSize() == 1) {
-        return "shm";
-    }
-    if (worldComm.size() <= 128 or
-        std::ranges::all_of(mpiEnv.NodeList(), [](auto&& n) { return n.size <= 8; })) {
-        return "mw";
-    }
-    return "cmw";
+}
+
+template<std::integral T>
+auto SequentialDispatcher<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
+    return {this->fNLocalExecutedTask > 10,
+            this->fExecutingTask - this->fTask.first};
 }
 
 } // namespace Mustard::inline Execution

@@ -16,30 +16,29 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include "Mustard/Execution/Scheduler.h++"
-
-#include "mplr/mplr.hpp"
-
-#include <concepts>
-#include <utility>
-
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-class SequentialScheduler : public Scheduler<T> {
-public:
-    SequentialScheduler();
+auto StaticDispatcher<T>::PreLoopAction() -> void {
+    const auto worldComm{mplr::comm_world()};
+    this->fExecutingTask = this->fTask.first + (worldComm.size() - 1 - worldComm.rank());
+    if (this->fExecutingTask > this->fTask.last) [[unlikely]] {
+        this->fExecutingTask = this->fTask.last;
+    }
+}
 
-    virtual auto PreLoopAction() -> void override { this->fExecutingTask = this->fTask.first; }
-    virtual auto PreTaskAction() -> void override {}
-    virtual auto PostTaskAction() -> void override { this->fExecutingTask += 1; }
-    virtual auto PostLoopAction() -> void override {}
+template<std::integral T>
+auto StaticDispatcher<T>::PostTaskAction() -> void {
+    this->fExecutingTask += mplr::comm_world().size();
+    if (this->fExecutingTask > this->fTask.last) [[unlikely]] {
+        this->fExecutingTask = this->fTask.last;
+    }
+}
 
-    virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
-};
+template<std::integral T>
+auto StaticDispatcher<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
+    return {this->fNLocalExecutedTask > 10,
+            this->fExecutingTask - this->fTask.first};
+}
 
 } // namespace Mustard::inline Execution
-
-#include "Mustard/Execution/SequentialScheduler.inl"

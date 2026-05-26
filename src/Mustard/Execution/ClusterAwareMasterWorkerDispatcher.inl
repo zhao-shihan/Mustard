@@ -19,7 +19,7 @@
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::ClusterMaster(ClusterAwareMasterWorkerScheduler<T>* s) :
+ClusterAwareMasterWorkerDispatcher<T>::ClusterMaster::ClusterMaster(ClusterAwareMasterWorkerDispatcher<T>* s) :
     fS{s},
     fRecvFromNM{},
     fTaskIDSendToNM{},
@@ -35,12 +35,12 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::ClusterMaster(ClusterAwareM
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::StartAll() -> void {
+auto ClusterAwareMasterWorkerDispatcher<T>::ClusterMaster::StartAll() -> void {
     fRecvFromNM.startall();
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
+auto ClusterAwareMasterWorkerDispatcher<T>::ClusterMaster::operator()() -> void {
     auto interNodeTaskID{muc::ranges::reduce(fS->fInterNodeBatchSize, fS->fTask.first)};
     while (true) {
         const auto [result, recvRank]{fRecvFromNM.waitsome(mplr::duty_ratio::preset::active)};
@@ -61,7 +61,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::ClusterMaster::operator()() -> void {
 }
 
 template<std::integral T>
-ClusterAwareMasterWorkerScheduler<T>::NodeMaster::NodeMaster(ClusterAwareMasterWorkerScheduler<T>* s) :
+ClusterAwareMasterWorkerDispatcher<T>::NodeMaster::NodeMaster(ClusterAwareMasterWorkerDispatcher<T>* s) :
     fS{s},
     fClusterMaster{s->fInterNodeComm.rank() == 0 ? std::make_unique<ClusterMaster>(s) : nullptr},
     fClusterMasterThread{},
@@ -82,7 +82,7 @@ ClusterAwareMasterWorkerScheduler<T>::NodeMaster::NodeMaster(ClusterAwareMasterW
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::StartAll() -> void {
+auto ClusterAwareMasterWorkerDispatcher<T>::NodeMaster::StartAll() -> void {
     fRecvFromW.startall();
 
     if (fClusterMaster) {
@@ -94,7 +94,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::StartAll() -> void {
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
+auto ClusterAwareMasterWorkerDispatcher<T>::NodeMaster::operator()() -> void {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     const auto intraNodeFirstTaskID{std::reduce(
         fS->fInterNodeBatchSize.cbegin(), fS->fInterNodeBatchSize.cbegin() + mpiEnv.LocalNodeIdx(),
@@ -141,8 +141,8 @@ auto ClusterAwareMasterWorkerScheduler<T>::NodeMaster::operator()() -> void {
 }
 
 template<std::integral T>
-ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
-    Scheduler<T>{},
+ClusterAwareMasterWorkerDispatcher<T>::ClusterAwareMasterWorkerDispatcher() :
+    Dispatcher<T>{},
     fIntraNodeComm{},
     fInterNodeComm{},
     fIntraNodeBatchSize{},
@@ -171,7 +171,7 @@ ClusterAwareMasterWorkerScheduler<T>::ClusterAwareMasterWorkerScheduler() :
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::PreLoopAction() -> void {
+auto ClusterAwareMasterWorkerDispatcher<T>::PreLoopAction() -> void {
     const auto avgTaskPerProc{static_cast<long double>(this->NTask()) / mplr::comm_world().size()};
     fInterNodeBatchSizeMultiple = std::min(muc::lltrunc(avgTaskPerProc), fgMaxInterNodeBatchSizeMultiple);
     Ensures(fInterNodeBatchSizeMultiple >= 1);
@@ -198,7 +198,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::PreLoopAction() -> void {
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::PreTaskAction() -> void {
+auto ClusterAwareMasterWorkerDispatcher<T>::PreTaskAction() -> void {
     if (fIntraNodeTaskCounter == 0) {
         fRecvFromNM.start();
         fSendToNM.start();
@@ -206,7 +206,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::PreTaskAction() -> void {
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::PostTaskAction() -> void {
+auto ClusterAwareMasterWorkerDispatcher<T>::PostTaskAction() -> void {
     if (++fIntraNodeTaskCounter != fIntraNodeBatchSize) {
         ++this->fExecutingTask;
         return;
@@ -218,7 +218,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::PostTaskAction() -> void {
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::PostLoopAction() -> void {
+auto ClusterAwareMasterWorkerDispatcher<T>::PostLoopAction() -> void {
     fSendToNM.wait(mplr::duty_ratio::preset::moderate);
     fRecvFromNM.wait(mplr::duty_ratio::preset::moderate);
 
@@ -228,7 +228,7 @@ auto ClusterAwareMasterWorkerScheduler<T>::PostLoopAction() -> void {
 }
 
 template<std::integral T>
-auto ClusterAwareMasterWorkerScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
+auto ClusterAwareMasterWorkerDispatcher<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
     return {this->fNLocalExecutedTask > 10 * fInterNodeBatchSizeMultiple * fIntraNodeBatchSize,
             this->fExecutingTask - this->fTask.first};
 }

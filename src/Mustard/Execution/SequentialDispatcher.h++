@@ -16,13 +16,30 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
+#include "Mustard/Execution/Dispatcher.h++"
+
+#include "mplr/mplr.hpp"
+
+#include <concepts>
+#include <utility>
+
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-auto Scheduler<T>::Reset() -> void {
-    fExecutingTask = fTask.first;
-    fNLocalExecutedTask = 0;
-}
+class SequentialDispatcher : public Dispatcher<T> {
+public:
+    SequentialDispatcher();
+
+    virtual auto PreLoopAction() -> void override { this->fExecutingTask = this->fTask.first; }
+    virtual auto PreTaskAction() -> void override {}
+    virtual auto PostTaskAction() -> void override { this->fExecutingTask += 1; }
+    virtual auto PostLoopAction() -> void override {}
+
+    virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
+};
 
 } // namespace Mustard::inline Execution
+
+#include "Mustard/Execution/SequentialDispatcher.inl"

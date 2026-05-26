@@ -19,26 +19,10 @@
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-auto StaticScheduler<T>::PreLoopAction() -> void {
-    const auto worldComm{mplr::comm_world()};
-    this->fExecutingTask = this->fTask.first + (worldComm.size() - 1 - worldComm.rank());
-    if (this->fExecutingTask > this->fTask.last) [[unlikely]] {
-        this->fExecutingTask = this->fTask.last;
-    }
-}
-
-template<std::integral T>
-auto StaticScheduler<T>::PostTaskAction() -> void {
-    this->fExecutingTask += mplr::comm_world().size();
-    if (this->fExecutingTask > this->fTask.last) [[unlikely]] {
-        this->fExecutingTask = this->fTask.last;
-    }
-}
-
-template<std::integral T>
-auto StaticScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
-    return {this->fNLocalExecutedTask > 10,
-            this->fExecutingTask - this->fTask.first};
+    requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
+auto Dispatcher<T>::Reset() -> void {
+    fExecutingTask = fTask.first;
+    fNLocalExecutedTask = 0;
 }
 
 } // namespace Mustard::inline Execution

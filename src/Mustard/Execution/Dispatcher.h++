@@ -28,7 +28,7 @@ namespace Mustard::inline Execution {
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-class Scheduler : public NonCopyableBase {
+class Dispatcher : public NonCopyableBase {
 public:
     struct Task {
         T first;
@@ -36,7 +36,7 @@ public:
     };
 
 public:
-    virtual ~Scheduler() = default;
+    virtual ~Dispatcher() = default;
 
     auto Task() const -> auto { return fTask; }
     auto NTask() const -> auto { return fTask.last - fTask.first; }
@@ -62,4 +62,4 @@ protected:
 
 } // namespace Mustard::inline Execution
 
-#include "Mustard/Execution/Scheduler.inl"
+#include "Mustard/Execution/Dispatcher.inl"

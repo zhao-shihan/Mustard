@@ -19,8 +19,8 @@
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-SharedMemoryScheduler<T>::SharedMemoryScheduler() :
-    Scheduler<T>{},
+SharedMemoryDispatcher<T>::SharedMemoryDispatcher() :
+    Dispatcher<T>{},
     fMainTaskID{},
     fMainTaskIDWindow{MPI_WIN_NULL},
     fBatchSize{},
@@ -41,14 +41,14 @@ SharedMemoryScheduler<T>::SharedMemoryScheduler() :
 }
 
 template<std::integral T>
-SharedMemoryScheduler<T>::~SharedMemoryScheduler() {
+SharedMemoryDispatcher<T>::~SharedMemoryDispatcher() {
     if (fMainTaskIDWindow != MPI_WIN_NULL) {
         MPI_Win_free(&fMainTaskIDWindow);
     }
 }
 
 template<std::integral T>
-auto SharedMemoryScheduler<T>::PreLoopAction() -> void {
+auto SharedMemoryDispatcher<T>::PreLoopAction() -> void {
     const auto& intraNodeComm{Env::MPIEnv::Instance().IntraNodeComm()};
     fBatchSize = std::max(1ll, std::llround(fgImbalancingFactor * this->NTask() / intraNodeComm.size()));
     this->fExecutingTask = this->fTask.first + intraNodeComm.rank() * fBatchSize;
@@ -62,7 +62,7 @@ auto SharedMemoryScheduler<T>::PreLoopAction() -> void {
 }
 
 template<std::integral T>
-auto SharedMemoryScheduler<T>::PostTaskAction() -> void {
+auto SharedMemoryDispatcher<T>::PostTaskAction() -> void {
     if (++fTaskCounter == fBatchSize) {
         MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, fMainTaskIDWindow);
         MPI_Fetch_and_op(&fBatchSize, &this->fExecutingTask, Parallel::MPIDataType<T>(), 0, 0, MPI_SUM, fMainTaskIDWindow);
@@ -75,7 +75,7 @@ auto SharedMemoryScheduler<T>::PostTaskAction() -> void {
 }
 
 template<std::integral T>
-auto SharedMemoryScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
+auto SharedMemoryDispatcher<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
     return {this->fNLocalExecutedTask > 10 * fBatchSize,
             this->fExecutingTask - this->fTask.first};
 }

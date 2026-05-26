@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Execution/Dispatcher.h++"
 #include "Mustard/Execution/internal/ExecutorImplBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/ProgressBar.h++"
@@ -39,11 +39,11 @@ namespace Mustard::inline Execution::impl {
 template<std::integral T>
 class SequentialExecutorImpl final : public ExecutorImplBase<T> {
 public:
-    SequentialExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    SequentialExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher);
 
     auto NProcess() const -> int { return 1; }
 
-    auto Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T;
+    auto Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto PrintExecutionSummary() const -> void;
 
 private:

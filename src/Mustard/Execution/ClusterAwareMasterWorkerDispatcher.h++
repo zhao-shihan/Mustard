@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Execution/Dispatcher.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "mplr/mplr.hpp"
@@ -44,18 +44,18 @@
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-class ClusterAwareMasterWorkerScheduler : public Scheduler<T> {
+class ClusterAwareMasterWorkerDispatcher : public Dispatcher<T> {
 private:
     friend class ClusterMaster;
     class ClusterMaster {
     public:
-        ClusterMaster(ClusterAwareMasterWorkerScheduler<T>* s);
+        ClusterMaster(ClusterAwareMasterWorkerDispatcher<T>* s);
 
         auto StartAll() -> void;
         auto operator()() -> void;
 
     private:
-        ClusterAwareMasterWorkerScheduler<T>* fS;
+        ClusterAwareMasterWorkerDispatcher<T>* fS;
 
         mplr::prequest_pool fRecvFromNM;
         std::vector<T> fTaskIDSendToNM;
@@ -65,13 +65,13 @@ private:
     friend class NodeMaster;
     class NodeMaster {
     public:
-        NodeMaster(ClusterAwareMasterWorkerScheduler<T>* s);
+        NodeMaster(ClusterAwareMasterWorkerDispatcher<T>* s);
 
         auto StartAll() -> void;
         auto operator()() -> void;
 
     private:
-        ClusterAwareMasterWorkerScheduler<T>* fS;
+        ClusterAwareMasterWorkerDispatcher<T>* fS;
 
         std::unique_ptr<ClusterMaster> fClusterMaster;
         std::jthread fClusterMasterThread;
@@ -86,7 +86,7 @@ private:
     };
 
 public:
-    ClusterAwareMasterWorkerScheduler();
+    ClusterAwareMasterWorkerDispatcher();
 
 private:
     virtual auto PreLoopAction() -> void override;
@@ -119,4 +119,4 @@ private:
 
 } // namespace Mustard::inline Execution
 
-#include "Mustard/Execution/ClusterAwareMasterWorkerScheduler.inl"
+#include "Mustard/Execution/ClusterAwareMasterWorkerDispatcher.inl"

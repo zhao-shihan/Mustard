@@ -19,15 +19,15 @@
 namespace Mustard::inline Execution::impl {
 
 template<std::integral T>
-ParallelExecutorImpl<T>::ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
-    ExecutorImplBase<T>{std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler)},
+ParallelExecutorImpl<T>::ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher) :
+    ExecutorImplBase<T>{std::move(executionName), std::move(opName), std::move(taskName), std::move(dispatcher)},
     fExecutionInfoList{} {
     using std::chrono_literals::operator""s;
     this->fPrintProgressInterval = 3s;
 }
 
 template<std::integral T>
-auto ParallelExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto ParallelExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
         Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));
@@ -40,14 +40,14 @@ auto ParallelExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable
     if (nTask < static_cast<T>(worldComm.size())) {
         Throw<std::runtime_error>(fmt::format("Number of tasks ({}) < number of processes ({})", nTask, worldComm.size()));
     }
-    this->fScheduler->Task(task);
-    this->fScheduler->Reset();
+    this->fDispatcher->Task(task);
+    this->fDispatcher->Reset();
     Expects(this->ExecutingTask() == this->Task().first);
     Expects(this->NLocalExecutedTask() == 0);
-    Expects(this->fScheduler->NExecutedTaskEstimation().second == 0);
+    Expects(this->fDispatcher->NExecutedTaskEstimation().second == 0);
     // initialize
     this->fExecuting = true;
-    this->fScheduler->PreLoopAction();
+    this->fDispatcher->PreLoopAction();
     worldComm.ibarrier()
         .wait(mplr::duty_ratio::preset::moderate);
     this->fExecutionBeginTime = std::chrono::system_clock::now();
@@ -56,12 +56,12 @@ auto ParallelExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable
     this->PreLoopReport();
     // main loop
     while (this->ExecutingTask() != this->Task().last) {
-        this->fScheduler->PreTaskAction();
+        this->fDispatcher->PreTaskAction();
         const auto taskID{this->ExecutingTask()};
         Ensures(taskID <= this->Task().last);
         std::invoke(std::forward<decltype(F)>(F), taskID);
-        this->fScheduler->IncrementNLocalExecutedTask();
-        this->fScheduler->PostTaskAction();
+        this->fDispatcher->IncrementNLocalExecutedTask();
+        this->fDispatcher->PostTaskAction();
         PostTaskReport(taskID);
     }
     // finalize
@@ -69,7 +69,7 @@ auto ParallelExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable
     std::tuple executionInfo{this->NLocalExecutedTask(), this->fStopwatch.read().count(), this->fProcessorStopwatch.read().count()};
     std::vector<ExecutionInfoTuple> executionInfoList(worldComm.rank() == 0 ? worldComm.size() : 0);
     auto gatherExecutionInfo{worldComm.igather(0, executionInfo, executionInfoList.data())};
-    this->fScheduler->PostLoopAction();
+    this->fDispatcher->PostLoopAction();
     gatherExecutionInfo
         .wait(mplr::duty_ratio::preset::relaxed);
     constexpr auto ToExecutionInfo{[](const ExecutionInfoTuple& t) -> ExecutionInfoType {
@@ -132,7 +132,7 @@ auto ParallelExecutorImpl<T>::PostTaskReport(T iEnded) const -> void {
     if (not this->fPrintProgress) {
         return;
     }
-    const auto [goodEstimation, nExecutedTask]{this->fScheduler->NExecutedTaskEstimation()};
+    const auto [goodEstimation, nExecutedTask]{this->fDispatcher->NExecutedTaskEstimation()};
     const auto elapsed{this->fStopwatch.read()};
     const auto speed{static_cast<double>(nExecutedTask) / elapsed.count()};
     const std::chrono::duration<double, typename StopwatchDuration::period> printInterval{this->fPrintProgressInterval};

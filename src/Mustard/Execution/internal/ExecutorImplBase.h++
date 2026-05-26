@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "Mustard/Execution/DefaultScheduler.h++"
-#include "Mustard/Execution/Scheduler.h++"
+#include "Mustard/Execution/DefaultDispatcher.h++"
+#include "Mustard/Execution/Dispatcher.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Parallel/MPIPredefined.h++"
@@ -58,15 +58,15 @@ public:
     };
 
 public:
-    ExecutorImplBase(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler);
+    ExecutorImplBase(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher);
 
-    auto SwitchScheduler(std::string_view scheduler) -> void { SwitchScheduler(MakeCodedScheduler<T>(scheduler)); }
-    auto SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void;
+    auto SwitchDispatcher(std::string_view dispatcher) -> void { SwitchDispatcher(MakeCodedDispatcher<T>(dispatcher)); }
+    auto SwitchDispatcher(std::unique_ptr<Dispatcher<T>> dispatcher) -> void;
 
-    auto Task() const -> auto { return fScheduler->Task(); }
-    auto NTask() const -> auto { return fScheduler->NTask(); }
-    auto ExecutingTask() const -> auto { return fScheduler->ExecutingTask(); }
-    auto NLocalExecutedTask() const -> auto { return fScheduler->NLocalExecutedTask(); }
+    auto Task() const -> auto { return fDispatcher->Task(); }
+    auto NTask() const -> auto { return fDispatcher->NTask(); }
+    auto ExecutingTask() const -> auto { return fDispatcher->ExecutingTask(); }
+    auto NLocalExecutedTask() const -> auto { return fDispatcher->NLocalExecutedTask(); }
 
     auto Executing() const -> bool { return fExecuting; }
 
@@ -92,7 +92,7 @@ protected:
     static auto ToDayHrMinSecMs(StopwatchDuration s) -> std::string;
 
 protected:
-    std::unique_ptr<Scheduler<T>> fScheduler;
+    std::unique_ptr<Dispatcher<T>> fDispatcher;
 
     bool fExecuting;
 

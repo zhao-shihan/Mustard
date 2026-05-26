@@ -20,8 +20,8 @@ namespace Mustard::inline Execution::impl {
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-ExecutorImplBase<T>::ExecutorImplBase(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
-    fScheduler{std::move(scheduler)},
+ExecutorImplBase<T>::ExecutorImplBase(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher) :
+    fDispatcher{std::move(dispatcher)},
     fExecuting{},
     fPrintProgress{true},
     fPrintProgressInterval{},
@@ -32,20 +32,20 @@ ExecutorImplBase<T>::ExecutorImplBase(std::string executionName, std::string opN
     fStopwatch{},
     fProcessorStopwatch{},
     fExecutionInfo{} {
-    if (fScheduler == nullptr) {
-        Throw<std::invalid_argument>("Scheduler is nullptr");
+    if (fDispatcher == nullptr) {
+        Throw<std::invalid_argument>("Dispatcher is nullptr");
     }
 }
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-auto ExecutorImplBase<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void {
+auto ExecutorImplBase<T>::SwitchDispatcher(std::unique_ptr<Dispatcher<T>> dispatcher) -> void {
     if (fExecuting) {
-        Throw<std::logic_error>("Try switching scheduler during executing");
+        Throw<std::logic_error>("Try switching dispatcher during executing");
     }
-    const auto task{fScheduler->Task()};
-    fScheduler = std::move(scheduler);
-    fScheduler->Task(task);
+    const auto task{fDispatcher->Task()};
+    fDispatcher = std::move(dispatcher);
+    fDispatcher->Task(task);
 }
 
 template<std::integral T>

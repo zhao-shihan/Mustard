@@ -19,7 +19,7 @@
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
+MasterWorkerDispatcher<T>::Master::Master(MasterWorkerDispatcher<T>* s) :
     fS{s},
     fRecv{},
     fTaskIDSend{},
@@ -35,12 +35,12 @@ MasterWorkerScheduler<T>::Master::Master(MasterWorkerScheduler<T>* s) :
 }
 
 template<std::integral T>
-auto MasterWorkerScheduler<T>::Master::StartAll() -> void {
+auto MasterWorkerDispatcher<T>::Master::StartAll() -> void {
     fRecv.startall();
 }
 
 template<std::integral T>
-auto MasterWorkerScheduler<T>::Master::operator()() -> void {
+auto MasterWorkerDispatcher<T>::Master::operator()() -> void {
     T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
     while (true) {
         const auto [result, recvRank]{fRecv.waitsome(mplr::duty_ratio::preset::active)};
@@ -61,8 +61,8 @@ auto MasterWorkerScheduler<T>::Master::operator()() -> void {
 }
 
 template<std::integral T>
-MasterWorkerScheduler<T>::MasterWorkerScheduler() :
-    Scheduler<T>{},
+MasterWorkerDispatcher<T>::MasterWorkerDispatcher() :
+    Dispatcher<T>{},
     fComm{},
     fBatchSize{},
     fMaster{},
@@ -85,7 +85,7 @@ MasterWorkerScheduler<T>::MasterWorkerScheduler() :
 }
 
 template<std::integral T>
-auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
+auto MasterWorkerDispatcher<T>::PreLoopAction() -> void {
     fBatchSize = std::max(1ll, std::llround(fgImbalancingFactor * this->NTask() / fComm.size()));
     this->fExecutingTask = this->fTask.first + fComm.rank() * fBatchSize;
     fTaskCounter = 0;
@@ -99,7 +99,7 @@ auto MasterWorkerScheduler<T>::PreLoopAction() -> void {
 }
 
 template<std::integral T>
-auto MasterWorkerScheduler<T>::PreTaskAction() -> void {
+auto MasterWorkerDispatcher<T>::PreTaskAction() -> void {
     if (fTaskCounter == 0) {
         fRecv.start();
         fSend.start();
@@ -107,7 +107,7 @@ auto MasterWorkerScheduler<T>::PreTaskAction() -> void {
 }
 
 template<std::integral T>
-auto MasterWorkerScheduler<T>::PostTaskAction() -> void {
+auto MasterWorkerDispatcher<T>::PostTaskAction() -> void {
     if (++fTaskCounter == fBatchSize) {
         fSend.wait();
         fRecv.wait();
@@ -119,7 +119,7 @@ auto MasterWorkerScheduler<T>::PostTaskAction() -> void {
 }
 
 template<std::integral T>
-auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
+auto MasterWorkerDispatcher<T>::PostLoopAction() -> void {
     fSend.wait(mplr::duty_ratio::preset::moderate);
     fRecv.wait(mplr::duty_ratio::preset::moderate);
 
@@ -129,7 +129,7 @@ auto MasterWorkerScheduler<T>::PostLoopAction() -> void {
 }
 
 template<std::integral T>
-auto MasterWorkerScheduler<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
+auto MasterWorkerDispatcher<T>::NExecutedTaskEstimation() const -> std::pair<bool, T> {
     return {this->fNLocalExecutedTask > 10 * fBatchSize,
             this->fExecutingTask - this->fTask.first};
 }

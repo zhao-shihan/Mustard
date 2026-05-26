@@ -18,66 +18,26 @@
 
 #pragma once
 
-#include "Mustard/Execution/Scheduler.h++"
-#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Execution/Dispatcher.h++"
 
 #include "mplr/mplr.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <concepts>
-#include <cstddef>
-#include <functional>
-#include <memory>
-#include <stdexcept>
-#include <thread>
 #include <utility>
-#include <vector>
 
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-class MasterWorkerScheduler : public Scheduler<T> {
-private:
-    friend class Master;
-    class Master {
-    public:
-        Master(MasterWorkerScheduler<T>* s);
-
-        auto StartAll() -> void;
-        auto operator()() -> void;
-
-    private:
-        MasterWorkerScheduler<T>* fS;
-        mplr::prequest_pool fRecv;
-        std::vector<T> fTaskIDSend;
-        mplr::prequest_pool fSend;
-    };
-
+class StaticDispatcher : public Dispatcher<T> {
 public:
-    MasterWorkerScheduler();
-
     virtual auto PreLoopAction() -> void override;
-    virtual auto PreTaskAction() -> void override;
+    virtual auto PreTaskAction() -> void override {}
     virtual auto PostTaskAction() -> void override;
-    virtual auto PostLoopAction() -> void override;
+    virtual auto PostLoopAction() -> void override {}
 
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
-
-private:
-    mplr::communicator fComm;
-    T fBatchSize;
-    std::unique_ptr<Master> fMaster;
-    std::jthread fMasterThread;
-
-    mplr::prequest fSend;
-    T fTaskIDRecv;
-    mplr::prequest fRecv;
-    T fTaskCounter;
-
-    static constexpr long double fgImbalancingFactor{1e-3};
 };
 
 } // namespace Mustard::inline Execution
 
-#include "Mustard/Execution/MasterWorkerScheduler.inl"
+#include "Mustard/Execution/StaticDispatcher.inl"

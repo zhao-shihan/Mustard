@@ -19,15 +19,15 @@
 namespace Mustard::inline Execution::impl {
 
 template<std::integral T>
-SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
-    ExecutorImplBase<T>{std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler)},
+SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher) :
+    ExecutorImplBase<T>{std::move(executionName), std::move(opName), std::move(taskName), std::move(dispatcher)},
     fProgressBar{} {
     using std::chrono_literals::operator""ms;
     this->fPrintProgressInterval = 50ms;
 }
 
 template<std::integral T>
-auto SequentialExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto SequentialExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
         Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));
@@ -36,14 +36,14 @@ auto SequentialExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocab
         return 0;
     }
     const auto nTask{task.last - task.first};
-    this->fScheduler->Task(task);
-    this->fScheduler->Reset();
+    this->fDispatcher->Task(task);
+    this->fDispatcher->Reset();
     Expects(this->ExecutingTask() == this->Task().first);
     Expects(this->NLocalExecutedTask() == 0);
-    Expects(this->fScheduler->NExecutedTaskEstimation().second == 0);
+    Expects(this->fDispatcher->NExecutedTaskEstimation().second == 0);
     // initialize
     this->fExecuting = true;
-    this->fScheduler->PreLoopAction();
+    this->fDispatcher->PreLoopAction();
     this->fExecutionBeginTime = std::chrono::system_clock::now();
     this->fStopwatch.reset();
     this->fProcessorStopwatch.reset();
@@ -51,12 +51,12 @@ auto SequentialExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocab
     // main loop
     fProgressBar.Start(nTask);
     while (this->ExecutingTask() != this->Task().last) {
-        this->fScheduler->PreTaskAction();
+        this->fDispatcher->PreTaskAction();
         const auto taskID{this->ExecutingTask()};
         Ensures(taskID <= this->Task().last);
         std::invoke(std::forward<decltype(F)>(F), taskID);
-        this->fScheduler->IncrementNLocalExecutedTask();
-        this->fScheduler->PostTaskAction();
+        this->fDispatcher->IncrementNLocalExecutedTask();
+        this->fDispatcher->PostTaskAction();
         fProgressBar.Tick();
     }
     fProgressBar.Complete();
@@ -64,7 +64,7 @@ auto SequentialExecutorImpl<T>::Run(struct Scheduler<T>::Task task, std::invocab
     this->fExecutionInfo.nExecutedTask = this->NLocalExecutedTask();
     this->fExecutionInfo.wallTime = this->fStopwatch.read();
     this->fExecutionInfo.processorTime = this->fProcessorStopwatch.read();
-    this->fScheduler->PostLoopAction();
+    this->fDispatcher->PostLoopAction();
     this->fExecuting = false;
     this->PostLoopReport();
     return this->NLocalExecutedTask();

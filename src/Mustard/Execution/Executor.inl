@@ -19,42 +19,42 @@
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-Executor<T>::Executor(std::string_view scheduler) :
-    Executor{MakeCodedScheduler<T>(scheduler)} {}
+Executor<T>::Executor(std::string_view dispatcher) :
+    Executor{MakeCodedDispatcher<T>(dispatcher)} {}
 
 template<std::integral T>
-Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::string_view scheduler) :
-    Executor{std::move(executionName), std::move(opName), std::move(taskName), MakeCodedScheduler<T>(scheduler)} {}
+Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::string_view dispatcher) :
+    Executor{std::move(executionName), std::move(opName), std::move(taskName), MakeCodedDispatcher<T>(dispatcher)} {}
 
 template<std::integral T>
-Executor<T>::Executor(std::unique_ptr<Scheduler<T>> scheduler) :
-    Executor{"Run", "Execution", "task", std::move(scheduler)} {}
+Executor<T>::Executor(std::unique_ptr<Dispatcher<T>> dispatcher) :
+    Executor{"Run", "Execution", "task", std::move(dispatcher)} {}
 
 template<std::integral T>
-Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
+Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher) :
     fImpl{[&] {
         if (not mplr::available() or mplr::comm_world().size() == 1) {
             return std::make_unique<Impl>(
                 std::in_place_type<impl::SequentialExecutorImpl<T>>,
-                std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler));
+                std::move(executionName), std::move(opName), std::move(taskName), std::move(dispatcher));
         }
         return std::make_unique<Impl>(
             std::in_place_type<impl::ParallelExecutorImpl<T>>,
-            std::move(executionName), std::move(opName), std::move(taskName), std::move(scheduler));
+            std::move(executionName), std::move(opName), std::move(taskName), std::move(dispatcher));
     }()} {}
 
 template<std::integral T>
-auto Executor<T>::SwitchScheduler(std::string_view scheduler) -> void {
+auto Executor<T>::SwitchDispatcher(std::string_view dispatcher) -> void {
     std::visit([&](auto&& impl) {
-        impl.SwitchScheduler(scheduler);
+        impl.SwitchDispatcher(dispatcher);
     },
                *fImpl);
 }
 
 template<std::integral T>
-auto Executor<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void {
+auto Executor<T>::SwitchDispatcher(std::unique_ptr<Dispatcher<T>> dispatcher) -> void {
     std::visit([&](auto&& impl) {
-        impl.SwitchScheduler(std::move(scheduler));
+        impl.SwitchDispatcher(std::move(dispatcher));
     },
                *fImpl);
 }
@@ -68,7 +68,7 @@ auto Executor<T>::NProcess() const -> int {
 }
 
 template<std::integral T>
-auto Executor<T>::Task() const -> struct Scheduler<T>::Task {
+auto Executor<T>::Task() const -> struct Dispatcher<T>::Task {
     return std::visit([&](auto&& impl) {
         return impl.Task();
     },
@@ -188,7 +188,7 @@ auto Executor<T>::TaskName(std::string name) -> void {
 }
 
 template<std::integral T>
-auto Executor<T>::Run(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
+auto Executor<T>::Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T {
     return std::visit([&](auto&& impl) {
         return impl.Run(std::move(task), std::forward<decltype(F)>(F));
     },
