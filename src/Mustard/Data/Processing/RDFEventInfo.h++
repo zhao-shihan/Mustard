@@ -23,7 +23,6 @@
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Memory/Arc.h++"
 #include "Mustard/Parallel/SharedMemory.h++"
-#include "Mustard/Utility/MoveOnlyBase.h++"
 
 #include "ROOT/RDataFrame.hxx"
 #include "RtypesCore.h"
@@ -87,7 +86,7 @@ namespace Mustard::Data::inline Processing {
 /// @li @ref NEntry() returns @c 0.
 /// @li @ref fEntry still contains one sentinel element.
 template<std::integral T, std::signed_integral U = std::make_signed_t<T>>
-class SingleRDFEventInfo : public MoveOnlyBase {
+class SingleRDFEventInfo {
 public:
     /// @brief Event ID integral type.
     using EventIDType = T;
@@ -192,7 +191,7 @@ private:
 ///     alignment table locally and shares it with local processes via shared memory.
 template<std::integral T, std::size_t N, std::signed_integral U = std::make_signed_t<T>>
     requires(N >= 2)
-class MultiRDFEventInfo : public MoveOnlyBase {
+class MultiRDFEventInfo {
 public:
     /// @brief Event ID integral type.
     using EventIDType = T;
