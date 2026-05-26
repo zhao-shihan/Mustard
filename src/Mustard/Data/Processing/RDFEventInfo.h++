@@ -22,6 +22,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Memory/Arc.h++"
+#include "Mustard/Parallel/SharedMemory.h++"
 #include "Mustard/Utility/MoveOnlyBase.h++"
 
 #include "ROOT/RDataFrame.hxx"
@@ -32,8 +33,6 @@
 #include "gtl/vector.hpp"
 
 #include "mplr/mplr.hpp"
-
-#include "mpi.h"
 
 #include "muc/algorithm"
 #include "muc/chrono"
@@ -46,17 +45,13 @@
 #include <algorithm>
 #include <array>
 #include <concepts>
-#include <cstring>
 #include <future>
 #include <memory>
 #include <optional>
-#include <queue>
-#include <span>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <variant>
 
 namespace Mustard::Data::inline Processing {
 
@@ -118,12 +113,6 @@ public:
     explicit SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string eventIDColumnName, int rootNodeIdx = 0,
                                 std::optional<std::pair<mplr::communicator, mplr::communicator>> intraInterNodeComm = {});
 
-    /// @brief Destroy event metadata storage.
-    /// @details
-    /// Releases the MPI shared-memory window when MPI-backed storage is active;
-    /// otherwise destroys locally owned vectors.
-    ~SingleRDFEventInfo();
-
     /// @brief Number of contiguous event blocks (event-index domain size).
     auto NEvent() const -> auto { return gsl::narrow_cast<IndexType>(fEventID.size()); }
     /// @brief Total RDF entry count represented by the sentinel in @ref fEntry.
@@ -143,16 +132,9 @@ public:
     auto Size(IndexType i) const -> auto { return Entry(i + 1) - Entry(i); }
 
 private:
-    struct Data {
-        gtl::vector<T> eventID;       ///< Owning storage of event-block IDs.
-        gtl::vector<EntryType> entry; ///< Owning storage of block boundaries, including sentinel.
-    };
-
-private:
-    std::span<const T> fEventID;                                                          ///< Non-owning view of event IDs (into shared-memory or local data).
-    std::span<const EntryType> fEntry;                                                    ///< Non-owning view of entry boundaries (into shared-memory or local data).
-    std::variant<MPI_Win, Data> fShmWinOrData;                                            ///< Storage backend: shared-memory handle or local data.
-    std::optional<std::pair<mplr::communicator, mplr::communicator>> fIntraInterNodeComm; ///< Optional communicators.
+    std::optional<std::pair<mplr::communicator, mplr::communicator>> fIntraInterNodeComm; ///< Optional communicators; must outlive fEventID and fEntry.
+    Parallel::SharedMemory<T> fEventID;                                                   ///< Shared-memory or local storage of event-block IDs.
+    Parallel::SharedMemory<EntryType> fEntry;                                             ///< Shared-memory or local storage of block boundaries, including sentinel.
 };
 
 /// @brief Multi-RDF event alignment table and index mappings.
@@ -243,12 +225,6 @@ public:
     /// compatible arguments.
     explicit MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rdf, std::array<std::string, N> eventIDColumnName);
 
-    /// @brief Destroy alignment-table storage.
-    /// @details
-    /// Releases the MPI shared-memory window when MPI-backed storage is active;
-    /// otherwise destroys locally owned alignment vectors.
-    ~MultiRDFEventInfo();
-
     /// @brief Number of global aligned events (global event-index domain size).
     auto NEvent() const -> auto { return gsl::narrow_cast<IndexType>(fToLocalEvtIdx.size()); }
 
@@ -283,21 +259,15 @@ public:
     auto PerRDFEventInfo(gsl::index kRDF) const -> auto { return fPerRDFEventInfo.at(kRDF); }
 
 private:
-    struct Data {
-        gtl::vector<std::array<U, N>> toLocalEvtIdx;       ///< Owning storage of global->local index table.
-        std::array<gtl::vector<U>, N> toGlobEvtIdx;        ///< Owning storage of per-RDF local->global index tables.
-        gtl::vector<std::array<U, N>> minLocalEvtIdxAfter; ///< Owning storage of per-RDF suffix-min local index table.
-    };
+    auto BuildData() const -> std::tuple<gtl::vector<std::array<U, N>>,
+                                         std::array<gtl::vector<U>, N>,
+                                         gtl::vector<std::array<U, N>>>;
 
 private:
-    auto BuildData() const -> Data;
-
-private:
-    std::span<const std::array<U, N>> fToLocalEvtIdx;              ///< Non-owning view of global->local index table (into shared-memory or local data).
-    std::array<std::span<const U>, N> fToGlobEvtIdx;               ///< Non-owning views of local->global index tables (into shared-memory or local data).
-    std::span<const std::array<U, N>> fMinLocalEvtIdxAfter;        ///< Non-owning view of per-RDF suffix-min local index table (into shared-memory or local data).
+    Parallel::SharedMemory<std::array<U, N>> fToLocalEvtIdx;       ///< Shared-memory or local storage of global->local index table.
+    std::array<Parallel::SharedMemory<U>, N> fToGlobEvtIdx;        ///< Shared-memory or local storage of per-RDF local->global index tables.
+    Parallel::SharedMemory<std::array<U, N>> fMinLocalEvtIdxAfter; ///< Shared-memory or local storage of per-RDF suffix-min local index table.
     std::array<Arc<SingleRDFEventInfo<T, U>>, N> fPerRDFEventInfo; ///< Shared ownership of per-RDF event-block metadata.
-    std::variant<MPI_Win, Data> fShmWinOrData;                     ///< Storage backend: shared-memory handle or local data.
 };
 
 } // namespace Mustard::Data::inline Processing

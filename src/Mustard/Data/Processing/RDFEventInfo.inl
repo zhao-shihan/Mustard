@@ -21,10 +21,9 @@ namespace Mustard::Data::inline Processing {
 template<std::integral T, std::signed_integral U>
 SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string eventIDColumnName, int rootNodeIdx,
                                              std::optional<std::pair<mplr::communicator, mplr::communicator>> intraInterNodeComm) :
+    fIntraInterNodeComm{},
     fEventID{},
-    fEntry{},
-    fShmWinOrData{MPI_WIN_NULL},
-    fIntraInterNodeComm{} {
+    fEntry{} {
     if (ROOT::IsImplicitMTEnabled()) {
         Throw<std::runtime_error>("ROOT IMT enabled. Cannot build RDF event info");
     }
@@ -37,34 +36,35 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
     })};
 
     const auto buildData{[&rdf, &eventIDColumnName] {
-        Data data;
         gtl::flat_hash_set<T> eventIDSet;
-        data.eventID.reserve(1024); // Do not reserve(*rdf.Count()) because event count
-        data.entry.reserve(1024);   // may be much smaller than entry count, and *rdf.Count()
-        eventIDSet.reserve(1024);   // can be expensive to compute for rdf with filters.
-        EntryType entry{-1};
+        gtl::vector<T> eventID;
+        gtl::vector<EntryType> entry;
+        eventID.reserve(1024);
+        entry.reserve(1024);
+        eventIDSet.reserve(1024);
+        EntryType lastEntry{-1};
         const auto appendEntry{[&](T evtID, ULong64_t uEntry) {
-            entry = gsl::narrow_cast<EntryType>(uEntry);
-            if (not data.eventID.empty() and evtID == data.eventID.back()) {
+            lastEntry = gsl::narrow_cast<EntryType>(uEntry);
+            if (not eventID.empty() and evtID == eventID.back()) {
                 return;
             }
             const auto [_, uniqueEventID]{eventIDSet.emplace(evtID)};
             if (not uniqueEventID) {
                 Throw<std::runtime_error>(fmt::format("Event {} is not successive", evtID));
             }
-            data.eventID.emplace_back(evtID);
-            data.entry.emplace_back(entry);
+            eventID.emplace_back(evtID);
+            entry.emplace_back(lastEntry);
         }};
         rdf.Foreach(appendEntry, {std::move(eventIDColumnName), "rdfentry_"});
-        data.entry.emplace_back(entry + 1); // Sentinel
-        return data;
+        entry.emplace_back(lastEntry + 1); // Sentinel
+        return std::pair{std::move(eventID), std::move(entry)};
     }};
 
-    // Build data directly in sequential run
+    // Non-MPI path: build and store locally
     if (not mplr::available() or mplr::comm_world().size() == 1) {
-        const auto& data{fShmWinOrData.template emplace<Data>(buildData())};
-        fEventID = std::span(data.eventID);
-        fEntry = std::span(data.entry);
+        auto [eventID, entry]{buildData()};
+        fEventID = Parallel::SharedMemory<T>{eventID};
+        fEntry = Parallel::SharedMemory<EntryType>{entry};
         return;
     }
 
@@ -74,20 +74,22 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
         Throw<std::out_of_range>(fmt::format("Invalid root node index {}: must be in [0, {})", rootNodeIdx, mpiEnv.ClusterSize()));
     }
 
-    // Use communicators passed in or from environment
+    // Store communicators for the lifetime of shared memory windows.
+    // fIntraInterNodeComm is destroyed after fEventID/fEntry (reverse declaration order),
+    // ensuring MPI windows are freed before their communicator.
     if (intraInterNodeComm) {
-        fIntraInterNodeComm = std::move(*intraInterNodeComm);
+        fIntraInterNodeComm = std::move(intraInterNodeComm);
     }
     const auto& intraNodeComm{fIntraInterNodeComm ? fIntraInterNodeComm->first : mpiEnv.IntraNodeComm()};
     const auto& interNodeComm{fIntraInterNodeComm ? fIntraInterNodeComm->second : mpiEnv.InterNodeComm()};
 
-    // Build data on a specific node leader and broadcast to other node leaders
-    Data data;
+    // Build data on root node leader and broadcast to other node leaders
+    gtl::vector<T> eventID;
+    gtl::vector<EntryType> entry;
     std::size_t nEvent;
     if (interNodeComm.is_valid()) { // Only node leaders have valid inter-node communicator
-        auto& [eventID, entry]{data};
         if (mpiEnv.LocalNodeIdx() == rootNodeIdx) {
-            data = buildData();
+            std::tie(eventID, entry) = buildData();
             nEvent = eventID.size();
         }
         interNodeComm.ibcast(rootNodeIdx, nEvent) // Other leaders lazy-spin here to reduce resources consumption
@@ -106,67 +108,9 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
     intraNodeComm.ibcast(0, nEvent)
         .wait(mplr::duty_ratio::preset::relaxed);
 
-    // We will allocate a single window for both eventID and entry.
-    // Layout of shared memory: [eventID (aligned)][padding (if necessary)][entry (aligned)]
-    const auto eventIDSize{nEvent};
-    const auto eventIDSizeByte{eventIDSize * sizeof(T)};
-    const auto entrySize{nEvent + 1};
-    const auto entrySizeByte{entrySize * sizeof(EntryType)};
-    const auto entryWinSizeByte{entrySizeByte + alignof(EntryType)}; // Reserve space for alignment
-    const auto totalWinSizeByte{gsl::narrow<MPI_Aint>(eventIDSizeByte + entryWinSizeByte)};
-    // Set some window info
-    mplr::info winInfo;
-    winInfo.set("no_locks", "true");
-    winInfo.set("same_disp_unit", "true");
-    winInfo.set("alloc_shared_noncontig", "true");
-    winInfo.set("mpi_minimum_memory_alignment", std::to_string(alignof(T)));
-    // Create shared-memory window.
-    // Node leaders allocate shared memory for data; others allocate zero-size window.
-    std::byte* shm;
-    auto& shmWin{get<MPI_Win>(fShmWinOrData)};
-    if (interNodeComm.is_valid()) {
-        MPI_Win_allocate_shared(totalWinSizeByte, 1, winInfo.native_handle(), intraNodeComm.native_handle(), &shm, &shmWin);
-    } else {
-        MPI_Win_allocate_shared(0, 1, winInfo.native_handle(), intraNodeComm.native_handle(), &shm, &shmWin);
-        MPI_Aint winSizeByte;
-        int winDispUnit;
-        MPI_Win_shared_query(shmWin, 0, &winSizeByte, &winDispUnit, &shm);
-        Ensures(winSizeByte >= totalWinSizeByte);
-        Ensures(winDispUnit == 1);
-    }
-
-    // Place eventID in shared memory; content will be filled by node leaders later
-    // Memory are aligned to T so no extra padding is needed before eventID
-    fEventID = std::span(new (shm) T[eventIDSize], eventIDSize);
-    // Place entry in shared memory; content will be filled by node leaders later
-    // Align shared memory to EntryType or throw if alignment fails
-    void* shmEntry{shm + eventIDSizeByte};
-    auto shmEntrySpace{entryWinSizeByte};
-    if (std::align(alignof(EntryType), entrySizeByte, shmEntry, shmEntrySpace) == nullptr) {
-        Throw<std::runtime_error>("Failed to align shared memory");
-    }
-    fEntry = std::span(new (shmEntry) EntryType[entrySize], entrySize);
-
-    // Copy entry data to shared-memory window on node leaders;
-    // others will see the data after MPI_Win_sync
-    if (interNodeComm.is_valid()) {
-        std::memcpy(shm, data.eventID.data(), eventIDSizeByte);
-        std::memcpy(shmEntry, data.entry.data(), entrySizeByte);
-        MPI_Win_sync(shmWin);
-        intraNodeComm.barrier();
-    } else {
-        intraNodeComm.barrier();
-        MPI_Win_sync(shmWin);
-    }
-    // DO NOT modify data hereafter!
-}
-
-template<std::integral T, std::signed_integral U>
-SingleRDFEventInfo<T, U>::~SingleRDFEventInfo() {
-    const auto shmWin{get_if<MPI_Win>(&fShmWinOrData)};
-    if (shmWin and *shmWin != MPI_WIN_NULL) {
-        MPI_Win_free(shmWin);
-    }
+    // Build SharedMemory: rank 0 (node leader) provides data, others attach.
+    fEventID = Parallel::SharedMemory<T>{eventID, 0, intraNodeComm};
+    fEntry = Parallel::SharedMemory<EntryType>{entry, 0, intraNodeComm};
 }
 
 template<std::integral T, std::size_t N, std::signed_integral U>
@@ -185,8 +129,8 @@ template<std::integral T, std::size_t N, std::signed_integral U>
 MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rdf, std::array<std::string, N> eventIDColumnName) :
     fToLocalEvtIdx{},
     fToGlobEvtIdx{},
-    fPerRDFEventInfo{},
-    fShmWinOrData{MPI_WIN_NULL} {
+    fMinLocalEvtIdxAfter{},
+    fPerRDFEventInfo{} {
     if (ROOT::IsImplicitMTEnabled()) {
         Throw<std::runtime_error>("ROOT IMT enabled. Cannot build RDF event info");
     }
@@ -210,13 +154,13 @@ MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rd
         for (gsl::index k{}; k < nRDF; ++k) {
             fPerRDFEventInfo[k] = perRDFEventInfoFuture[k].get();
         }
-        // Build event index data
-        const auto& data{fShmWinOrData.template emplace<Data>(BuildData())};
-        fToLocalEvtIdx = std::span(data.toLocalEvtIdx);
+        // Build event index data and store in SharedMemory
+        auto [toLocalEvtIdx, toGlobEvtIdx, minLocalEvtIdxAfter]{BuildData()};
+        fToLocalEvtIdx = Parallel::SharedMemory<std::array<U, N>>{toLocalEvtIdx};
         for (gsl::index k{}; k < nRDF; ++k) {
-            fToGlobEvtIdx[k] = std::span(data.toGlobEvtIdx[k]);
+            fToGlobEvtIdx[k] = Parallel::SharedMemory<U>{toGlobEvtIdx[k]};
         }
-        fMinLocalEvtIdxAfter = std::span(data.minLocalEvtIdxAfter);
+        fMinLocalEvtIdxAfter = Parallel::SharedMemory<std::array<U, N>>{minLocalEvtIdxAfter};
         return;
     }
 
@@ -249,95 +193,32 @@ MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rd
     }
 
     // Build event index data on every node leader
-    Data data;
+    gtl::vector<std::array<U, N>> toLocalEvtIdx;
+    std::array<gtl::vector<U>, N> toGlobEvtIdx;
+    gtl::vector<std::array<U, N>> minLocalEvtIdxAfter;
     std::size_t nEvent;
     if (interNodeComm.is_valid()) { // Only node leaders have valid inter-node communicator
-        data = BuildData();
-        nEvent = data.toLocalEvtIdx.size();
+        std::tie(toLocalEvtIdx, toGlobEvtIdx, minLocalEvtIdxAfter) = BuildData();
+        nEvent = toLocalEvtIdx.size();
     }
     // Broadcast nEvent from node leaders to intra-node peers;
     // non-leaders lazy-spin here to reduce resources consumption
     intraNodeComm.ibcast(0, nEvent)
         .wait(mplr::duty_ratio::preset::moderate);
 
-    // We will allocate a single window for toLocalEvtIdx, toGlobEvtIdx and minLocalEvtIdxAfter.
-    // Layout of shared memory: [toLocalEvtIdx][toGlobEvtIdx for RDF 0]...[toGlobEvtIdx for RDF N-1][minLocalEvtIdxAfter]
-    const auto toLocalEvtIdxSize{nEvent};
-    const auto toLocalEvtIdxSizeByte{toLocalEvtIdxSize * sizeof(std::array<U, N>)};
-    std::array<std::size_t, N> toGlobEvtIdxSize;
-    std::ranges::transform(fPerRDFEventInfo, toGlobEvtIdxSize.begin(), [](auto&& rdf) { return rdf->NEvent(); });
-    std::array<std::size_t, N> toGlobEvtIdxSizeByte;
-    std::ranges::transform(toGlobEvtIdxSize, toGlobEvtIdxSizeByte.begin(), [](auto size) { return size * sizeof(U); });
-    const auto minLocalEvtIdxAfterSize{nEvent};
-    const auto minLocalEvtIdxAfterSizeByte{minLocalEvtIdxAfterSize * sizeof(std::array<U, N>)};
-    const auto totalWinSizeByte{gsl::narrow<MPI_Aint>(toLocalEvtIdxSizeByte + muc::ranges::reduce(toGlobEvtIdxSizeByte) + minLocalEvtIdxAfterSizeByte)};
-    // Set some window info
-    mplr::info winInfo;
-    winInfo.set("no_locks", "true");
-    winInfo.set("same_disp_unit", "true");
-    winInfo.set("alloc_shared_noncontig", "true");
-    winInfo.set("mpi_minimum_memory_alignment", std::to_string(alignof(U)));
-    // Create shared-memory window.
-    // Node leaders allocate shared memory for data; others allocate zero-size window.
-    std::byte* shm;
-    auto& shmWin{get<MPI_Win>(fShmWinOrData)};
-    if (interNodeComm.is_valid()) {
-        MPI_Win_allocate_shared(totalWinSizeByte, sizeof(U), winInfo.native_handle(), intraNodeComm.native_handle(), &shm, &shmWin);
-    } else {
-        MPI_Win_allocate_shared(0, sizeof(U), winInfo.native_handle(), intraNodeComm.native_handle(), &shm, &shmWin);
-        MPI_Aint winSizeByte;
-        int winDispUnit;
-        MPI_Win_shared_query(shmWin, 0, &winSizeByte, &winDispUnit, &shm);
-        Ensures(winSizeByte >= totalWinSizeByte);
-        Ensures(winDispUnit == sizeof(U));
-    }
-
-    std::byte* shmPtr{shm};
-    // Place toLocalEvtIdx in shared memory; content will be filled by node leaders later
-    fToLocalEvtIdx = std::span(new (shmPtr) std::array<U, N>[toLocalEvtIdxSize], toLocalEvtIdxSize);
-    // Place toGlobEvtIdx in shared memory; content will be filled by node leaders later
-    shmPtr += toLocalEvtIdxSizeByte;
+    // Build SharedMemory: rank 0 (node leader) provides data, others attach.
+    fToLocalEvtIdx = Parallel::SharedMemory<std::array<U, N>>{toLocalEvtIdx};
     for (gsl::index k{}; k < nRDF; ++k) {
-        const auto size{toGlobEvtIdxSize[k]};
-        fToGlobEvtIdx[k] = std::span(new (shmPtr) U[size], size);
-        shmPtr += toGlobEvtIdxSizeByte[k];
+        fToGlobEvtIdx[k] = Parallel::SharedMemory<U>{toGlobEvtIdx[k]};
     }
-    // Place minLocalEvtIdxAfter in shared memory; content will be filled by node leaders later
-    fMinLocalEvtIdxAfter = std::span(new (shmPtr) std::array<U, N>[minLocalEvtIdxAfterSize], minLocalEvtIdxAfterSize);
-
-    // Copy data to shared-memory window on node leaders;
-    // others will see the data after MPI_Win_sync
-    if (interNodeComm.is_valid()) {
-        shmPtr = shm;
-        std::memcpy(shmPtr, data.toLocalEvtIdx.data(), toLocalEvtIdxSizeByte);
-        shmPtr += toLocalEvtIdxSizeByte;
-        for (gsl::index k{}; k < nRDF; ++k) {
-            const auto sizeByte{toGlobEvtIdxSizeByte[k]};
-            std::memcpy(shmPtr, data.toGlobEvtIdx[k].data(), sizeByte);
-            shmPtr += sizeByte;
-        }
-        std::memcpy(shmPtr, data.minLocalEvtIdxAfter.data(), minLocalEvtIdxAfterSizeByte);
-        MPI_Win_sync(shmWin);
-        intraNodeComm.barrier();
-    } else {
-        intraNodeComm.barrier();
-        MPI_Win_sync(shmWin);
-    }
-    // DO NOT modify data hereafter!
+    fMinLocalEvtIdxAfter = Parallel::SharedMemory<std::array<U, N>>{minLocalEvtIdxAfter};
 }
 
 template<std::integral T, std::size_t N, std::signed_integral U>
     requires(N >= 2)
-MultiRDFEventInfo<T, N, U>::~MultiRDFEventInfo() {
-    const auto shmWin{get_if<MPI_Win>(&fShmWinOrData)};
-    if (shmWin and *shmWin != MPI_WIN_NULL) {
-        MPI_Win_free(shmWin);
-    }
-}
-
-template<std::integral T, std::size_t N, std::signed_integral U>
-    requires(N >= 2)
-auto MultiRDFEventInfo<T, N, U>::BuildData() const -> Data {
+auto MultiRDFEventInfo<T, N, U>::BuildData() const -> std::tuple<gtl::vector<std::array<U, N>>,
+                                                                 std::array<gtl::vector<U>, N>,
+                                                                 gtl::vector<std::array<U, N>>> {
     Ensures(std::ranges::all_of(fPerRDFEventInfo, [](auto&& eventInfo) { return eventInfo != nullptr; }));
     constexpr auto nRDF{static_cast<gsl::index>(N)};
 
@@ -351,8 +232,9 @@ auto MultiRDFEventInfo<T, N, U>::BuildData() const -> Data {
     }
 
     // Result data
-    Data data;
-    auto& [toLocalEvtIdx, toGlobEvtIdx, minLocalEvtIdxAfter]{data};
+    gtl::vector<std::array<U, N>> toLocalEvtIdx;
+    std::array<gtl::vector<U>, N> toGlobEvtIdx;
+    gtl::vector<std::array<U, N>> minLocalEvtIdxAfter;
 
     // Build alignment table from event-index maps
     std::array<std::size_t, N> nEvent;
@@ -447,7 +329,7 @@ auto MultiRDFEventInfo<T, N, U>::BuildData() const -> Data {
         fmt::print("\n");
     } */
 
-    return data;
+    return {std::move(toLocalEvtIdx), std::move(toGlobEvtIdx), std::move(minLocalEvtIdxAfter)};
 }
 
 } // namespace Mustard::Data::inline Processing
