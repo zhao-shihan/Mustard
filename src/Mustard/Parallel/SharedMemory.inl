@@ -119,12 +119,8 @@ auto SharedMemory<T>::Initialize(std::input_iterator auto first, std::size_t cou
     // root copies data and synchronizes; others wait at barrier.
     if (comm.rank() == root) {
         std::ranges::uninitialized_copy_n(first, count, shm, shm + count);
-        MPI_Win_sync(shmWin);
-        comm.barrier();
-    } else {
-        comm.barrier();
-        MPI_Win_sync(shmWin);
     }
+    MPI_Win_fence(MPI_MODE_NOSUCCEED, shmWin);
     fSpan = std::span{shm, count};
 }
 
