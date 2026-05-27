@@ -211,7 +211,9 @@ jobs:
         image:
           - {{ url: ghcr.io/zhao-shihan/rgb-docker:mpich, name: mpich }}
           - {{ url: ghcr.io/zhao-shihan/rgb-docker:openmpi, name: openmpi }}
-    container: ${{{{ matrix.image.url }}}}
+    container:
+      image: ${{{{ matrix.image.url }}}}
+      options: --shm-size=2g
     defaults:
       run:
         shell: bash
@@ -262,7 +264,9 @@ jobs:
           - {{ url: ghcr.io/zhao-shihan/rgb-docker:openmpi, name: openmpi }}
         test:
 {_indent(test_matrix_json, 5)}
-    container: ${{{{ matrix.image.url }}}}
+    container:
+      image: ${{{{ matrix.image.url }}}}
+      options: --shm-size=2g
     defaults:
       run:
         shell: bash
