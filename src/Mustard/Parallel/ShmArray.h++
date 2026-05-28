@@ -71,6 +71,20 @@ struct BcastTag {};
 /// leaders via the inter-node communicator, then shared within each node
 /// via MPI shared memory.
 ///
+/// Design intent:
+/// @li @ref ShmArray is designed for read-heavy, write-rare usage patterns.
+///     The typical workflow is to construct the array once and then read from
+///     it many times across multiple threads or processes.
+/// @li The constructor involves synchronous collective communication (e.g.
+///     @c MPI_Win_allocate_shared, @c MPI_Win_create, and barrier
+///     synchronization). Calling the constructor repeatedly on a
+///     performance-critical path can introduce significant overhead due to
+///     these synchronization points.
+/// @li For workloads that require frequent updates to shared data, consider
+///     alternative approaches such as maintaining a long-lived @ref ShmArray
+///     and replacing its content via move-assignment, or using a different
+///     synchronization mechanism altogether.
+///
 /// Storage model:
 /// @li When an inter-node communicator is provided and valid, the process
 ///     with rank @p root in the inter-node communicator broadcasts data to
