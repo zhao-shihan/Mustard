@@ -22,7 +22,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Memory/Arc.h++"
-#include "Mustard/Parallel/SharedMemory.h++"
+#include "Mustard/Parallel/ShmArray.h++"
 
 #include "ROOT/RDataFrame.hxx"
 #include "RtypesCore.h"
@@ -100,8 +100,7 @@ public:
     /// @param rdf Input RDF node to scan.
     /// @param eventIDColumnName Name of the event-ID column.
     /// @param rootNodeIdx Node leader index used as broadcast root when MPI is enabled.
-    /// @param intraNodeComm Intra-node communicator.
-    /// @param interNodeComm Inter-node communicator.
+    /// @param intraInterNodeComm Optional intra-node and inter-node communicators.
     /// @pre In @p rdf, entries with the same event ID are contiguous.
     /// @pre ROOT IMT (Implicit Multi-Threading) is disabled.
     /// @pre If MPI path is used, @p rootNodeIdx must be in @c [0,ClusterSize()).
@@ -132,8 +131,8 @@ public:
 
 private:
     std::optional<std::pair<mplr::communicator, mplr::communicator>> fIntraInterNodeComm; ///< Optional communicators; must outlive fEventID and fEntry.
-    Parallel::SharedMemory<T> fEventID;                                                   ///< Shared-memory or local storage of event-block IDs.
-    Parallel::SharedMemory<EntryType> fEntry;                                             ///< Shared-memory or local storage of block boundaries, including sentinel.
+    Parallel::ShmArray<T> fEventID;                                                       ///< Shared-memory or local storage of event-block IDs.
+    Parallel::ShmArray<EntryType> fEntry;                                                 ///< Shared-memory or local storage of block boundaries, including sentinel.
 };
 
 /// @brief Multi-RDF event alignment table and index mappings.
@@ -263,9 +262,9 @@ private:
                                          gtl::vector<std::array<U, N>>>;
 
 private:
-    Parallel::SharedMemory<std::array<U, N>> fToLocalEvtIdx;       ///< Shared-memory or local storage of global->local index table.
-    std::array<Parallel::SharedMemory<U>, N> fToGlobEvtIdx;        ///< Shared-memory or local storage of per-RDF local->global index tables.
-    Parallel::SharedMemory<std::array<U, N>> fMinLocalEvtIdxAfter; ///< Shared-memory or local storage of per-RDF suffix-min local index table.
+    Parallel::ShmArray<std::array<U, N>> fToLocalEvtIdx;           ///< Shared-memory or local storage of global->local index table.
+    std::array<Parallel::ShmArray<U>, N> fToGlobEvtIdx;            ///< Shared-memory or local storage of per-RDF local->global index tables.
+    Parallel::ShmArray<std::array<U, N>> fMinLocalEvtIdxAfter;     ///< Shared-memory or local storage of per-RDF suffix-min local index table.
     std::array<Arc<SingleRDFEventInfo<T, U>>, N> fPerRDFEventInfo; ///< Shared ownership of per-RDF event-block metadata.
 };
 

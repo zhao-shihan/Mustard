@@ -63,8 +63,8 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
     // Non-MPI path: build and store locally
     if (not mplr::available() or mplr::comm_world().size() == 1) {
         auto [eventID, entry]{buildData()};
-        fEventID = Parallel::SharedMemory<T>{eventID};
-        fEntry = Parallel::SharedMemory<EntryType>{entry};
+        fEventID = Parallel::ShmArray<T>{eventID};
+        fEntry = Parallel::ShmArray<EntryType>{entry};
         return;
     }
 
@@ -83,34 +83,14 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
     const auto& intraNodeComm{fIntraInterNodeComm ? fIntraInterNodeComm->first : mpiEnv.IntraNodeComm()};
     const auto& interNodeComm{fIntraInterNodeComm ? fIntraInterNodeComm->second : mpiEnv.InterNodeComm()};
 
-    // Build data on root node leader and broadcast to other node leaders
+    // Build data on root node leader and distribute via ShmArray.
     gtl::vector<T> eventID;
     gtl::vector<EntryType> entry;
-    std::size_t nEvent;
-    if (interNodeComm.is_valid()) { // Only node leaders have valid inter-node communicator
-        if (mpiEnv.LocalNodeIdx() == rootNodeIdx) {
-            std::tie(eventID, entry) = buildData();
-            nEvent = eventID.size();
-        }
-        interNodeComm.ibcast(rootNodeIdx, nEvent) // Other leaders lazy-spin here to reduce resources consumption
-            .wait(mplr::duty_ratio::preset::relaxed);
-        eventID.resize(nEvent);
-        entry.resize(nEvent + 1);
-        mplr::irequest_pool bcastData;
-        bcastData.push(
-            interNodeComm.ibcast(rootNodeIdx, eventID.data(), mplr::vector_layout<T>{eventID.size()}));
-        bcastData.push(
-            interNodeComm.ibcast(rootNodeIdx, entry.data(), mplr::vector_layout<EntryType>{entry.size()}));
-        bcastData.waitall(mplr::duty_ratio::preset::active);
+    if (interNodeComm.is_valid() and mpiEnv.LocalNodeIdx() == rootNodeIdx) {
+        std::tie(eventID, entry) = buildData();
     }
-    // Broadcast nEvent from node leaders to intra-node peers;
-    // non-leaders lazy-spin here to reduce resources consumption
-    intraNodeComm.ibcast(0, nEvent)
-        .wait(mplr::duty_ratio::preset::relaxed);
-
-    // Build SharedMemory: rank 0 (node leader) provides data, others attach.
-    fEventID = Parallel::SharedMemory<T>{eventID, 0, intraNodeComm};
-    fEntry = Parallel::SharedMemory<EntryType>{entry, 0, intraNodeComm};
+    fEventID = Parallel::ShmArray<T>{Parallel::BcastTag{}, eventID, rootNodeIdx, intraNodeComm, interNodeComm};
+    fEntry = Parallel::ShmArray<EntryType>{Parallel::BcastTag{}, entry, rootNodeIdx, intraNodeComm, interNodeComm};
 }
 
 template<std::integral T, std::size_t N, std::signed_integral U>
@@ -154,13 +134,13 @@ MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rd
         for (gsl::index k{}; k < nRDF; ++k) {
             fPerRDFEventInfo[k] = perRDFEventInfoFuture[k].get();
         }
-        // Build event index data and store in SharedMemory
+        // Build event index data and store in ShmArray
         auto [toLocalEvtIdx, toGlobEvtIdx, minLocalEvtIdxAfter]{BuildData()};
-        fToLocalEvtIdx = Parallel::SharedMemory<std::array<U, N>>{toLocalEvtIdx};
+        fToLocalEvtIdx = Parallel::ShmArray<std::array<U, N>>{toLocalEvtIdx};
         for (gsl::index k{}; k < nRDF; ++k) {
-            fToGlobEvtIdx[k] = Parallel::SharedMemory<U>{toGlobEvtIdx[k]};
+            fToGlobEvtIdx[k] = Parallel::ShmArray<U>{toGlobEvtIdx[k]};
         }
-        fMinLocalEvtIdxAfter = Parallel::SharedMemory<std::array<U, N>>{minLocalEvtIdxAfter};
+        fMinLocalEvtIdxAfter = Parallel::ShmArray<std::array<U, N>>{minLocalEvtIdxAfter};
         return;
     }
 
@@ -196,22 +176,16 @@ MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rd
     gtl::vector<std::array<U, N>> toLocalEvtIdx;
     std::array<gtl::vector<U>, N> toGlobEvtIdx;
     gtl::vector<std::array<U, N>> minLocalEvtIdxAfter;
-    std::size_t nEvent;
     if (interNodeComm.is_valid()) { // Only node leaders have valid inter-node communicator
         std::tie(toLocalEvtIdx, toGlobEvtIdx, minLocalEvtIdxAfter) = BuildData();
-        nEvent = toLocalEvtIdx.size();
     }
-    // Broadcast nEvent from node leaders to intra-node peers;
-    // non-leaders lazy-spin here to reduce resources consumption
-    intraNodeComm.ibcast(0, nEvent)
-        .wait(mplr::duty_ratio::preset::moderate);
 
-    // Build SharedMemory: rank 0 (node leader) provides data, others attach.
-    fToLocalEvtIdx = Parallel::SharedMemory<std::array<U, N>>{toLocalEvtIdx};
+    // Build ShmArray: rank 0 (node leader) provides data, others attach.
+    fToLocalEvtIdx = Parallel::ShmArray<std::array<U, N>>{toLocalEvtIdx};
     for (gsl::index k{}; k < nRDF; ++k) {
-        fToGlobEvtIdx[k] = Parallel::SharedMemory<U>{toGlobEvtIdx[k]};
+        fToGlobEvtIdx[k] = Parallel::ShmArray<U>{toGlobEvtIdx[k]};
     }
-    fMinLocalEvtIdxAfter = Parallel::SharedMemory<std::array<U, N>>{minLocalEvtIdxAfter};
+    fMinLocalEvtIdxAfter = Parallel::ShmArray<std::array<U, N>>{minLocalEvtIdxAfter};
 }
 
 template<std::integral T, std::size_t N, std::signed_integral U>
