@@ -31,10 +31,10 @@ namespace Mustard::inline Utility {
 /// `CLHEP::Hep3Vector`) that do not satisfy sized_range, falls back
 /// to computing `sizeof(T) / sizeof(ValueType)`.
 /// @tparam T The numeric vector type (deduced).
-/// @param vec The numeric vector to query.
+/// @param vec The numeric vector to query (default: value-initialized `T{}`).
 /// @return The number of elements in @p vec.
 template<Concept::NumericVectorAny T>
-constexpr auto VectorDimension(const T& vec) -> std::size_t {
+constexpr auto VectorDimension(const T& vec = {}) -> std::size_t {
     if constexpr (std::ranges::sized_range<T>) {
         return std::ranges::size(vec);
     } else {
