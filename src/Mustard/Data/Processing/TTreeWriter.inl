@@ -20,46 +20,23 @@ namespace Mustard::Data::inline Processing {
 
 template<Modelized M>
 TTreeWriter<M>::TTreeWriter(const std::string& name) :
-    NonCopyableBase{},
-    fEntry{},
+    impl3::WriterBase<M, TTreeWriter<M>>{},
+    fEntry{std::make_unique<typename PersistentEntryTuple<typename M::StdTuple>::Type>()},
     fTree{} {
-    if (not gDirectory->IsWritable()) [[unlikely]] {
-        PrintWarning("Current ROOT directory is not writable. Please ensure a writable file is opened.");
-    }
     // Create tree in the current directory or a subdirectory.
     // The tree will be owned by the writer and not automatically deleted by ROOT.
-    if (const auto iSlash{name.find_last_of('/')};
-        iSlash == std::string::npos) {
-        fTree.emplace(name.c_str(), "");
-    } else {
-        const auto iName{iSlash + 1};
-        const auto dirName{name.substr(0, iName)};
-        const auto treeName{name.substr(iName, -1)};
-        TDirectory* pwd{gDirectory};
-        const auto _{gsl::finally([pwd] { gDirectory = pwd; })};
-        pwd->mkdir(dirName.c_str());
-        if (not pwd->cd(dirName.c_str())) [[unlikely]] {
-            PrintError(fmt::format("Failed to change to ROOT directory '{}'", dirName));
-        }
-        fTree.emplace(treeName.c_str(), "");
-    }
-    fTree->GetDirectory()->Remove(&*fTree); // avoid automatic deletion of the tree
+    this->WithSubdirectory(name, [&](const std::string& treeName) {
+        fTree = std::make_unique<TTree>(treeName.c_str(), "");
+    });
+    fTree->GetDirectory()->Remove(fTree.get()); // avoid automatic deletion of the tree
     // Create branches
     const auto createBranch{[this]<gsl::index I>() {
         using Field = std::tuple_element_t<I, typename M::StdTuple>;
-        using PersistentType = typename Field::PersistentType;
-        PersistentType& object{std::get<I>(fEntry)};
-        const auto branch{fTree->Branch(Field::Name(), &object)};
+        const auto branch{fTree->Branch(Field::Name(), &EntryRef<I>())};
         if (branch == nullptr) {
             Throw<std::runtime_error>(fmt::format("Failed to create branch for '{}' field '{}'", FieldPersistentTypeName<Field>(), Field::Name().sv()));
         }
-        std::string description;
-        if constexpr (Field::Description()) {
-            description = fmt::format("({}) {}", FieldTypeName<PersistentType>(), Field::Description().sv());
-        } else {
-            description = FieldTypeName<PersistentType>();
-        }
-        branch->SetTitle(description.c_str());
+        branch->SetTitle(this->template BuildFieldDescription<Field>().c_str());
     }};
     [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         (..., createBranch.template operator()<Is>());
@@ -75,56 +52,9 @@ TTreeWriter<M>::~TTreeWriter() {
 }
 
 template<Modelized M>
-auto TTreeWriter<M>::Fill(const ArcTuple<M>& arcTuple) -> void {
-    if (arcTuple == nullptr) {
-        return;
-    }
-    Fill(*arcTuple);
-}
-
-template<Modelized M>
-auto TTreeWriter<M>::Fill(ArcTuple<M>&& arcTuple) -> void {
-    if (arcTuple == nullptr) {
-        return;
-    }
-    if (arcTuple->use_count() == 1) {
-        Fill(std::move(*arcTuple));
-    } else {
-        Fill(*arcTuple);
-    }
-}
-
-template<Modelized M>
-template<std::ranges::input_range R>
-auto TTreeWriter<M>::Fill(R&& data) -> void {
-    for (auto&& arcTuple : data) {
-        if constexpr (std::is_lvalue_reference_v<R>) {
-            Fill(arcTuple);
-        } else {
-            Fill(std::move(arcTuple));
-        }
-    }
-}
-
-template<Modelized M>
 auto TTreeWriter<M>::NEntry() const -> long long {
     const auto nEntry{fTree->GetEntries()};
     return gsl::narrow<long long>(nEntry);
-}
-
-template<Modelized M>
-template<typename ATuple>
-    requires std::same_as<std::remove_cvref_t<ATuple>, Tuple<M>>
-auto TTreeWriter<M>::FillImpl(ATuple&& tuple) -> void {
-    const auto assignEntry{[&]<gsl::index I>() {
-        using Field = std::tuple_element_t<I, typename M::StdTuple>;
-        using PersistentType = typename Field::PersistentType;
-        std::get<I>(fEntry) = std::forward<ATuple>(tuple).template F<Field::Name(), PersistentType>();
-    }};
-    [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
-        (..., assignEntry.template operator()<Is>());
-    }(gslx::make_index_sequence<M::Size()>{});
-    fTree->Fill();
 }
 
 } // namespace Mustard::Data::inline Processing

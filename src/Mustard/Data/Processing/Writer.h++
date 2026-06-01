@@ -55,14 +55,15 @@ namespace Mustard::Data::inline Processing {
 /// @code{.cpp}
 /// Mustard::Data::Writer<MyModel> writer{"analysis/data"};
 /// writer.Fill(oneEntry);
-/// writer.Flush();
+/// writer.Flush(); // optional
 /// writer.Fill(batchEntries);
 /// @endcode
 ///
-/// @note This class is non-copyable.
+/// @note Final persistence is handled by writer destruction
 template<Modelized M>
 class Writer {
 public:
+    /// @brief Mustard data model type.
     using Model = M;
 
 public:
@@ -90,6 +91,7 @@ public:
     /// @brief Fill one entry into the underlying backend.
     /// @param tuple Tuple object to write.
     auto Fill(Tuple<M>&& tuple) -> void;
+
     /// @brief Fill one entry into the underlying backend
     /// if the shared entry object is not null.
     /// @param arcTuple Shared tuple object to write. Null is ignored.
@@ -97,6 +99,9 @@ public:
     /// @brief Fill one entry into the underlying backend
     /// if the shared entry object is not null.
     /// @param arcTuple Shared tuple object to write. Null is ignored.
+    ///
+    /// @note When @p arcTuple has a @c use_count() of 1 (unique ownership),
+    /// the underlying tuple is moved rather than copied.
     auto Fill(ArcTuple<M>&& arcTuple) -> void;
 
     /// @brief Fill a range of entries in iteration order.
@@ -104,13 +109,14 @@ public:
     /// Elements are forwarded to @ref Fill. For lvalue ranges, elements are
     /// passed as lvalues; for rvalue ranges, elements are moved when possible.
     ///
+    /// @tparam R Input range type.
     /// @param data Input range whose elements are consumable by @ref Fill.
     template<std::ranges::input_range R>
     auto Fill(R&& data) -> void;
 
     /// @brief Number of entries already filled into the underlying backend.
     /// @return Current entry count.
-    auto NEntry() const -> std::size_t;
+    auto NEntry() const -> long long;
 
     /// @brief Flush current backend state to storage without finalizing the writer.
     ///

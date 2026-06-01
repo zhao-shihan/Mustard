@@ -20,8 +20,7 @@ namespace Mustard::Data::inline Processing {
 
 template<Modelized M>
 Writer<M>::Writer(const std::string& name) :
-    Writer{name, envparse::parse<envparse::not_set_option::left_blank>("${MUSTARD_DATA_WRITER_DEFAULT_TARGET}")} {
-}
+    Writer{name, envparse::parse<envparse::not_set_option::left_blank>("${MUSTARD_DATA_WRITER_DEFAULT_TARGET}")} {}
 
 template<Modelized M>
 Writer<M>::Writer(const std::string& name, std::string_view target) :
@@ -63,10 +62,8 @@ auto Writer<M>::Fill(R&& data) -> void {
 }
 
 template<Modelized M>
-auto Writer<M>::NEntry() const -> std::size_t {
-    return VisitWriter([](const auto& writer) -> std::size_t {
-        return writer.NEntry();
-    });
+auto Writer<M>::NEntry() const -> long long {
+    return VisitWriter([](const auto& writer) { return writer.NEntry(); });
 }
 
 template<Modelized M>

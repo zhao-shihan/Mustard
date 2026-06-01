@@ -18,27 +18,19 @@
 
 #pragma once
 
-#include "Mustard/Data/Model.h++"
 #include "Mustard/Data/Object/Field.h++"
 #include "Mustard/Data/Object/FieldTypeName.h++"
-#include "Mustard/Data/Object/Tuple.h++"
+#include "Mustard/Data/Processing/impl3/WriterBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
 
-#include "TDirectory.h"
 #include "TTree.h"
-
-#include "gsl/gsl"
 
 #include "fmt/format.h"
 
 #include <algorithm>
-#include <concepts>
 #include <cstddef>
-#include <optional>
-#include <ranges>
+#include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 namespace Mustard::Data::inline Processing {
@@ -61,14 +53,10 @@ namespace Mustard::Data::inline Processing {
 /// writer.Fill(batchEntries);
 /// @endcode
 ///
-/// @note This class is non-copyable.
 /// @note Final persistence is handled by writer destruction
 /// (i.e. the underlying @c TTree is written once on destruction).
 template<Modelized M>
-class TTreeWriter : public NonCopyableBase {
-public:
-    using Model = M;
-
+class TTreeWriter : public impl3::WriterBase<M, TTreeWriter<M>> {
 public:
     /// @brief Construct a writer and create the target @c TTree with branches.
     ///
@@ -77,37 +65,23 @@ public:
     ///
     /// Internally this wrapper constructs @c TTree in the resolved ROOT directory,
     /// then creates one branch per model field and configures each branch title
-    /// from the field type and field metadata.
+    /// from the field type and field metadata. The tree is removed from its
+    /// directory's internal list to prevent ROOT from auto-deleting it when the
+    /// directory closes.
     ///
     /// @param name Tree name, or directory path plus tree name.
+    ///
+    /// @note A warning is printed if the current @c gDirectory is not writable.
+    /// @note A @c std::runtime_error is thrown if any branch creation fails
+    /// (e.g. due to unsupported field types).
     explicit TTreeWriter(const std::string& name);
 
     /// @brief Write tree content to the ROOT file on destruction.
+    ///
+    /// Saves the current @c gDirectory, switches to the tree's owning directory,
+    /// calls @c fTree->Write(), and restores the original @c gDirectory via
+    /// @c gsl::finally.
     ~TTreeWriter();
-
-    /// @brief Fill one entry into the underlying tree.
-    /// @param tuple Tuple object to write.
-    auto Fill(const Tuple<M>& tuple) -> void { FillImpl(tuple); }
-    /// @brief Fill one entry into the underlying tree.
-    /// @param tuple Tuple object to write.
-    auto Fill(Tuple<M>&& tuple) -> void { FillImpl(std::move(tuple)); }
-    /// @brief Fill one entry into the underlying tree
-    /// if the shared entry object is not null.
-    /// @param arcTuple Shared tuple object to write. Null is ignored.
-    auto Fill(const ArcTuple<M>& arcTuple) -> void;
-    /// @brief Fill one entry into the underlying tree
-    /// if the shared entry object is not null.
-    /// @param arcTuple Shared tuple object to write. Null is ignored.
-    auto Fill(ArcTuple<M>&& arcTuple) -> void;
-
-    /// @brief Fill a range of entries in iteration order.
-    ///
-    /// Elements are forwarded to @ref Fill. For lvalue ranges, elements are
-    /// passed as lvalues; for rvalue ranges, elements are moved when possible.
-    ///
-    /// @param data Input range whose elements are consumable by @ref Fill.
-    template<std::ranges::input_range R>
-    auto Fill(R&& data) -> void;
 
     /// @brief Number of entries already filled into the underlying tree.
     /// @return Current tree entry count.
@@ -123,12 +97,21 @@ public:
     auto Flush() -> void { fTree->AutoSave("SaveSelf"); }
 
 private:
-    template<typename ATuple>
-        requires std::same_as<std::remove_cvref_t<ATuple>, Tuple<M>>
-    auto FillImpl(ATuple&& tuple) -> void;
+    friend class impl3::WriterBase<M, TTreeWriter<M>>;
+
+    /// @brief Return a reference to the persistent storage for field index @p I.
+    template<gsl::index I>
+    auto EntryRef() -> auto& { return std::get<I>(*fEntry); }
+
+    /// @brief Commit the current entry via @c TTree::Fill().
+    auto DoFill() -> void { fTree->Fill(); }
 
 private:
-    /// @brief Maps a std::tuple of Field types to a std::tuple of PersistentTypes.
+    /// @brief Maps a @c std::tuple of field types to a @c std::tuple of
+    /// @c PersistentType values.
+    ///
+    /// Unlike @c RNTupleWriter which uses @c shared_ptr to values, this alias
+    /// resolves to plain value types suitable for direct TTree branch binding.
     template<typename AStdTuple>
     struct PersistentEntryTuple;
     template<typename... AFields>
@@ -137,8 +120,8 @@ private:
     };
 
 private:
-    typename PersistentEntryTuple<typename M::StdTuple>::Type fEntry;
-    std::optional<TTree> fTree;
+    std::unique_ptr<typename PersistentEntryTuple<typename M::StdTuple>::Type> fEntry; ///< Tuple of persistent-type values, one per model field.
+    std::unique_ptr<TTree> fTree;                                                      ///< Underlying ROOT TTree.
 };
 
 } // namespace Mustard::Data::inline Processing
