@@ -21,7 +21,7 @@
 namespace Mustard::inline Utility {
 
 class NonConstructibleBase {
-private:
+public:
     constexpr NonConstructibleBase() = delete;
 };
 

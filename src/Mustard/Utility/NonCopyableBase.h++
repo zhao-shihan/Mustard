@@ -27,6 +27,7 @@ protected:
     constexpr NonCopyableBase() noexcept = default;
     constexpr ~NonCopyableBase() noexcept = default;
 
+public:
     constexpr NonCopyableBase(const NonCopyableBase&) noexcept = delete;
     constexpr NonCopyableBase(NonCopyableBase&&) noexcept = delete;
 

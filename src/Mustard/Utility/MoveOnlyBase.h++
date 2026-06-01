@@ -25,6 +25,7 @@ protected:
     constexpr MoveOnlyBase() noexcept = default;
     constexpr ~MoveOnlyBase() noexcept = default;
 
+public:
     constexpr MoveOnlyBase(const MoveOnlyBase&) noexcept = delete;
     constexpr MoveOnlyBase(MoveOnlyBase&&) noexcept = default;
 
