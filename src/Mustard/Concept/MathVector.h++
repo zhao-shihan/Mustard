@@ -22,6 +22,8 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
+#include "muc/type_traits"
+
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -29,31 +31,11 @@
 
 namespace Mustard::Concept {
 
-namespace impl {
-
-template<typename T>
-concept ExtraRequirementsForMathVector =
-    requires(T u, const T v, const T w, const VectorValueType<T> c) {
-        { u += v } -> std::same_as<T&>;
-        { u -= v } -> std::same_as<T&>;
-        { u *= c } -> std::same_as<T&>;
-        { u /= c } -> std::same_as<T&>;
-        { -v } -> std::convertible_to<T>;
-        { v + w } -> std::convertible_to<T>;
-        { v - w } -> std::convertible_to<T>;
-        { c * v } -> std::convertible_to<T>;
-        { v * c } -> std::convertible_to<T>;
-        { v / c } -> std::convertible_to<T>;
-    };
-
-} // namespace impl
-
 template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept MathVector =
-    requires {
-        requires NumericVector<T, F, N>;
-        requires impl::ExtraRequirementsForMathVector<T>;
-    };
+concept MathVector = requires {
+    requires NumericVector<T, F, N>;
+    requires muc::is_general_arithmetic_v<T>;
+};
 
 template<typename T, typename F>
 concept MathVector2 = MathVector<T, F, 2>;
@@ -75,11 +57,10 @@ template<typename T>
 concept MathVector4D = MathVector4<T, double>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept MathVectorIntegral =
-    requires {
-        requires NumericVectorIntegral<T, N>;
-        requires impl::ExtraRequirementsForMathVector<T>;
-    };
+concept MathVectorIntegral = requires {
+    requires NumericVectorIntegral<T, N>;
+    requires muc::is_general_arithmetic_v<T>;
+};
 
 template<typename T>
 concept MathVector2Integral = MathVectorIntegral<T, 2>;
@@ -89,11 +70,10 @@ template<typename T>
 concept MathVector4Integral = MathVectorIntegral<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept MathVectorFloatingPoint =
-    requires {
-        requires NumericVectorFloatingPoint<T, N>;
-        requires impl::ExtraRequirementsForMathVector<T>;
-    };
+concept MathVectorFloatingPoint = requires {
+    requires NumericVectorFloatingPoint<T, N>;
+    requires muc::is_general_arithmetic_v<T>;
+};
 
 template<typename T>
 concept MathVector2FloatingPoint = MathVectorFloatingPoint<T, 2>;
@@ -103,11 +83,10 @@ template<typename T>
 concept MathVector4FloatingPoint = MathVectorFloatingPoint<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept MathVectorAny =
-    requires {
-        requires NumericVectorAny<T, N>;
-        requires impl::ExtraRequirementsForMathVector<T>;
-    };
+concept MathVectorAny = requires {
+    requires NumericVectorAny<T, N>;
+    requires muc::is_general_arithmetic_v<T>;
+};
 
 template<typename T>
 concept MathVector2Any = MathVectorAny<T, 2>;

@@ -21,25 +21,23 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
-#include <ranges>
+#include <type_traits>
 
 namespace Mustard::inline Utility {
 
-/// @brief Get the number of elements in a numeric vector.
-/// @details For types that model `std::ranges::sized_range`, returns
-/// `std::ranges::size(vec)`. For fixed-size vector types (e.g., CLHEP's
-/// `CLHEP::Hep3Vector`) that do not satisfy sized_range, falls back
-/// to computing `sizeof(T) / sizeof(ValueType)`.
-/// @tparam T The numeric vector type (deduced).
-/// @param vec The numeric vector to query (default: value-initialized `T{}`).
-/// @return The number of elements in @p vec.
+/// @brief Compile-time trait to obtain the number of elements in a numeric vector type.
+/// @details Computes the dimension (element count) of a fixed-size numeric vector
+/// type @p T by dividing the total size of the vector object by the size of its
+/// underlying value type. The result is available as the static member `value`
+/// (inherited from `std::integral_constant`).
+///
+/// This trait works with any type satisfying @ref Concept::NumericVectorAny,
+/// such as ROOT::Math::XYZVector, CLHEP::Hep3Vector, or similar fixed-size
+/// numeric vector types from other libraries.
+///
+/// @tparam T A type satisfying @ref Concept::NumericVectorAny.
 template<Concept::NumericVectorAny T>
-constexpr auto VectorDimension(const T& vec = {}) -> std::size_t {
-    if constexpr (std::ranges::sized_range<T>) {
-        return std::ranges::size(vec);
-    } else {
-        return sizeof(T) / sizeof(VectorValueType<T>);
-    }
-}
+struct VectorDimension
+    : std::integral_constant<std::size_t, sizeof(T) / sizeof(VectorValueType<T>)> {};
 
 } // namespace Mustard::inline Utility

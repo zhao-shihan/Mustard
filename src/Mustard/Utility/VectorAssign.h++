@@ -39,46 +39,60 @@ namespace Mustard::inline Utility {
 /// @details This overload is selected when @p rhs is directly assignable to
 /// @p lhs (e.g., same vector type or implicitly convertible value). It
 /// simply delegates to the vector's built-in assignment operator.
+/// @tparam T The target numeric vector type.
+/// @tparam U The source type.
 /// @param lhs The target numeric vector.
 /// @param rhs The source value to assign.
 /// @return lvalue reference to @p lhs.
-MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(Concept::NumericVectorAny auto& lhs, auto&& rhs) -> auto&
-    requires std::assignable_from<decltype(lhs), decltype(rhs)> {
-    return lhs = std::forward<decltype(rhs)>(rhs);
+template<Concept::NumericVectorAny T, typename U>
+    requires std::assignable_from<T&, U&&>
+MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(T& lhs, U&& rhs) -> T& {
+    return lhs = std::forward<U>(rhs);
 }
 
 /// @brief Assign an input range to a numeric vector element by element.
-/// @details This overload is selected when @p rhs is an input range whose
-/// value type is assignable to @p lhs's element type, but @p rhs itself is
-/// not directly assignable to @p lhs. Each element of the range is
-/// forwarded into the corresponding element of the vector in order.
+/// @details This overload is selected when @p rhs satisfies
+/// `std::ranges::input_range` but is not directly assignable to @p lhs as a
+/// whole, and the range's value type is assignable to @p lhs's element type.
+/// Each element of the range is forwarded into the corresponding element of
+/// the vector in order.
+/// @tparam T The target numeric vector type.
+/// @tparam U The source range type.
 /// @param lhs The target numeric vector.
 /// @param rhs An input range whose elements are to be assigned.
 /// @return lvalue reference to @p lhs.
-MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(Concept::NumericVectorAny auto& lhs, std::ranges::input_range auto&& rhs) -> auto&
-    requires(not std::assignable_from<decltype(lhs), decltype(rhs)> and
-             std::assignable_from<VectorValueType<std::decay_t<decltype(lhs)>>&, std::ranges::range_value_t<decltype(rhs)>>) {
+template<Concept::NumericVectorAny T, std::ranges::input_range U>
+    requires(not std::assignable_from<T&, U &&> and
+             std::assignable_from<VectorValueType<T>&, std::ranges::range_value_t<U>>)
+MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(T& lhs, U&& rhs) -> T& {
     for (gsl::index i{};
-         auto&& value : std::forward<decltype(rhs)>(rhs)) {
-        lhs[i++] = std::forward<decltype(value)>(value);
+         auto&& value : std::forward<U>(rhs)) {
+        lhs[i++] = muc::forward_like<U>(value);
     }
     return lhs;
 }
 
 /// @brief Assign an InputVector to a numeric vector element by element.
 /// @details This overload is selected when @p rhs satisfies the InputVector
-/// concept but is neither directly assignable to @p lhs nor satisfies the
-/// input_range concept. Elements are copied individually via `operator[]`.
+/// concept, but neither the whole vector is directly assignable to @p lhs
+/// nor are the element types compatible for range-based assignment (i.e.,
+/// `VectorValueType<T>` is not assignable from
+/// `std::ranges::range_value_t<U>`, or the latter is not defined). Elements
+/// are copied individually via `operator[]` using the vector's compile-time
+/// dimension.
+/// @tparam T The target numeric vector type.
+/// @tparam U The source InputVector type.
 /// @param lhs The target numeric vector.
 /// @param rhs An InputVector whose elements are to be assigned.
 /// @return lvalue reference to @p lhs.
-MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(Concept::NumericVectorAny auto& lhs, auto&& rhs) -> auto&
-    requires(Concept::InputVectorAny<std::decay_t<decltype(rhs)>> and
-             not std::assignable_from<decltype(lhs), decltype(rhs)> and
-             not std::ranges::input_range<decltype(rhs)>) {
-    const auto dim{muc::to_signed(VectorDimension(lhs))};
+template<Concept::NumericVectorAny T, typename U>
+    requires(Concept::InputVectorAny<std::decay_t<U>> and
+             not std::assignable_from<T&, U &&> and
+             not std::assignable_from<VectorValueType<T>&, std::ranges::range_value_t<U>>)
+MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(T& lhs, U&& rhs) -> T& {
+    constexpr auto dim{muc::to_signed(VectorDimension<std::decay_t<decltype(lhs)>>{})};
     for (gsl::index i{}; i < dim; ++i) {
-        lhs[i] = std::forward<decltype(rhs)>(rhs)[i];
+        lhs[i] = rhs[i];
     }
     return lhs;
 }
@@ -86,13 +100,14 @@ MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(Concept::NumericVectorAny auto
 /// @concept VectorAssignableFrom
 /// @brief Checks if a value of type @p U can be assigned to a numeric vector
 /// of type @p T via `VectorAssign`.
-/// @tparam T The numeric vector type (can be an lvalue or rvalue reference).
-/// @tparam U The source type (can be an lvalue or rvalue reference).
+/// @tparam T The numeric vector type.
+/// @tparam U The source type.
 /// @details Satisfied when the expression
-/// `VectorAssign(lhs, std::forward<U>(rhs))` is well-formed and returns a
-/// reference to @p T.
+/// `VectorAssign(lhs, std::forward<U>(rhs))` is well-formed for an lvalue
+/// @p lhs of type @p T and a forwarded reference @p rhs of type @p U, and
+/// the result is a reference to @p T.
 template<typename T, typename U>
-concept VectorAssignableFrom = requires(T&& lhs, U&& rhs) {
+concept VectorAssignableFrom = requires(T& lhs, U&& rhs) {
     { VectorAssign(lhs, std::forward<U>(rhs)) } -> std::same_as<T&>;
 };
 
@@ -102,13 +117,15 @@ inline namespace VectorAssignOperator {
 /// @details Provides a convenient `lhs <<= rhs` syntax that delegates to
 /// `VectorAssign`. Available whenever the types satisfy
 /// `VectorAssignableFrom`.
+/// @tparam T The target numeric vector type.
+/// @tparam U The source type.
 /// @param lhs The target numeric vector.
 /// @param rhs The source value to assign.
 /// @return lvalue reference to @p lhs.
-template<typename T, typename U>
-    requires VectorAssignableFrom<T&&, U&&>
-MUSTARD_ALWAYS_INLINE constexpr auto operator<<=(Concept::NumericVectorAny auto& lhs, auto&& rhs) -> auto& {
-    return VectorAssign(lhs, std::forward<decltype(rhs)>(rhs));
+template<Concept::NumericVectorAny T, typename U>
+    requires VectorAssignableFrom<T&, U&&>
+MUSTARD_ALWAYS_INLINE constexpr auto operator<<=(T& lhs, U&& rhs) -> T& {
+    return VectorAssign(lhs, std::forward<U>(rhs));
 }
 
 } // namespace VectorAssignOperator

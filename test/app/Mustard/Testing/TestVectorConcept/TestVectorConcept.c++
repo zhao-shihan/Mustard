@@ -63,19 +63,25 @@ static_assert(not Concept::NumericVector<const float[3], float, 3>);
 static_assert(not Concept::NumericVector<const double[3], double, 3>);
 static_assert(not Concept::NumericVector<const long double[3], long double, 3>);
 
+static_assert(Concept::InputVector<std::vector<float>, float, 2>);
+static_assert(Concept::InputVector<std::vector<float>, float, 3>);
+static_assert(Concept::InputVector<std::vector<float>, float, 4>);
+static_assert(Concept::InputVector<std::vector<double>, double, 2>);
+static_assert(Concept::InputVector<std::vector<double>, double, 3>);
+static_assert(Concept::InputVector<std::vector<double>, double, 4>);
+static_assert(not Concept::NumericVector<std::vector<float>, float, 2>);
+static_assert(not Concept::NumericVector<std::vector<float>, float, 3>);
+static_assert(not Concept::NumericVector<std::vector<float>, float, 4>);
+static_assert(not Concept::NumericVector<std::vector<double>, double, 2>);
+static_assert(not Concept::NumericVector<std::vector<double>, double, 3>);
+static_assert(not Concept::NumericVector<std::vector<double>, double, 4>);
+
 static_assert(Concept::NumericVector<muc::array2f, float, 2>);
 static_assert(Concept::NumericVector<muc::array3f, float, 3>);
 static_assert(Concept::NumericVector<muc::array4f, float, 4>);
 static_assert(Concept::NumericVector<muc::array2d, double, 2>);
 static_assert(Concept::NumericVector<muc::array3d, double, 3>);
 static_assert(Concept::NumericVector<muc::array4d, double, 4>);
-
-// static_assert(not Concept::NumericVector<std::vector<float>, float, 2>);
-// static_assert(not Concept::NumericVector<std::vector<float>, float, 3>);
-// static_assert(not Concept::NumericVector<std::vector<float>, float, 4>);
-// static_assert(not Concept::NumericVector<std::vector<double>, double, 2>);
-// static_assert(not Concept::NumericVector<std::vector<double>, double, 3>);
-// static_assert(not Concept::NumericVector<std::vector<double>, double, 4>);
 
 static_assert(Concept::MathVector<Eigen::Vector2f, float, 2>);
 static_assert(Concept::MathVector<Eigen::Vector3f, float, 3>);

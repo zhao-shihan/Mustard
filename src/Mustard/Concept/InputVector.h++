@@ -30,16 +30,13 @@
 namespace Mustard::Concept {
 
 template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept InputVector =
-    requires {
-        requires(N >= 2);
-        requires muc::arithmetic<F>;
-        requires(std::is_class_v<T> and
-                 std::default_initializable<T>) or
-                    (std::is_pointer_v<T> or
-                     std::is_array_v<T>);
-        requires SubscriptableToMaybeConstReferenced<T, F>;
-    };
+concept InputVector = requires {
+    requires(N >= 2);
+    requires muc::arithmetic<F>;
+    requires(std::is_class_v<T> and std::default_initializable<T>) or
+                (std::is_pointer_v<T> or std::is_array_v<T>);
+    requires SubscriptableToMaybeConstReferenced<T, F>;
+};
 
 template<typename T, typename F>
 concept InputVector2 = InputVector<T, F, 2>;
@@ -61,22 +58,23 @@ template<typename T>
 concept InputVector4D = InputVector4<T, double>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept InputVectorIntegral = InputVector<T, bool, N> or
-                              InputVector<T, signed char, N> or
-                              InputVector<T, unsigned char, N> or
-                              InputVector<T, char, N> or
-                              InputVector<T, char8_t, N> or
-                              InputVector<T, char16_t, N> or
-                              InputVector<T, char32_t, N> or
-                              InputVector<T, wchar_t, N> or
-                              InputVector<T, short, N> or
-                              InputVector<T, int, N> or
-                              InputVector<T, long, N> or
-                              InputVector<T, long long, N> or
-                              InputVector<T, unsigned short, N> or
-                              InputVector<T, unsigned int, N> or
-                              InputVector<T, unsigned long, N> or
-                              InputVector<T, unsigned long long, N>;
+concept InputVectorIntegral =
+    InputVector<T, bool, N> or
+    InputVector<T, signed char, N> or
+    InputVector<T, unsigned char, N> or
+    InputVector<T, char, N> or
+    InputVector<T, char8_t, N> or
+    InputVector<T, char16_t, N> or
+    InputVector<T, char32_t, N> or
+    InputVector<T, wchar_t, N> or
+    InputVector<T, short, N> or
+    InputVector<T, int, N> or
+    InputVector<T, long, N> or
+    InputVector<T, long long, N> or
+    InputVector<T, unsigned short, N> or
+    InputVector<T, unsigned int, N> or
+    InputVector<T, unsigned long, N> or
+    InputVector<T, unsigned long long, N>;
 
 template<typename T>
 concept InputVector2Integral = InputVectorIntegral<T, 2>;
@@ -86,9 +84,10 @@ template<typename T>
 concept InputVector4Integral = InputVectorIntegral<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept InputVectorFloatingPoint = InputVector<T, float, N> or
-                                   InputVector<T, double, N> or
-                                   InputVector<T, long double, N>;
+concept InputVectorFloatingPoint =
+    InputVector<T, float, N> or
+    InputVector<T, double, N> or
+    InputVector<T, long double, N>;
 
 template<typename T>
 concept InputVector2FloatingPoint = InputVectorFloatingPoint<T, 2>;
@@ -98,8 +97,9 @@ template<typename T>
 concept InputVector4FloatingPoint = InputVectorFloatingPoint<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept InputVectorAny = InputVectorIntegral<T, N> or
-                         InputVectorFloatingPoint<T, N>;
+concept InputVectorAny =
+    InputVectorIntegral<T, N> or
+    InputVectorFloatingPoint<T, N>;
 
 template<typename T>
 concept InputVector2Any = InputVectorAny<T, 2>;

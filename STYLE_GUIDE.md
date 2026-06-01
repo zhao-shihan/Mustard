@@ -1159,7 +1159,7 @@ auto Calculate(double x) {
 constexpr auto NormSq(const Concept::NumericVectorFloatingPoint auto& x) {
     return [&x]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         return muc::hypot_sq(x[Is]...);
-    }(gslx::make_index_sequence<VectorDimension<std::decay_t<decltype(x)>>>());
+    }(gslx::make_index_sequence<VectorDimension<std::decay_t<decltype(x)>>{}>());
 }
 
 constexpr auto Fill(double sample, double weight) -> void {

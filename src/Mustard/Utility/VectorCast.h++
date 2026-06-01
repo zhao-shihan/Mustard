@@ -21,7 +21,6 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/VectorAssign.h++"
-#include "Mustard/Utility/VectorDimension.h++"
 
 #include <concepts>
 #include <type_traits>
@@ -57,9 +56,6 @@ template<Concept::NumericVectorAny T, typename S>
 template<Concept::NumericVectorAny T, typename S>
 [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto VectorCast(S&& src) -> T {
     T dst;
-    if constexpr (requires { dst.resize(VectorDimension(src)); }) {
-        dst.resize(VectorDimension(src));
-    }
     VectorAssign(dst, std::forward<S>(src));
     return dst;
 }
