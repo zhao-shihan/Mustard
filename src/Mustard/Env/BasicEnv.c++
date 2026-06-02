@@ -19,12 +19,18 @@
 #include "Mustard/CLI/Module/BasicModule.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/Print.h++"
+#include "Mustard/Math/LorentzRotation.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
 #include "Mustard/Version.h++"
+
+#include "CLHEP/Vector/RotationInterfaces.h"
 
 #include "TROOT.h"
 
 #include "mplr/mplr.hpp"
+
+#include "muc/numeric"
 
 #include "fmt/chrono.h"
 #include "fmt/color.h"
@@ -57,6 +63,13 @@ BasicEnv::BasicEnv(NoBanner, int argc, char* argv[],
     }
     // We have async ROOT IO, enable ROOT global mutex
     ROOT::EnableThreadSafety();
+    // Set default tolerance for vectors and Lorentz rotations
+    Vector2D::setTolerance(muc::default_rel_tol<double>);
+    Vector3D::setTolerance(muc::default_rel_tol<double>);
+    VectorLor::setTolerance(muc::default_rel_tol<double>);
+    AxisAngle::setTolerance(muc::default_rel_tol<double>);
+    EulerAngles::setTolerance(muc::default_rel_tol<double>);
+    CLHEP::Hep4RotationInterface::setTolerance(muc::default_rel_tol<double>);
 }
 
 BasicEnv::BasicEnv(int argc, char* argv[],

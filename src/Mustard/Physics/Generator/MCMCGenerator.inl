@@ -60,12 +60,12 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Polarization(const typename A::InitialStatePolarization& pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> {
     if constexpr (M == 1) {
-        if (not pol.isNear(Polarization(), muc::default_rel_tol<double>)) {
+        if (not pol.isNear(Polarization())) {
             MCMCInitializationRequired();
         }
     } else {
         if (not std::ranges::equal(pol, Polarization(),
-                                   [](auto&& a, auto&& b) { return a.isNear(b, muc::default_rel_tol<double>); })) {
+                                   [](auto&& a, auto&& b) { return a.isNear(b); })) {
             MCMCInitializationRequired();
         }
     }
@@ -75,7 +75,7 @@ auto MCMCGenerator<M, N, A>::Polarization(const typename A::InitialStatePolariza
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Polarization(int i, Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    if (not pol.isNear(Polarization(i), muc::default_rel_tol<double>)) {
+    if (not pol.isNear(Polarization(i))) {
         MCMCInitializationRequired();
     }
     Base::Polarization(i, pol);
@@ -300,12 +300,12 @@ auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStat
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Momenta(const InitialStateMomenta& pI) -> void {
     if constexpr (M == 1) {
-        if (not pI.isNear(Base::Momenta(), muc::default_rel_tol<double>)) {
+        if (not pI.isNear(Base::Momenta())) {
             MCMCInitializationRequired();
         }
     } else {
         if (not std::ranges::equal(pI, Base::Momenta(),
-                                   [](auto p, auto q) { return p.isNear(q, muc::default_rel_tol<double>); })) {
+                                   [](auto p, auto q) { return p.isNear(q); })) {
             MCMCInitializationRequired();
         }
     }

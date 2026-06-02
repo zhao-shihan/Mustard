@@ -18,55 +18,61 @@
 
 #pragma once
 
-#include "CLHEP/Vector/AxisAngle.h"
-#include "CLHEP/Vector/Boost.h"
-#include "CLHEP/Vector/BoostX.h"
-#include "CLHEP/Vector/BoostY.h"
-#include "CLHEP/Vector/BoostZ.h"
-#include "CLHEP/Vector/EulerAngles.h"
-#include "CLHEP/Vector/LorentzRotation.h"
-#include "CLHEP/Vector/Rotation.h"
-#include "CLHEP/Vector/RotationX.h"
-#include "CLHEP/Vector/RotationY.h"
-#include "CLHEP/Vector/RotationZ.h"
+#include "CLHEP/Geometry/Transform3D.h"
 
-// We use CLHEP vector as default vector types in Mustard.
+// We use CLHEP geometry as default transform types in Mustard.
 
 namespace Mustard::inline Math {
 
-/// @brief Generic boost
-using Boost = CLHEP::HepBoost;
+/// @brief Generic 3D transformation
+using Transform3D = HepGeom::Transform3D;
 
-/// @brief Boost along x-axis
-using BoostX = CLHEP::HepBoostX;
+/// @brief 3D rotation
+using Rotate3D = HepGeom::Rotate3D;
 
-/// @brief Boost along y-axis
-using BoostY = CLHEP::HepBoostY;
+/// @brief 3D rotation around x-axis
+using RotateX3D = HepGeom::RotateX3D;
 
-/// @brief Boost along z-axis
-using BoostZ = CLHEP::HepBoostZ;
+/// @brief 3D rotation around y-axis
+using RotateY3D = HepGeom::RotateY3D;
 
-/// @brief Generic rotation
-using Rotation = CLHEP::HepRotation;
+/// @brief 3D rotation around z-axis
+using RotateZ3D = HepGeom::RotateZ3D;
 
-/// @brief Rotation around x-axis
-using RotationX = CLHEP::HepRotationX;
+/// @brief 3D translation
+using Translate3D = HepGeom::Translate3D;
 
-/// @brief Rotation around y-axis
-using RotationY = CLHEP::HepRotationY;
+/// @brief 3D translation along x-axis
+using TranslateX3D = HepGeom::TranslateX3D;
 
-/// @brief Rotation around z-axis
-using RotationZ = CLHEP::HepRotationZ;
+/// @brief 3D translation along y-axis
+using TranslateY3D = HepGeom::TranslateY3D;
 
-/// @brief Generic Lorentz transformation (rotation + boost)
-using LorentzRotation = CLHEP::HepLorentzRotation;
+/// @brief 3D translation along z-axis
+using TranslateZ3D = HepGeom::TranslateZ3D;
 
-// below are helper classes for constructing transformation
+/// @brief 3D reflection
+using Reflect3D = HepGeom::Reflect3D;
 
-/// @brief Euler angles (phi, theta, psi) in the z-y-z convention
-using EulerAngles = CLHEP::HepEulerAngles;
+/// @brief 3D reflection in plane x = a
+using ReflectX3D = HepGeom::ReflectX3D;
 
-/// @brief Axis-angle representation of a rotation
-using AxisAngle = CLHEP::HepAxisAngle;
+/// @brief 3D reflection in plane y = a
+using ReflectY3D = HepGeom::ReflectY3D;
+
+/// @brief 3D reflection in plane z = a
+using ReflectZ3D = HepGeom::ReflectZ3D;
+
+/// @brief 3D scaling
+using Scale3D = HepGeom::Scale3D;
+
+/// @brief 3D scaling along x-axis
+using ScaleX3D = HepGeom::ScaleX3D;
+
+/// @brief 3D scaling along y-axis
+using ScaleY3D = HepGeom::ScaleY3D;
+
+/// @brief 3D scaling along z-axis
+using ScaleZ3D = HepGeom::ScaleZ3D;
 
 } // namespace Mustard::inline Math

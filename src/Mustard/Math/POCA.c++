@@ -83,7 +83,7 @@ auto POCA(const Helix& helix, const Point2D& axis) -> HelixAxisPOCAResult {
 
     const auto xCT{axis - c};
     const auto phi1{xCT.phi()};
-    auto phiCCw{std::fmod(phi1 - phi0, 2 * pi)}; // use std::fmod, not std::remainder!
+    auto phiCCw{muc::fmod(phi1 - phi0, 2 * pi)}; // use fmod, not std::remainder!
     if (phiCCw < 0) {
         phiCCw += 2 * pi;
     } // ensure in [0, 2pi)
@@ -102,11 +102,12 @@ auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
           int nTrialPts, int maxIter, double absTol, double relTol) -> std::optional<HelixPointPOCAResult> {
     using Mustard::MathConstant::pi;
 
-    const auto& [o, r, phi0, z0, lambda]{helix};
-    const auto& t{point};
     if (phiLow >= phiUp) {
         return std::nullopt;
     }
+
+    const auto& [o, r, phi0, z0, lambda]{helix};
+    const auto& t{point};
 
     const auto k{1 / std::tan(lambda)}; // can be 0
     const auto a{(o.x() - t.x()) / r};
@@ -123,13 +124,8 @@ auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
     const auto x2{phiUp + phi0};
 
     // determine initial trial points
-    if (nTrialPts == 1) {
-        // default to 1 point for every pi/5 interval; minimum 5 points
-        const auto nDefault{static_cast<int>((x2 - x1) / (pi / 5)) + 1};
-        nTrialPts = std::max(5, nDefault);
-    }
     if (nTrialPts > 0) {
-        // unimodality check
+        // compute oscillation bound for convexity check
         const auto h{[&](double x) {
             const auto [sinx, cosx]{muc::sincos(x)};
             return a * cosx + b * sinx;
@@ -140,9 +136,19 @@ auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
         const auto k2{(x2 - phiAB) / (2 * pi)};
         const auto hMaxAtBound{std::floor(k1) == std::floor(k2)};
         const auto hMax{hMaxAtBound ? std::max(h(x1), h(x2)) : rAB};
-        // check the unimodality condition
-        if (2 * d >= hMax) { // function is unimodal in the interval
-            nTrialPts = 0;   // no need of grid search for unimodal function
+        // convexity check: f''(x) = -h(x) + 2 d; 2 d >= hMax
+        //                    =>  f''(x) >= 0 for all x in [x1, x2]
+        if (2 * d >= hMax) {
+            nTrialPts = 0; // function is convex, no grid search needed
+        } else if (nTrialPts == 1) {
+            // adaptive grid density based on oscillation strength
+            // sigma = (hMax - 2 d) / (hMax + 2 d) in (0, 1] quantifies convexity:
+            //   sigma -> 0: nearly convex, sparse grid (pi/2 spacing)
+            //   sigma -> 1: oscillatory, dense grid (pi/6 spacing)
+            const auto sigma{(hMax - 2 * d) / (hMax + 2 * d)};
+            const auto spacing{muc::lerp(pi / 2, pi / 6, sigma)};
+            const auto nDefault{static_cast<int>((x2 - x1) / spacing) + 1};
+            nTrialPts = std::max(5, nDefault);
         }
     }
 
@@ -165,13 +171,24 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
           int nTrialPts, int maxIter, double absTol, double relTol) -> std::optional<HelixLinePOCAResult> {
     using Mustard::MathConstant::pi;
 
-    const auto& [o, r, phi0, z0, lambda]{helix};
-    const auto& [t, originalD]{line};
     if (phiLow >= phiUp) {
         return std::nullopt;
     }
 
-    const auto d{originalD.unit()};
+    const auto lineDMag2{line.direction.mag2()};
+    if (muc::isclose(lineDMag2, 0.)) {
+        // line direction vector degenerate
+        const auto r{POCA(helix, line.point, phiLow, phiUp, nTrialPts, maxIter, absTol, relTol)};
+        if (not r.has_value()) {
+            return std::nullopt;
+        }
+        return HelixLinePOCAResult{r->poca, line.point, r->doca};
+    }
+
+    const auto& [o, r, phi0, z0, lambda]{helix};
+    const auto& [t, originalD]{line};
+
+    const auto d{originalD / std::sqrt(lineDMag2)};
     const auto dxdy{d.x() * d.y()};
     const auto dxdz{d.x() * d.z()};
     const auto dydz{d.y() * d.z()};
@@ -205,36 +222,40 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
     const auto x2{phiUp + phi0};
 
     // determine initial trial points
-    if (nTrialPts == 1) {
-        // default to 1 point for every pi/10 interval; minimum 5 points
-        // Use pi/10 here because the function is 2 times more oscillating than in the helix-point case
-        // (here distance with sincos(2x) term while in the helix-point only with sincos(x))
-        const auto nDefault{static_cast<int>((x2 - x1) / (pi / 10)) + 1};
-        nTrialPts = std::max(5, nDefault);
-    }
     if (nTrialPts > 0) {
-        // deal with the first term of inequality
+        // compute oscillation bounds for convexity check
+        // first term = 4 (a0 cos(2x) + b0 sin(2x)) := 4 g(x)
         const auto g{[&](double x) {
             const auto [sin2x, cos2x]{muc::sincos(2 * x)};
             return a0 * cos2x + b0 * sin2x;
         }};
-        // check whether there is a maximum between x1 and x2,
-        // if so, use the maximum of g; otherwise use the endpoints
-        const auto rAB{muc::hypot(a0, b0)};
-        const auto phiAB{std::atan2(b0, a0)};
-        const auto k1{(x1 - phiAB / 2) / pi};
-        const auto k2{(x2 - phiAB / 2) / pi};
+        const auto rAB0{muc::hypot(a0, b0)};
+        const auto phiAB0{std::atan2(b0, a0)};
+        const auto k1{(x1 - phiAB0 / 2) / pi};
+        const auto k2{(x2 - phiAB0 / 2) / pi};
         const auto gMaxAtBound{std::floor(k1) == std::floor(k2)};
-        const auto gMax{gMaxAtBound ? std::max(g(x1), g(x2)) : rAB};
-        // deal with the second term of inequality
+        const auto gMax{gMaxAtBound ? std::max(g(x1), g(x2)) : rAB0};
+        // second term = (a1 - 2 b2 + a2 x) sin(x) + (b1 + 2 a2 + b2 x) cos(x)
+        //             <= sqrt((a1 - 2 b2 + a2 x)^2 + (b1 + 2 a2 + b2 x)^2) := sqrt(h(x))
         const auto h{[&](double x) {
             return muc::hypot_sq(a1 - 2 * b2 + a2 * x, b1 + 2 * a2 + b2 * x);
         }};
-        // apply the extreme value theorem directly to h
         const auto hMax{std::max(h(x1), h(x2))};
-        // check the unimodality condition
-        if (2 * c2 >= 4 * gMax + std::sqrt(hMax)) { // function is unimodal in the interval
-            nTrialPts = 0;                          // no need of grid search for unimodal function
+        const auto convexBound{4 * gMax + std::sqrt(hMax)};
+        // convexity check: f''(x) >= 2 c2 - convexBound
+        if (2 * c2 >= convexBound) {
+            nTrialPts = 0; // function is convex, no grid search needed
+        } else if (nTrialPts == 1) {
+            // adaptive grid density based on oscillation strength
+            // sigma = (bound - 2 c2) / (bound + 2 c2) in (0, 1] quantifies convexity
+            // the function has both sincos(x) and sincos(2x) terms;
+            // sincos(2x) doubles the maximum frequency versus the helix-point case
+            //   sigma -> 0: nearly convex, sparse grid (pi/4 spacing)
+            //   sigma -> 1: oscillatory, dense grid (pi/12 spacing)
+            const auto sigma{(convexBound - 2 * c2) / (convexBound + 2 * c2)};
+            const auto spacing{muc::lerp(pi / 4, pi / 12, sigma)};
+            const auto nDefault{static_cast<int>((x2 - x1) / spacing) + 1};
+            nTrialPts = std::max(5, nDefault);
         }
     }
 
