@@ -57,7 +57,7 @@ auto TestCLHEPXXoshiro512StarStar::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 1000; ++i) {
         r = (unsigned int)(xoshiro512SSX);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         r = (unsigned int)(xoshiro512SSX);
     }
@@ -73,7 +73,7 @@ auto TestCLHEPXXoshiro512StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(xoshiro512SS)};
         v2d += delta2d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {Random::Uniform<double>()(xoshiro512SS),
                    Random::Uniform<double>()(xoshiro512SS)};
@@ -88,7 +88,7 @@ auto TestCLHEPXXoshiro512StarStar::Main(int argc, char* argv[]) const -> int {
                    xoshiro512SSX.flat()};
         v2d += delta2d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {xoshiro512SSX.flat(),
                    xoshiro512SSX.flat()};
@@ -107,7 +107,7 @@ auto TestCLHEPXXoshiro512StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(xoshiro512SS)};
         v3d += delta3d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {Random::Uniform<double>()(xoshiro512SS),
                    Random::Uniform<double>()(xoshiro512SS),
@@ -124,7 +124,7 @@ auto TestCLHEPXXoshiro512StarStar::Main(int argc, char* argv[]) const -> int {
                    xoshiro512SSX.flat()};
         v3d += delta3d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {xoshiro512SSX.flat(),
                    xoshiro512SSX.flat(),
@@ -145,7 +145,7 @@ auto TestCLHEPXXoshiro512StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(xoshiro512SS)};
         v4d += delta4d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {Random::Uniform<double>()(xoshiro512SS),
                    Random::Uniform<double>()(xoshiro512SS),
@@ -164,7 +164,7 @@ auto TestCLHEPXXoshiro512StarStar::Main(int argc, char* argv[]) const -> int {
                    xoshiro512SSX.flat()};
         v4d += delta4d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {xoshiro512SSX.flat(),
                    xoshiro512SSX.flat(),

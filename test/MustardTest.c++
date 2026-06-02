@@ -22,9 +22,15 @@
 #include "Mustard/Testing/TestCreateTemporaryFile/TestCreateTemporaryFile.h++"
 #include "Mustard/Testing/TestExecutor/TestExecutor.h++"
 #include "Mustard/Testing/TestExecutorSequential/TestExecutorSequential.h++"
+#include "Mustard/Testing/TestFieldMap/TestFieldMap.h++"
 #include "Mustard/Testing/TestFieldTypeName/TestFieldTypeName.h++"
 #include "Mustard/Testing/TestFile/TestFile.h++"
 #include "Mustard/Testing/TestGaussian/TestGaussian.h++"
+#include "Mustard/Testing/TestHelixAxisPOCA/TestHelixAxisPOCA.h++"
+#include "Mustard/Testing/TestHelixLinePOCA/TestHelixLinePOCA.h++"
+#include "Mustard/Testing/TestHelixPointPOCA/TestHelixPointPOCA.h++"
+#include "Mustard/Testing/TestLineLinePOCA/TestLineLinePOCA.h++"
+#include "Mustard/Testing/TestLinePointPOCA/TestLinePointPOCA.h++"
 #include "Mustard/Testing/TestMT1993732/TestMT1993732.h++"
 #include "Mustard/Testing/TestMT1993764/TestMT1993764.h++"
 #include "Mustard/Testing/TestMultiRDFEntryProcessor/TestMultiRDFEntryProcessor.h++"
@@ -61,9 +67,15 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestCreateTemporaryFile>();
     launcher.AddSubprogram<TestExecutor>();
     launcher.AddSubprogram<TestExecutorSequential>();
+    launcher.AddSubprogram<TestFieldMap>();
     launcher.AddSubprogram<TestFieldTypeName>();
     launcher.AddSubprogram<TestFile>();
     launcher.AddSubprogram<TestGaussian>();
+    launcher.AddSubprogram<TestHelixAxisPOCA>();
+    launcher.AddSubprogram<TestHelixLinePOCA>();
+    launcher.AddSubprogram<TestHelixPointPOCA>();
+    launcher.AddSubprogram<TestLineLinePOCA>();
+    launcher.AddSubprogram<TestLinePointPOCA>();
     launcher.AddSubprogram<TestMT1993732>();
     launcher.AddSubprogram<TestMT1993764>();
     launcher.AddSubprogram<TestMultiRDFEntryProcessor>();
@@ -86,6 +98,5 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestXoshiro512Plus>();
     launcher.AddSubprogram<TestXoshiro512PlusPlus>();
     launcher.AddSubprogram<TestXoshiro512StarStar>();
-    launcher.Launch(argc, argv);
-    return EXIT_SUCCESS;
+    return launcher.Launch(argc, argv);
 }

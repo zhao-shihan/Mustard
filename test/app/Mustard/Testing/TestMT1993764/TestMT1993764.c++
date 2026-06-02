@@ -58,7 +58,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 1'000'000; ++i) {
         r = mt1993764();
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         r = mt1993764();
     }
@@ -72,7 +72,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 100'000; ++i) {
         std::ranges::shuffle(arr16, stdMT1993764);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 1'000'000; ++i) {
         std::ranges::shuffle(arr16, stdMT1993764);
     }
@@ -83,7 +83,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 100'000; ++i) {
         std::ranges::shuffle(arr16, mt1993764);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 1'000'000; ++i) {
         std::ranges::shuffle(arr16, mt1993764);
     }
@@ -97,7 +97,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 1'000; ++i) {
         std::ranges::shuffle(arr4096, stdMT1993764);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000; ++i) {
         std::ranges::shuffle(arr4096, stdMT1993764);
     }
@@ -108,7 +108,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 1'000; ++i) {
         std::ranges::shuffle(arr4096, mt1993764);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000; ++i) {
         std::ranges::shuffle(arr4096, mt1993764);
     }
@@ -124,7 +124,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
                    std::uniform_real_distribution()(stdMT1993764)};
         v2d += delta2d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {std::uniform_real_distribution()(stdMT1993764),
                    std::uniform_real_distribution()(stdMT1993764)};
@@ -139,7 +139,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
                    std::uniform_real_distribution()(mt1993764)};
         v2d += delta2d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {std::uniform_real_distribution()(mt1993764),
                    std::uniform_real_distribution()(mt1993764)};
@@ -158,7 +158,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
                    std::uniform_real_distribution()(stdMT1993764)};
         v3d += delta3d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {std::uniform_real_distribution()(stdMT1993764),
                    std::uniform_real_distribution()(stdMT1993764),
@@ -175,7 +175,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
                    std::uniform_real_distribution()(mt1993764)};
         v3d += delta3d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {std::uniform_real_distribution()(mt1993764),
                    std::uniform_real_distribution()(mt1993764),
@@ -196,7 +196,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
                    std::uniform_real_distribution()(stdMT1993764)};
         v4d += delta4d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {std::uniform_real_distribution()(stdMT1993764),
                    std::uniform_real_distribution()(stdMT1993764),
@@ -215,7 +215,7 @@ auto TestMT1993764::Main(int argc, char* argv[]) const -> int {
                    std::uniform_real_distribution()(mt1993764)};
         v4d += delta4d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {std::uniform_real_distribution()(mt1993764),
                    std::uniform_real_distribution()(mt1993764),

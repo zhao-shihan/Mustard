@@ -5,19 +5,13 @@ set -euo pipefail
 
 source parexec.sh
 
-echo "Running TestCLHEPXMT1993732..."
+echo "Running TestCLHEPXMT1993732/TestCLHEPXMT1993764/TestCLHEPXXoshiro256StarStar/TestCLHEPXXoshiro512StarStar..."
 echo "  -> ./MustardTest TestCLHEPXMT1993732"
 ./MustardTest TestCLHEPXMT1993732
-
-echo "Running TestCLHEPXMT1993764..."
 echo "  -> ./MustardTest TestCLHEPXMT1993764"
 ./MustardTest TestCLHEPXMT1993764
-
-echo "Running TestCLHEPXXoshiro256StarStar..."
 echo "  -> ./MustardTest TestCLHEPXXoshiro256StarStar"
 ./MustardTest TestCLHEPXXoshiro256StarStar
-
-echo "Running TestCLHEPXXoshiro512StarStar..."
 echo "  -> ./MustardTest TestCLHEPXXoshiro512StarStar"
 ./MustardTest TestCLHEPXXoshiro512StarStar
 
@@ -47,15 +41,21 @@ echo "  -> ./MustardTest TestFile"
 echo "  -> parexec ./MustardTest TestFile"
 parexec ./MustardTest TestFile
 
-echo "Running TestGaussian..."
-echo "  -> ./MustardTest TestGaussian"
-./MustardTest TestGaussian
+echo "Running TestLinePointPOCA/TestLineLinePOCA/TestHelixAxisPOCA/TestHelixPointPOCA/TestHelixLinePOCA..."
+echo "  -> ./MustardTest TestLinePointPOCA"
+./MustardTest TestLinePointPOCA
+echo "  -> ./MustardTest TestLineLinePOCA"
+./MustardTest TestLineLinePOCA
+echo "  -> ./MustardTest TestHelixAxisPOCA"
+./MustardTest TestHelixAxisPOCA
+echo "  -> ./MustardTest TestHelixPointPOCA"
+./MustardTest TestHelixPointPOCA
+echo "  -> ./MustardTest TestHelixLinePOCA"
+./MustardTest TestHelixLinePOCA
 
-echo "Running TestMT1993732..."
+echo "Running TestMT1993732/TestMT1993764..."
 echo "  -> ./MustardTest TestMT1993732"
 ./MustardTest TestMT1993732
-
-echo "Running TestMT1993764..."
 echo "  -> ./MustardTest TestMT1993764"
 ./MustardTest TestMT1993764
 
@@ -87,9 +87,13 @@ echo "  -> ./MustardTest TestPhaseSpaceGenerator"
 echo "  -> parexec ./MustardTest TestPhaseSpaceGenerator"
 parexec ./MustardTest TestPhaseSpaceGenerator
 
-echo "Running TestRandomNumberDistribution..."
+echo "Running TestRandomNumberDistribution/TestGaussian/TestUniform..."
 echo "  -> ./MustardTest TestRandomNumberDistribution"
 ./MustardTest TestRandomNumberDistribution
+echo "  -> ./MustardTest TestGaussian"
+./MustardTest TestGaussian
+echo "  -> ./MustardTest TestUniform"
+./MustardTest TestUniform
 
 echo "Running TestSingleRDFEntryReader/TestSingleRDFEntryProcessor/TestSingleRDFEntryProcessor..."
 echo "  -> ./MustardTest TestSingleRDFEntryReader"
@@ -113,35 +117,21 @@ echo "  -> ./MustardTest TestSingleton"
 echo "  -> parexec ./MustardTest TestSingleton"
 parexec ./MustardTest TestSingleton
 
-echo "Running TestUniform..."
-echo "  -> ./MustardTest TestUniform"
-./MustardTest TestUniform
-
 echo "Running TestVectorConcept..."
 echo "  -> ./MustardTest TestVectorConcept"
 ./MustardTest TestVectorConcept
 
-echo "Running TestXoshiro256Plus..."
+echo "Running TestXoshiro256Plus/TestXoshiro256PlusPlus/TestXoshiro256StarStar/TestXoshiro512Plus/TestXoshiro512PlusPlus/TestXoshiro512StarStar..."
 echo "  -> ./MustardTest TestXoshiro256Plus"
 ./MustardTest TestXoshiro256Plus
-
-echo "Running TestXoshiro256PlusPlus..."
 echo "  -> ./MustardTest TestXoshiro256PlusPlus"
 ./MustardTest TestXoshiro256PlusPlus
-
-echo "Running TestXoshiro256StarStar..."
 echo "  -> ./MustardTest TestXoshiro256StarStar"
 ./MustardTest TestXoshiro256StarStar
-
-echo "Running TestXoshiro512Plus..."
 echo "  -> ./MustardTest TestXoshiro512Plus"
 ./MustardTest TestXoshiro512Plus
-
-echo "Running TestXoshiro512PlusPlus..."
 echo "  -> ./MustardTest TestXoshiro512PlusPlus"
 ./MustardTest TestXoshiro512PlusPlus
-
-echo "Running TestXoshiro512StarStar..."
 echo "  -> ./MustardTest TestXoshiro512StarStar"
 ./MustardTest TestXoshiro512StarStar
 

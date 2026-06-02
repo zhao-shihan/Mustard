@@ -57,7 +57,7 @@ auto TestCLHEPXMT1993732::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 1000; ++i) {
         r = (unsigned int)(mt32x);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         r = (unsigned int)(mt32x);
     }
@@ -73,7 +73,7 @@ auto TestCLHEPXMT1993732::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(mt32)};
         v2d += delta2d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {Random::Uniform<double>()(mt32),
                    Random::Uniform<double>()(mt32)};
@@ -88,7 +88,7 @@ auto TestCLHEPXMT1993732::Main(int argc, char* argv[]) const -> int {
                    mt32x.flat()};
         v2d += delta2d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {mt32x.flat(),
                    mt32x.flat()};
@@ -107,7 +107,7 @@ auto TestCLHEPXMT1993732::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(mt32)};
         v3d += delta3d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {Random::Uniform<double>()(mt32),
                    Random::Uniform<double>()(mt32),
@@ -124,7 +124,7 @@ auto TestCLHEPXMT1993732::Main(int argc, char* argv[]) const -> int {
                    mt32x.flat()};
         v3d += delta3d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {mt32x.flat(),
                    mt32x.flat(),
@@ -145,7 +145,7 @@ auto TestCLHEPXMT1993732::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(mt32)};
         v4d += delta4d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {Random::Uniform<double>()(mt32),
                    Random::Uniform<double>()(mt32),
@@ -164,7 +164,7 @@ auto TestCLHEPXMT1993732::Main(int argc, char* argv[]) const -> int {
                    mt32x.flat()};
         v4d += delta4d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {mt32x.flat(),
                    mt32x.flat(),

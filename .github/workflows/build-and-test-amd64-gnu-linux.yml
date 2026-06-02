@@ -95,34 +95,24 @@ jobs:
           - { url: ghcr.io/zhao-shihan/rgb-docker:mpich, name: mpich }
           - { url: ghcr.io/zhao-shihan/rgb-docker:openmpi, name: openmpi }
         test:
-          - TestCLHEPXMT1993732
-          - TestCLHEPXMT1993764
-          - TestCLHEPXXoshiro256StarStar
-          - TestCLHEPXXoshiro512StarStar
+          - TestCLHEPXMT1993732-TestCLHEPXMT1993764-TestCLHEPXXoshiro256StarStar-TestCLHEPXXoshiro512StarStar
           - TestCreateTemporaryFile-TestCreateTemporaryFile
           - TestExecutor-TestExecutor
           - TestExecutorSequential
           - TestFieldTypeName
           - TestFile-TestFile
-          - TestGaussian
-          - TestMT1993732
-          - TestMT1993764
+          - TestLinePointPOCA-TestLineLinePOCA-TestHelixAxisPOCA-TestHelixPointPOCA-TestHelixLinePOCA
+          - TestMT1993732-TestMT1993764
           - TestMultiRDFEntryReader-TestMultiRDFEntryProcessor-TestMultiRDFEntryProcessor
           - TestMultiRDFEventReader-TestMultiRDFEventProcessor-TestMultiRDFEventProcessor
           - TestPassiveSingleton-TestPassiveSingleton
           - TestPhaseSpaceGenerator-TestPhaseSpaceGenerator
-          - TestRandomNumberDistribution
+          - TestRandomNumberDistribution-TestGaussian-TestUniform
           - TestSingleRDFEntryReader-TestSingleRDFEntryProcessor-TestSingleRDFEntryProcessor
           - TestSingleRDFEventReader-TestSingleRDFEventProcessor-TestSingleRDFEventProcessor
           - TestSingleton-TestSingleton
-          - TestUniform
           - TestVectorConcept
-          - TestXoshiro256Plus
-          - TestXoshiro256PlusPlus
-          - TestXoshiro256StarStar
-          - TestXoshiro512Plus
-          - TestXoshiro512PlusPlus
-          - TestXoshiro512StarStar
+          - TestXoshiro256Plus-TestXoshiro256PlusPlus-TestXoshiro256StarStar-TestXoshiro512Plus-TestXoshiro512PlusPlus-TestXoshiro512StarStar
     container:
       image: ${{ matrix.image.url }}
       options: --shm-size=2g
@@ -146,16 +136,10 @@ jobs:
           source tooling/parexec.sh 2>/dev/null || true
           cd build/test
           case "${{ matrix.test }}" in
-                "TestCLHEPXMT1993732")
+                "TestCLHEPXMT1993732-TestCLHEPXMT1993764-TestCLHEPXXoshiro256StarStar-TestCLHEPXXoshiro512StarStar")
                   ./MustardTest TestCLHEPXMT1993732
-                  ;;
-                "TestCLHEPXMT1993764")
                   ./MustardTest TestCLHEPXMT1993764
-                  ;;
-                "TestCLHEPXXoshiro256StarStar")
                   ./MustardTest TestCLHEPXXoshiro256StarStar
-                  ;;
-                "TestCLHEPXXoshiro512StarStar")
                   ./MustardTest TestCLHEPXXoshiro512StarStar
                   ;;
                 "TestCreateTemporaryFile-TestCreateTemporaryFile")
@@ -176,13 +160,15 @@ jobs:
                   ./MustardTest TestFile
                   parexec --use-hwthreads ./MustardTest TestFile
                   ;;
-                "TestGaussian")
-                  ./MustardTest TestGaussian
+                "TestLinePointPOCA-TestLineLinePOCA-TestHelixAxisPOCA-TestHelixPointPOCA-TestHelixLinePOCA")
+                  ./MustardTest TestLinePointPOCA
+                  ./MustardTest TestLineLinePOCA
+                  ./MustardTest TestHelixAxisPOCA
+                  ./MustardTest TestHelixPointPOCA
+                  ./MustardTest TestHelixLinePOCA
                   ;;
-                "TestMT1993732")
+                "TestMT1993732-TestMT1993764")
                   ./MustardTest TestMT1993732
-                  ;;
-                "TestMT1993764")
                   ./MustardTest TestMT1993764
                   ;;
                 "TestMultiRDFEntryReader-TestMultiRDFEntryProcessor-TestMultiRDFEntryProcessor")
@@ -203,8 +189,10 @@ jobs:
                   ./MustardTest TestPhaseSpaceGenerator
                   parexec --use-hwthreads ./MustardTest TestPhaseSpaceGenerator
                   ;;
-                "TestRandomNumberDistribution")
+                "TestRandomNumberDistribution-TestGaussian-TestUniform")
                   ./MustardTest TestRandomNumberDistribution
+                  ./MustardTest TestGaussian
+                  ./MustardTest TestUniform
                   ;;
                 "TestSingleRDFEntryReader-TestSingleRDFEntryProcessor-TestSingleRDFEntryProcessor")
                   ./MustardTest TestSingleRDFEntryReader
@@ -220,28 +208,15 @@ jobs:
                   ./MustardTest TestSingleton
                   parexec --use-hwthreads ./MustardTest TestSingleton
                   ;;
-                "TestUniform")
-                  ./MustardTest TestUniform
-                  ;;
                 "TestVectorConcept")
                   ./MustardTest TestVectorConcept
                   ;;
-                "TestXoshiro256Plus")
+                "TestXoshiro256Plus-TestXoshiro256PlusPlus-TestXoshiro256StarStar-TestXoshiro512Plus-TestXoshiro512PlusPlus-TestXoshiro512StarStar")
                   ./MustardTest TestXoshiro256Plus
-                  ;;
-                "TestXoshiro256PlusPlus")
                   ./MustardTest TestXoshiro256PlusPlus
-                  ;;
-                "TestXoshiro256StarStar")
                   ./MustardTest TestXoshiro256StarStar
-                  ;;
-                "TestXoshiro512Plus")
                   ./MustardTest TestXoshiro512Plus
-                  ;;
-                "TestXoshiro512PlusPlus")
                   ./MustardTest TestXoshiro512PlusPlus
-                  ;;
-                "TestXoshiro512StarStar")
                   ./MustardTest TestXoshiro512StarStar
                   ;;
           esac

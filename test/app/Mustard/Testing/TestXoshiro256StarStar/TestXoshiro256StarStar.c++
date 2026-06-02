@@ -60,7 +60,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 1000; ++i) {
         r = xoshiro256SS();
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         r = xoshiro256SS();
     }
@@ -74,7 +74,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 1000; ++i) {
         std::ranges::shuffle(arr16, mt1993732);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 1'000'000; ++i) {
         std::ranges::shuffle(arr16, mt1993732);
     }
@@ -84,7 +84,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 1000; ++i) {
         std::ranges::shuffle(arr16, xoshiro256SS);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 1'000'000; ++i) {
         std::ranges::shuffle(arr16, xoshiro256SS);
     }
@@ -98,7 +98,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 100; ++i) {
         std::ranges::shuffle(arr4096, mt1993732);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000; ++i) {
         std::ranges::shuffle(arr4096, mt1993732);
     }
@@ -108,7 +108,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
     for (int i = 0; i < 100; ++i) {
         std::ranges::shuffle(arr4096, xoshiro256SS);
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000; ++i) {
         std::ranges::shuffle(arr4096, xoshiro256SS);
     }
@@ -124,7 +124,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(mt1993732)};
         v2d += delta2d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {Random::Uniform<double>()(mt1993732),
                    Random::Uniform<double>()(mt1993732)};
@@ -139,7 +139,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(xoshiro256SS)};
         v2d += delta2d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta2d = {Random::Uniform<double>()(xoshiro256SS),
                    Random::Uniform<double>()(xoshiro256SS)};
@@ -158,7 +158,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(mt1993732)};
         v3d += delta3d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {Random::Uniform<double>()(mt1993732),
                    Random::Uniform<double>()(mt1993732),
@@ -175,7 +175,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(xoshiro256SS)};
         v3d += delta3d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta3d = {Random::Uniform<double>()(xoshiro256SS),
                    Random::Uniform<double>()(xoshiro256SS),
@@ -196,7 +196,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(mt1993732)};
         v4d += delta4d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {Random::Uniform<double>()(mt1993732),
                    Random::Uniform<double>()(mt1993732),
@@ -215,7 +215,7 @@ auto TestXoshiro256StarStar::Main(int argc, char* argv[]) const -> int {
                    Random::Uniform<double>()(xoshiro256SS)};
         v4d += delta4d;
     }
-    stopwatch = {};
+    stopwatch.reset();
     for (int i = 0; i < 10'000'000; ++i) {
         delta4d = {Random::Uniform<double>()(xoshiro256SS),
                    Random::Uniform<double>()(xoshiro256SS),
