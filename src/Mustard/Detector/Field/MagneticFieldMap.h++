@@ -18,82 +18,56 @@
 
 #pragma once
 
-#include "Mustard/Concept/MathVector.h++"
-#include "Mustard/Concept/NumericVector.h++"
+#include "Mustard/Detector/Field/FieldMap3D.h++"
 #include "Mustard/Detector/Field/FieldMapSymmetry.h++"
 #include "Mustard/Detector/Field/MagneticFieldBase.h++"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
-#include "Mustard/Utility/VectorCast.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "Eigen/Core"
 
-#include "EFM/FieldMap3D.h++"
-
+#include "muc/ceta_string"
 #include "muc/functional"
+
+#include <concepts>
+#include <type_traits>
 
 namespace Mustard::Detector::Field {
 
 /// @brief A functional type converts B-field SI field value
-/// to CLHEP unit system. Use in EFM template parameter.
-template<typename ATransformation = EFM::Identity>
+/// to CLHEP unit system.
+template<typename ATransformation = Identity>
 struct BFieldSI2CLHEP : ATransformation {
     using ATransformation::ATransformation;
 
     template<Concept::MathVector3D T>
-    [[nodiscard]] MUSTARD_ALWAYS_INLINE constexpr auto operator()(double x, double y, double z, T B) const noexcept -> T {
-        return static_cast<const ATransformation&>(*this)(x, y, z, T{B * CLHEP::tesla});
+    [[nodiscard]] MUSTARD_ALWAYS_INLINE auto operator()(Point3D x, T B) const -> T {
+        return static_cast<const ATransformation&>(*this)(x, T{B * CLHEP::tesla});
     }
 };
 
-/// @brief An magnetic field interpolated from data.
-/// Initialization and interpolation are performed by `AFieldMap`.
-/// @tparam AFieldMap A field map type, e.g. `EFM::FieldMap3D<Eigen::Vector3d>`
-template<typename AFieldMap = EFM::FieldMap3D<Eigen::Vector3d, double, muc::multidentity, BFieldSI2CLHEP<>>>
-    requires std::same_as<typename AFieldMap::CoordinateType, double>
-class MagneticFieldMap : public MagneticFieldBase<MagneticFieldMap<AFieldMap>>,
-                         public AFieldMap {
+/// @brief A magnetic field interpolated from data.
+/// Initialization and interpolation are performed by `FieldMap3D`.
+/// @tparam AProjection Callable `(Point3D) -> Point3D` that projects the query coordinates before interpolation.
+/// @tparam ATransformation Callable `(Point3D, Vector3D) -> Vector3D` that transforms the interpolated field value.
+template<std::regular_invocable<Point3D> AProjection = std::identity,
+         std::regular_invocable<Point3D, Vector3D> ATransformation = Identity>
+    requires std::convertible_to<std::invoke_result_t<AProjection, Point3D>, Point3D> and
+                 std::convertible_to<std::invoke_result_t<ATransformation, Point3D, Vector3D>, Vector3D>
+class MagneticFieldMap : public MagneticFieldBase<MagneticFieldMap<AProjection, ATransformation>>,
+                         public FieldMap3D<Vector3D, AProjection, BFieldSI2CLHEP<ATransformation>> {
 public:
-    using AFieldMap::AFieldMap;
+    using FieldMap3D<Vector3D, AProjection, BFieldSI2CLHEP<ATransformation>>::FieldMap3D;
 
-    template<Concept::NumericVector3D T>
-    auto B(T x) const -> T { return VectorCast<T>((*this)(x[0], x[1], x[2])); }
+    auto B(Point3D x) const -> Vector3D { return this->At(x); }
 };
 
-/// @brief An YZ plane mirror symmetry magnetic field interpolated from data.
-template<Concept::MathVector3D T = Eigen::Vector3d>
-using MagneticFieldMapSymmetryX = MagneticFieldMap<
-    EFM::FieldMap3D<T, double, CoordinateSymmetryX, BFieldSI2CLHEP<FieldSymmetryX>>>;
-
-/// @brief An ZX plane mirror symmetry magnetic field interpolated from data.
-template<Concept::MathVector3D T = Eigen::Vector3d>
-using MagneticFieldMapSymmetryY = MagneticFieldMap<
-    EFM::FieldMap3D<T, double, CoordinateSymmetryY, BFieldSI2CLHEP<FieldSymmetryY>>>;
-
-/// @brief An XY plane mirror symmetry magnetic field interpolated from data.
-template<Concept::MathVector3D T = Eigen::Vector3d>
-using MagneticFieldMapSymmetryZ = MagneticFieldMap<
-    EFM::FieldMap3D<T, double, CoordinateSymmetryZ, BFieldSI2CLHEP<FieldSymmetryZ>>>;
-
-/// @brief An YZ, ZX plane mirror symmetry magnetic field interpolated from data.
-template<Concept::MathVector3D T = Eigen::Vector3d>
-using MagneticFieldMapSymmetryXY = MagneticFieldMap<
-    EFM::FieldMap3D<T, double, CoordinateSymmetryXY, BFieldSI2CLHEP<FieldSymmetryXY>>>;
-
-/// @brief An XY, YZ plane mirror symmetry magnetic field interpolated from data.
-template<Concept::MathVector3D T = Eigen::Vector3d>
-using MagneticFieldMapSymmetryXZ = MagneticFieldMap<
-    EFM::FieldMap3D<T, double, CoordinateSymmetryXZ, BFieldSI2CLHEP<FieldSymmetryXZ>>>;
-
-/// @brief An ZX, XY plane mirror symmetry magnetic field interpolated from data.
-template<Concept::MathVector3D T = Eigen::Vector3d>
-using MagneticFieldMapSymmetryYZ = MagneticFieldMap<
-    EFM::FieldMap3D<T, double, CoordinateSymmetryYZ, BFieldSI2CLHEP<FieldSymmetryYZ>>>;
-
-/// @brief An XY, YZ, ZX plane mirror symmetry magnetic field interpolated from data.
-template<Concept::MathVector3D T = Eigen::Vector3d>
-using MagneticFieldMapSymmetryXYZ = MagneticFieldMap<
-    EFM::FieldMap3D<T, double, CoordinateSymmetryXYZ, BFieldSI2CLHEP<FieldSymmetryXYZ>>>;
+/// @brief A mirror symmetry magnetic field interpolated from data.
+/// @tparam AAxis Axis specifier: `"X"`, `"Y"`, `"Z"`, `"XY"`, `"XZ"`, `"YZ"`, or `"XYZ"`.
+template<muc::ceta_string AAxis>
+using MagneticFieldMapSymmetry = MagneticFieldMap<CoordinateSymmetry<AAxis>, FieldSymmetry<AAxis>>;
 
 } // namespace Mustard::Detector::Field

@@ -18,58 +18,30 @@
 
 namespace Mustard::Detector::Field {
 
-template<typename AFieldMap>
-template<Concept::NumericVector3D T>
-auto ElectromagneticFieldMap<"WithCache", AFieldMap>::B(T x) const -> T {
-    const auto xEigen{VectorCast<Eigen::Vector3d>(x)};
-    if (xEigen != fCachedX) {
-        fCachedX = xEigen;
-        fCache = (*this)(x[0], x[1], x[2]);
-    }
-    const auto& f{*fCache};
+template<std::regular_invocable<Point3D> AProjection,
+         std::regular_invocable<Point3D, Eigen::Vector<double, 6>> ATransformation>
+    requires std::convertible_to<std::invoke_result_t<AProjection, Point3D>, Point3D> and
+             std::convertible_to<std::invoke_result_t<ATransformation, Point3D, Eigen::Vector<double, 6>>, Eigen::Vector<double, 6>>
+auto ElectromagneticFieldMap<AProjection, ATransformation>::B(Point3D x) const -> Vector3D {
+    const auto f{this->At(x)};
     return {f[0], f[1], f[2]};
 }
 
-template<typename AFieldMap>
-template<Concept::NumericVector3D T>
-auto ElectromagneticFieldMap<"WithCache", AFieldMap>::E(T x) const -> T {
-    const auto xEigen{VectorCast<Eigen::Vector3d>(x)};
-    if (xEigen != fCachedX) {
-        fCachedX = xEigen;
-        fCache = (*this)(x[0], x[1], x[2]);
-    }
-    const auto& f{*fCache};
+template<std::regular_invocable<Point3D> AProjection,
+         std::regular_invocable<Point3D, Eigen::Vector<double, 6>> ATransformation>
+    requires std::convertible_to<std::invoke_result_t<AProjection, Point3D>, Point3D> and
+             std::convertible_to<std::invoke_result_t<ATransformation, Point3D, Eigen::Vector<double, 6>>, Eigen::Vector<double, 6>>
+auto ElectromagneticFieldMap<AProjection, ATransformation>::E(Point3D x) const -> Vector3D {
+    const auto f{this->At(x)};
     return {f[3], f[4], f[5]};
 }
 
-template<typename AFieldMap>
-template<Concept::NumericVector3D T>
-auto ElectromagneticFieldMap<"WithCache", AFieldMap>::BE(T x) const -> F<T> {
-    fCachedX = VectorCast<Eigen::Vector3d>(x);
-    fCache = (*this)(x[0], x[1], x[2]);
-    const auto& f{*fCache};
-    return {VectorCast<T>(f[0], f[1], f[2]),
-            VectorCast<T>(f[3], f[4], f[5])};
-}
-
-template<typename AFieldMap>
-template<Concept::NumericVector3D T>
-auto ElectromagneticFieldMap<"NoCache", AFieldMap>::B(T x) const -> T {
-    const auto f{(*this)(x[0], x[1], x[2])};
-    return {f[0], f[1], f[2]};
-}
-
-template<typename AFieldMap>
-template<Concept::NumericVector3D T>
-auto ElectromagneticFieldMap<"NoCache", AFieldMap>::E(T x) const -> T {
-    const auto f{(*this)(x[0], x[1], x[2])};
-    return {f[3], f[4], f[5]};
-}
-
-template<typename AFieldMap>
-template<Concept::NumericVector3D T>
-auto ElectromagneticFieldMap<"NoCache", AFieldMap>::BE(T x) const -> F<T> {
-    const auto v{(*this)(x[0], x[1], x[2])}; // clang-format off
+template<std::regular_invocable<Point3D> AProjection,
+         std::regular_invocable<Point3D, Eigen::Vector<double, 6>> ATransformation>
+    requires std::convertible_to<std::invoke_result_t<AProjection, Point3D>, Point3D> and
+             std::convertible_to<std::invoke_result_t<ATransformation, Point3D, Eigen::Vector<double, 6>>, Eigen::Vector<double, 6>>
+auto ElectromagneticFieldMap<AProjection, ATransformation>::BE(Point3D x) const -> BEField {
+    const auto v{this->At(x)}; // clang-format off
     return {{v[0], v[1], v[2]}, {v[3], v[4], v[5]}}; // clang-format on
 }
 

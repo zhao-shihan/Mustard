@@ -18,27 +18,21 @@
 
 #pragma once
 
-#include "Mustard/Concept/InputVector.h++"
-#include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectromagneticFieldBase.h++"
-
-#include "muc/array"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 namespace Mustard::Detector::Field {
 
 class UniformElectromagneticField : public ElectromagneticFieldBase<UniformElectromagneticField> {
 public:
-    constexpr UniformElectromagneticField(double bx, double by, double bz,
-                                          double ex, double ey, double ez);
-    template<Concept::InputVector3D T1 = muc::array3d, Concept::InputVector3D T2 = muc::array3d>
-    constexpr UniformElectromagneticField(T1 b, T2 e);
+    UniformElectromagneticField(double bx, double by, double bz,
+                                double ex, double ey, double ez);
+    UniformElectromagneticField(Vector3D b, Vector3D e);
 
-    template<Concept::NumericVector3D T>
-    constexpr auto B(T) const -> T { return {fBx, fBy, fBz}; }
-    template<Concept::NumericVector3D T>
-    constexpr auto E(T) const -> T { return {fEx, fEy, fEz}; }
-    template<Concept::NumericVector3D T>
-    constexpr auto BE(T x) const -> F<T> { return {B(x), E(x)}; }
+    auto B(Point3D) const -> Vector3D { return {fBx, fBy, fBz}; }
+    auto E(Point3D) const -> Vector3D { return {fEx, fEy, fEz}; }
+    auto BE(Point3D x) const -> BEField { return {B(x), E(x)}; }
 
 private:
     double fBx;
@@ -50,5 +44,3 @@ private:
 };
 
 } // namespace Mustard::Detector::Field
-
-#include "Mustard/Detector/Field/UniformElectromagneticField.inl"

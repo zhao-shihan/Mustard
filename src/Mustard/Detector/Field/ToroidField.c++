@@ -16,16 +16,32 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Detector/Field/ToroidField.h++"
+
 namespace Mustard::Detector::Field {
 
-constexpr UniformMagneticField::UniformMagneticField(double bx, double by, double bz) :
-    MagneticFieldBase<UniformMagneticField>{},
-    fBx{bx},
-    fBy{by},
-    fBz{bz} {}
+ToroidField::ToroidField(double b, double r0, Point3D x0, Vector3D n) :
+    MagneticFieldBase<ToroidField>{},
+    fB{b},
+    fR0{r0},
+    fCenter{x0},
+    fRotation{},
+    fInverseRotation{} {
+    const Vector3D zHat{0, 0, 1};
+    if (n.isParallel(zHat)) {
+        return;
+    }
+    const auto axis{zHat.cross(n)};
+    const auto angle{zHat.angle(n)};
+    fRotation = AxisAngle{axis, angle};
+    fInverseRotation = fRotation.inverse();
+}
 
-template<Concept::InputVector3D T>
-constexpr UniformMagneticField::UniformMagneticField(T b) :
-    UniformMagneticField{b[0], b[1], b[2]} {}
+auto ToroidField::B(Point3D x) const -> Vector3D {
+    const auto localX{fInverseRotation * (x - fCenter)};
+    const auto alpha{fB * fR0 / localX.mag2()};
+    const Vector3D localB{alpha * localX.z(), 0, -alpha * localX.x()};
+    return fRotation * localB;
+}
 
 } // namespace Mustard::Detector::Field

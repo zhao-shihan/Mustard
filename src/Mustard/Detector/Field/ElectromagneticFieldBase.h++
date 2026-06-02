@@ -18,30 +18,20 @@
 
 #pragma once
 
-#include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectromagneticField.h++"
-
-#include "muc/array"
+#include "Mustard/Math/Vector.h++"
 
 #include <concepts>
 
 namespace Mustard::Detector::Field {
 
-namespace impl {
-
-template<Concept::NumericVector3D T>
-struct BEFieldValue {
-    T B;
-    T E;
-};
-
-} // namespace impl
-
 template<typename ADerived>
 class ElectromagneticFieldBase {
 public:
-    template<Concept::NumericVector3D T>
-    using F = impl::BEFieldValue<T>;
+    struct BEField {
+        Vector3D B;
+        Vector3D E;
+    };
 
 protected:
     constexpr ElectromagneticFieldBase();

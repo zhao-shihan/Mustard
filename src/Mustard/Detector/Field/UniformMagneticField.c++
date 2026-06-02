@@ -16,16 +16,17 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Detector/Field/UniformMagneticField.h++"
+
 namespace Mustard::Detector::Field {
 
-constexpr UniformElectricField::UniformElectricField(double ex, double ey, double ez) :
-    ElectricFieldBase<UniformElectricField>{},
-    fEx{ex},
-    fEy{ey},
-    fEz{ez} {}
+UniformMagneticField::UniformMagneticField(double bx, double by, double bz) :
+    MagneticFieldBase<UniformMagneticField>{},
+    fBx{bx},
+    fBy{by},
+    fBz{bz} {}
 
-template<Concept::InputVector3D T>
-constexpr UniformElectricField::UniformElectricField(T e) :
-    UniformElectricField{e[0], e[1], e[2]} {}
+UniformMagneticField::UniformMagneticField(Vector3D b) :
+    UniformMagneticField{b[0], b[1], b[2]} {}
 
 } // namespace Mustard::Detector::Field

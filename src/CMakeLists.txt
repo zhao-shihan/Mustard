@@ -47,8 +47,6 @@ target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
 # Public header-only dependencies
 # argparse
 target_link_libraries(Mustard PUBLIC argparse::argparse)
-# EFM
-target_link_libraries(Mustard PUBLIC EFM::EFM)
 # Eigen
 target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
 # envparse

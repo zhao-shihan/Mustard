@@ -18,20 +18,18 @@
 
 #pragma once
 
-#include "Mustard/Concept/InputVector.h++"
-#include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectricFieldBase.h++"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 namespace Mustard::Detector::Field {
 
 class UniformElectricField : public ElectricFieldBase<UniformElectricField> {
 public:
-    constexpr UniformElectricField(double ex, double ey, double ez);
-    template<Concept::InputVector3D T = muc::array3d>
-    constexpr UniformElectricField(T e);
+    UniformElectricField(double ex, double ey, double ez);
+    UniformElectricField(Vector3D e);
 
-    template<Concept::NumericVector3D T>
-    constexpr auto E(T) const -> T { return {fEx, fEy, fEz}; }
+    auto E(Point3D) const -> Vector3D { return {fEx, fEy, fEz}; }
 
 private:
     double fEx;
@@ -40,5 +38,3 @@ private:
 };
 
 } // namespace Mustard::Detector::Field
-
-#include "Mustard/Detector/Field/UniformElectricField.inl"

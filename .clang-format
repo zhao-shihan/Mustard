@@ -150,25 +150,22 @@ IncludeCategories:
   - Regex: '"mpi.*\.h"'
     Priority: 11
     CaseSensitive: true
-  - Regex: '"EFM/.*\.h.*"'
+  - Regex: '"muc/.*"'
     Priority: 12
     CaseSensitive: true
-  - Regex: '"muc/.*"'
+  - Regex: '"envparse/.*\.h.*"'
     Priority: 13
     CaseSensitive: true
-  - Regex: '"envparse/.*\.h.*"'
+  - Regex: '"gsl/.*"'
     Priority: 14
     CaseSensitive: true
-  - Regex: '"gsl/.*"'
-    Priority: 15
-    CaseSensitive: true
   - Regex: '"fmt/.*\.h"'
-    Priority: 16
+    Priority: 15
     CaseSensitive: true
   # very general
   - Regex: '".*"'
     Priority: 1
     CaseSensitive: true
   - Regex: "<.*>"
-    Priority: 17
+    Priority: 16
     CaseSensitive: true

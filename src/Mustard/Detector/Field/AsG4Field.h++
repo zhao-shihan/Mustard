@@ -21,7 +21,6 @@
 #include "Mustard/Detector/Field/ElectricField.h++"
 #include "Mustard/Detector/Field/ElectromagneticField.h++"
 #include "Mustard/Detector/Field/MagneticField.h++"
-#include "Mustard/Utility/VectorCast.h++"
 
 #include "G4ElectricField.hh"
 #include "G4ElectroMagneticField.hh"
@@ -29,8 +28,6 @@
 
 #include "muc/array"
 
-#include <algorithm>
-#include <bit>
 #include <type_traits>
 #include <utility>
 
@@ -55,7 +52,6 @@ class AsG4Field : public std::conditional_t<MagneticField<AField>,
                   public AField {
 public:
     using AField::AField;
-    virtual ~AsG4Field() = default;
 
     auto GetFieldValue(const G4double* x, G4double* f) const -> void override final;
 };

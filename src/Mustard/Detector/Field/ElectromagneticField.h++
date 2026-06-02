@@ -18,25 +18,19 @@
 
 #pragma once
 
-#include "Mustard/Concept/NumericVector.h++"
-
-#include "muc/array"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 #include <concepts>
 
 namespace Mustard::Detector::Field {
 
 template<typename F>
-concept ElectromagneticField =
-    requires(const F f, muc::array3d x) {
-        { f.B(x) } -> std::same_as<muc::array3d>;
-        { f.E(x) } -> std::same_as<muc::array3d>;
-        { f.BE(x).B } -> std::same_as<muc::array3d&&>;
-        { f.BE(x).E } -> std::same_as<muc::array3d&&>;
-        { f.template B<muc::array3d>({}) } -> std::same_as<muc::array3d>;
-        { f.template E<muc::array3d>({}) } -> std::same_as<muc::array3d>;
-        { f.template BE<muc::array3d>({}).B } -> std::same_as<muc::array3d&&>;
-        { f.template BE<muc::array3d>({}).E } -> std::same_as<muc::array3d&&>;
-    };
+concept ElectromagneticField = requires(const F f, Point3D position) {
+    { f.B(position) } -> std::same_as<Vector3D>;
+    { f.E(position) } -> std::same_as<Vector3D>;
+    { f.BE(position).B } -> std::same_as<Vector3D&&>;
+    { f.BE(position).E } -> std::same_as<Vector3D&&>;
+};
 
 } // namespace Mustard::Detector::Field

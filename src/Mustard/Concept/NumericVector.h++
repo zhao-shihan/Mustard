@@ -39,6 +39,10 @@ concept NumericVector = requires {
     requires std::is_standard_layout_v<T>;
     requires std::is_class_v<T>;
     requires std::regular<T>;
+    requires(sizeof(T) % sizeof(F) == 0);
+    requires(sizeof(T) / sizeof(F) >= 2);
+    requires(N == std::numeric_limits<std::size_t>::max() or
+             sizeof(T) / sizeof(F) == N);
     requires SubscriptableTo<T, F&>;
     requires(SubscriptableTo<std::add_const_t<T>, const F&> or
              SubscriptableTo<std::add_const_t<T>, F>);
@@ -54,9 +58,6 @@ concept NumericVector = requires {
     requires not requires(T v, std::size_t n) { v.Reserve(n); };
     requires not requires(T v, F e) { v.push_back(e); };
     requires not requires(T v, F e) { v.PushBack(e); };
-    // If N is specified, ensures that the size of T is a multiple of the size of F.
-    requires(N == std::numeric_limits<std::size_t>::max() or
-             (sizeof(T) % sizeof(F) == 0 and sizeof(T) / sizeof(F) == N));
 };
 
 template<typename T, typename F>

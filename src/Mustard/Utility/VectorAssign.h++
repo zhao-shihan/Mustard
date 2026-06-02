@@ -75,9 +75,7 @@ MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(T& lhs, U&& rhs) -> T& {
 /// @brief Assign an InputVector to a numeric vector element by element.
 /// @details This overload is selected when @p rhs satisfies the InputVector
 /// concept, but neither the whole vector is directly assignable to @p lhs
-/// nor are the element types compatible for range-based assignment (i.e.,
-/// `VectorValueType<T>` is not assignable from
-/// `std::ranges::range_value_t<U>`, or the latter is not defined). Elements
+/// nor are the element types compatible for range-based assignment. Elements
 /// are copied individually via `operator[]` using the vector's compile-time
 /// dimension.
 /// @tparam T The target numeric vector type.
@@ -88,9 +86,9 @@ MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(T& lhs, U&& rhs) -> T& {
 template<Concept::NumericVectorAny T, typename U>
     requires(Concept::InputVectorAny<std::decay_t<U>> and
              not std::assignable_from<T&, U &&> and
-             not std::assignable_from<VectorValueType<T>&, std::ranges::range_value_t<U>>)
+             not std::ranges::input_range<U>)
 MUSTARD_ALWAYS_INLINE constexpr auto VectorAssign(T& lhs, U&& rhs) -> T& {
-    constexpr auto dim{muc::to_signed(VectorDimension<std::decay_t<decltype(lhs)>>{})};
+    constexpr auto dim{muc::to_signed(VectorDimension<std::decay_t<decltype(lhs)>>::value)};
     for (gsl::index i{}; i < dim; ++i) {
         lhs[i] = rhs[i];
     }

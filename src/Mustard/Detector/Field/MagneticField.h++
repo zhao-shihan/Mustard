@@ -19,19 +19,17 @@
 #pragma once
 
 #include "Mustard/Detector/Field/ElectromagneticField.h++"
-
-#include "muc/array"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 #include <concepts>
 
 namespace Mustard::Detector::Field {
 
 template<typename F>
-concept MagneticField =
-    requires {
-        requires ElectromagneticField<F>;
-        { F::template E<muc::array3d>({}) } -> std::same_as<muc::array3d>;
-        requires F::template E<muc::array3d>({}) == muc::array3d{};
-    };
+concept MagneticField = requires(Point3D position) {
+    requires ElectromagneticField<F>;
+    { F::E(position) } -> std::same_as<Vector3D>;
+};
 
 } // namespace Mustard::Detector::Field

@@ -18,9 +18,10 @@
 
 #pragma once
 
-#include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectromagneticFieldBase.h++"
 #include "Mustard/Detector/Field/MagneticField.h++"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 #include <concepts>
 
@@ -32,18 +33,15 @@ class ElectricFieldBase;
 template<typename ADerived>
 class MagneticFieldBase : public ElectromagneticFieldBase<ADerived> {
 public:
-    template<Concept::NumericVector3D T>
-    using F = typename ElectromagneticFieldBase<ADerived>::template F<T>;
+    using typename ElectromagneticFieldBase<ADerived>::BEField;
 
 protected:
     constexpr MagneticFieldBase();
     constexpr ~MagneticFieldBase() = default;
 
 public:
-    template<Concept::NumericVector3D T>
-    static constexpr auto E(T) -> T { return {0, 0, 0}; }
-    template<Concept::NumericVector3D T>
-    constexpr auto BE(T x) const -> F<T> { return {static_cast<const ADerived*>(this)->B(x), E(x)}; }
+    static auto E(Point3D) -> Vector3D { return {0, 0, 0}; }
+    auto BE(Point3D x) const -> BEField { return {static_cast<const ADerived*>(this)->B(x), E(x)}; }
 };
 
 } // namespace Mustard::Detector::Field
