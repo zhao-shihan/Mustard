@@ -44,7 +44,7 @@ template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 template<muc::character AChar>
 auto JointParameterInterface<ADerived, ADistribution, Ds...>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
-    return ([&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return ([&]<gsl::index... Is>(gslx::index_sequence<Is...>) -> decltype(auto) {
         return (os << ... << this->template Margin<Is>());
     })(gslx::index_sequence_for<Ds...>());
 }
@@ -53,7 +53,7 @@ template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 template<muc::character AChar>
 auto JointParameterInterface<ADerived, ADistribution, Ds...>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
-    return ([&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return ([&]<gsl::index... Is>(gslx::index_sequence<Is...>) -> decltype(auto) {
         return (is >> ... >> this->template Margin<Is>());
     })(gslx::index_sequence_for<Ds...>());
 }
@@ -139,7 +139,7 @@ template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 template<muc::character AChar>
 auto JointInterface<ADerived, AParameter, T, Ds...>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
-    return [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return [&]<gsl::index... Is>(gslx::index_sequence<Is...>) -> decltype(auto) {
         return (os << ... << this->template Margin<Is>());
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -148,7 +148,7 @@ template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 template<muc::character AChar>
 auto JointInterface<ADerived, AParameter, T, Ds...>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
-    return [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return [&]<gsl::index... Is>(gslx::index_sequence<Is...>) -> decltype(auto) {
         return (is >> ... >> this->template Margin<Is>());
     }(gslx::index_sequence_for<Ds...>());
 }

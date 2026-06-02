@@ -45,154 +45,135 @@ Executor<T>::Executor(std::string executionName, std::string opName, std::string
 
 template<std::integral T>
 auto Executor<T>::SwitchDispatcher(std::string_view dispatcher) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.SwitchDispatcher(dispatcher);
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::SwitchDispatcher(std::unique_ptr<Dispatcher<T>> dispatcher) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.SwitchDispatcher(std::move(dispatcher));
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::NProcess() const -> int {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.NProcess();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::Task() const -> struct Dispatcher<T>::Task {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.Task();
-    },
-                      *fImpl);
+    });
 }
 //
 template<std::integral T>
 auto Executor<T>::NTask() const -> T {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.NTask();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::ExecutingTask() const -> T {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.ExecutingTask();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::NLocalExecutedTask() const -> T {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.NLocalExecutedTask();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::Executing() const -> bool {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.Executing();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintProgress() const -> bool {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.PrintProgress();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintProgressInterval() const -> muc::chrono::seconds<double> {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.PrintProgressInterval();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintProgress(bool print) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.PrintProgress(print);
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintProgressInterval(muc::chrono::seconds<double> t) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.PrintProgressInterval(t);
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::ExecutionName() const -> const std::string& {
-    return std::visit([&](auto&& impl) -> const auto& {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.ExecutionName();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::ExecutionName(std::string name) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.ExecutionName(std::move(name));
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::OperationName() const -> const std::string& {
-    return std::visit([&](auto&& impl) -> const auto& {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.OperationName();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::OperationName(std::string name) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.OperationName(std::move(name));
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::TaskName() const -> const std::string& {
-    return std::visit([&](auto&& impl) -> const auto& {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.TaskName();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::TaskName(std::string name) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.TaskName(std::move(name));
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.Run(std::move(task), std::forward<decltype(F)>(F));
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
@@ -202,18 +183,28 @@ auto Executor<T>::Run(T size, std::invocable<T> auto&& F) -> T {
 
 template<std::integral T>
 auto Executor<T>::ExecutionInfo() const -> const ExecutionInfoType& {
-    return std::visit([&](auto&& impl) -> const auto& {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.ExecutionInfo();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintExecutionSummary() const -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.PrintExecutionSummary();
-    },
-               *fImpl);
+    });
+}
+
+template<std::integral T>
+template<typename F>
+auto Executor<T>::VisitImpl(F&& visitor) const -> decltype(auto) {
+    return std::visit(std::forward<F>(visitor), *fImpl);
+}
+
+template<std::integral T>
+template<typename F>
+auto Executor<T>::VisitImpl(F&& visitor) -> decltype(auto) {
+    return std::visit(std::forward<F>(visitor), *fImpl);
 }
 
 } // namespace Mustard::inline Execution

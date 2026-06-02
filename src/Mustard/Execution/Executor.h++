@@ -77,6 +77,12 @@ public:
     auto PrintExecutionSummary() const -> void;
 
 private:
+    template<typename F>
+    auto VisitImpl(F&& visitor) const -> decltype(auto);
+    template<typename F>
+    auto VisitImpl(F&& visitor) -> decltype(auto);
+
+private:
     using Impl = std::variant<impl::ParallelExecutorImpl<T>,
                               impl::SequentialExecutorImpl<T>>;
 

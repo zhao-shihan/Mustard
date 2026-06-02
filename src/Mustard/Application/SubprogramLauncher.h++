@@ -72,7 +72,7 @@ public:
     /// The first two arguments (argc, argv) are consumed by the launcher's
     /// own parser to identify the subcommand; the remaining arguments are
     /// forwarded to the subprogram. This method may only be called once.
-    auto Launch(int argc, char* argv[]) -> int;
+    [[nodiscard]] auto Launch(int argc, char* argv[]) -> int;
 
 private:
     struct State;

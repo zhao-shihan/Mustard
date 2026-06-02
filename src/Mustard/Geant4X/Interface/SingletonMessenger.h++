@@ -79,19 +79,19 @@ public:
 protected:
     /// @brief Deliver action to all registered recipients of specific type
     /// @tparam ARecipient Type of recipients to target
-    /// @param Action Callable object accepting ARecipient& parameter
+    /// @param action Callable object accepting ARecipient& parameter
     /// @note Requires ARecipient to be in the template recipient list
     template<typename ARecipient>
         requires muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>
-    auto Deliver(std::invocable<ARecipient&> auto&& Action) const -> void;
+    auto Deliver(std::invocable<ARecipient&> auto&& action) const -> void;
     /// @brief Deliver action to multiple recipient types simultaneously
     /// @tparam Rs Two or more recipient types to target
-    /// @param Action Callable object accepting references to all Rs types
+    /// @param action Callable object accepting references to all Rs types
     /// @note All Rs types must be in the template recipient list
     template<typename... Rs, typename F>
         requires(sizeof...(Rs) >= 2 and
                  (... and (std::invocable<F &&, Rs&> and muc::is_uniquely_contained_in_v<Rs, ARecipients...>)))
-    auto Deliver(F&& Action) const -> void;
+    auto Deliver(F&& action) const -> void;
 
 private:
     mutable bool fDelivering;                                           ///< Delivery state flag (prevents deregistration during delivery)

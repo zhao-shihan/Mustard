@@ -54,7 +54,7 @@ SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::~Register() 
 template<typename ADerived, typename... ARecipients>
 template<typename ARecipient>
     requires muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>
-auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& Action) const -> void {
+auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& action) const -> void {
     const auto& recipientSet{get<gtl::flat_hash_set<ARecipient*>>(fRecipientSetTuple)};
     if (recipientSet.empty()) {
         PrintError(fmt::format("Error: {} not registered", muc::try_demangle(typeid(ARecipient).name())));
@@ -62,7 +62,7 @@ auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecip
     }
     fDelivering = true;
     for (auto&& recipient : recipientSet) {
-        std::invoke(std::forward<decltype(Action)>(Action), *recipient);
+        std::invoke(std::forward<decltype(action)>(action), *recipient);
     }
     fDelivering = false;
 }
@@ -71,8 +71,8 @@ template<typename ADerived, typename... ARecipients>
 template<typename... Rs, typename F>
     requires(sizeof...(Rs) >= 2 and
              (... and (std::invocable<F &&, Rs&> and muc::is_uniquely_contained_in_v<Rs, ARecipients...>)))
-auto SingletonMessenger<ADerived, ARecipients...>::Deliver(F&& Action) const -> void {
-    (..., Deliver<Rs>(std::forward<F>(Action)));
+auto SingletonMessenger<ADerived, ARecipients...>::Deliver(F&& action) const -> void {
+    (..., Deliver<Rs>(std::forward<F>(action)));
 }
 
 } // namespace Mustard::Geant4X::inline Interface

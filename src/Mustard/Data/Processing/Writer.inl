@@ -24,63 +24,77 @@ Writer<M>::Writer(const std::string& name) :
 
 template<Modelized M>
 Writer<M>::Writer(const std::string& name, std::string_view target) :
-    fWriter{} {
+    fImpl{} {
     switch (ResolveTarget(target)) {
     case Target::RNTuple:
-        fWriter.emplace(std::in_place_type<RNTupleWriter<M>>, name);
+        fImpl.emplace(std::in_place_type<RNTupleWriter<M>>, name);
         break;
     case Target::TTree:
-        fWriter.emplace(std::in_place_type<TTreeWriter<M>>, name);
+        fImpl.emplace(std::in_place_type<TTreeWriter<M>>, name);
         break;
     }
 }
 
 template<Modelized M>
 auto Writer<M>::Fill(const Tuple<M>& tuple) -> void {
-    VisitWriter([&](auto& writer) { writer.Fill(tuple); });
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
+        impl.Fill(tuple);
+    });
 }
 
 template<Modelized M>
 auto Writer<M>::Fill(Tuple<M>&& tuple) -> void {
-    VisitWriter([&](auto& writer) { writer.Fill(std::move(tuple)); });
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
+        impl.Fill(std::move(tuple));
+    });
 }
 
 template<Modelized M>
 auto Writer<M>::Fill(const ArcTuple<M>& arcTuple) -> void {
-    VisitWriter([&](auto& writer) { writer.Fill(arcTuple); });
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
+        impl.Fill(arcTuple);
+    });
 }
 
 template<Modelized M>
 auto Writer<M>::Fill(ArcTuple<M>&& arcTuple) -> void {
-    VisitWriter([&](auto& writer) { writer.Fill(std::move(arcTuple)); });
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
+        impl.Fill(std::move(arcTuple));
+    });
 }
 
 template<Modelized M>
 template<std::ranges::input_range R>
 auto Writer<M>::Fill(R&& data) -> void {
-    VisitWriter([&](auto& writer) { writer.Fill(std::forward<R>(data)); });
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
+        impl.Fill(std::forward<R>(data));
+    });
 }
 
 template<Modelized M>
 auto Writer<M>::NEntry() const -> long long {
-    return VisitWriter([](const auto& writer) { return writer.NEntry(); });
+    return VisitImpl([](auto&& impl) -> decltype(auto) {
+        return impl.NEntry();
+    });
 }
 
 template<Modelized M>
 auto Writer<M>::Flush() -> void {
-    VisitWriter([](auto& writer) { writer.Flush(); });
+    VisitImpl([](auto&& impl) -> decltype(auto) {
+        impl.Flush();
+    });
 }
 
 template<Modelized M>
 template<typename F>
-auto Writer<M>::VisitWriter(F&& visitor) const -> decltype(auto) {
-    return std::visit(std::forward<F>(visitor), *fWriter);
+auto Writer<M>::VisitImpl(F&& visitor) const -> decltype(auto) {
+    return std::visit(std::forward<F>(visitor), *fImpl);
 }
 
 template<Modelized M>
 template<typename F>
-auto Writer<M>::VisitWriter(F&& visitor) -> decltype(auto) {
-    return std::visit(std::forward<F>(visitor), *fWriter);
+auto Writer<M>::VisitImpl(F&& visitor) -> decltype(auto) {
+    return std::visit(std::forward<F>(visitor), *fImpl);
 }
 
 template<Modelized M>

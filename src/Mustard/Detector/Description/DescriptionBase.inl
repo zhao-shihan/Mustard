@@ -30,10 +30,10 @@ auto DescriptionBase<>::ImportValue(const YAML::Node& node, AValue& value, std::
 }
 
 template<typename AReadAs>
-auto DescriptionBase<>::ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& ImportAction, std::convertible_to<std::string> auto&&... names) -> void {
+auto DescriptionBase<>::ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& importAction, std::convertible_to<std::string> auto&&... names) -> void {
     if (const auto leaf{UnpackToLeafNodeForImporting(node, std::forward<decltype(names)>(names)...)};
         leaf.has_value()) {
-        ImportAction(leaf->template as<AReadAs>());
+      std::invoke(importAction, leaf->template as<AReadAs>());
     } else {
         PrintNodeNotFoundNotice(std::forward<decltype(names)>(names)...);
     }

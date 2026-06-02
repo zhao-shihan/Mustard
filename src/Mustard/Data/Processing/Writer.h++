@@ -128,9 +128,9 @@ public:
 
 private:
     template<typename F>
-    auto VisitWriter(F&& visitor) const -> decltype(auto);
+    auto VisitImpl(F&& visitor) const -> decltype(auto);
     template<typename F>
-    auto VisitWriter(F&& visitor) -> decltype(auto);
+    auto VisitImpl(F&& visitor) -> decltype(auto);
 
     enum struct Target {
         RNTuple,
@@ -139,7 +139,7 @@ private:
     static auto ResolveTarget(std::string_view target) -> Target;
 
 private:
-    std::optional<std::variant<TTreeWriter<M>, RNTupleWriter<M>>> fWriter;
+    std::optional<std::variant<TTreeWriter<M>, RNTupleWriter<M>>> fImpl;
 };
 
 } // namespace Mustard::Data::inline Processing

@@ -30,9 +30,11 @@
 
 #include <array>
 #include <concepts>
+#include <functional>
 #include <iostream>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace Mustard::Detector::Description {
@@ -58,7 +60,7 @@ protected:
         requires std::assignable_from<AValue&, AReadAs>
     auto ImportValue(const YAML::Node& node, AValue& value, std::convertible_to<std::string> auto&&... names) -> void;
     template<typename AReadAs>
-    auto ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& ImportAction, std::convertible_to<std::string> auto&&... names) -> void;
+    auto ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& importAction, std::convertible_to<std::string> auto&&... names) -> void;
     template<typename AValue, typename AWriteAs = AValue>
         requires std::convertible_to<const AValue&, AWriteAs>
     auto ExportValue(YAML::Node& node, const AValue& value, std::convertible_to<std::string> auto&&... names) const -> void;
