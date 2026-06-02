@@ -51,7 +51,7 @@ auto TestHelixLinePOCA::Main(int argc, char* argv[]) const -> int {
 
     const auto pointOnLine{[](const Line3D& line, const Point3D& p) -> bool {
         const auto d{(p - line.point).cross(line.direction)};
-        return muc::isclose(d.mag(), 0., muc::default_rel_tol<double>, 1e-6);
+        return muc::isclose(d.mag(), 0., {.abs = 1e-6});
     }};
 
     PrintLn("=== TestHelixLinePOCA ===");

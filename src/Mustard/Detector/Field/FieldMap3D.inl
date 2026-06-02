@@ -25,8 +25,7 @@ template<muc::general_arithmetic T,
                  std::convertible_to<std::invoke_result_t<ATransformation, Point3D, T>, T>
 FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataName, std::string_view fileName,
                                                         AProjection projection, ATransformation transformation,
-                                                        double relTol, double absTol,
-                                                        bool enableIMT) :
+                                                        muc::tolerance<float> tol, bool enableIMT) :
     fProjection{std::move(projection)},
     fTransformation{std::move(transformation)},
     fGridInfo{},
@@ -67,21 +66,20 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
         }
 
         // Validate grid regularity and extract grid data
-        constexpr auto lowestDouble{std::numeric_limits<double>::lowest()};
-        Point3D x0{lowestDouble, lowestDouble, lowestDouble};
-        muc::array3d lastDelta{};
+        constexpr auto lowestFloat{std::numeric_limits<float>::lowest()};
+        muc::array3f x0{lowestFloat, lowestFloat, lowestFloat};
+        muc::array3f lastDelta{};
         muc::array3i counter{};
         muc::array3i countChecker{};
         fieldGrid.reserve(gridData.size());
-        for (auto&& [grid, field] : std::as_const(gridData)) {
-            const auto x{VectorCast<Point3D>(grid)};
+        for (auto&& [x, field] : std::as_const(gridData)) {
             for (int i{}; i < 3; ++counter[i++]) {
                 if (x[i] <= x0[i]) {
                     continue; // not a new point along this axis, skip
                 }
                 // check normal delta
                 if (fGridInfo[i].n >= 2) {
-                    if (not muc::isclose(x[i] - x0[i], lastDelta[i], relTol, absTol)) {
+                    if (not muc::isclose(x[i] - x0[i], lastDelta[i], tol)) {
                         Throw<std::runtime_error>("Irregular grid (inconsistent delta)");
                     }
                 }
@@ -113,8 +111,8 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
             if (grid.n < 2) {
                 Throw<std::runtime_error>("Too few grid points (should >= 2 in each direction)");
             }
-            if (grid.n >= 1 / relTol) {
-                Throw<std::runtime_error>(fmt::format("Too much grid points (in each direction should < 1 / relTol, relTol == {})", relTol));
+            if (grid.n >= 1 / tol.rel) {
+                Throw<std::runtime_error>(fmt::format("Too much grid points (in each direction should < 1 / tol.rel, tol.rel == {})", tol.rel));
             }
             if (grid.n >= std::numeric_limits<int>::max()) {
                 Throw<std::runtime_error>("Too much grid points (in each direction should < INT_MAX)");
@@ -155,11 +153,7 @@ auto FieldMap3D<T, AProjection, ATransformation>::At(Point3D position) const -> 
         projPos.z() < fGridInfo[2].min or fGridInfo[2].max < projPos.z()) {
         return ZeroVector<T>();
     }
-    constexpr auto floatIsClose{[](double a, double b) {
-        constexpr auto relTol{static_cast<double>(muc::default_rel_tol<float>)};
-        constexpr auto absTol{static_cast<double>(muc::default_abs_tol<float>)};
-        return muc::isclose(a, b, relTol, absTol);
-    }};
+    constexpr auto floatIsClose{[](float a, float b) { return muc::isclose(a, b); }};
     if (not floatIsClose(projPos.x(), fCachedProjPos.x()) or
         not floatIsClose(projPos.y(), fCachedProjPos.y()) or
         not floatIsClose(projPos.z(), fCachedProjPos.z())) {

@@ -99,7 +99,7 @@ auto POCA(const Helix& helix, const Point2D& axis) -> HelixAxisPOCAResult {
 }
 
 auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
-          int nTrialPts, int maxIter, double absTol, double relTol) -> std::optional<HelixPointPOCAResult> {
+          int nTrialPts, int maxIter, muc::tolerance<double> tol) -> std::optional<HelixPointPOCAResult> {
     using Mustard::MathConstant::pi;
 
     if (phiLow >= phiUp) {
@@ -156,7 +156,7 @@ auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
     ROOT::Math::BrentMinimizer1D minimizer;
     minimizer.SetFunction(reducedSquaredDistance, x1, x2);
     minimizer.SetNpx(nTrialPts); // nTrialPts<2 skips grid search in ROOT::Math::BrentMinimizer1D
-    const auto converged{minimizer.Minimize(maxIter, absTol, relTol)};
+    const auto converged{minimizer.Minimize(maxIter, tol.abs, tol.rel)};
     if (not converged) {
         return std::nullopt;
     }
@@ -168,7 +168,7 @@ auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
 }
 
 auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
-          int nTrialPts, int maxIter, double absTol, double relTol) -> std::optional<HelixLinePOCAResult> {
+          int nTrialPts, int maxIter, muc::tolerance<double> tol) -> std::optional<HelixLinePOCAResult> {
     using Mustard::MathConstant::pi;
 
     if (phiLow >= phiUp) {
@@ -178,7 +178,7 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
     const auto lineDMag2{line.direction.mag2()};
     if (muc::isclose(lineDMag2, 0.)) {
         // line direction vector degenerate
-        const auto r{POCA(helix, line.point, phiLow, phiUp, nTrialPts, maxIter, absTol, relTol)};
+        const auto r{POCA(helix, line.point, phiLow, phiUp, nTrialPts, maxIter, tol)};
         if (not r.has_value()) {
             return std::nullopt;
         }
@@ -263,7 +263,7 @@ auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
     ROOT::Math::BrentMinimizer1D minimizer;
     minimizer.SetFunction(reducedSquaredDistance, x1, x2);
     minimizer.SetNpx(nTrialPts); // nTrialPts<2 skips grid search in ROOT::Math::BrentMinimizer1D
-    const auto converged{minimizer.Minimize(maxIter, absTol, relTol)};
+    const auto converged{minimizer.Minimize(maxIter, tol.abs, tol.rel)};
     if (not converged) {
         return std::nullopt;
     }

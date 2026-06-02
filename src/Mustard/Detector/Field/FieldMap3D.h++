@@ -124,13 +124,11 @@ public:
     /// interpolation. Default: identity (no projection).
     /// @param transformation Transformation functor applied to the interpolated
     /// field value. Default: identity (no transformation).
-    /// @param relTol Relative tolerance passed to @c muc::isclose for the grid
-    /// regularity check (delta consistency along each axis). Also used to guard
-    /// against excessively fine grids (@c grid.n must be less than @c 1/relTol).
-    /// Default: @c muc::default_rel_tol<float>.
-    /// @param absTol Absolute tolerance passed to @c muc::isclose for the grid
-    /// regularity check (delta consistency along each axis).
-    /// Default: @c muc::default_abs_tol<float>.
+    /// @param tol Tolerance configuration passed to @c muc::isclose for the grid
+    /// regularity check (delta consistency along each axis). The field
+    /// @c tol.rel is also used to guard against excessively fine grids
+    /// (@c grid.n must be less than @c 1/tol.rel).
+    /// Default: @c tolerance<float>{} .
     /// @param enableIMT If @c true (default), enable ROOT Implicit Multi-Threading
     /// during RDataFrame reading via @c ScopedIMT. If @c false,
     /// skip the @c ScopedIMT guard and use whatever IMT state is
@@ -140,8 +138,7 @@ public:
     /// format is invalid.
     FieldMap3D(std::string_view dataName, std::string_view fileName,
                AProjection projection = {}, ATransformation transformation = {},
-               double relTol = muc::default_rel_tol<float>, double absTol = muc::default_abs_tol<float>,
-               bool enableIMT = true);
+               muc::tolerance<float> tol = {}, bool enableIMT = true);
 
     /// @brief Interpolate the field value at the given coordinates.
     ///
