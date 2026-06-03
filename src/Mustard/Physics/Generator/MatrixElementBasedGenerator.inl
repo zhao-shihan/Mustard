@@ -273,12 +273,12 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double {
     Expects(acceptance >= 0);
     Expects(detJ > 0);
-    if (acceptance <= std::numeric_limits<double>::epsilon()) {
+    if (acceptance <= muc::default_abs_tol<double>) {
         return 0;
     }
     const auto mSq{fMatrixElement(fMomenta, pF)};
     const auto result{fFSSymmetryFactor * mSq * acceptance * detJ}; // 1/S × |M|² × acceptance × |J|
-    constexpr auto Format{[](const FinalStateMomenta& pF, double acceptance, double detJ) {
+    constexpr auto format{[](const FinalStateMomenta& pF, double acceptance, double detJ) {
         auto where{fmt::format("({})", detJ)};
         for (auto&& p : pF) {
             where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
@@ -291,14 +291,14 @@ auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMom
         if (fNegativeMSqCounter < maxIncidentReport) {
             ++fNegativeMSqCounter;
             PrintWarning(fmt::format("Negative |M|^2 (got {} at {}, incident: {}, this warning will be suppressed after {} incidents)",
-                                     mSq, Format(pF, acceptance, detJ), fNegativeMSqCounter, maxIncidentReport));
+                                     mSq, format(pF, acceptance, detJ), fNegativeMSqCounter, maxIncidentReport));
             if (fNegativeMSqCounter == maxIncidentReport) {
                 PrintWarning("Warning of negative |M|^2 suppressed");
             }
         }
     }
     if (not std::isfinite(result)) {
-        Throw<std::runtime_error>(fmt::format("Non-finite 1/S * |M|^2 * acceptance * |J| found (got {} at {})", result, Format(pF, acceptance, detJ)));
+        Throw<std::runtime_error>(fmt::format("Non-finite 1/S * |M|^2 * acceptance * |J| found (got {} at {})", result, format(pF, acceptance, detJ)));
     }
     return result;
 }
@@ -311,7 +311,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         precisionGoal = std::abs(precisionGoal);
     }
     // Core integration method
-    const auto Integrate{[&](unsigned long long nSample) {
+    const auto integrate{[&](unsigned long long nSample) {
         using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
         muc::array2d sum{};
         muc::array2d compensation{};
@@ -354,7 +354,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
                           checkpoint, state.sumF, state.sumF2, state.n);
         }
         MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
-        const auto [integral, nEff]{Integrate(batchSize)};
+        const auto [integral, nEff]{integrate(batchSize)};
         const auto precision{integral.uncertainty / std::abs(integral.value)};
         if (precision <= precisionGoal) {
             MasterPrint("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} reached.\n"

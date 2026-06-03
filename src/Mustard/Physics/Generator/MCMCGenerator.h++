@@ -31,7 +31,7 @@
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
 
-#include "Eigen/Dense"
+#include "Eigen/Core"
 
 #include "mplr/mplr.hpp"
 
@@ -44,7 +44,7 @@
 
 #include "gsl/gsl"
 
-#include "fmt/ranges.h"
+#include "fmt/format.h"
 
 #include <algorithm>
 #include <array>
@@ -53,6 +53,7 @@
 #include <functional>
 #include <limits>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <typeinfo>
 #include <utility>

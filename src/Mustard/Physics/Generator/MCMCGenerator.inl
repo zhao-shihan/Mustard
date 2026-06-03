@@ -188,9 +188,9 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
         mean.u /= sumMSqAcceptanceDetJ;
         mean.uuT /= sumMSqAcceptanceDetJ;
         const auto covariance{(mean.uuT - mean.u * mean.u.transpose()).eval()};
-        const Eigen::SelfAdjointEigenSolver<decltype(covariance)> covEigenSolver{covariance};
-        const auto sqrtDiagCov{covEigenSolver.eigenvalues().array().sqrt()};
-        PrintInfo(fmt::format("Sqrt(diag(covariance)): {}", sqrtDiagCov));
+        std::ostringstream covOSS;
+        covOSS << "Covariance of random state u (weighted by |M|^2 * acceptance * |J|):\n" << covariance;
+        PrintInfo(covOSS.view());
     }
 
     // Estimate autocorrelation and decide thinning
