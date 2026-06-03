@@ -25,6 +25,7 @@
 **/temp/
 **/thirdparty/
 **/tmp/
+cmake/CPM.cmake
 document/doxygen/html/
 document/doxygen/latex/
 document/doxygen/man/

@@ -32,43 +32,44 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl.in
                ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl
                @ONLY)
 
-# Required dependencies
+# System dependencies
 
-# Public dependencies
-# fmt
-target_link_libraries(Mustard PUBLIC fmt::fmt)
-# Geant4
-target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
 # ROOT
 target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Imt ROOT::MathCore ROOT::Hist ROOT::Tree ROOT::ROOTDataFrame ROOT::ROOTNTuple ROOT::RIO)
+# Geant4
+target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
+
+# Public dependencies
+
+# mplr (-> MPI)
+target_link_libraries(Mustard PUBLIC mplr::mplr)
+# Eigen
+target_link_libraries(Mustard PUBLIC eigen)
 # yaml-cpp
 target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
+# fmt
+target_link_libraries(Mustard PUBLIC fmt::fmt)
 
-# Public header-only dependencies
+# Public light-weight dependencies
+
 # argparse
 target_link_libraries(Mustard PUBLIC argparse::argparse)
-# Eigen
-target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
 # envparse
 target_link_libraries(Mustard PUBLIC envparse::envparse)
 # gtl
 target_link_libraries(Mustard PUBLIC gtl)
 # Microsoft.GSL
 target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
-# MPLR
-target_link_libraries(Mustard PUBLIC mplr::mplr)
 # muc
 target_link_libraries(Mustard PUBLIC muc::muc)
 
 # Private dependencies
+
 # backward-cpp
 target_link_libraries(Mustard PRIVATE backward_interface)
 # indicators
 target_link_libraries(Mustard PRIVATE indicators::indicators)
-
-# Conditional dependencies
-
+# mimalloc
 if(MUSTARD_USE_MIMALLOC)
-    # mimalloc
     target_link_libraries(Mustard PRIVATE mimalloc-static)
 endif()

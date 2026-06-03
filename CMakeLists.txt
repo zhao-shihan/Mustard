@@ -19,13 +19,6 @@ cmake_minimum_required(VERSION 3.24)
 # Enable MSVC_RUNTIME_LIBRARY target property
 # See https://cmake.org/cmake/help/latest/policy/CMP0091.html
 cmake_policy(SET CMP0091 NEW)
-# Set CMP0077 to new in order to configure options for build-in libraries
-# See https://discourse.cmake.org/t/what-is-the-correct-way-to-set-options-of-a-project-before-fetch-content/268/6
-# See also https://cmake.org/cmake/help/latest/policy/CMP0077.html
-cmake_policy(SET CMP0077 NEW)
-# ExternalProject_Add sets the timestamps of extracted contents to the time of extraction
-# See https://cmake.org/cmake/help/latest/policy/CMP0135.html
-cmake_policy(SET CMP0135 NEW)
 
 set(MUSTARD_VERSION_MAJOR 0)
 set(MUSTARD_VERSION_MINOR 26)
@@ -34,17 +27,6 @@ set(MUSTARD_VERSION ${MUSTARD_VERSION_MAJOR}.${MUSTARD_VERSION_MINOR}.${MUSTARD_
 
 project(Mustard VERSION ${MUSTARD_VERSION}
                 LANGUAGES CXX)
-
-include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)
-
-# =============================================================================
-# Variables
-# =============================================================================
-
-# Dirs
-set(MUSTARD_PROJECT_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
-set(MUSTARD_PROJECT_3RDPARTY_DIR ${PROJECT_SOURCE_DIR}/thirdparty)
 
 # =============================================================================
 # Options
@@ -56,17 +38,7 @@ include(CMakeDependentOption)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(BUILD_TESTING "Enable tests" ${PROJECT_IS_TOP_LEVEL})
 option(MUSTARD_BUILD_TESTING "Enable tests for Mustard" ${BUILD_TESTING})
-option(MUSTARD_BUILTIN_ARGPARSE "Use built-in argparse (network or pre-downloaded source is required)." OFF)
-option(MUSTARD_BUILTIN_BACKWARD "Use built-in backward-cpp (recommended, network or pre-downloaded source is required)." ON)
-option(MUSTARD_BUILTIN_ENVPARSE "Use built-in envparse (network or pre-downloaded source is required)." OFF)
-option(MUSTARD_BUILTIN_FMT "Use built-in fmt (network or pre-downloaded source is required)." OFF)
-option(MUSTARD_BUILTIN_GTL "Use built-in gtl (network or pre-downloaded source is required)." OFF)
-option(MUSTARD_BUILTIN_INDICATORS "Use built-in indicators (recommended, network or pre-downloaded source is required)." ON)
-option(MUSTARD_BUILTIN_MIMALLOC "Use built-in mimalloc if MUSTARD_USE_MIMALLOC is enabled (recommended, network or pre-downloaded source is required)." ON)
-option(MUSTARD_BUILTIN_MPLR "Use built-in MPLR (network or pre-downloaded source is required)." OFF)
-option(MUSTARD_BUILTIN_MSGSL "Use built-in Microsoft.GSL (network or pre-downloaded source is required)." OFF)
-option(MUSTARD_BUILTIN_MUC "Use built-in muc (network or pre-downloaded source is required)." OFF)
-option(MUSTARD_BUILTIN_YAML_CPP "Use built-in yaml-cpp (network or pre-downloaded source is required)." OFF)
+option(MUSTARD_BUILD_EXTERNAL_TESTING "Enable tests for external packages" OFF)
 option(MUSTARD_ENABLE_IPO "Build Mustard with interprocedural optimization" ${BUILD_SHARED_LIBS})
 option(MUSTARD_ENABLE_MSVC_STD_CONFORMITY "Build Mustard with standard-conformity (MSVC only: /permissive- /Zc:__cplusplus /Zc:inline)." ON)
 option(MUSTARD_FULL_UNITY_BUILD "Building Mustard use unity build technique COMPLETELY." OFF)
@@ -77,19 +49,8 @@ option(MUSTARD_USE_MIMALLOC "Using mimalloc as the underlying implementation of 
 option(MUSTARD_USE_SHARED_MSVC_RT "Select the MSVC runtime library for use (MSVC only). ON for shared (.dll), OFF for static (.lib). If you run into link error related to MSVC runtime, you can try flip this." ON)
 option(MUSTARD_USE_STATIC_G4 "Attempt to link Geant4 static libraries if available, by finding the \"static\" component of G4. If \"static\" is not found, dynamic libraries will be linked." OFF)
 option(MUSTARD_WERROR "Treat Mustard compilation warnings as errors." OFF)
-cmake_dependent_option(MUSTARD_SHOW_MORE_COMPILER_WARNINGS "Show compiler warnings raise from external dependencies." OFF "NOT MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS" ON)
+cmake_dependent_option(MUSTARD_SHOW_MORE_COMPILER_WARNINGS "Show compiler warnings raise from external packages." OFF "NOT MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS" ON)
 cmake_dependent_option(MUSTARD_UNITY_BUILD "Build Mustard with unity build technique." OFF "NOT MUSTARD_FULL_UNITY_BUILD" ON)
-set(MUSTARD_BUILTIN_ARGPARSE_VERSION 3.2 CACHE STRING "Set built-in argparse version (if required).")
-set(MUSTARD_BUILTIN_BACKWARD_VERSION 1.6.1 CACHE STRING "Set built-in backward-cpp version (if required).")
-set(MUSTARD_BUILTIN_ENVPARSE_VERSION 1.0.0 CACHE STRING "Set built-in envparse version (if required).")
-set(MUSTARD_BUILTIN_FMT_VERSION 12.1.0 CACHE STRING "Set built-in fmt version (if required).")
-set(MUSTARD_BUILTIN_GTL_VERSION 1.2.1 CACHE STRING "Set built-in gtl version (if required).")
-set(MUSTARD_BUILTIN_INDICATORS_VERSION 2.3.2 CACHE STRING "Set built-in indicators version (if required).")
-set(MUSTARD_BUILTIN_MIMALLOC_VERSION 3.2.8 CACHE STRING "Set built-in mimalloc version (if required).")
-set(MUSTARD_BUILTIN_MPLR_VERSION 0.26.409 CACHE STRING "Set built-in MPLR version (if required).")
-set(MUSTARD_BUILTIN_MSGSL_VERSION 4.2.1 CACHE STRING "Set built-in Microsoft.GSL version (if required).")
-set(MUSTARD_BUILTIN_MUC_VERSION 0.26.602 CACHE STRING "Set built-in muc version (if required).")
-set(MUSTARD_BUILTIN_YAML_CPP_VERSION 0.9.0 CACHE STRING "Set built-in yaml-cpp version (if required).")
 set(MUSTARD_DEBUG_POSTFIX d CACHE STRING "Debug library postfix.")
 
 # =============================================================================
@@ -142,60 +103,20 @@ message(STATUS "Mustard install path: ${CMAKE_INSTALL_PREFIX} (add -DCMAKE_INSTA
 # Global compile options
 # =============================================================================
 
-include(${MUSTARD_PROJECT_CMAKE_DIR}/GlobalCompileConfig.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/GlobalCompileConfig.cmake)
 
 # =============================================================================
 # Dependencies
 # =============================================================================
 
-# Required dependencies (must be found, otherwise the configuration will fail and MUSTARD_BUILTIN_<dependency> will be turned on if available)
-
-# Public dependencies
-# fmt (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForFmt.cmake)
-# Geant4, depends on many external libraries
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForGeant4.cmake)
-# ROOT, depends on many more external libraries
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForROOT.cmake)
-# yaml-cpp (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForYamlCpp.cmake)
-
-# Public header-only dependencies
-# argparse (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForArgparse.cmake)
-# Eigen
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEigen.cmake)
-# envparse (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForEnvparse.cmake)
-# gtl (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForGTL.cmake)
-# Microsoft.GSL (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMicrosoftGSL.cmake)
-# MPLR (built-in if not found), depends on MPI
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMPLR.cmake)
-# muc (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMUC.cmake)
-
-# Private dependencies
-# backward-cpp (built-in if not found), depends on some stacktrace library
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForBackwardCpp.cmake)
-# indicators (built-in if not found)
-include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForIndicators.cmake)
-
-# Conditional dependencies (only required if certain options are enabled)
-
-# Private dependencies
-if(MUSTARD_USE_MIMALLOC)
-    # mimalloc (built-in if not found)
-    include(${MUSTARD_PROJECT_CMAKE_DIR}/LookForMimalloc.cmake)
-endif()
+include(${PROJECT_SOURCE_DIR}/cmake/LookForPackages.cmake)
 
 # =============================================================================
 # Let's dive in...
 # =============================================================================
 
 # Config for Mustard
-include(${MUSTARD_PROJECT_CMAKE_DIR}/MustardCompileConfig.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/MustardCompileConfig.cmake)
 
 add_subdirectory(src)
 if(MUSTARD_BUILD_TESTING)
@@ -207,9 +128,10 @@ add_subdirectory(tooling)
 # Install
 # =============================================================================
 
+include(GNUInstallDirs)
 set_target_properties(Mustard PROPERTIES VERSION ${MUSTARD_VERSION}
-                                            SOVERSION ${MUSTARD_VERSION}
-                                            DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
+                                         SOVERSION ${MUSTARD_VERSION}
+                                         DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
 
 install(DIRECTORY src/Mustard DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN *.h++ PATTERN *.inl)
@@ -221,11 +143,12 @@ install(EXPORT MustardTargets
         NAMESPACE Mustard::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 
-configure_package_config_file(${MUSTARD_PROJECT_CMAKE_DIR}/MustardConfig.cmake.in
-                                ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
-                                INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+include(CMakePackageConfigHelpers)
+configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/MustardConfig.cmake.in
+                              ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
+                              INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
-                                    COMPATIBILITY SameMajorVersion)
+                                 COMPATIBILITY SameMajorVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
