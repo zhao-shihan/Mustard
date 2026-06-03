@@ -46,11 +46,11 @@ public:
     UniformElectromagneticField(Vector3D b, Vector3D e);
 
     /// @brief Returns the constant magnetic field.
-    /// @param Unused. Position parameter for interface uniformity.
+    /// @note The position parameter is unused; it exists for interface uniformity.
     /// @return The constant magnetic field vector.
     auto B(Point3D) const -> Vector3D { return {fBx, fBy, fBz}; }
     /// @brief Returns the constant electric field.
-    /// @param Unused. Position parameter for interface uniformity.
+    /// @note The position parameter is unused; it exists for interface uniformity.
     /// @return The constant electric field vector.
     auto E(Point3D) const -> Vector3D { return {fEx, fEy, fEz}; }
     /// @brief Returns both field components at a point.

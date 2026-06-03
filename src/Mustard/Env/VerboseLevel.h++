@@ -24,7 +24,7 @@ namespace Mustard::Env {
 /// @details Verbosity is checked via `VerboseLevelReach<'L'>()`, which
 /// returns true when the configured level reaches or exceeds level `L`.
 /// Levels are ordered from most quiet to most verbose, with `Quiet` set
-/// to -2 to place it below the default-initialized `Error` (0).
+/// to -2 so that `Warning` (0, the default-initialized value) is above `Error` (-1).
 enum struct VerboseLevel {
     Quiet = -2,  ///< Suppresses all output.
     Error,       ///< Only error messages.

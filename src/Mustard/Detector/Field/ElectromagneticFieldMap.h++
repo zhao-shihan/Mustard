@@ -64,11 +64,9 @@ struct BEFieldSI2CLHEP : ATransformation {
 };
 
 /// @brief An electromagnetic field interpolated from data.
-/// Initialization and interpolation are performed by `FieldMap3D`.
-/// The underlying `FieldMap3D` natively caches the last trilinear interpolation
-/// result, keyed by projected coordinates (before symmetry / unit transformation).
-/// This accelerates repeated calls to `E` and `B` at the same position:
-///     Something(field.E(x), field.B(x));
+/// Initialization and interpolation are performed by `FieldMap3D`,
+/// which stores 6-component field vectors (Bx, By, Bz, Ex, Ey, Ez).
+/// Call @c BE(x) to get both field components from a single interpolation.
 /// @tparam AProjection Callable `(Point3D) -> Point3D` that projects the query coordinates before interpolation.
 /// @tparam ATransformation Callable `(Point3D, Eigen::Vector<double, 6>) -> Eigen::Vector<double, 6>` that transforms the interpolated field value.
 template<std::regular_invocable<Point3D> AProjection = std::identity,

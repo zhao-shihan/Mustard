@@ -58,7 +58,7 @@ protected:
 
 public:
     /// @brief Returns the zero vector (no magnetic field).
-    /// @param Unused. Position parameter for interface uniformity.
+    /// @note The position parameter is unused; it exists for interface uniformity.
     /// @return The zero vector @c {0, 0, 0}.
     static auto B(Point3D) -> Vector3D { return {0, 0, 0}; }
     /// @brief Returns the combined B and E field at a point.

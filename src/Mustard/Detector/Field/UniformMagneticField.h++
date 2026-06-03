@@ -41,7 +41,7 @@ public:
     UniformMagneticField(Vector3D b);
 
     /// @brief Returns the constant magnetic field.
-    /// @param Unused. Position parameter for interface uniformity.
+    /// @note The position parameter is unused; it exists for interface uniformity.
     /// @return The constant magnetic field vector.
     auto B(Point3D) const -> Vector3D { return {fBx, fBy, fBz}; }
 

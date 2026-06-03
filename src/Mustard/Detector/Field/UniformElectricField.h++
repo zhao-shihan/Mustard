@@ -41,7 +41,7 @@ public:
     UniformElectricField(Vector3D e);
 
     /// @brief Returns the constant electric field.
-    /// @param Unused. Position parameter for interface uniformity.
+    /// @note The position parameter is unused; it exists for interface uniformity.
     /// @return The constant electric field vector.
     auto E(Point3D) const -> Vector3D { return {fEx, fEy, fEz}; }
 
