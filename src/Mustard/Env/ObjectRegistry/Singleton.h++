@@ -77,18 +77,23 @@ public:
     MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return Status() == Status::Expired; }
 
 private:
+    /// @brief Internal lifecycle state of the singleton.
+    /// Not instantiated is represented by a null `fgInstancePtr`,
+    /// not by an enumerator.
     enum struct Status {
-        Available,
-        Expired
+        Available, ///< Singleton instance is alive.
+        Expired    ///< Singleton was previously alive but now destroyed.
     };
 
 private:
+    /// @brief Queries the singleton pool for the current lifecycle status.
     MUSTARD_ALWAYS_INLINE static auto Status() -> enum Status;
+    /// @brief Creates and registers the singleton instance into the pool on first access.
     MUSTARD_NOINLINE static auto LoadInstance() -> enum Status;
 
 private:
-    static std::shared_ptr<void*> fgInstancePtr;
-    static muc::spin_mutex fgSpinMutex;
+    static std::shared_ptr<void*> fgInstancePtr; ///< Shared indirection node from the singleton pool.
+    static muc::spin_mutex fgSpinMutex;          ///< Spinlock serializing instance lookup and creation.
 };
 
 } // namespace Mustard::Env::inline ObjectRegistry

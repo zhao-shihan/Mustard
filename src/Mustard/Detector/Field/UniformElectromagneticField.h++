@@ -24,23 +24,47 @@
 
 namespace Mustard::Detector::Field {
 
+/// @brief A spatially uniform (constant) electromagnetic field.
+///
+/// Both the electric and magnetic field vectors are constant throughout
+/// space. Inherits directly from @c ElectromagneticFieldBase, implementing
+/// all three query methods (@c B(), @c E(), @c BE()).
 class UniformElectromagneticField : public ElectromagneticFieldBase<UniformElectromagneticField> {
 public:
+    /// @brief Construct from six scalar components.
+    /// @param bx Magnetic field x-component.
+    /// @param by Magnetic field y-component.
+    /// @param bz Magnetic field z-component.
+    /// @param ex Electric field x-component.
+    /// @param ey Electric field y-component.
+    /// @param ez Electric field z-component.
     UniformElectromagneticField(double bx, double by, double bz,
                                 double ex, double ey, double ez);
+    /// @brief Construct from two vectors.
+    /// @param b Magnetic field vector.
+    /// @param e Electric field vector.
     UniformElectromagneticField(Vector3D b, Vector3D e);
 
+    /// @brief Returns the constant magnetic field.
+    /// @param Unused. Position parameter for interface uniformity.
+    /// @return The constant magnetic field vector.
     auto B(Point3D) const -> Vector3D { return {fBx, fBy, fBz}; }
+    /// @brief Returns the constant electric field.
+    /// @param Unused. Position parameter for interface uniformity.
+    /// @return The constant electric field vector.
     auto E(Point3D) const -> Vector3D { return {fEx, fEy, fEz}; }
+    /// @brief Returns both field components at a point.
+    /// @param x The position (ignored for uniform fields).
+    /// @return A @c BEField holding both the constant B and E vectors.
     auto BE(Point3D x) const -> BEField { return {B(x), E(x)}; }
 
 private:
-    double fBx;
-    double fBy;
-    double fBz;
-    double fEx;
-    double fEy;
-    double fEz;
+    double fBx; ///< Magnetic field x-component.
+    double fBy; ///< Magnetic field y-component.
+    double fBz; ///< Magnetic field z-component.
+    double fEx; ///< Electric field x-component.
+    double fEy; ///< Electric field y-component.
+    double fEz; ///< Electric field z-component.
 };
 
 } // namespace Mustard::Detector::Field

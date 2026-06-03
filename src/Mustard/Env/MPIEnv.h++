@@ -96,22 +96,32 @@ public:
     auto InterNodeComm() const -> const auto& { return fInterNodeComm; }
 
     /// @brief Returns local node index in the cluster node list.
+    /// @return Local node index into the node list.
     auto LocalNodeIdx() const -> const auto& { return fLocalNodeIdx; }
     /// @brief Returns metadata of the node where current rank runs.
+    /// @return Const reference to the `Node` metadata of the local node.
     auto LocalNode() const -> const auto& { return fNodeList[fLocalNodeIdx]; }
     /// @brief Returns metadata of all discovered nodes.
+    /// @return Const reference to the vector of all `Node` metadata.
     auto NodeList() const -> const auto& { return fNodeList; }
     /// @brief Returns metadata for node @p id.
     /// @param id Node index in [0, ClusterSize()).
+    /// @return Const reference to `Node` metadata at index @p id.
     auto Node(int id) const -> const auto& { return fNodeList.at(id); }
     /// @brief Returns total number of participating nodes.
+    /// @return Total number of distinct physical nodes.
     auto ClusterSize() const -> int { return fNodeList.size(); }
     /// @brief Checks whether all MPI processes are on a single node.
+    /// @return True if all MPI processes reside on a single node.
     auto OnSingleNode() const -> auto { return ClusterSize() == 1; }
     /// @brief Checks whether MPI processes span multiple nodes.
+    /// @return True if MPI processes span multiple nodes.
     auto OnCluster() const -> auto { return ClusterSize() != 1; }
 
 protected:
+    /// @brief Prints MPI-specific details (rank, node info) into the start banner.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
     auto PrintStartBannerBody(int argc, char* argv[]) const -> void;
 
 private:
@@ -123,11 +133,11 @@ private:
     };
 
 private:
-    mplr::communicator fIntraNodeComm;
-    mplr::communicator fInterNodeComm;
+    mplr::communicator fIntraNodeComm; ///< Communicator grouping processes on the same physical node.
+    mplr::communicator fInterNodeComm; ///< Communicator containing one leader rank per node.
 
-    int fLocalNodeIdx;
-    std::vector<struct Node> fNodeList;
+    int fLocalNodeIdx;                  ///< Index of the current rank's node in the node list.
+    std::vector<struct Node> fNodeList; ///< Metadata for all discovered nodes in the cluster.
 };
 
 } // namespace Mustard::Env

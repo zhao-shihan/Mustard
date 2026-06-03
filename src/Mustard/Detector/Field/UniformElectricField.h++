@@ -24,17 +24,31 @@
 
 namespace Mustard::Detector::Field {
 
+/// @brief A spatially uniform (constant) electric field.
+///
+/// The electric field vector is the same at every point in space.
+/// Inherits from @c ElectricFieldBase<UniformElectricField>, so the
+/// magnetic field component is automatically zero.
 class UniformElectricField : public ElectricFieldBase<UniformElectricField> {
 public:
+    /// @brief Construct from three scalar components.
+    /// @param ex Electric field x-component.
+    /// @param ey Electric field y-component.
+    /// @param ez Electric field z-component.
     UniformElectricField(double ex, double ey, double ez);
+    /// @brief Construct from a vector.
+    /// @param e Electric field vector.
     UniformElectricField(Vector3D e);
 
+    /// @brief Returns the constant electric field.
+    /// @param Unused. Position parameter for interface uniformity.
+    /// @return The constant electric field vector.
     auto E(Point3D) const -> Vector3D { return {fEx, fEy, fEz}; }
 
 private:
-    double fEx;
-    double fEy;
-    double fEz;
+    double fEx; ///< Electric field x-component.
+    double fEy; ///< Electric field y-component.
+    double fEz; ///< Electric field z-component.
 };
 
 } // namespace Mustard::Detector::Field

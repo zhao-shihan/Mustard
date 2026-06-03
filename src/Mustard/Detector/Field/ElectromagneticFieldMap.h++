@@ -44,6 +44,16 @@ template<typename ATransformation = Identity>
 struct BEFieldSI2CLHEP : ATransformation {
     using ATransformation::ATransformation;
 
+    /// @brief Apply the transformation chain with SI-to-CLHEP unit conversion.
+    ///
+    /// Multiplies B components (0–2) by @c CLHEP::tesla and E components
+    /// (3–5) by @c (CLHEP::volt / CLHEP::m), then applies the wrapped
+    /// transformation.
+    ///
+    /// @tparam T A 6D numeric vector type.
+    /// @param x The position (passed through to the wrapped transformation).
+    /// @param f The 6D field value @c [Bx, By, Bz, Ex, Ey, Ez] in SI units.
+    /// @return The transformed 6D field value in CLHEP units.
     template<Concept::NumericVector<double, 6> T>
     [[nodiscard]] MUSTARD_ALWAYS_INLINE auto operator()(Point3D x, T f) const -> T {
         using namespace CLHEP;
@@ -71,10 +81,36 @@ public:
     using typename ElectromagneticFieldBase<ElectromagneticFieldMap<AProjection, ATransformation>>::BEField;
 
 public:
+    /// @copydoc FieldMap3D::FieldMap3D
     using FieldMap3D<Eigen::Vector<double, 6>, AProjection, BEFieldSI2CLHEP<ATransformation>>::FieldMap3D;
 
+    /// @brief Evaluate the magnetic field at a point.
+    ///
+    /// Extracts components 0–2 from the interpolated 6D field vector.
+    ///
+    /// @param x The position at which to evaluate the field.
+    /// @return The interpolated magnetic field vector in CLHEP units.
     auto B(Point3D x) const -> Vector3D;
+    /// @brief Evaluate the electric field at a point.
+    ///
+    /// Extracts components 3–5 from the interpolated 6D field vector.
+    ///
+    /// @param x The position at which to evaluate the field.
+    /// @return The interpolated electric field vector in CLHEP units.
     auto E(Point3D x) const -> Vector3D;
+    /// @brief Evaluate both field components at a point.
+    ///
+    /// Performs a single trilinear interpolation and splits the 6D result
+    /// into B and E vectors. This is more efficient than calling @c B()
+    /// and @c E() separately.
+    ///
+    /// @param x The position at which to evaluate the field.
+    /// @return A @c BEField containing both the interpolated B and E vectors
+    /// in CLHEP units.
+    ///
+    /// @warning Calling @c B() and @c E() separately performs two independent
+    /// trilinear interpolations. Prefer @c BE() when both components
+    /// are needed at the same position.
     auto BE(Point3D x) const -> BEField;
 };
 

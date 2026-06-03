@@ -43,6 +43,16 @@ template<typename ATransformation = Identity>
 struct EFieldSI2CLHEP : ATransformation {
     using ATransformation::ATransformation;
 
+    /// @brief Apply the transformation chain with SI-to-CLHEP unit conversion.
+    ///
+    /// Multiplies the field value by @c (CLHEP::volt / CLHEP::m) to convert
+    /// from SI (V/m) to CLHEP internal units, then applies the wrapped
+    /// transformation.
+    ///
+    /// @tparam T A 3D math vector type.
+    /// @param x The position (passed through to the wrapped transformation).
+    /// @param E The E-field value in SI units.
+    /// @return The transformed E-field value in CLHEP units.
     template<Concept::MathVector3D T>
     [[nodiscard]] MUSTARD_ALWAYS_INLINE auto operator()(Point3D x, T E) const -> T {
         return static_cast<const ATransformation&>(*this)(x, T{E * (CLHEP::volt / CLHEP::m)});
@@ -60,8 +70,16 @@ template<std::regular_invocable<Point3D> AProjection = std::identity,
 class ElectricFieldMap : public ElectricFieldBase<ElectricFieldMap<AProjection, ATransformation>>,
                          public FieldMap3D<Vector3D, AProjection, EFieldSI2CLHEP<ATransformation>> {
 public:
+    /// @copydoc FieldMap3D::FieldMap3D
     using FieldMap3D<Vector3D, AProjection, EFieldSI2CLHEP<ATransformation>>::FieldMap3D;
 
+    /// @brief Evaluate the electric field at a point via interpolation.
+    ///
+    /// Delegates to @c FieldMap3D::At() which performs trilinear interpolation
+    /// on the grid data.
+    ///
+    /// @param x The position at which to evaluate the field.
+    /// @return The interpolated electric field vector in CLHEP units.
     auto E(Point3D x) const -> Vector3D { return this->At(x); }
 };
 

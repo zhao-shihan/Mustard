@@ -25,6 +25,16 @@
 
 namespace Mustard::Detector::Field {
 
+/// @brief Concept constraining a type to provide both electric and magnetic
+/// field queries.
+///
+/// Requires four expressions to be valid:
+/// - @c f.B(position) returns @c Vector3D (magnetic field at a point)
+/// - @c f.E(position) returns @c Vector3D (electric field at a point)
+/// - @c f.BE(position).B returns @c Vector3D&& (combined B component)
+/// - @c f.BE(position).E returns @c Vector3D&& (combined E component)
+///
+/// @tparam F Candidate type to check against the concept.
 template<typename F>
 concept ElectromagneticField = requires(const F f, Point3D position) {
     { f.B(position) } -> std::same_as<Vector3D>;

@@ -33,17 +33,25 @@ class SingletonPool;
 
 namespace impl {
 
+/// @brief Implementation detail. Non-copyable base for all environment classes.
+/// @details Not API. Owns the `WeakSingletonPool` and `SingletonPool`
+/// instances that back the ObjectRegistry subsystem. Constructed first in
+/// the virtual inheritance hierarchy, ensuring the pools are available
+/// before any derived environment logic executes.
 class EnvBase : public NonCopyableBase {
 protected:
+    /// @brief Constructs the base, instantiating the singleton and weak-singleton pools.
     EnvBase();
+    /// @brief Destroys the base, tearing down the pools in reverse order.
     ~EnvBase();
 
 private:
+    /// @brief Verifies consistency of fundamental type sizes across translation units.
     static auto CheckFundamentalType() -> void;
 
 private:
-    std::unique_ptr<ObjectRegistry::impl::WeakSingletonPool> fWeakSingletonPool;
-    std::unique_ptr<ObjectRegistry::impl::SingletonPool> fSingletonPool;
+    std::unique_ptr<ObjectRegistry::impl::WeakSingletonPool> fWeakSingletonPool; ///< Weak singleton registry pool.
+    std::unique_ptr<ObjectRegistry::impl::SingletonPool> fSingletonPool;         ///< Singleton registry pool.
 };
 
 } // namespace impl

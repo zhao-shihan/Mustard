@@ -26,16 +26,34 @@
 
 namespace Mustard::Env {
 
+/// @brief Environment combining MPI distribution with Monte Carlo random engines.
+/// @tparam AXoshiroWidth  Xoshiro state width (256 or 512).
+/// @details Uses diamond virtual inheritance to combine MPI distributed computing
+/// (`MPIEnv`) with pseudo-random number generation (`MonteCarloEnv<AXoshiroWidth>`).
+/// Registered as a passive singleton keyed on the Xoshiro width, so
+/// `MPIMonteCarloEnv<256>` and `MPIMonteCarloEnv<512>` are distinct registry entries.
 template<unsigned AXoshiroWidth>
 class MPIMonteCarloEnv : virtual public MPIEnv,
                          virtual public MonteCarloEnv<AXoshiroWidth>,
                          public PassiveSingleton<MPIMonteCarloEnv<AXoshiroWidth>> {
 protected:
+    /// @brief Constructs the MPI Monte Carlo environment without printing the start banner.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
+    /// @param cli   CLI object for argument processing.
+    /// @param verboseLevel  Logging verbosity threshold.
+    /// @param showBannerHint  Whether banner hint should be tracked despite suppression.
     MPIMonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
                      enum VerboseLevel verboseLevel,
                      bool showBannerHint);
 
 public:
+    /// @brief Constructs the MPI Monte Carlo environment and optionally prints banners.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
+    /// @param cli   CLI object for argument processing.
+    /// @param verboseLevel  Logging verbosity threshold.
+    /// @param showBannerHint  Whether start/exit banner behavior is enabled.
     MPIMonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
                      enum VerboseLevel verboseLevel = {},
                      bool showBannerHint = true);

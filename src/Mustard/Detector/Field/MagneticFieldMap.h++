@@ -43,6 +43,15 @@ template<typename ATransformation = Identity>
 struct BFieldSI2CLHEP : ATransformation {
     using ATransformation::ATransformation;
 
+    /// @brief Apply the transformation chain with SI-to-CLHEP unit conversion.
+    ///
+    /// Multiplies the field value by @c CLHEP::tesla to convert from SI (T)
+    /// to CLHEP internal units, then applies the wrapped transformation.
+    ///
+    /// @tparam T A 3D math vector type.
+    /// @param x The position (passed through to the wrapped transformation).
+    /// @param B The B-field value in SI units.
+    /// @return The transformed B-field value in CLHEP units.
     template<Concept::MathVector3D T>
     [[nodiscard]] MUSTARD_ALWAYS_INLINE auto operator()(Point3D x, T B) const -> T {
         return static_cast<const ATransformation&>(*this)(x, T{B * CLHEP::tesla});
@@ -60,8 +69,16 @@ template<std::regular_invocable<Point3D> AProjection = std::identity,
 class MagneticFieldMap : public MagneticFieldBase<MagneticFieldMap<AProjection, ATransformation>>,
                          public FieldMap3D<Vector3D, AProjection, BFieldSI2CLHEP<ATransformation>> {
 public:
+    /// @copydoc FieldMap3D::FieldMap3D
     using FieldMap3D<Vector3D, AProjection, BFieldSI2CLHEP<ATransformation>>::FieldMap3D;
 
+    /// @brief Evaluate the magnetic field at a point via interpolation.
+    ///
+    /// Delegates to @c FieldMap3D::At() which performs trilinear interpolation
+    /// on the grid data.
+    ///
+    /// @param x The position at which to evaluate the field.
+    /// @return The interpolated magnetic field vector in CLHEP units.
     auto B(Point3D x) const -> Vector3D { return this->At(x); }
 };
 

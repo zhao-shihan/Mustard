@@ -27,14 +27,32 @@
 
 namespace Mustard::Env {
 
+/// @brief Geant4-specialized MPI Monte Carlo environment.
+/// @details Inherits the full MPI distribution and Monte Carlo random engine
+/// capabilities via `MPIMonteCarloEnv<512>`, using Xoshiro-512 as the
+/// pseudo-random engine. Integrates Geant4 CLI module support for Geant4
+/// simulation workflows. Uses the passive singleton pattern — clients access
+/// the environment via `Geant4Env::Instance()`.
 class Geant4Env : virtual public MPIMonteCarloEnv<512>,
                   public PassiveSingleton<Geant4Env> {
 protected:
+    /// @brief Constructs the Geant4 environment without printing the start banner.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
+    /// @param cli   CLI object for Geant4 and general argument processing.
+    /// @param verboseLevel  Logging verbosity threshold.
+    /// @param showBannerHint  Whether banner hint should be tracked despite suppression.
     Geant4Env(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
               enum VerboseLevel verboseLevel,
               bool showBannerHint);
 
 public:
+    /// @brief Constructs the Geant4 environment and optionally prints banners.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
+    /// @param cli   CLI object for Geant4 and general argument processing.
+    /// @param verboseLevel  Logging verbosity threshold.
+    /// @param showBannerHint  Whether start/exit banner behavior is enabled.
     Geant4Env(int argc, char* argv[], CLI::CLI<>& cli,
               enum VerboseLevel verboseLevel = {},
               bool showBannerHint = true);

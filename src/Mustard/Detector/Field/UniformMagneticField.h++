@@ -24,17 +24,31 @@
 
 namespace Mustard::Detector::Field {
 
+/// @brief A spatially uniform (constant) magnetic field.
+///
+/// The magnetic field vector is the same at every point in space.
+/// Inherits from @c MagneticFieldBase<UniformMagneticField>, so the
+/// electric field component is automatically zero.
 class UniformMagneticField : public MagneticFieldBase<UniformMagneticField> {
 public:
+    /// @brief Construct from three scalar components.
+    /// @param bx Magnetic field x-component.
+    /// @param by Magnetic field y-component.
+    /// @param bz Magnetic field z-component.
     UniformMagneticField(double bx, double by, double bz);
+    /// @brief Construct from a vector.
+    /// @param b Magnetic field vector.
     UniformMagneticField(Vector3D b);
 
+    /// @brief Returns the constant magnetic field.
+    /// @param Unused. Position parameter for interface uniformity.
+    /// @return The constant magnetic field vector.
     auto B(Point3D) const -> Vector3D { return {fBx, fBy, fBz}; }
 
 private:
-    double fBx;
-    double fBy;
-    double fBz;
+    double fBx; ///< Magnetic field x-component.
+    double fBy; ///< Magnetic field y-component.
+    double fBz; ///< Magnetic field z-component.
 };
 
 } // namespace Mustard::Detector::Field

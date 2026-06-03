@@ -69,19 +69,22 @@ public:
     MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return Status() == Status::Expired; }
 
 private:
+    /// @brief Internal lifecycle state of the weak singleton.
     enum struct Status {
-        NotInstantiated,
-        Available,
-        Expired
+        NotInstantiated, ///< Singleton has never been created.
+        Available,       ///< Singleton instance is alive and available for use.
+        Expired          ///< Singleton was previously created but now destroyed.
     };
 
 private:
+    /// @brief Queries the weak singleton pool for the current lifecycle status.
     MUSTARD_ALWAYS_INLINE static auto Status() -> enum Status;
+    /// @brief Resolves the current instance pointer from the weak singleton pool.
     MUSTARD_NOINLINE static auto LoadInstance() -> enum Status;
 
 private:
-    static std::shared_ptr<void*> fgInstancePtr;
-    static muc::spin_mutex fgSpinMutex;
+    static std::shared_ptr<void*> fgInstancePtr; ///< Shared indirection node from the weak singleton pool.
+    static muc::spin_mutex fgSpinMutex;          ///< Spinlock serializing status lookups.
 };
 
 } // namespace Mustard::Env::inline ObjectRegistry

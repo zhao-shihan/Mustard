@@ -26,6 +26,14 @@
 
 namespace Mustard::Detector::Field {
 
+/// @brief Concept constraining a type to a magnetic-field-only model.
+///
+/// Refines @c ElectromagneticField by additionally requiring that
+/// @c F::E(position) is a valid static expression returning @c Vector3D.
+/// This means the type provides only a magnetic field; the electric field
+/// component is statically zero.
+///
+/// @tparam F Candidate type to check against the concept.
 template<typename F>
 concept MagneticField = requires(Point3D position) {
     requires ElectromagneticField<F>;

@@ -32,12 +32,11 @@ class PassiveSingleton;
 /// @brief Constraint for a type deriving from PassiveSingleton.
 /// @tparam T Candidate singleton type.
 template<typename T>
-concept PassiveSingletonified =
-    requires {
-        { T::Instance() } -> std::same_as<T&>;
-        requires std::derived_from<T, PassiveSingleton<T>>;
-        requires not std::is_base_of_v<impl::SingletonBase, T>;
-        requires Concept::NonCopyable<T>;
-    };
+concept PassiveSingletonified = requires {
+    { T::Instance() } -> std::same_as<T&>;
+    requires std::derived_from<T, PassiveSingleton<T>>;
+    requires not std::is_base_of_v<impl::SingletonBase, T>;
+    requires Concept::NonCopyable<T>;
+};
 
 } // namespace Mustard::Env::inline ObjectRegistry

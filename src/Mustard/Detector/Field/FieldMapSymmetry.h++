@@ -35,6 +35,15 @@ namespace Mustard::Detector::Field {
 template<muc::ceta_string AAxis>
     requires(AAxis == "X" or AAxis == "Y" or AAxis == "Z" or AAxis == "XY" or AAxis == "XZ" or AAxis == "YZ" or AAxis == "XYZ")
 struct CoordinateSymmetry {
+    /// @brief Fold the coordinate into the positive half-space.
+    ///
+    /// Maps the specified axis (or axes) through absolute value, effectively
+    /// projecting coordinates into the all-positive octant. Multi-axis
+    /// variants (e.g. @c "XY", @c "XYZ") recursively compose the single-axis
+    /// operations.
+    ///
+    /// @param x The coordinate to project.
+    /// @return The projected coordinate, with the designated axes non-negative.
     [[nodiscard]] MUSTARD_ALWAYS_INLINE auto operator()(Point3D x) const -> Point3D {
         if constexpr (AAxis == "X") {
             return {muc::abs(x[0]), x[1], x[2]};
@@ -59,6 +68,22 @@ struct CoordinateSymmetry {
 template<muc::ceta_string AAxis>
     requires(AAxis == "X" or AAxis == "Y" or AAxis == "Z" or AAxis == "XY" or AAxis == "XZ" or AAxis == "YZ" or AAxis == "XYZ")
 struct FieldSymmetry {
+    /// @brief Apply mirror symmetry sign flip to field components.
+    ///
+    /// In the negative half-space (determined by @c AAxis), the field
+    /// component perpendicular to the mirror plane is flipped in sign.
+    /// For 6D vectors (EM fields), the corresponding B and E components
+    /// are flipped together.
+    ///
+    /// @tparam T Field vector type (3D for B or E alone, 6D for combined EM).
+    /// @param x The coordinate (determines which half-space the point is in).
+    /// @param f The field value to transform.
+    /// @return The transformed field value with sign flips applied.
+    ///
+    /// @note For 6D vectors, components 0–2 are interpreted as B and 3–5 as
+    /// E. Under mirror symmetry, both the B pseudovector component
+    /// normal to the mirror plane and the corresponding E component
+    /// (for the same coordinate axis) flip sign together.
     template<typename T>
         requires Concept::NumericVector<T, double, 3> or Concept::NumericVector<T, double, 6>
     [[nodiscard]] MUSTARD_ALWAYS_INLINE auto operator()(Point3D x, T f) const -> T {

@@ -25,15 +25,33 @@
 
 namespace Mustard::Env {
 
+/// @brief Environment providing pseudo-random number engines for Monte Carlo simulations.
+/// @tparam AXoshiroWidth  Xoshiro state width (256 or 512).
+/// @details Wraps a `UseXoshiro<AXoshiroWidth>` instance and exposes three
+/// random engine interfaces: the native xoshiro engine, a CLHEP-compatible
+/// wrapper, and a ROOT-compatible wrapper. Inherits basic environment
+/// infrastructure (CLI, verbosity, banners) from `BasicEnv`.
 template<unsigned AXoshiroWidth>
 class MonteCarloEnv : virtual public BasicEnv,
                       public PassiveSingleton<MonteCarloEnv<AXoshiroWidth>> {
 protected:
+    /// @brief Constructs the Monte Carlo environment without printing the start banner.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
+    /// @param cli   CLI object for argument processing.
+    /// @param verboseLevel  Logging verbosity threshold.
+    /// @param showBannerHint  Whether banner hint should be tracked despite suppression.
     MonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
                   enum VerboseLevel verboseLevel,
                   bool showBannerHint);
 
 public:
+    /// @brief Constructs the Monte Carlo environment and optionally prints banners.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
+    /// @param cli   CLI object for argument processing.
+    /// @param verboseLevel  Logging verbosity threshold.
+    /// @param showBannerHint  Whether start/exit banner behavior is enabled.
     MonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
                   enum VerboseLevel verboseLevel = {},
                   bool showBannerHint = true);
@@ -43,12 +61,18 @@ public:
     using PassiveSingleton<MonteCarloEnv>::Expired;
     using PassiveSingleton<MonteCarloEnv>::Instantiated;
 
+    /// @brief Returns the native xoshiro random engine.
+    /// @return Reference to the underlying xoshiro pseudo-random number generator.
     auto RandomEngine() const -> auto& { return fXoshiro.RandomEngine(); }
+    /// @brief Returns a CLHEP-compatible wrapper around the xoshiro engine.
+    /// @return Reference to a `CLHEP::HepRandomEngine` wrapper.
     auto CLHEPRandomEngine() const -> auto& { return fXoshiro.CLHEPRandomEngine(); }
+    /// @brief Returns a ROOT-compatible wrapper around the xoshiro engine.
+    /// @return Reference to a `TRandom` wrapper.
     auto ROOTRandomEngine() const -> auto& { return fXoshiro.ROOTRandomEngine(); }
 
 private:
-    UseXoshiro<AXoshiroWidth> fXoshiro;
+    UseXoshiro<AXoshiroWidth> fXoshiro; ///< Xoshiro-based random engine provider (native, CLHEP, ROOT).
 };
 
 extern template class MonteCarloEnv<256>;

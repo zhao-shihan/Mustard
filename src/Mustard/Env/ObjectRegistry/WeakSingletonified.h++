@@ -33,20 +33,18 @@ class WeakSingleton;
 /// @brief Constraint for non-active singleton objects tracked by registry.
 /// @tparam T Candidate type.
 template<typename T>
-concept IndirectlyWeakSingletonified =
-    requires {
-        requires std::is_base_of_v<impl::WeakSingletonBase, T>;
-        requires not std::is_base_of_v<impl::SingletonBase, T>;
-        requires Concept::NonCopyable<T>;
-    };
+concept IndirectlyWeakSingletonified = requires {
+    requires std::is_base_of_v<impl::WeakSingletonBase, T>;
+    requires not std::is_base_of_v<impl::SingletonBase, T>;
+    requires Concept::NonCopyable<T>;
+};
 
 /// @brief Constraint for direct `WeakSingleton<T>` specializations.
 /// @tparam T Candidate weak singleton type.
 template<typename T>
-concept WeakSingletonified =
-    requires {
-        requires std::derived_from<T, WeakSingleton<T>>;
-        requires IndirectlyWeakSingletonified<T>;
-    };
+concept WeakSingletonified = requires {
+    requires std::derived_from<T, WeakSingleton<T>>;
+    requires IndirectlyWeakSingletonified<T>;
+};
 
 } // namespace Mustard::Env::inline ObjectRegistry
