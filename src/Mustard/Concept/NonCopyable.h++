@@ -22,7 +22,7 @@
 
 namespace Mustard::Concept {
 
-/// @brief Not moveable, implies non-copyable
+/// @brief Not moveable, implies non-copyable.
 template<typename T>
 concept NonCopyable =
     requires {

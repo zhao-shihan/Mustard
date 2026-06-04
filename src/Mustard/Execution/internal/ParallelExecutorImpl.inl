@@ -30,7 +30,7 @@ template<std::integral T>
 auto ParallelExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
-        Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));
+        Throw<std::invalid_argument>(fmt::format("task.last ({}) is less than task.first ({}).", task.last, task.first));
     }
     if (task.last == task.first) {
         return 0;
@@ -38,7 +38,7 @@ auto ParallelExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocabl
     const auto worldComm{mplr::comm_world()};
     const auto nTask{task.last - task.first};
     if (nTask < static_cast<T>(worldComm.size())) {
-        Throw<std::runtime_error>(fmt::format("Number of tasks ({}) < number of processes ({})", nTask, worldComm.size()));
+        Throw<std::runtime_error>(fmt::format("Number of tasks ({}) is less than number of processes ({}).", nTask, worldComm.size()));
     }
     this->fDispatcher->Task(task);
     this->fDispatcher->Reset();
@@ -105,7 +105,7 @@ auto ParallelExecutorImpl<T>::PrintExecutionSummary() const -> void {
         return;
     }
     if (fExecutionInfoList.empty() or this->fExecuting) {
-        PrintWarning("Execution summary not available for now");
+        PrintWarning("Execution summary not available for now.");
         return;
     }
     Print("+------------------+--------------> Summary <-------------+-------------------+\n"

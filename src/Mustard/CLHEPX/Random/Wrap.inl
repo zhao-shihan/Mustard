@@ -51,7 +51,7 @@ template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::saveStatus(gsl::czstring filename) const -> void {
     ProcessSpecificFile<std::ofstream> os{filename};
     if (not os.Opened()) [[unlikely]] {
-        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {})",
+        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {}).",
                                os.Path(), name()));
     }
     put(os);
@@ -61,7 +61,7 @@ template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::restoreStatus(gsl::czstring filename) -> void {
     ProcessSpecificFile<std::ifstream> is{filename};
     if (not is.Opened()) [[unlikely]] {
-        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {})",
+        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {}).",
                                is.Path(), name()));
     }
     get(is);
@@ -111,7 +111,7 @@ auto Wrap<PRBG>::get(std::istream& is) -> decltype(is) {
 
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 auto Wrap<PRBG>::getState(std::istream& is) -> decltype(is) {
-    PrintError("Wrap<PRBG>::getState has no effect. Do not use");
+    PrintError("Wrap<PRBG>::getState has no effect. Do not use.");
     return is;
 }
 

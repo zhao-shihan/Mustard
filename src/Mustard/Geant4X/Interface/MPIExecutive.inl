@@ -108,7 +108,7 @@ auto MPIExecutive::Execute(const std::ranges::input_range auto& cmdList) const -
             if (fIsInteractive) {
                 break;
             } else {
-                Throw<std::runtime_error>("Last command failed");
+                Throw<std::runtime_error>("Last command failed.");
             }
         }
     }

@@ -21,12 +21,12 @@ namespace Mustard::Detector::Definition {
 template<std::derived_from<DefinitionBase> ADefinition>
 auto DefinitionBase::NewDaughter(bool checkOverlaps) -> ADefinition& {
     if (typeid(ADefinition) == typeid(*this)) {
-        Throw<std::logic_error>("Trying to add the same geometry to itself as a daughter");
+        Throw<std::logic_error>("Trying to add a geometry to itself as a daughter.");
     }
 
     const auto [iterator, emplaced]{fDaughters.try_emplace(typeid(ADefinition), std::make_unique_for_overwrite<ADefinition>())};
     if (not emplaced) {
-        Throw<std::logic_error>("Trying to add the same geometry to itself as a daughter");
+        Throw<std::logic_error>("Trying to add a geometry that already exists.");
     }
     const auto& daughter{iterator->second};
     daughter->fMother = this;
@@ -92,7 +92,7 @@ auto DefinitionBase::Ready() const -> bool {
     }
     if constexpr (AMode == "warning") {
         if (Enabled()) {
-            Mustard::PrintWarning(fmt::format("{} is enabled but no volumes are placed", muc::try_demangle(typeid(*this).name())));
+            Mustard::PrintWarning(fmt::format("{} is enabled but no volumes are placed.", muc::try_demangle(typeid(*this).name())));
         }
     }
     return false;

@@ -41,7 +41,7 @@ MUSTARD_ALWAYS_INLINE auto Singleton<ADerived>::Instance() -> ADerived& {
     [[likely]] case Status::Available:
         return *static_cast<ADerived*>(*fgInstancePtr);
     [[unlikely]] case Status::Expired:
-        Throw<std::runtime_error>(fmt::format("The instance of {} has been deleted",
+        Throw<std::runtime_error>(fmt::format("The instance of {} has been deleted.",
                                               muc::try_demangle(typeid(ADerived).name())));
     }
     muc::unreachable();

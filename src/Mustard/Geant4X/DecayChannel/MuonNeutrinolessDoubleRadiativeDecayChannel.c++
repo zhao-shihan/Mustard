@@ -36,7 +36,7 @@ auto MuonNeutrinolessDoubleRadiativeDecayChannel::DaughterLeptonName(const G4Str
     } else if (parentName == "mu+") {
         return "e+";
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}", parentName));
+        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}.", parentName));
     }
 }
 

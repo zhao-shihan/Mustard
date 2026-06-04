@@ -44,7 +44,7 @@ File<>::File(FilePathOption pathOption, std::filesystem::path filePath) :
         fPath = Parallel::ProcessSpecificPath(fPath);
         break;
     default:
-        Throw<std::invalid_argument>("Invalid path option");
+        Throw<std::invalid_argument>("Path option is invalid.");
     }
 }
 
@@ -59,7 +59,7 @@ File<std::FILE>::File(FilePathOption pathOption, std::filesystem::path filePath,
 
 auto File<std::FILE>::Get() const -> std::FILE* {
     if (not Opened()) {
-        Throw<std::runtime_error>(fmt::format("Cannot open file '{}'", Path()));
+        Throw<std::runtime_error>(fmt::format("Cannot open file '{}'.", Path()));
     }
     return fFile.get();
 }
@@ -86,7 +86,7 @@ FStream<F>::FStream(FilePathOption pathOption, std::filesystem::path filePath, F
 template<std::derived_from<std::ios_base> F>
 auto FStream<F>::Get() const -> F& {
     if (not Opened()) {
-        Throw<std::runtime_error>(fmt::format("Cannot open file '{}'", Path()));
+        Throw<std::runtime_error>(fmt::format("Cannot open file '{}'.", Path()));
     }
     return *fFile;
 }
@@ -161,7 +161,7 @@ File<TFile>::File(FilePathOption pathOption, std::filesystem::path filePath, std
     File<>{pathOption, std::move(filePath)},
     fFile{TFile::Open(Path().generic_string().c_str(), mode.c_str(), "", compress, netOpt)} {
     if (not fFile) {
-        Throw<std::runtime_error>(fmt::format("Cannot open file '{}' in '{}' mode", Path(), mode));
+        Throw<std::runtime_error>(fmt::format("Cannot open file '{}' in '{}' mode.", Path(), mode));
     }
 }
 

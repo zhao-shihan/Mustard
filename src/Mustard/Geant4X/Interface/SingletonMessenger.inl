@@ -45,7 +45,7 @@ SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::~Register() 
     }
     auto& messenger{SingletonMessenger::Instance()};
     if (messenger.fDelivering) {
-        PrintError("De-register from SingletonMessenger during delivering (fatal error)");
+        PrintError("De-register from SingletonMessenger during delivering (fatal error).");
         std::terminate();
     }
     get<gtl::flat_hash_set<ARecipient*>>(messenger.fRecipientSetTuple).erase(fRecipient);
@@ -57,7 +57,7 @@ template<typename ARecipient>
 auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& action) const -> void {
     const auto& recipientSet{get<gtl::flat_hash_set<ARecipient*>>(fRecipientSetTuple)};
     if (recipientSet.empty()) {
-        PrintError(fmt::format("Error: {} not registered", muc::try_demangle(typeid(ARecipient).name())));
+        PrintError(fmt::format("{} is not registered.", muc::try_demangle(typeid(ARecipient).name())));
         return;
     }
     fDelivering = true;

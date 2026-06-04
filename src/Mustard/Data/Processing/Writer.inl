@@ -105,7 +105,7 @@ auto Writer<M>::ResolveTarget(std::string_view target) -> Target {
     if (target == "TTree") {
         return Target::TTree;
     }
-    PrintWarning(fmt::format("Unknown data writer target '{}'; defaulting to RNTupleWriter", target));
+    PrintWarning(fmt::format("Unknown data writer target '{}'; defaulting to RNTupleWriter.", target));
     return Target::RNTuple;
 }
 

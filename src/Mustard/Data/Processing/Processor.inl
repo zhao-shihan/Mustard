@@ -138,7 +138,7 @@ auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what)
     const auto worldCommSize{mplr::comm_world().size()};
     const auto byPassWillOccur{static_cast<Index>(worldCommSize) > n};
     if (byPassWillOccur) [[unlikely]] {
-        MasterPrintWarning(fmt::format("Number of processes ({}) are more than number of {} ({})", worldCommSize, what, n));
+        MasterPrintWarning(fmt::format("Number of processes ({}) are more than number of {} ({}).", worldCommSize, what, n));
     }
     return byPassWillOccur;
 }

@@ -34,7 +34,7 @@ Geant4Env::Geant4Env(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
     MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     PassiveSingleton<Geant4Env>{this} {
     if (not dynamic_cast<CLI::Geant4Module*>(&cli)) {
-        Mustard::MasterPrintWarning("Geant4 CLI module (Mustard::CLI::Geant4Module) not found");
+        Mustard::MasterPrintWarning("Geant4 CLI module (Mustard::CLI::Geant4Module) not found.");
     }
     if (const auto ddCLI{dynamic_cast<CLI::DetectorDescriptionModule<>*>(&cli)}) {
         ddCLI->DetectorDescriptionIOIfFlagged();

@@ -71,42 +71,42 @@ constexpr auto Tuple<M>::AsImpl() const -> ATuple {
 }
 
 // not good for small data model
-/* #define MUSTARD_DATA_TUPLE_VISIT_IMPL(GetImpl)                                                             \
-    if constexpr (L > R) {                                                                                 \
-        Throw<std::out_of_range>(fmt::format("Index {} out of range", i));                                 \
-    } else {                                                                                               \
-        constexpr auto idx{std::midpoint(L, R)};                                                           \
-        if (i == idx) {                                                                                    \
-            if constexpr (requires { std::invoke(std::forward<decltype(F)>(F), *GetImpl); }) {             \
-                std::invoke(std::forward<decltype(F)>(F), *GetImpl);                                       \
-                return;                                                                                    \
-            } else {                                                                                       \
-                Throw<std::invalid_argument>(fmt::format("The function provided is not invocable with {}", \
-                                                         muc::try_demangle(typeid(*GetImpl).name())));     \
-            }                                                                                              \
-        } else if (i < idx) {                                                                              \
-            return VisitImpl<L, idx - 1>(i, std::forward<decltype(F)>(F));                                 \
-        } else {                                                                                           \
-            return VisitImpl<idx + 1, R>(i, std::forward<decltype(F)>(F));                                 \
-        }                                                                                                  \
+/* #define MUSTARD_DATA_TUPLE_VISIT_IMPL(GetImpl)                                                              \
+    if constexpr (L > R) {                                                                                  \
+        Throw<std::out_of_range>(fmt::format("Index {} out of range.", i));                                 \
+    } else {                                                                                                \
+        constexpr auto idx{std::midpoint(L, R)};                                                            \
+        if (i == idx) {                                                                                     \
+            if constexpr (requires { std::invoke(std::forward<decltype(F)>(F), *GetImpl); }) {              \
+                std::invoke(std::forward<decltype(F)>(F), *GetImpl);                                        \
+                return;                                                                                     \
+            } else {                                                                                        \
+                Throw<std::invalid_argument>(fmt::format("The function provided is not invocable with {}.", \
+                                                         muc::try_demangle(typeid(*GetImpl).name())));      \
+            }                                                                                               \
+        } else if (i < idx) {                                                                               \
+            return VisitImpl<L, idx - 1>(i, std::forward<decltype(F)>(F));                                  \
+        } else {                                                                                            \
+            return VisitImpl<idx + 1, R>(i, std::forward<decltype(F)>(F));                                  \
+        }                                                                                                   \
     } */
 
 // better, seems to be optimized as a jump table
-#define MUSTARD_DATA_TUPLE_VISIT_IMPL(GetImpl)                                                             \
-    if constexpr (L > R) {                                                                                 \
-        Throw<std::out_of_range>(fmt::format("Index {} out of range", i));                                 \
-    } else {                                                                                               \
-        if (i == L) {                                                                                      \
-            constexpr auto idx{L};                                                                         \
-            if constexpr (requires { std::invoke(std::forward<decltype(F)>(F), *GetImpl); }) {             \
-                std::invoke(std::forward<decltype(F)>(F), *GetImpl);                                       \
-                return;                                                                                    \
-            } else {                                                                                       \
-                Throw<std::invalid_argument>(fmt::format("The function provided is not invocable with {}", \
-                                                         muc::try_demangle(typeid(*GetImpl).name())));     \
-            }                                                                                              \
-        }                                                                                                  \
-        return VisitImpl<L + 1, R>(i, std::forward<decltype(F)>(F));                                       \
+#define MUSTARD_DATA_TUPLE_VISIT_IMPL(GetImpl)                                                              \
+    if constexpr (L > R) {                                                                                  \
+        Throw<std::out_of_range>(fmt::format("Index {} out of range.", i));                                 \
+    } else {                                                                                                \
+        if (i == L) {                                                                                       \
+            constexpr auto idx{L};                                                                          \
+            if constexpr (requires { std::invoke(std::forward<decltype(F)>(F), *GetImpl); }) {              \
+                std::invoke(std::forward<decltype(F)>(F), *GetImpl);                                        \
+                return;                                                                                     \
+            } else {                                                                                        \
+                Throw<std::invalid_argument>(fmt::format("The function provided is not invocable with {}.", \
+                                                         muc::try_demangle(typeid(*GetImpl).name())));      \
+            }                                                                                               \
+        }                                                                                                   \
+        return VisitImpl<L + 1, R>(i, std::forward<decltype(F)>(F));                                        \
     }
 
 template<Modelized M>
@@ -128,7 +128,7 @@ MUSTARD_ALWAYS_INLINE auto Tuple<M>::DynIndex(std::string_view name) -> gsl::ind
     try {
         return fgDynIndexMap.at(name);
     } catch (const std::out_of_range& e) {
-        PrintError(fmt::format("No field named '{}'", name));
+        PrintError(fmt::format("No field named '{}' exists.", name));
         throw e;
     }
 }

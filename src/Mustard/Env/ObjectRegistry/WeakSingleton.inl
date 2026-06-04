@@ -30,7 +30,7 @@ WeakSingleton<ADerived>::WeakSingleton(ADerived* self) :
     std::scoped_lock lock{impl::WeakSingletonPool::RecursiveMutex()};
     auto& pool{impl::WeakSingletonPool::Instance()};
     if (pool.Contains<ADerived>()) {
-        Throw<std::runtime_error>(fmt::format("Trying to construct {} (weak singleton in environment) twice",
+        Throw<std::runtime_error>(fmt::format("Trying to construct {} (weak singleton in environment) twice.",
                                               muc::try_demangle(typeid(ADerived).name())));
     }
     fgInstancePtr = pool.Insert<ADerived>(self);

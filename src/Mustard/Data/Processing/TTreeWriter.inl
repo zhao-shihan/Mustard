@@ -34,7 +34,7 @@ TTreeWriter<M>::TTreeWriter(const std::string& name) :
         using Field = std::tuple_element_t<I, typename M::StdTuple>;
         const auto branch{fTree->Branch(Field::Name(), &EntryRef<I>())};
         if (branch == nullptr) {
-            Throw<std::runtime_error>(fmt::format("Failed to create branch for '{}' field '{}'", FieldPersistentTypeName<Field>(), Field::Name().sv()));
+            Throw<std::runtime_error>(fmt::format("Failed to create branch for '{}' field '{}'.", FieldPersistentTypeName<Field>(), Field::Name().sv()));
         }
         branch->SetTitle(this->template BuildFieldDescription<Field>().c_str());
     }};

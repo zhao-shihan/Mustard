@@ -30,7 +30,7 @@ template<std::integral T>
 auto SequentialExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T {
     // reset
     if (task.last < task.first) {
-        Throw<std::invalid_argument>(fmt::format("task.last ({}) < task.first ({})", task.last, task.first));
+        Throw<std::invalid_argument>(fmt::format("task.last ({}) is less than task.first ({}).", task.last, task.first));
     }
     if (task.last == task.first) {
         return 0;
@@ -74,7 +74,7 @@ template<std::integral T>
 auto SequentialExecutorImpl<T>::PrintExecutionSummary() const -> void {
     const auto& [executed, time, processorTime]{this->fExecutionInfo};
     if (executed == 0 or this->fExecuting) {
-        PrintWarning("Execution summary not available for now");
+        PrintWarning("Execution summary not available for now.");
         return;
     }
     using Seconds = muc::chrono::seconds<double>;

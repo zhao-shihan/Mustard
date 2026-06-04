@@ -29,12 +29,12 @@ template<typename ADerived>
 MUSTARD_ALWAYS_INLINE auto PassiveSingleton<ADerived>::Instance() -> ADerived& {
     switch (Base::Status()) {
     [[unlikely]] case Base::Status::NotInstantiated:
-        Throw<std::runtime_error>(fmt::format("{} (passive singleton in environment) has not been instantiated",
+        Throw<std::runtime_error>(fmt::format("{} (passive singleton in environment) has not been instantiated.",
                                               muc::try_demangle(typeid(ADerived).name())));
     [[likely]] case Base::Status::Available:
         return *static_cast<ADerived*>(*Base::fgInstancePtr);
     [[unlikely]] case Base::Status::Expired:
-        Throw<std::runtime_error>(fmt::format("The instance of {} (passive singleton in environment) has been deleted",
+        Throw<std::runtime_error>(fmt::format("The instance of {} (passive singleton in environment) has been deleted.",
                                               muc::try_demangle(typeid(ADerived).name())));
     }
     muc::unreachable();

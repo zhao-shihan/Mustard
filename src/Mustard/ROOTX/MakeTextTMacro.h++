@@ -26,7 +26,7 @@ class TMacro;
 
 namespace Mustard::ROOTX {
 
-/// @brief Creates a TMacro object that prints text when executed
+/// @brief Creates a TMacro object that prints text when executed.
 ///
 /// Generates a temporary ROOT macro file (.C) containing a function that prints the provided text.
 /// The macro is read into a TMacro object and the temporary file is automatically cleaned up.

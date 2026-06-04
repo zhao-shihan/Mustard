@@ -29,7 +29,7 @@
 
 namespace Mustard::inline Utility {
 
-/// @brief Configures Xoshiro random engines for CLHEP and ROOT frameworks
+/// @brief Configures Xoshiro random engines for CLHEP and ROOT frameworks.
 ///
 /// RAII wrapper that sets Xoshiro** for CLHEP and Xoshiro++ for ROOT as their
 /// respective global random number engines. Manages engine lifetime and ensures
@@ -44,7 +44,7 @@ namespace Mustard::inline Utility {
 ///   - Parallel computing reseeding support
 ///   - CLI-based seeding option
 ///
-/// @warning This class should be instantiated once at application startup
+/// @warning This class should be instantiated once at application startup.
 /// @see CLHEPX::Random::Xoshiro256StarStar, CLHEPX::Random::Xoshiro512StarStar
 /// @see ROOTX::Math::Xoshiro256PlusPlus, ROOTX::Math::Xoshiro512PlusPlus
 template<unsigned ABitWidth>
@@ -63,21 +63,21 @@ private:
     };
 
 public:
-    /// @brief Initialize with automatic seeding
+    /// @brief Initialize with automatic seeding.
     /// @param cli MonteCarloModule CLI interface for seed configuration (optional)
     /// @note Also performs decorrelation between CLHEP and ROOT engines
-    ///       and parallel computing reseeding
+    ///       and parallel computing reseeding.
     explicit UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli = {});
-    /// @brief Clean up and reset global engine pointers
+    /// @brief Clean up and reset global engine pointers.
     ~UseXoshiro();
 
-    /// @brief Returns the underlying pseudo‑random bit generator (PRBG)
+    /// @brief Returns the underlying pseudo‑random bit generator (PRBG).
     /// @return Reference to the Xoshiro PRBG (Xoshiro256PlusPlus or Xoshiro512PlusPlus)
     auto RandomEngine() const -> auto& { return fRandom->clhep.UnderlyingPRBG(); }
-    /// @brief Returns the CLHEP random engine wrapper
+    /// @brief Returns the CLHEP random engine wrapper.
     /// @return Reference to the CLHEP Xoshiro** engine (Xoshiro256StarStar or Xoshiro512StarStar)
     auto CLHEPRandomEngine() const -> auto& { return fRandom->clhep; }
-    /// @brief Returns the ROOT random engine
+    /// @brief Returns the ROOT random engine.
     /// @return Reference to the ROOT Xoshiro++ engine (Xoshiro256PlusPlus or Xoshiro512PlusPlus)
     auto ROOTRandomEngine() const -> auto& { return fRandom->root; }
 

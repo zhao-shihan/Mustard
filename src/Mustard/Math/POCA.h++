@@ -32,7 +32,7 @@ struct LinePoint3DPOCAResult {
     double doca;  ///< distance of closest approach
 };
 
-/// @brief Calculate the point of closest approach (POCA) between a line and a point
+/// @brief Calculate the point of closest approach (POCA) between a line and a point.
 /// @param line The line
 /// @param point The point
 /// @return The POCA result containing the POCA and the distance
@@ -45,7 +45,7 @@ struct LineLine3DPOCAResult {
     double doca;   ///< distance of closest approach
 };
 
-/// @brief Calculate the point of closest approach (POCA) between two lines
+/// @brief Calculate the point of closest approach (POCA) between two lines.
 /// @param line1 The first line
 /// @param line2 The second line
 /// @return The POCA result containing the POCAs on both lines and the distance
@@ -58,7 +58,7 @@ struct HelixAxisPOCAResult {
     double doca;     ///< distance of closest approach
 };
 
-/// @brief Calculate the point of closest approach (POCA) between a helix and an axis
+/// @brief Calculate the point of closest approach (POCA) between a helix and an axis.
 /// @param helix The helix
 /// @param axis The axis (2D point representing a line along the z direction)
 /// @return The POCA result containing the POCAs in both directions and the distance
@@ -72,7 +72,7 @@ struct HelixPointPOCAResult {
 
 /// @brief Calculate the point of closest approach (POCA) between a helix and a point
 /// within a specified phi range. This function uses Brent's method with initial
-/// grid search to find the POCA
+/// grid search to find the POCA.
 /// @param helix The helix
 /// @param point The point
 /// @param phiLow Lower bound of the helix azimuthal angle (relative to phi0)
@@ -97,7 +97,7 @@ struct HelixLinePOCAResult {
 
 /// @brief Calculate the point of closest approach (POCA) between a helix and a line
 /// within a specified phi range. This function uses Brent's method with initial
-/// grid search to find the POCA
+/// grid search to find the POCA.
 /// @param helix The helix
 /// @param line The line
 /// @param phiLow Lower bound of the helix azimuthal angle (relative to phi0)

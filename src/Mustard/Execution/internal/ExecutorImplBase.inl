@@ -33,7 +33,7 @@ ExecutorImplBase<T>::ExecutorImplBase(std::string executionName, std::string opN
     fProcessorStopwatch{},
     fExecutionInfo{} {
     if (fDispatcher == nullptr) {
-        Throw<std::invalid_argument>("Dispatcher is nullptr");
+        Throw<std::invalid_argument>("Dispatcher is nullptr.");
     }
 }
 
@@ -41,7 +41,7 @@ template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
 auto ExecutorImplBase<T>::SwitchDispatcher(std::unique_ptr<Dispatcher<T>> dispatcher) -> void {
     if (fExecuting) {
-        Throw<std::logic_error>("Try switching dispatcher during executing");
+        Throw<std::logic_error>("Try switching dispatcher during executing.");
     }
     const auto task{fDispatcher->Task()};
     fDispatcher = std::move(dispatcher);

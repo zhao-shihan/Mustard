@@ -28,7 +28,7 @@ template<Singletonified ASingleton>
     }
     const auto& [type, info]{*existed};
     if (info.instancePtr.expired()) {
-        Throw<std::runtime_error>(fmt::format("Instance pointer of {} expired", muc::try_demangle(type.name())));
+        Throw<std::runtime_error>(fmt::format("Instance pointer of {} expired.", muc::try_demangle(type.name())));
     }
     return info.instancePtr.lock();
 }
@@ -40,7 +40,7 @@ template<Singletonified ASingleton>
     const auto [_, inserted]{fInstanceMap.try_emplace(
         typeid(ASingleton), InstanceInfo{instancePtr, ssize(fInstanceMap), std::move(dispose)})};
     if (not inserted) {
-        Throw<std::runtime_error>(fmt::format("Instance of type {} already exists", muc::try_demangle(typeid(ASingleton).name())));
+        Throw<std::runtime_error>(fmt::format("Instance of type {} already exists.", muc::try_demangle(typeid(ASingleton).name())));
     }
     return instancePtr;
 }

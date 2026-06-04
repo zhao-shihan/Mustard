@@ -38,9 +38,9 @@ auto DecayPhysicsBase::UpdateDecayBRFor(const G4ParticleDefinition* particle) ->
     }
     if (mainDecayBR < -std::numeric_limits<double>::epsilon()) {
         decay->DumpInfo();
-        PrintWarning("Try resetting all BRs");
+        PrintWarning("Try resetting all BRs.");
         ResetDecayBR();
-        Throw<std::runtime_error>("Impossible to normalize decay branching ratio (sum of rare channel BR > 1), all BRs have been reset");
+        Throw<std::runtime_error>("Impossible to normalize decay branching ratio (sum of rare channel BR > 1), all BRs have been reset.");
     }
     decay->GetDecayChannel(0)->SetBR(std::max(0., mainDecayBR));
 }
@@ -57,7 +57,7 @@ auto DecayPhysicsBase::ResetDecayBRFor(const G4ParticleDefinition* particle) -> 
     }
     if (mainDecayBR < -std::numeric_limits<double>::epsilon()) {
         decay->DumpInfo();
-        Throw<std::logic_error>("Impossible to normalize decay branching ratio (sum of rare channel BR > 1)");
+        Throw<std::logic_error>("Impossible to normalize decay branching ratio (sum of rare channel BR > 1).");
     }
     decay->GetDecayChannel(0)->SetBR(std::max(0., mainDecayBR));
 }

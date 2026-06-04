@@ -33,7 +33,7 @@ CLI<>::CLI() :
     fArgcArgv{},
     fArgParser{impl::MakeDefaultArgParser()} {
     if (static bool gInstantiated{}; gInstantiated) {
-        Throw<std::logic_error>("Trying to construct CLI twice");
+        Throw<std::logic_error>("Trying to construct CLI twice.");
     } else {
         gInstantiated = true;
     }
@@ -65,11 +65,11 @@ auto CLI<>::ArgcArgv() const -> std::pair<int, char**> {
 }
 
 [[noreturn]] auto CLI<>::ThrowParsed() -> void {
-    Throw<std::logic_error>("Command line arguments has been parsed");
+    Throw<std::logic_error>("Command line arguments has been parsed.");
 }
 
 [[noreturn]] auto CLI<>::ThrowNotParsed() -> void {
-    Throw<std::logic_error>("Command line arguments has not been parsed");
+    Throw<std::logic_error>("Command line arguments has not been parsed.");
 }
 
 } // namespace Mustard::CLI

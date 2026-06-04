@@ -107,7 +107,7 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count) -> voi
         return;
     }
     if (std::to_address(first) == nullptr) {
-        Throw<std::invalid_argument>("first cannot be null when count is non-zero");
+        Throw<std::invalid_argument>("first cannot be null when count is non-zero.");
     }
     auto& storage{fShmWinOrData.template emplace<gtl::vector<T>>()};
     storage.resize(count);
@@ -138,7 +138,7 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int ro
                               intraNodeComm->get() :
                               mpiEnv.IntraNodeComm()};
     if (root < 0 or root >= intraComm.size()) {
-        Throw<std::runtime_error>("root must be in [0, comm.size())");
+        Throw<std::runtime_error>("root must be in [0, comm.size()).");
     }
 
     intraComm.ibcast(root, count)
@@ -147,7 +147,7 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int ro
         return;
     }
     if (std::to_address(first) == nullptr and intraComm.rank() == root) {
-        Throw<std::invalid_argument>("first cannot be null when count is non-zero on the root process");
+        Throw<std::invalid_argument>("first cannot be null when count is non-zero on the root process.");
     }
     const auto requiredWinSizeByte{gsl::narrow<MPI_Aint>(count * sizeof(T))};
 
@@ -213,15 +213,15 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int ro
                               interNodeComm->get() :
                               mpiEnv.InterNodeComm()};
     if (intraComm == interComm) {
-        Throw<std::invalid_argument>("intraNodeComm and interNodeComm cannot be the same communicator");
+        Throw<std::invalid_argument>("intraNodeComm and interNodeComm cannot be the same communicator.");
     }
     if (interComm.is_valid()) {
         if (root < 0 or mpiEnv.ClusterSize() <= root) {
-            Throw<std::out_of_range>(fmt::format("Invalid root node index {}: must be in [0, {})",
+            Throw<std::out_of_range>(fmt::format("Invalid root node index {}: must be in [0, {}).",
                                                  root, mpiEnv.ClusterSize()));
         }
         if (std::to_address(first) == nullptr and count != 0 and mpiEnv.LocalNodeIdx() == root) {
-            Throw<std::invalid_argument>("first cannot be null when count is non-zero on the root process");
+            Throw<std::invalid_argument>("first cannot be null when count is non-zero on the root process.");
         }
         auto bcastCount{interComm.ibcast(root, count)};
         gtl::vector<T> bcastData;

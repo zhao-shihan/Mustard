@@ -87,7 +87,7 @@ public:
     /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
-    /// @note This overload is only enabled for polarized decay
+    /// @note This overload is only enabled for polarized decay.
     MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                                    std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {},

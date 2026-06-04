@@ -34,7 +34,7 @@ SingletonPool::~SingletonPool() {
     for (auto&& [type, instanceInfo] : fInstanceMap) {
         auto& [instance, order, dispose]{instanceInfo};
         if (instance.expired()) {
-            Throw<std::runtime_error>(fmt::format("Instance pointer of {} expired", muc::try_demangle(type.name())));
+            Throw<std::runtime_error>(fmt::format("Instance pointer of {} expired.", muc::try_demangle(type.name())));
         }
         if (*instance.lock()) { // if the instance was not deleted externally
             executionList.emplace(order, &dispose);

@@ -45,7 +45,7 @@ auto MPIExecutive::CheckSequential() const -> void {
                     JustWarning,
                     "Interactive session must be run with only 1 process.\nThrowing an instance of std::logic_error.");
     }
-    Throw<std::logic_error>("Interactive session must be sequential");
+    Throw<std::logic_error>("Interactive session must be sequential.");
 }
 
 auto MPIExecutive::Execute(const std::string& macro) const -> void {
@@ -53,7 +53,7 @@ auto MPIExecutive::Execute(const std::string& macro) const -> void {
     uiPtr->ExecuteMacroFile(macro.c_str());
     if (uiPtr->GetLastReturnCode() != fCommandSucceeded) {
         if (not fIsInteractive) {
-            Throw<std::runtime_error>(fmt::format("Failed to execute file '{}'", macro));
+            Throw<std::runtime_error>(fmt::format("Failed to execute file '{}'.", macro));
         }
     }
 }

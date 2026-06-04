@@ -27,7 +27,7 @@ SharedMemoryDispatcher<T>::SharedMemoryDispatcher() :
     fTaskCounter{} {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     if (mpiEnv.OnCluster()) {
-        Throw<std::runtime_error>("World communicator involves multiple shared memory domains");
+        Throw<std::runtime_error>("World communicator involves multiple shared memory domains.");
     }
     mplr::info winInfo;
     winInfo.set("accumulate_ops", "same_op");

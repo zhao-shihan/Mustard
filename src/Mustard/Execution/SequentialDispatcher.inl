@@ -22,7 +22,7 @@ template<std::integral T>
 SequentialDispatcher<T>::SequentialDispatcher() :
     Dispatcher<T>{} {
     if (mplr::available() and mplr::comm_world().size() > 1) {
-        Throw<std::runtime_error>("Running with more than one process");
+        Throw<std::runtime_error>("Running with more than one process is not supported.");
     }
 }
 

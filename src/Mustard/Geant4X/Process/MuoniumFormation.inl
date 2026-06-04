@@ -60,7 +60,7 @@ auto MuoniumFormation<ATarget>::AtRestDoIt(const G4Track& track, const G4Step&) 
             // most probable t*
             2.)};
         if (not converged) {
-            PrintError("Antimuonium decay time disconverged");
+            PrintError("Antimuonium decay time disconverged.");
         }
         muoniumDynamicParticle->SetPreAssignedDecayProperTime(tStar * muonium_lifetime);
     } else {

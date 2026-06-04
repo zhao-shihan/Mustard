@@ -125,31 +125,31 @@ public:
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
-    /// @note This overload is only enabled for polarized decay
+    /// @note This overload is only enabled for polarized decay.
     MCMCGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
                   std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     /// @brief Get initial-state polarization vector(s)
-    /// @note This overload is only enabled for polarized process
+    /// @note This overload is only enabled for polarized process.
     auto Polarization() const -> const typename A::InitialStatePolarization&
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
     /// @brief Get initial-state polarization vector
     /// @param i Particle index (0 ≤ i < M)
-    /// @note This overload is only enabled for polarized scattering
+    /// @note This overload is only enabled for polarized scattering.
     auto Polarization(int i) const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set initial-state polarization vector(s)
     /// @param pol Polarization vector(s) (all |pol| ≤ 1)
-    /// @note This overload is only enabled for polarized process
+    /// @note This overload is only enabled for polarized process.
     auto Polarization(const typename A::InitialStatePolarization& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
     /// @brief Set polarization for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
-    /// @note This overload is only enabled for polarized scattering
+    /// @note This overload is only enabled for polarized scattering.
     auto Polarization(int i, Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 

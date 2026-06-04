@@ -89,7 +89,7 @@ auto MuonNLODecayPhysics::ConstructProcess() -> void {
 
 auto MuonNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
     if (parentName != "mu-" and parentName != "mu+") {
-        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}", parentName));
+        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}.", parentName));
     }
     // sort by initial BR! we firstly write random BRs in decrease order...
     G4VDecayChannel* ch;

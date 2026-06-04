@@ -34,7 +34,7 @@ WeakSingletonPool::WeakSingletonPool() :
     NonCopyableBase{},
     fInstanceMap{} {
     if (fgInstantiated) {
-        Throw<std::runtime_error>("Trying to instantiate the pool twice");
+        Throw<std::runtime_error>("Trying to instantiate the pool twice.");
     }
     fgInstance = this;
     fgInstantiated = true;
@@ -43,10 +43,10 @@ WeakSingletonPool::WeakSingletonPool() :
 WeakSingletonPool::~WeakSingletonPool() {
     for (auto&& [type, instance] : std::as_const(fInstanceMap)) {
         if (instance.expired()) {
-            PrintError(fmt::format("Instance pointer of {} expired", muc::try_demangle(type.name())));
+            PrintError(fmt::format("Instance pointer of {} expired.", muc::try_demangle(type.name())));
         }
         if (*instance.lock() != nullptr) [[unlikely]] {
-            PrintError(fmt::format("Instance of {} survives, implies memory leak or following undefined behavior",
+            PrintError(fmt::format("Instance of {} survives, implies memory leak or following undefined behavior.",
                                    muc::try_demangle(type.name())));
         }
     }
@@ -56,7 +56,7 @@ WeakSingletonPool::~WeakSingletonPool() {
 
 auto WeakSingletonPool::Instance() -> WeakSingletonPool& {
     if (fgInstance == nullptr) {
-        Throw<std::runtime_error>("The pool has not been instantiated or has been destructed "
+        Throw<std::runtime_error>("The pool has not been instantiated or has been destructed. "
                                   "(maybe you forgot to instantiate an environment?)");
     }
     return *fgInstance;

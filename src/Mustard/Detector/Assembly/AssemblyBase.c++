@@ -32,7 +32,7 @@ auto AssemblyBase::Get(std::type_index definition) const -> const Definition::De
             return *descendant;
         }
     }
-    Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
+    Throw<std::logic_error>(fmt::format("No {} found in assembly.", muc::try_demangle(definition.name())));
 }
 
 auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase& {
@@ -45,13 +45,13 @@ auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase
             return *descendant;
         }
     }
-    Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
+    Throw<std::logic_error>(fmt::format("No {} found in assembly.", muc::try_demangle(definition.name())));
 }
 
 auto AssemblyBase::TopComplete() -> void {
     // check not empty
     if (fTop.empty()) {
-        Throw<std::logic_error>("Empty assembly");
+        Throw<std::logic_error>("Assembly is empty.");
     }
     // check not mother-daughter
     for (auto&& [topType, pTop] : fTop) {
@@ -61,7 +61,7 @@ auto AssemblyBase::TopComplete() -> void {
         }
         for (auto&& [anotherTop, _] : fTop) {
             if (top.FindDaughter(anotherTop)) {
-                Throw<std::logic_error>(fmt::format("{} is mother of {}",
+                Throw<std::logic_error>(fmt::format("{} is mother of {}.",
                                                     muc::try_demangle(topType.name()),
                                                     muc::try_demangle(anotherTop.name())));
             }
@@ -78,7 +78,7 @@ auto AssemblyBase::TopComplete() -> void {
         mother.emplace(myMother);
     }
     if (mother.size() != 1) {
-        Throw<std::logic_error>("Assembly has many first ancestors");
+        Throw<std::logic_error>("Assembly has many first ancestors.");
     }
 }
 

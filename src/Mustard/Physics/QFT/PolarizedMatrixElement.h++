@@ -55,7 +55,7 @@ public:
     /// @brief Get polarization vector for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @return Polarization vector
-    /// @note This overload is only enabled for polarized scattering (M > 1)
+    /// @note This overload is only enabled for polarized scattering (M > 1).
     auto Polarization(int i) const -> auto
         requires(M > 1) { return fPolarization.at(i); }
 
@@ -65,7 +65,7 @@ public:
     /// @brief Set polarization for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|p| ≤ 1)
-    /// @note This overload is only enabled for polarized scattering (M > 1)
+    /// @note This overload is only enabled for polarized scattering (M > 1).
     auto Polarization(int i, Vector3D pol) -> void
         requires(M > 1);
 

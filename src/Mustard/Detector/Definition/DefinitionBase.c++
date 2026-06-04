@@ -44,7 +44,7 @@ auto DefinitionBase::FindDaughter(std::type_index definition) const -> Definitio
 
 auto DefinitionBase::RemoveDaughter(std::type_index definition) -> void {
     if (fDaughters.erase(definition) == 0) {
-        Throw<std::runtime_error>(fmt::format("{} is not a daughter of {}",
+        Throw<std::runtime_error>(fmt::format("{} is not a daughter of {}.",
                                               muc::try_demangle(definition.name()),
                                               muc::try_demangle(typeid(*this).name())));
     }
@@ -118,7 +118,7 @@ auto Export(std::filesystem::path gdmlPath, gsl::not_null<G4LogicalVolume*> logi
 
 auto DefinitionBase::Mother() const -> const DefinitionBase& {
     if (Topmost()) {
-        Throw<std::logic_error>("Topmost entity should not access Mother()");
+        Throw<std::logic_error>("Topmost entity should not access Mother().");
     }
     return *fMother;
 }
@@ -287,7 +287,7 @@ auto DefinitionBase::Export(std::filesystem::path gdmlPath, std::string_view phy
 
 auto DefinitionBase::LogicalVolumes() const -> const std::vector<G4LogicalVolume*>& {
     if (fFirstLogicalVolumes == nullptr) {
-        Throw<std::logic_error>(fmt::format("No logical volume in {}", muc::try_demangle(typeid(*this).name())));
+        Throw<std::logic_error>(fmt::format("No logical volume found in {}.", muc::try_demangle(typeid(*this).name())));
     }
     Ensures(not fLogicalVolumes.empty());
     return *fFirstLogicalVolumes;
@@ -297,7 +297,7 @@ auto DefinitionBase::LogicalVolumes(std::string_view name) const -> const std::v
     try {
         return fLogicalVolumes.at(std::string{name});
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("No logical volume named '{}' in {}",
+        Throw<std::out_of_range>(fmt::format("No logical volume named '{}' found in {}.",
                                              name, muc::try_demangle(typeid(*this).name())));
     }
 }
@@ -306,7 +306,7 @@ auto DefinitionBase::LogicalVolume(gsl::index i) const -> G4LogicalVolume* {
     try {
         return LogicalVolumes().at(i);
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("Logical volume index {} out of range in {}",
+        Throw<std::out_of_range>(fmt::format("Logical volume index {} is out of range in {}.",
                                              i, muc::try_demangle(typeid(*this).name())));
     }
 }
@@ -316,14 +316,14 @@ auto DefinitionBase::LogicalVolume(std::string_view name, gsl::index i) const ->
     try {
         return logicalVolume.at(i);
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("Logical volume index {} out of range for logical volume '{}' in {}",
+        Throw<std::out_of_range>(fmt::format("Logical volume index {} is out of range for logical volume '{}' in {}.",
                                              i, name, muc::try_demangle(typeid(*this).name())));
     }
 }
 
 auto DefinitionBase::PhysicalVolumes() const -> const std::vector<G4VPhysicalVolume*>& {
     if (fFirstPhysicalVolumes == nullptr) {
-        Throw<std::logic_error>(fmt::format("No physical volume in {}", muc::try_demangle(typeid(*this).name())));
+        Throw<std::logic_error>(fmt::format("No physical volume found in {}.", muc::try_demangle(typeid(*this).name())));
     }
     Ensures(not fPhysicalVolumes.empty());
     return *fFirstPhysicalVolumes;
@@ -333,7 +333,7 @@ auto DefinitionBase::PhysicalVolumes(std::string_view name) const -> const std::
     try {
         return fPhysicalVolumes.at(std::string{name});
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("No physical volume named '{}' in {}",
+        Throw<std::out_of_range>(fmt::format("No physical volume named '{}' found in {}.",
                                              name, muc::try_demangle(typeid(*this).name())));
     }
 }
@@ -342,7 +342,7 @@ auto DefinitionBase::PhysicalVolume(gsl::index i) const -> G4VPhysicalVolume* {
     try {
         return PhysicalVolumes().at(i);
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("Physical volume index {} out of range in {}",
+        Throw<std::out_of_range>(fmt::format("Physical volume index {} is out of range in {}.",
                                              i, muc::try_demangle(typeid(*this).name())));
     }
 }
@@ -352,7 +352,7 @@ auto DefinitionBase::PhysicalVolume(std::string_view name, gsl::index i) const -
     try {
         return physicalVolume.at(i);
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("Physical volume index {} out of range for physical volume '{}' in {}",
+        Throw<std::out_of_range>(fmt::format("Physical volume index {} is out of range for physical volume '{}' in {}.",
                                              i, name, muc::try_demangle(typeid(*this).name())));
     }
 }

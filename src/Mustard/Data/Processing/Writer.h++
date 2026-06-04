@@ -59,7 +59,7 @@ namespace Mustard::Data::inline Processing {
 /// writer.Fill(batchEntries);
 /// @endcode
 ///
-/// @note Final persistence is handled by writer destruction
+/// @note Final persistence is handled by writer destruction.
 template<Modelized M>
 class Writer {
 public:

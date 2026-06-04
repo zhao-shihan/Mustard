@@ -32,7 +32,7 @@ MonteCarloEnv<AXoshiroWidth>::MonteCarloEnv(NoBanner, int argc, char* argv[], CL
     PassiveSingleton<MonteCarloEnv>{this},
     fXoshiro{cli} {
     if (not dynamic_cast<CLI::MonteCarloModule*>(&cli)) {
-        Mustard::MasterPrintWarning("Monte Carlo CLI module (Mustard::CLI::MonteCarloModule) not found");
+        Mustard::MasterPrintWarning("Monte Carlo CLI module (Mustard::CLI::MonteCarloModule) not found.");
     }
 }
 

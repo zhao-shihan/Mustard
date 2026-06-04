@@ -52,7 +52,7 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
             }
         }()};
         if (gridData.empty()) {
-            Throw<std::runtime_error>("RDataFrame contains no grid points");
+            Throw<std::runtime_error>("RDataFrame contains no grid points.");
         }
 
         // Sort by grid coordinate (lexicographic: x, then y, then z) and check duplicate points.
@@ -61,7 +61,7 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
             return a.first == b.first;
         })};
         if (dup != gridData.cend()) {
-            Throw<std::runtime_error>(fmt::format("Point [{}, {}, {}] appeared twice",
+            Throw<std::runtime_error>(fmt::format("Point [{}, {}, {}] appeared twice.",
                                                   dup->first[0], dup->first[1], dup->first[2]));
         }
 
@@ -80,7 +80,7 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
                 // check normal delta
                 if (fGridInfo[i].n >= 2) {
                     if (not muc::isclose(x[i] - x0[i], lastDelta[i], tol)) {
-                        Throw<std::runtime_error>("Irregular grid (inconsistent delta)");
+                        Throw<std::runtime_error>("Grid is irregular (inconsistent delta).");
                     }
                 }
                 lastDelta[i] = x[i] - x0[i];
@@ -88,7 +88,7 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
                 if (fGridInfo[i].n <= 1) {
                     countChecker[i] = counter[i];
                 } else if (counter[i] != countChecker[i]) {
-                    Throw<std::runtime_error>(fmt::format("Irregular grid (inconsistent n points per row along axis {}: expected {}, got {})",
+                    Throw<std::runtime_error>(fmt::format("Grid is irregular (inconsistent n points per row along axis {}: expected {}, got {}).",
                                                           i, countChecker[i], counter[i]));
                 }
                 counter[i] = 0;
@@ -101,7 +101,7 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
         if (fieldGrid.size() != static_cast<std::size_t>(fGridInfo[0].n) *
                                     static_cast<std::size_t>(fGridInfo[1].n) *
                                     static_cast<std::size_t>(fGridInfo[2].n)) {
-            Throw<std::runtime_error>("Irregular grid (N != Nx * Ny * Nz)");
+            Throw<std::runtime_error>("Grid is irregular (N != Nx * Ny * Nz).");
         }
         for (int i{}; i < 3; ++i) {
             fGridInfo[i].min = gridData.front().first[i];
@@ -109,13 +109,13 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
         }
         for (auto&& grid : fGridInfo) {
             if (grid.n < 2) {
-                Throw<std::runtime_error>("Too few grid points (should >= 2 in each direction)");
+                Throw<std::runtime_error>("Grid has too few points (needs >= 2 in each direction).");
             }
             if (grid.n >= 1 / tol.rel) {
-                Throw<std::runtime_error>(fmt::format("Too much grid points (in each direction should < 1 / tol.rel, tol.rel == {})", tol.rel));
+                Throw<std::runtime_error>(fmt::format("Grid has too many points (each direction should have < 1 / tol.rel, tol.rel == {}).", tol.rel));
             }
             if (grid.n >= std::numeric_limits<int>::max()) {
-                Throw<std::runtime_error>("Too much grid points (in each direction should < INT_MAX)");
+                Throw<std::runtime_error>("Grid has too many points (each direction should have < INT_MAX).");
             }
             grid.delta = (grid.max - grid.min) / (grid.n - 1);
         }

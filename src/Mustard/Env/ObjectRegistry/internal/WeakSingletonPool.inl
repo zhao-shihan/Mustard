@@ -26,7 +26,7 @@ template<WeakSingletonified AWeakSingleton>
     }
     const auto& [type, instancePtr]{*existed};
     if (instancePtr.expired()) {
-        Throw<std::runtime_error>(fmt::format("Instance pointer of {} expired", muc::try_demangle(type.name())));
+        Throw<std::runtime_error>(fmt::format("Instance pointer of {} expired.", muc::try_demangle(type.name())));
     }
     return instancePtr.lock();
 }
@@ -36,7 +36,7 @@ template<WeakSingletonified AWeakSingleton>
     auto instancePtr{std::allocate_shared<void*>(Allocator<void*>{}, instance)};
     const auto [_, inserted]{fInstanceMap.try_emplace(typeid(AWeakSingleton), instancePtr)};
     if (not inserted) {
-        Throw<std::runtime_error>(fmt::format("Instance of type {} already exists", muc::try_demangle(typeid(AWeakSingleton).name())));
+        Throw<std::runtime_error>(fmt::format("Instance of type {} already exists.", muc::try_demangle(typeid(AWeakSingleton).name())));
     }
     return instancePtr;
 }

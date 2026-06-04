@@ -82,7 +82,7 @@ auto {0}() -> void {{
     auto macro{std::make_unique<TMacro>(name.c_str(), "Generate GDML file")};
     const auto lines{macro->ReadFile(tempMacroPath.generic_string().c_str())};
     if (lines == 0) {
-        Throw<std::runtime_error>("Error opening temp macro file");
+        Throw<std::runtime_error>("Error opening temp macro file.");
     }
     return macro;
 }

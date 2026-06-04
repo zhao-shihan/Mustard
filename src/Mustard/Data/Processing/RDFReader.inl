@@ -33,7 +33,7 @@ RDFReader<T, D, N>::RDFReader(Index size, DataFrameType rdf) :
     fExhausted{},
     fReading{} {
     if (ROOT::IsImplicitMTEnabled()) {
-        Throw<std::runtime_error>("RDataFrame reader cannot be used with IMT enabled");
+        Throw<std::runtime_error>("RDataFrame reader cannot be used with IMT enabled.");
     }
     // Start reader thread
     fReader = std::jthread{std::mem_fn(&RDFReader::ReaderThreadFunction), this};

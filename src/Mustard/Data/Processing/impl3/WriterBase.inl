@@ -97,7 +97,7 @@ auto WriterBase<M, ADerived>::WithSubdirectory(const std::string& name, F&& crea
         const auto _{gsl::finally([pwd] { gDirectory = pwd; })};
         pwd->mkdir(dirName.c_str());
         if (not pwd->cd(dirName.c_str())) [[unlikely]] {
-            PrintError(fmt::format("Failed to change to ROOT directory '{}'", dirName));
+            PrintError(fmt::format("Failed to change to ROOT directory '{}'.", dirName));
         }
         std::invoke(std::forward<F>(create), objName);
     }

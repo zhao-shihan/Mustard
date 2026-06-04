@@ -85,21 +85,21 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
         return;
     }
     if (fNVertex < 0) [[unlikely]] {
-        Mustard::PrintError("Number of vertices per event is negative");
+        Mustard::PrintError("Number of vertices per event is negative.");
         return;
     }
 
     auto& [reader, weight, t, x, y, z, thePDGID, theE, thePX, thePY, thePZ]{fEventData};
     if (reader.IsInvalid()) [[unlikely]] {
-        Mustard::PrintError("TTreeReader is invalid");
+        Mustard::PrintError("TTreeReader is invalid.");
         return;
     }
     if (reader.GetEntries() == 0) [[unlikely]] {
-        Mustard::PrintError("TTreeReader has no entry to read");
+        Mustard::PrintError("TTreeReader has no entry to read.");
         return;
     }
     if (reader.GetEntries() % fNVertex != 0) [[unlikely]] {
-        Mustard::PrintWarning("The number of entries cannot be exactly divided by the number of vertices");
+        Mustard::PrintWarning("The number of entries cannot be exactly divided by the number of vertices.");
     }
     // use 'last entry' as reference index looks not perfect but G4Run may be destructed so I have to do so
     const auto iBegin{fEndEntryForCurrentRun - run->GetNumberOfEventToBeProcessed() + event->GetEventID()};
@@ -109,7 +109,7 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
         if (not reader.Next()) {
             reader.Restart();
             if (not reader.Next()) [[unlikely]] {
-                Mustard::PrintError("Failed to read event data");
+                Mustard::PrintError("Failed to read event data.");
                 return;
             }
         }
@@ -120,7 +120,7 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
             ssize(pX) != nParticle or
             ssize(pY) != nParticle or
             ssize(pZ) != nParticle) {
-            Mustard::PrintError(fmt::format("pdgID.size() ({}), E.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent, skipping",
+            Mustard::PrintError(fmt::format("pdgID.size() ({}), E.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent, skipping.",
                                             pdgID.size(), e.size(), pX.size(), pY.size(), pZ.size()));
             return;
         }
@@ -146,7 +146,7 @@ auto DataReaderPrimaryGenerator::CheckG4Status() -> void {
     case G4State_Quit:
     case G4State_Abort:
     default:
-        Mustard::Throw<std::runtime_error>("Invalid G4 application state");
+        Mustard::Throw<std::runtime_error>("Invalid G4 application state.");
     }
 }
 

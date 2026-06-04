@@ -25,7 +25,7 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
     fEventID{},
     fEntry{} {
     if (ROOT::IsImplicitMTEnabled()) {
-        Throw<std::runtime_error>("ROOT IMT enabled. Cannot build RDF event info");
+        Throw<std::runtime_error>("ROOT IMT is enabled, cannot build RDF event info.");
     }
 
     muc::chrono::stopwatch stopwatch;
@@ -50,7 +50,7 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
             }
             const auto [_, uniqueEventID]{eventIDSet.emplace(evtID)};
             if (not uniqueEventID) {
-                Throw<std::runtime_error>(fmt::format("Event {} is not successive", evtID));
+                Throw<std::runtime_error>(fmt::format("Event {} is not successive.", evtID));
             }
             eventID.emplace_back(evtID);
             entry.emplace_back(lastEntry);
@@ -71,7 +71,7 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
     // Check rootNodeIdx validity before building data
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     if (rootNodeIdx < 0 or mpiEnv.ClusterSize() <= rootNodeIdx) {
-        Throw<std::out_of_range>(fmt::format("Invalid root node index {}: must be in [0, {})", rootNodeIdx, mpiEnv.ClusterSize()));
+        Throw<std::out_of_range>(fmt::format("Invalid root node index {}: must be in [0, {}).", rootNodeIdx, mpiEnv.ClusterSize()));
     }
 
     // Store communicators for the lifetime of shared memory windows.
@@ -112,7 +112,7 @@ MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rd
     fMinLocalEvtIdxAfter{},
     fPerRDFEventInfo{} {
     if (ROOT::IsImplicitMTEnabled()) {
-        Throw<std::runtime_error>("ROOT IMT enabled. Cannot build RDF event info");
+        Throw<std::runtime_error>("ROOT IMT is enabled, cannot build RDF event info.");
     }
     constexpr auto nRDF{static_cast<gsl::index>(N)};
 

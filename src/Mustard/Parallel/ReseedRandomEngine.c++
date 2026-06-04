@@ -48,7 +48,7 @@ namespace Mustard::Parallel {
 namespace impl {
 namespace {
 
-/// @brief Generates a set of unique seeds for MPI ranks using a master RNG
+/// @brief Generates a set of unique seeds for MPI ranks using a master RNG.
 ///
 /// Helper function called only by MPI rank 0 to generate a set of unique seeds
 /// for all MPI processes. Uses Xoshiro256++ RNG initialized with the provided seed.
@@ -58,7 +58,7 @@ namespace {
 ///
 /// @return Set of unique seeds in range [1, max-1] with size = MPI world size
 ///
-/// @note Called exclusively by MPI rank 0 during seed generation
+/// @note Called exclusively by MPI rank 0 during seed generation.
 /// @warning Must satisfy: worldComm.rank() == 0 (enforced by Expects)
 template<std::unsigned_integral T>
 auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> gtl::flat_hash_set<T> {
@@ -139,10 +139,10 @@ auto ReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> v
     }
 
     if (get<0>(seedRecv) != (clhepRng == nullptr)) {
-        Throw<std::invalid_argument>("CLHEP random engine null/!null inconsistent");
+        Throw<std::invalid_argument>("CLHEP random engine null/!null inconsistent.");
     }
     if (get<2>(seedRecv) != (tRandom == nullptr)) {
-        Throw<std::invalid_argument>("ROOT random engine null/!null inconsistent");
+        Throw<std::invalid_argument>("ROOT random engine null/!null inconsistent.");
     }
     if (clhepRng) {
         Ensures(get<1>(seedRecv) != 0 and get<1>(seedRecv) != -1); // not 0x00...00 and not 0xff...ff

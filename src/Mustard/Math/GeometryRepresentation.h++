@@ -35,7 +35,7 @@ struct Line2D {
     Point2D point;      ///< A point on the line
     Vector2D direction; ///< Direction of the line (need not be normalized)
 
-    /// @brief Get point at parameter t
+    /// @brief Get point at parameter t.
     /// @param t Parameter along the line
     /// @return Point on the line at parameter t
     auto PointAt(double t) const -> Point2D {
@@ -51,7 +51,7 @@ struct Line3D {
     Point3D point;      ///< A point on the line
     Vector3D direction; ///< Direction of the line (need not be normalized)
 
-    /// @brief Get point at parameter t
+    /// @brief Get point at parameter t.
     /// @param t Parameter along the line
     /// @return Point on the line at parameter t
     auto PointAt(double t) const -> Point3D {
@@ -94,7 +94,7 @@ struct Helix {
     double z0;      ///< z coordinate at reference point
     double lambda;  ///< Dip angle (-pi, pi)\{0}
 
-    /// @brief Get point at helix azimuthal angle phi (relative to phi0)
+    /// @brief Get point at helix azimuthal angle phi (relative to phi0).
     /// @param phi Helix azimuthal angle (relative to phi0)
     /// @return Point on the helix at azimuthal angle phi
     auto PointAt(double phi) const -> Point3D {
@@ -104,7 +104,7 @@ struct Helix {
                 z0 + radius * phi / std::tan(lambda)};
     }
 
-    /// @brief Get tangent direction at helix azimuthal angle phi (relative to phi0)
+    /// @brief Get tangent direction at helix azimuthal angle phi (relative to phi0).
     /// @param phi Helix azimuthal angle (relative to phi0)
     /// @return Tangent vector on the helix at azimuthal angle phi
     auto DirectionAt(double phi) const -> Vector3D {
@@ -115,10 +115,10 @@ struct Helix {
                 cosLambda};
     }
 
-    /// @brief Get point and direction at helix azimuthal angle phi (relative to phi0)
+    /// @brief Get point and direction at helix azimuthal angle phi (relative to phi0).
     /// @param phi Helix azimuthal angle (relative to phi0)
     /// @return Pair of point and tangent vector on the helix at azimuthal angle phi
-    /// @note This can be more efficient than calling PointAt() and DirectionAt() separately
+    /// @note This can be more efficient than calling PointAt() and DirectionAt() separately.
     auto PointDirectionAt(double phi) const -> std::pair<Point3D, Vector3D> {
         const auto [sinX, cosX]{muc::sincos(phi + phi0)};
         const auto [sinLambda, cosLambda]{muc::sincos(lambda)};

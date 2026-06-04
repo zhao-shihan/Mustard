@@ -72,7 +72,7 @@ constexpr auto ToG3(const U& x) -> U {
     } else if constexpr (ACategory == "Illuminance") {
         return x * (TGeoUnit::lux / CLHEP::lux);
     } else {
-        static_assert(muc::dependent_false<U>, "No such unit category");
+        static_assert(muc::dependent_false<U>, "No such unit category exists.");
     }
 }
 
@@ -135,7 +135,7 @@ constexpr auto ToG4(const U& x) -> U {
     } else if constexpr (ACategory == "Illuminance") {
         return x * (CLHEP::lux / TGeoUnit::lux);
     } else {
-        static_assert(muc::dependent_false<U>, "No such unit category");
+        static_assert(muc::dependent_false<U>, "No such unit category exists.");
     }
 }
 

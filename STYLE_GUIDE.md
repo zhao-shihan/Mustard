@@ -1103,8 +1103,10 @@ constexpr auto NormSq(const Concept::NumericVectorFloatingPoint auto& x) {
 ```
 
 - **Terminal Periods**: 
-  - `@brief`, `@param`, `@return`, `@tparam` tags are typically noun phrases — do **not** end with a period (`.`)
-  - `@note`, `@warning` tags and standalone `///` description sentences are typically complete sentences — end with a period (`.`)
+  - Noun phrases: do **not** end with a period (`.`)
+  - Complete sentences: end with a period (`.`)
+  - `@brief`, `@param`, `@return`, `@tparam` tags are typically noun phrases
+  - `@note`, `@warning` tags and standalone `///` are typically complete sentences
   - Multi-line `///` descriptions should have a period at the end of the final sentence
 
 ### Implementation Comments

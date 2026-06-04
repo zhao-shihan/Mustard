@@ -48,51 +48,51 @@ namespace Mustard::CLHEPX::Random {
 /// @tparam PRBG Mustard UniformPseudoRandomBitGenerator type to wrap
 ///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator
 ///
-/// @note Implements all CLHEP engine virtual methods except getState()
-/// @warning getState() is intentionally non-functional
+/// @note Implements all CLHEP engine virtual methods except getState().
+/// @warning getState() is intentionally non-functional.
 template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
 class Wrap : public CLHEP::HepRandomEngine {
 public:
-    /// @brief Construct with default seed
+    /// @brief Construct with default seed.
     Wrap() = default;
-    /// @brief Construct with specific seed
+    /// @brief Construct with specific seed.
     /// @param seed Initialization value (converted to PRBG::SeedType)
     explicit Wrap(long seed);
 
     ~Wrap() = default;
 
-    /// @brief Generate uniform double in 0--1
+    /// @brief Generate uniform double in 0--1.
     virtual auto flat() -> double override { return Math::Random::Uniform<double>{}(fPRBG); }
-    /// @brief Fill array with uniform doubles
+    /// @brief Fill array with uniform doubles.
     /// @param size Number of values to generate
     /// @param vect Pre-allocated output buffer
     virtual auto flatArray(const int size, double* vect) -> void override;
 
-    /// @brief Seed the engine (single seed)
+    /// @brief Seed the engine (single seed).
     /// @param seed New seed value
     /// @param (ignored) Stream index parameter (CLHEP compatibility)
     virtual auto setSeed(long seed, int = 0) -> void override;
-    /// @brief Seed the engine (seed array)
+    /// @brief Seed the engine (seed array).
     /// @param seeds Pointer to seed array (uses first element)
     /// @param (ignored) Stream index parameter
     virtual auto setSeeds(const long* seeds, int = 0) -> void override;
 
-    /// @brief Save engine state to file
+    /// @brief Save engine state to file.
     /// @param filename Output file path
     virtual auto saveStatus(gsl::czstring filename) const -> void override;
-    /// @brief Restore engine state from file
+    /// @brief Restore engine state from file.
     /// @param filename Input file path
     virtual auto restoreStatus(gsl::czstring filename) -> void override;
-    /// @brief Print engine status to stdout
+    /// @brief Print engine status to stdout.
     virtual auto showStatus() const -> void override;
 
-    /// @brief Get engine type name
+    /// @brief Get engine type name.
     /// @return Demangled type name of the wrapped PRBG
     virtual auto name() const -> std::string override { return muc::try_demangle(typeid(Wrap).name()); }
 
-    /// @brief Serialize engine state to output stream
+    /// @brief Serialize engine state to output stream.
     virtual auto put(std::ostream& os) const -> decltype(os) override;
-    /// @brief Deserialize engine state from input stream
+    /// @brief Deserialize engine state from input stream.
     virtual auto get(std::istream& is) -> decltype(is) override;
 
     /// @name Random-number-generating conversion operators
@@ -102,17 +102,17 @@ public:
     virtual operator unsigned int() override { return fPRBG(); }
     /// @}
 
-    /// @brief Access underlying PRBG
+    /// @brief Access underlying PRBG.
     /// @return Reference to the adapted Mustard PRBG
     auto UnderlyingPRBG() -> PRBG& { return fPRBG; }
-    /// @brief Access underlying PRBG
+    /// @brief Access underlying PRBG.
     /// @return Reference to the adapted Mustard PRBG
     auto UnderlyingPRBG() const -> const PRBG& { return fPRBG; }
 
 private:
     /// @brief [Disabled] CLHEP state restoration method
     /// @return Input stream unchanged
-    /// @warning DO NOT USE
+    /// @warning DO NOT USE.
     virtual auto getState(std::istream& is) -> decltype(is) override;
 
 private:

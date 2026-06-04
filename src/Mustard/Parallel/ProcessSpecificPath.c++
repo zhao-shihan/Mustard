@@ -32,10 +32,10 @@ namespace Mustard::Parallel {
 auto ProcessSpecificPath(const std::filesystem::path& path) -> std::filesystem::path {
     auto stem{path.stem()};
     if (stem.empty()) {
-        Throw<std::invalid_argument>("Empty file name");
+        Throw<std::invalid_argument>("File name is empty.");
     }
     if (stem == "." or stem == "..") {
-        Throw<std::invalid_argument>(fmt::format("Invalid file name '{}'", stem));
+        Throw<std::invalid_argument>(fmt::format("File name '{}' is invalid.", stem));
     }
 
     if (not mplr::available()) {

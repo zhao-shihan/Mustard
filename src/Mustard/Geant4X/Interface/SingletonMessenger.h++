@@ -48,7 +48,7 @@ namespace Mustard::Geant4X::inline Interface {
 /// @tparam ADerived CRTP-derived class type (must inherit from SingletonMessenger)
 /// @tparam ARecipients... List of recipient types that can register with this messenger
 ///
-/// @warning Deregistration during delivery will terminate the program
+/// @warning Deregistration during delivery will terminate the program.
 template<typename ADerived, typename... ARecipients>
 class SingletonMessenger : public Env::Singleton<ADerived>,
                            public G4UImessenger {
@@ -87,7 +87,7 @@ protected:
     /// @brief Deliver action to multiple recipient types simultaneously
     /// @tparam Rs Two or more recipient types to target
     /// @param action Callable object accepting references to all Rs types
-    /// @note All Rs types must be in the template recipient list
+    /// @note All Rs types must be in the template recipient list.
     template<typename... Rs, typename F>
         requires(sizeof...(Rs) >= 2 and
                  (... and (std::invocable<F &&, Rs&> and muc::is_uniquely_contained_in_v<Rs, ARecipients...>)))

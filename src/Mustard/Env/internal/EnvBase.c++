@@ -68,7 +68,7 @@ EnvBase::EnvBase() :
 
     if (static bool gInstantiated{false};
         gInstantiated) {
-        Throw<std::runtime_error>("Trying to construct environment twice");
+        Throw<std::runtime_error>("Trying to construct environment twice.");
     } else {
         gInstantiated = true;
     }

@@ -136,7 +136,7 @@ auto DescriptionIO::ExportImpl(const std::filesystem::path& yamlPath, const std:
 
     ProcessSpecificFile<std::ofstream> yamlOut{yamlPath};
     if (not yamlOut.Opened()) [[unlikely]] {
-        PrintError("Cannot open yaml file, export failed");
+        PrintError("Cannot open yaml file, export failed.");
         return {};
     }
     EmitYAML(geomYaml, fileComment, yamlOut);

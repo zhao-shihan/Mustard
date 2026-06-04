@@ -40,7 +40,7 @@ namespace Mustard::ROOTX::Math {
 ///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator
 ///   - Must provide SeedType and Seed() method
 ///
-/// @note Inherits from ROOT's TRandom for full framework integration
+/// @note Inherits from ROOT's TRandom for full framework integration.
 /// @warning GetSeed() is intentionally non-functional (ROOT API limitation)
 template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
 class AsTRandom : public TRandom {

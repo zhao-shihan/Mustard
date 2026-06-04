@@ -82,7 +82,7 @@ auto MPIRunManager::DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSe
         ProcessOneEvent(eventID);
         TerminateOneEvent();
         if (runAborted) {
-            Throw<std::runtime_error>("G4Run aborted");
+            Throw<std::runtime_error>("G4Run aborted.");
         }
     });
     // If multi-threading, TerminateEventLoop() is invoked after all threads are finished.

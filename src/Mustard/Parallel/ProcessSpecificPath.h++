@@ -22,7 +22,7 @@
 
 namespace Mustard::Parallel {
 
-/// @brief Generates a unique filesystem path for parallel processing environments
+/// @brief Generates a unique filesystem path for parallel processing environments.
 ///
 /// This function creates a process-specific path to avoid file conflicts in MPI environments.
 /// In single-process execution, returns the original path unchanged. In multi-process environments:

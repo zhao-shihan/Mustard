@@ -39,7 +39,7 @@ namespace Mustard::ROOTX::Math {
 ///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator concept
 ///   - Must provide SeedType, Seed(), Min(), Max(), and operator()
 ///
-/// @note Inherits from ROOT::Math::TRandomEngine to integrate with ROOT framework
+/// @note Inherits from ROOT::Math::TRandomEngine to integrate with ROOT framework.
 template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
 class AsTRandomEngine : public ROOT::Math::TRandomEngine {
 public:

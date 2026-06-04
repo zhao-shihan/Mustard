@@ -33,7 +33,7 @@ auto MakeCodedDispatcher(std::string_view dispatcher) -> std::unique_ptr<Dispatc
         std::vector<std::string_view> available(dispatcherMap.size());
         std::ranges::transform(dispatcherMap, available.begin(), [](auto&& s) { return s.first; });
         muc::timsort(available);
-        Throw<std::out_of_range>(fmt::format("Dispatcher '{}' not found, available are {}", dispatcher, available));
+        Throw<std::out_of_range>(fmt::format("Dispatcher '{}' not found, available are {}.", dispatcher, available));
     }
 }
 

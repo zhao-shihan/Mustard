@@ -26,7 +26,7 @@
 
 namespace Mustard::inline Math {
 
-/// @brief Represents a value with associated uncertainty for error propagation
+/// @brief Represents a value with associated uncertainty for error propagation.
 ///
 /// The Estimate struct encapsulates a value and its uncertainty,
 /// providing mathematical operations that properly propagate uncertainties
@@ -36,7 +36,7 @@ struct Estimate {
     double uncertainty;
 };
 
-/// @brief Add two estimates with uncertainty propagation
+/// @brief Add two estimates with uncertainty propagation.
 /// @param a First estimate
 /// @param b Second estimate
 /// @return Sum with combined uncertainty: √(σₐ² + σ_b²)
@@ -44,7 +44,7 @@ inline auto operator+(const Estimate& a, const Estimate& b) -> Estimate {
     return {a.value + b.value, muc::hypot(a.uncertainty, b.uncertainty)};
 }
 
-/// @brief Subtract two estimates with uncertainty propagation
+/// @brief Subtract two estimates with uncertainty propagation.
 /// @param a First estimate
 /// @param b Second estimate
 /// @return Difference with combined uncertainty: √(σₐ² + σ_b²)
@@ -52,7 +52,7 @@ inline auto operator-(const Estimate& a, const Estimate& b) -> Estimate {
     return {a.value - b.value, muc::hypot(a.uncertainty, b.uncertainty)};
 }
 
-/// @brief Multiply two estimates with uncertainty propagation
+/// @brief Multiply two estimates with uncertainty propagation.
 /// @param a First estimate
 /// @param b Second estimate
 /// @return Product with relative uncertainty: √((b·σₐ)² + (a·σ_b)²)
@@ -60,7 +60,7 @@ inline auto operator*(const Estimate& a, const Estimate& b) -> Estimate {
     return {a.value * b.value, muc::hypot(b.value * a.uncertainty, a.value * b.uncertainty)};
 }
 
-/// @brief Divide two estimates with uncertainty propagation
+/// @brief Divide two estimates with uncertainty propagation.
 /// @param a Numerator estimate
 /// @param b Denominator estimate
 /// @return Quotient with relative uncertainty: √((b·σₐ)² + (a·σ_b)²)/b²
@@ -68,42 +68,42 @@ inline auto operator/(const Estimate& a, const Estimate& b) -> Estimate {
     return {a.value / b.value, muc::hypot(b.value * a.uncertainty, a.value * b.uncertainty) / muc::pow(b.value, 2)};
 }
 
-/// @brief Add constant to estimate (uncertainty unchanged)
+/// @brief Add constant to estimate (uncertainty unchanged).
 constexpr auto operator+(const Estimate& a, double x) -> Estimate {
     return {a.value + x, a.uncertainty};
 }
 
-/// @brief Add estimate to constant (uncertainty unchanged)
+/// @brief Add estimate to constant (uncertainty unchanged).
 constexpr auto operator+(double x, const Estimate& a) -> Estimate {
     return {x + a.value, a.uncertainty};
 }
 
-/// @brief Subtract constant from estimate (uncertainty unchanged)
+/// @brief Subtract constant from estimate (uncertainty unchanged).
 constexpr auto operator-(const Estimate& a, double x) -> Estimate {
     return {a.value - x, a.uncertainty};
 }
 
-/// @brief Subtract estimate from constant (uncertainty unchanged)
+/// @brief Subtract estimate from constant (uncertainty unchanged).
 constexpr auto operator-(double x, const Estimate& a) -> Estimate {
     return {x - a.value, a.uncertainty};
 }
 
-/// @brief Multiply estimate by constant (uncertainty scaled)
+/// @brief Multiply estimate by constant (uncertainty scaled).
 constexpr auto operator*(const Estimate& a, double x) -> Estimate {
     return {a.value * x, a.uncertainty * x};
 }
 
-/// @brief Multiply constant by estimate (uncertainty scaled)
+/// @brief Multiply constant by estimate (uncertainty scaled).
 constexpr auto operator*(double x, const Estimate& a) -> Estimate {
     return {x * a.value, x * a.uncertainty};
 }
 
-/// @brief Divide estimate by constant (uncertainty scaled)
+/// @brief Divide estimate by constant (uncertainty scaled).
 constexpr auto operator/(const Estimate& a, double x) -> Estimate {
     return {a.value / x, a.uncertainty / x};
 }
 
-/// @brief Divide constant by estimate
+/// @brief Divide constant by estimate.
 /// @return Reciprocal with uncertainty: |x/a²|·σₐ
 constexpr auto operator/(double x, const Estimate& a) -> Estimate {
     return {x / a.value, muc::abs(x / muc::pow(a.value, 2)) * a.uncertainty};

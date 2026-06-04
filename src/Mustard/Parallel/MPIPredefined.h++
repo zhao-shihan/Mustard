@@ -27,7 +27,7 @@
 namespace Mustard::Parallel {
 
 /// @concept MPIPredefined
-/// @brief Checks if a type is a predefined MPI datatype
+/// @brief Checks if a type is a predefined MPI datatype.
 ///
 /// This concept verifies that a type matches one of the fundamental datatypes
 /// directly supported by MPI standard. It ensures the type can be used with

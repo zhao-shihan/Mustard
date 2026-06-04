@@ -25,7 +25,7 @@ class TRandom;
 
 namespace Mustard::Parallel {
 
-/// @brief Reseeds random engines for parallel MPI environments
+/// @brief Reseeds random engines for parallel MPI environments.
 ///
 /// Ensures independent random streams across MPI ranks by:
 ///   - Generating unique seeds on rank 0 using CLHEP/ROOT RNGs
@@ -46,9 +46,9 @@ namespace Mustard::Parallel {
 /// @throws std::invalid_argument If engine null-state mismatches between rank 0 and current rank
 ///
 /// @note Collective MPI operation (must be called by all ranks)
-/// @warning Seeds avoid 0 and max values to prevent engine-specific edge cases
+/// @warning Seeds avoid 0 and max values to prevent engine-specific edge cases.
 /// @warning CLHEP seed set with luxury=3, ROOT with SetSeed()
-/// @remark Intra-rank consistency checks prevent null/non-null engine mismatches
+/// @remark Intra-rank consistency checks prevent null/non-null engine mismatches.
 auto ReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng = {}, TRandom* tRandom = {}) -> void;
 
 } // namespace Mustard::Parallel
