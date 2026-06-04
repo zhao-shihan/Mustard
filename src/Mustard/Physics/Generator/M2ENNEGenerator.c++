@@ -33,9 +33,9 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, Vector3D momentum,
-                                 std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                 std::optional<double> thinningRatio, std::optional<int> acfSampleSize,
                                  std::optional<double> stepSize) :
-    MultipleTryMetropolisGenerator{{}, {}, {}, thinningRatio, acfSampleSize.value_or(100000), stepSize.value_or(0.1)} {
+    MultipleTryMetropolisGenerator{{}, {}, {}, thinningRatio, acfSampleSize.value_or(1 << 17), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2});
@@ -47,7 +47,7 @@ auto M2ENNEGenerator::Parent(std::string_view parent) -> void {
     } else if (parent == "antimuonium") {
         PDGID({11, -12, 14, -11});
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent should be muonium or antimuonium, got '{}'", parent));
+        Throw<std::invalid_argument>(fmt::format("Parent should be muonium or antimuonium, got '{}'.", parent));
     }
 }
 

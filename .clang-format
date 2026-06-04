@@ -141,6 +141,9 @@ IncludeCategories:
   - Regex: '"Eigen/.*"'
     Priority: 8
     CaseSensitive: true
+  - Regex: '"unsupported/Eigen/.*"'
+    Priority: 8
+    CaseSensitive: true
   - Regex: '"gsl.*\.h"'
     Priority: 9
     CaseSensitive: true

@@ -139,24 +139,24 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
     for (auto&& i : std::as_const(set)) {
         if (i < 0 or i >= N) [[unlikely]] {
-            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0, {}), got {}), ignoring the set", N, i));
+            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0, {}), got {}), ignoring the set.", N, i));
             return;
         }
     }
     muc::timsort(set);
     if (const auto duplicate{std::ranges::unique(set)};
         not duplicate.empty()) [[unlikely]] {
-        PrintWarning(fmt::format("There is/are {} duplicate index/indices in identical set, removing it/them", duplicate.size()));
+        PrintWarning(fmt::format("There is/are {} duplicate index/indices in identical set, removing it/them.", duplicate.size()));
         set.erase(duplicate.begin(), duplicate.end());
     }
     if (set.size() < 2) [[unlikely]] {
-        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
+        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it.", set.size()));
         return;
     }
     for (auto&& addedSet : std::as_const(fIdenticalSet)) {
         const auto duplicated{std::ranges::find_first_of(addedSet, set)};
         if (duplicated != addedSet.cend()) [[unlikely]] {
-            PrintError(fmt::format("Particle {} added across different identical sets, ignoring the set", *duplicated));
+            PrintError(fmt::format("Particle {} added across different identical sets, ignoring the set.", *duplicated));
             return;
         }
     }
@@ -167,15 +167,15 @@ auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set)
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::SoftCutoff(int i, double cutoff) -> void {
     if (i < 0 or i >= N) [[unlikely]] {
-        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got {})", N, i));
+        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got {}).", N, i));
         return;
     }
     if (not std::isfinite(cutoff)) [[unlikely]] {
-        PrintError(fmt::format("Non-finite soft cutoff for particle {} not allowed (got {}), not setting it", i, cutoff));
+        PrintError(fmt::format("Non-finite soft cutoff for particle {} not allowed (got {}), not setting it.", i, cutoff));
         return;
     }
     if (cutoff <= 0) [[unlikely]] {
-        PrintWarning(fmt::format("Non-positive soft cutoff for particle {} (got {})", i, cutoff));
+        PrintWarning(fmt::format("Non-positive soft cutoff for particle {} (got {}).", i, cutoff));
     }
     fSoftCutoff[i] = cutoff;
     fInfraredUnsafePID.insert(i);
@@ -188,19 +188,19 @@ auto MatrixElementBasedGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> p
         std::swap(i, j);
     }
     if (i < 0 or i >= N or j < 0 or j >= N) [[unlikely]] {
-        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got (i, j) = {})", N, pID));
+        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got (i, j) = {}).", N, pID));
         return;
     }
     if (i == j) [[unlikely]] {
-        PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i, j) = {})", pID));
+        PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i, j) = {}).", pID));
         return;
     }
     if (not std::isfinite(cutoff)) [[unlikely]] {
-        PrintError(fmt::format("Non-finite collinear cutoff for particle pair {} not allowed (got {}), not setting it", pID, cutoff));
+        PrintError(fmt::format("Non-finite collinear cutoff for particle pair {} not allowed (got {}), not setting it.", pID, cutoff));
         return;
     }
     if (cutoff <= 0 or CLHEP::pi <= cutoff) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious collinear cutoff for particle pair {} (expect 0 < cutoff < pi, got {})", pID, cutoff));
+        PrintWarning(fmt::format("Suspicious collinear cutoff for particle pair {} (expect 0 < cutoff < pi, got {}).", pID, cutoff));
     }
     fCollinearCutoff[pID] = std::cos(cutoff); // store cosθ to speed up the check (cosθ ≥ cutoff means θ ≤ cutoff, i.e. collinear)
     fInfraredUnsafePID.insert(i);
@@ -250,19 +250,19 @@ auto MatrixElementBasedGenerator<M, N, A>::Acceptance(const FinalStateMomenta& p
         return where;
     }};
     if (not std::isfinite(acceptance)) {
-        Throw<std::runtime_error>(fmt::format("Non-finite acceptance found (got {} at {})", acceptance, Format(pF)));
+        Throw<std::runtime_error>(fmt::format("Non-finite acceptance found (got {} at {}).", acceptance, Format(pF)));
     }
     if (acceptance < 0) {
-        Throw<std::runtime_error>(fmt::format("Negative acceptance found (got {} at {})", acceptance, Format(pF)));
+        Throw<std::runtime_error>(fmt::format("Negative acceptance found (got {} at {}).", acceptance, Format(pF)));
     }
     if (acceptance > 1) [[unlikely]] {
         constexpr std::int8_t maxIncidentReport{10};
         if (fAcceptanceGt1Counter < maxIncidentReport) {
             ++fAcceptanceGt1Counter;
-            PrintWarning(fmt::format("Acceptance > 1 (incident: {}, this warning will be suppressed after {} incidents)",
+            PrintWarning(fmt::format("Acceptance > 1 (incident: {}, this warning will be suppressed after {} incidents).",
                                      fAcceptanceGt1Counter, maxIncidentReport));
             if (fAcceptanceGt1Counter == maxIncidentReport) {
-                PrintWarning("Warning of acceptance > 1 suppressed");
+                PrintWarning("Warning of acceptance > 1 suppressed.");
             }
         }
     }
@@ -290,15 +290,15 @@ auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMom
         constexpr std::int8_t maxIncidentReport{10};
         if (fNegativeMSqCounter < maxIncidentReport) {
             ++fNegativeMSqCounter;
-            PrintWarning(fmt::format("Negative |M|^2 (got {} at {}, incident: {}, this warning will be suppressed after {} incidents)",
+            PrintWarning(fmt::format("Negative |M|^2 (got {} at {}, incident: {}, this warning will be suppressed after {} incidents).",
                                      mSq, format(pF, acceptance, detJ), fNegativeMSqCounter, maxIncidentReport));
             if (fNegativeMSqCounter == maxIncidentReport) {
-                PrintWarning("Warning of negative |M|^2 suppressed");
+                PrintWarning("Warning of negative |M|^2 suppressed.");
             }
         }
     }
     if (not std::isfinite(result)) {
-        Throw<std::runtime_error>(fmt::format("Non-finite 1/S * |M|^2 * acceptance * |J| found (got {} at {})", result, format(pF, acceptance, detJ)));
+        Throw<std::runtime_error>(fmt::format("Non-finite 1/S * |M|^2 * acceptance * |J| found (got {} at {}).", result, format(pF, acceptance, detJ)));
     }
     return result;
 }
@@ -307,7 +307,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
                                                      MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Estimate, double> {
     if (precisionGoal <= 0) [[unlikely]] {
-        Mustard::PrintWarning(fmt::format("Non-positive precision goal (got {}), taking its absolute value", precisionGoal));
+        Mustard::PrintWarning(fmt::format("Non-positive precision goal (got {}), taking its absolute value.", precisionGoal));
         precisionGoal = std::abs(precisionGoal);
     }
     // Core integration method

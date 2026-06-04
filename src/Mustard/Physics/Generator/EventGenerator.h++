@@ -86,7 +86,7 @@ public:
     /// @return Generated event
     auto operator()(const InitialStateMomenta& pI) -> Event;
     /// @brief Generate event in c.m. frame.
-    /// This overload is intended for generators with fixed c.m. energy (e.g. decay)
+    /// This overload is intended for generators with fixed c.m. energy (e.g. decay).
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     auto operator()(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
@@ -103,14 +103,14 @@ protected:
     /// @brief Boost initial state to c.m. frame
     ///
     /// Transforms initial-state momenta to c.m. frame:
-    ///   - For 1-body initial state: resets momentum to (m,0,0,0)
-    ///   - For multiple-body initial state: boosts to zero-momentum frame
+    ///   - For 1-body initial state: resets momentum to (m,0,0,0).
+    ///   - For multiple-body initial state: boosts to zero-momentum frame.
     ///
     /// @param pI Initial-state 4-momenta (modified in-place)
     /// @return Boost vector (β) from c.m. frame to lab frame
     ///
-    /// @note Return value should be saved for `BoostToLabFrame` call
-    /// @warning Always called before event generation in c.m. frame
+    /// @note Return value should be saved for `BoostToLabFrame` call.
+    /// @warning Always called before event generation in c.m. frame.
     [[nodiscard]] static auto BoostToCMFrame(InitialStateMomenta& pI) -> Vector3D;
     /// @brief Boost final state to lab frame
     ///
@@ -119,8 +119,8 @@ protected:
     /// @param beta Boost vector returned from `BoostToCMFrame` call
     /// @param pF Final-state 4-momenta (modified in-place)
     ///
-    /// @note Must use the β returned by `BoostToCMFrame` for correct transformation
-    /// @warning Always called after event generation in c.m. frame
+    /// @note Must use the β returned by `BoostToCMFrame` for correct transformation.
+    /// @warning Always called after event generation in c.m. frame.
     static auto BoostToLabFrame(Vector3D beta, FinalStateMomenta& pF) -> void;
 };
 
@@ -142,7 +142,7 @@ public:
     /// @return Generated event
     virtual auto operator()(const RandomState& u, InitialStateMomenta pI) -> Event = 0;
     /// @brief Generate event in c.m. frame using precomputed random numbers.
-    /// This overload is intended for generators with fixed c.m. energy (e.g. decay)
+    /// This overload is intended for generators with fixed c.m. energy (e.g. decay).
     /// @param u Flat random numbers in 0--1 (D values required)
     /// @return Generated event
     auto operator()(const RandomState& u) -> Event;

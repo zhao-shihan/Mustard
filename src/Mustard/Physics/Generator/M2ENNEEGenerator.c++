@@ -33,9 +33,9 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 M2ENNEEGenerator::M2ENNEEGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
-                                   std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                   std::optional<double> thinningRatio, std::optional<int> acfSampleSize,
                                    std::optional<double> stepSize, std::optional<QFT::MSqM2ENNEE::Ver> mSqVer) :
-    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(40000), stepSize.value_or(0.1)} {
+    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(1 << 16), stepSize.value_or(0.1)} {
     if (mSqVer) {
         MSqVersion(*mSqVer);
     }
@@ -51,7 +51,7 @@ auto M2ENNEEGenerator::Parent(std::string_view parent) -> void {
     } else if (parent == "mu+") {
         PDGID({-11, 12, -14, 11, -11});
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'", parent));
+        Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'.", parent));
     }
 }
 

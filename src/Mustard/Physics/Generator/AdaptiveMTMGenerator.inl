@@ -20,7 +20,7 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) :
+                                                    std::optional<double> thinningRatio, std::optional<int> acfSampleSize) :
     Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
     fIteration{},
@@ -32,7 +32,7 @@ AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& p
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                     const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
+                                                    std::optional<double> thinningRatio, std::optional<int> acfSampleSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},

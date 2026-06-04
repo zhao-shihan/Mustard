@@ -160,7 +160,7 @@ auto RAMBO<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> Ev
         }
         iter = iter + 1;
         if (iter > itmax) [[unlikely]] {
-            PrintWarning("Momentum scale not converged");
+            PrintWarning("Momentum scale not converged.");
             break;
         }
         x = x - f0 / (x * g0);

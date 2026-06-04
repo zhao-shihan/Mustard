@@ -32,6 +32,7 @@
 #include "CLHEP/Random/RandomEngine.h"
 
 #include "Eigen/Core"
+#include "unsupported/Eigen/FFT"
 
 #include "mplr/mplr.hpp"
 
@@ -105,8 +106,8 @@ protected:
     };
 
 public:
-    /// @brief Autocorrelation function (curve) type
-    using AutocorrelationFunction = std::vector<std::pair<unsigned, Eigen::Array<double, MarkovChain::dim, 1>>>;
+    /// @brief Autocorrelation function (row = lag, column = dimension)
+    using AutocorrelationFunction = std::vector<Eigen::Array<double, MarkovChain::dim, 1>>;
 
 public:
     /// @brief Construct event generator
@@ -114,20 +115,20 @@ public:
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
     MCMCGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                  std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {});
+                  std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
     /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay
     MCMCGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                  std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
+                  std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     /// @brief Get initial-state polarization vector(s)
@@ -154,18 +155,18 @@ public:
 
     /// @brief Set user-defined acceptance function in PDF (PDF = |M|² × acceptance)
     /// @param Acceptance User-defined acceptance
-    /// @warning The Markov chain requires reinitialize after set
+    /// @warning The Markov chain requires reinitialize after set.
     auto Acceptance(AcceptanceFunction acceptance) -> void;
 
     /// @brief Set thinning ratio
     /// Larger the thinning ratio, more samples will be discarded,
     /// and events generated will be more likely to be i.i.d.
-    /// Thinning factor ~ thinning ratio * integrated autocorrelation
+    /// Thinning factor ~ thinning ratio * integrated autocorrelation.
     /// @param value Thinning factor (>=0)
     auto ThinningRatio(double value) -> void;
     /// @brief Set sample size for estimation autocorrelation function (ACF)
     /// @param n Sample size
-    auto ACFSampleSize(unsigned n) -> void;
+    auto ACFSampleSize(int n) -> void;
 
     /// @brief Return true if Markov chain initialized
     /// @return true if initialized
@@ -178,7 +179,7 @@ public:
     /// @param rng Reference to CLHEP random engine
     /// @return Generated event
     /// @warning Initial-state momenta passed to this function are ignored.
-    /// Use `Momenta` to set initial-state momenta
+    /// Use `Momenta` to set initial-state momenta.
     virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta) -> Event override;
     // Avoid hiding other operator() overloads from base class
     using Base::operator();
@@ -186,17 +187,17 @@ public:
 protected:
     /// @brief Set initial-state 4-momenta
     /// @param pI initial-state 4-momenta
-    /// @warning The Markov chain requires reinitialize if value changes
+    /// @warning The Markov chain requires reinitialize if value changes.
     auto Momenta(const InitialStateMomenta& pI) -> void;
     /// @brief Set final-state masses
     /// @param mass Array of particle masses
-    /// @warning The Markov chain requires reinitialize if value changes
+    /// @warning The Markov chain requires reinitialize if value changes.
     auto Mass(const std::array<double, N>& mass) -> void;
 
     /// @brief Set low-energy cutoff for single final-state particle to avoid infrared divergence (if applicable)
     /// @param i Particle index (0 ≤ i < N)
     /// @param cutoff Soft cutoff value (on kinetic energy in the c.m. frame)
-    /// @warning The Markov chain requires reinitialize after set
+    /// @warning The Markov chain requires reinitialize after set.
     auto SoftCutoff(int i, double cutoff) -> void;
     /// @brief Set collinear cutoff for two particles to avoid infrared divergence (if applicable)
     /// @param pID Pair of particle indices (0 ≤ index < N)
@@ -226,6 +227,11 @@ protected:
     auto ProposePID(CLHEP::HepRandomEngine& rng, const std::array<int, N>& pID0, std::array<int, N>& pID) -> void;
 
 private:
+    /// @brief Estimate autocorrelation function and initialize thinning
+    /// @param rng Reference to CLHEP random engine
+    /// @return The autocorrelation function (row = lag, column = dimension)
+    auto EstimateACFAndDecideThinning(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction;
+
     /// @brief Markov chain burn in stage
     /// @param rng Reference to CLHEP random engine
     virtual auto BurnIn(CLHEP::HepRandomEngine& rng) -> void = 0;
@@ -235,12 +241,12 @@ private:
     virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool = 0;
 
 protected:
-    double fThinningRatio;   ///< User-defined thinning ratio
-    unsigned fACFSampleSize; ///< Sample size for estimating ACF
-                             //
-    bool fMCMCInitialized;   ///< Initialization completed flag
-    unsigned fThinningSize;  ///< Samples discarded between two generated
-    MarkovChain fMC;         ///< Current Markov chain state
+    double fThinningRatio; ///< User-defined thinning ratio
+    int fACFSampleSize;    ///< Sample size for estimating autocorrelation function (ACF)
+                           //
+    bool fMCMCInitialized; ///< Initialization completed flag
+    int fThinningSize;     ///< Samples discarded between two generated
+    MarkovChain fMC;       ///< Current Markov chain state
 
     static constexpr auto fgDefaultInvalidACFSampleSize{static_cast<decltype(fACFSampleSize)>(-1)};
 };

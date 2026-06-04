@@ -34,9 +34,9 @@ using namespace PhysicalConstant;
 
 M2ENNGGenerator::M2ENNGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
                                  double softCutoff, double collinearCutoff,
-                                 std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                 std::optional<double> thinningRatio, std::optional<int> acfSampleSize,
                                  std::optional<double> stepSize) :
-    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(100000), stepSize.value_or(0.1)} {
+    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(1 << 17), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);
     Mass({electron_mass_c2, 0, 0, 0});
@@ -50,7 +50,7 @@ auto M2ENNGGenerator::Parent(std::string_view parent) -> void {
     } else if (parent == "mu+") {
         PDGID({-11, 12, -14, 22});
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'", parent));
+        Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'.", parent));
     }
 }
 

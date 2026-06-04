@@ -20,7 +20,7 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                        std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                        std::optional<double> thinningRatio, std::optional<int> acfSampleSize,
                                                                         std::optional<double> stepSize) :
     Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
@@ -33,7 +33,7 @@ MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const In
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MultipleTryMetropolisGenerator<M, N, A>::MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                                         const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                        std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                        std::optional<double> thinningRatio, std::optional<int> acfSampleSize,
                                                                         std::optional<double> stepSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
@@ -50,11 +50,11 @@ MultipleTryMetropolisGenerator<M, N, A>::~MultipleTryMetropolisGenerator() = def
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
     if (not std::isfinite(stepSize)) [[unlikely]] {
-        PrintError(fmt::format("Non-finite MCMC step size (got {}) not allowed, not setting it", stepSize));
+        PrintError(fmt::format("Non-finite MCMC step size (got {}) not allowed, not setting it.", stepSize));
         return;
     }
     if (stepSize <= std::numeric_limits<double>::epsilon() or 0.5 <= stepSize) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious MCMC step size (expects {} < step size < 0.5, got {})", std::numeric_limits<double>::epsilon(), stepSize));
+        PrintWarning(fmt::format("Suspicious MCMC step size (expects {} < step size < 0.5, got {}).", std::numeric_limits<double>::epsilon(), stepSize));
     }
     // Rescale stepSize
     // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
@@ -78,7 +78,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng) -> bool {
     if (std::isnan(fStepSize)) {
-        Throw<std::logic_error>("Step size not set");
+        Throw<std::logic_error>("Step size not set.");
     }
 
     // Multiple-try Metropolis sampler (Jun S. Liu et al (2000), https://doi.org/10.2307/2669532)

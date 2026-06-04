@@ -41,7 +41,7 @@ auto MSqM2ENNEE::operator()(const InitialStateMomenta& pI, const FinalStateMomen
     case Ver::McMuleLegacy:
         return MSqMcMuleLegacy(pI, pF);
     default:
-        Throw<std::invalid_argument>("No such version");
+        Throw<std::invalid_argument>("No such version.");
     }
 }
 

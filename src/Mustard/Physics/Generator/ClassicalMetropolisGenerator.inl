@@ -20,7 +20,7 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                    std::optional<double> thinningRatio, std::optional<int> acfSampleSize,
                                                                     std::optional<double> stepSize) :
     Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
@@ -33,7 +33,7 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                                     const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                                                    std::optional<double> thinningRatio, std::optional<int> acfSampleSize,
                                                                     std::optional<double> stepSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
@@ -50,11 +50,11 @@ ClassicalMetropolisGenerator<M, N, A>::~ClassicalMetropolisGenerator() = default
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto ClassicalMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
     if (not std::isfinite(stepSize)) [[unlikely]] {
-        PrintError(fmt::format("Non-finite MCMC step size not allowed (got {}), not setting it", stepSize));
+        PrintError(fmt::format("Non-finite MCMC step size not allowed (got {}), not setting it.", stepSize));
         return;
     }
     if (stepSize <= muc::default_tolerance<double> or 0.5 <= stepSize) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5)", stepSize, muc::default_tolerance<double>));
+        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5).", stepSize, muc::default_tolerance<double>));
     }
     // Rescale stepSize
     // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
@@ -78,7 +78,7 @@ auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng) -> bool {
     if (std::isnan(fStepSize)) {
-        Throw<std::logic_error>("Step size not set");
+        Throw<std::logic_error>("Step size not set.");
     }
     struct MarkovChain::State state;
     // Walk random state

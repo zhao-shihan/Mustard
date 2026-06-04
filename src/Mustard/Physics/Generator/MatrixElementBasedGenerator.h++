@@ -105,7 +105,7 @@ public:
     auto Momenta() const -> const auto& { return fMomenta; }
 
     /// @brief Compute 1/S × |M|² × acceptance integral on phase space by Monte Carlo integration.
-    /// Useful for calculating total decay width or cross section
+    /// Useful for calculating total decay width or cross section.
     /// @param executor An executor instance
     /// @param precisionGoal Target relative uncertainty (e.g. 0.01 for 1% rel. unc.)
     /// @param integrationState Integration state for continuing integration
@@ -123,24 +123,24 @@ protected:
     auto Momenta(const InitialStateMomenta& pI) -> void;
 
     /// @brief Get initial-state polarization vector(s)
-    /// @note This overload is only enabled for polarized process
+    /// @note This overload is only enabled for polarized process.
     auto Polarization() const -> const typename A::InitialStatePolarization&
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
     /// @brief Get initial-state polarization vector
     /// @param i Particle index (0 ≤ i < M)
-    /// @note This overload is only enabled for polarized scattering
+    /// @note This overload is only enabled for polarized scattering.
     auto Polarization(int i) const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set initial-state polarization vector(s)
     /// @param pol Polarization vector(s) (all |pol| ≤ 1)
-    /// @note This overload is only enabled for polarized process
+    /// @note This overload is only enabled for polarized process.
     auto Polarization(const typename A::InitialStatePolarization& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
     /// @brief Set polarization for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
-    /// @note This overload is only enabled for polarized scattering
+    /// @note This overload is only enabled for polarized scattering.
     auto Polarization(int i, Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 

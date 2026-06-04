@@ -29,7 +29,7 @@ auto PolarizedMatrixElement<M, N>::Polarization(const InitialStatePolarization& 
     if constexpr (M == 1) {
         const auto polNorm{pol.mag()};
         if (polNorm > 1) [[unlikely]] {
-            PrintWarning(fmt::format("Got polarization (pol) with |pol| = {} (expects |pol| <= 1)", polNorm));
+            PrintWarning(fmt::format("Got polarization (pol) with |pol| = {} (expects |pol| <= 1).", polNorm));
         }
         fPolarization = pol;
     } else {
@@ -44,7 +44,7 @@ auto PolarizedMatrixElement<M, N>::Polarization(int i, Vector3D pol) -> void
     requires(M > 1) {
     const auto polNorm{pol.mag()};
     if (polNorm > 1) [[unlikely]] {
-        PrintWarning(fmt::format("Got polarization {} (pol) with |pol| = {} (expects |pol| <= 1)", i, polNorm));
+        PrintWarning(fmt::format("Got polarization {} (pol) with |pol| = {} (expects |pol| <= 1).", i, polNorm));
     }
     fPolarization.at(i) = pol;
 }

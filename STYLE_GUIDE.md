@@ -746,7 +746,7 @@ AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(
     const std::array<int, N>& pdgID, 
     const std::array<double, N>& mass,
     std::optional<double> thinningRatio, 
-    std::optional<unsigned> acfSampleSize) :
+    std::optional<int> acfSampleSize) :
     Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
     fIteration{},
@@ -1102,6 +1102,11 @@ constexpr auto NormSq(const Concept::NumericVectorFloatingPoint auto& x) {
 }
 ```
 
+- **Terminal Periods**: 
+  - `@brief`, `@param`, `@return`, `@tparam` tags are typically noun phrases — do **not** end with a period (`.`)
+  - `@note`, `@warning` tags and standalone `///` description sentences are typically complete sentences — end with a period (`.`)
+  - Multi-line `///` descriptions should have a period at the end of the final sentence
+
 ### Implementation Comments
 - Use `//` for implementation comments
 - Section dividers with multiple slashes
@@ -1129,13 +1134,15 @@ private:
 
 ```cpp
 if (not opened) {
-    Mustard::Throw<std::runtime_error>(fmt::format("Cannot open file '{}' with mode '{}'", outputPath, mode));
+    Mustard::Throw<std::runtime_error>(fmt::format("Cannot open file '{}' with mode '{}'.", outputPath, mode));
 }
 
 if (std::ranges::size(sample) > std::ranges::size(weight)) {
-    Throw<std::invalid_argument>("Size of sample > size of weight");
+    Throw<std::invalid_argument>("Size of sample > size of weight.");
 }
 ```
+
+- Error, warning, and exception messages must be complete sentences ending with a period (`.`)
 
 ### Assertions
 - Use GSL `Expects(...)` for precondition and `Ensures(...)` for postcondition

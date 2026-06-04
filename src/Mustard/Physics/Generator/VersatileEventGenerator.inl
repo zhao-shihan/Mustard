@@ -30,7 +30,7 @@ constexpr VersatileEventGenerator<M, N, D>::VersatileEventGenerator(const std::a
 template<int M, int N, int D>
 constexpr auto VersatileEventGenerator<M, N, D>::Mass(const std::array<double, N>& mass) -> void {
     if (std::ranges::any_of(mass, [](auto&& m) { return m < 0; })) [[unlikely]] {
-        PrintError(fmt::format("Negative mass(es) (got {})", mass));
+        PrintError(fmt::format("Negative mass(es) (got {}).", mass));
     }
     fMass = mass;
     fSumMass = muc::ranges::reduce(mass);
@@ -39,7 +39,7 @@ constexpr auto VersatileEventGenerator<M, N, D>::Mass(const std::array<double, N
 template<int M, int N, int D>
 constexpr auto VersatileEventGenerator<M, N, D>::Mass(int i, double mass) -> void {
     if (mass < 0) [[unlikely]] {
-        PrintError(fmt::format("Negative mass for particle {} (got {})", i, mass));
+        PrintError(fmt::format("Negative mass for particle {} (got {}).", i, mass));
     }
     fSumMass -= fMass.at(i);
     fMass[i] = mass;
@@ -49,7 +49,7 @@ constexpr auto VersatileEventGenerator<M, N, D>::Mass(int i, double mass) -> voi
 template<int M, int N, int D>
 MUSTARD_ALWAYS_INLINE auto VersatileEventGenerator<M, N, D>::CheckCMEnergy(double cmE, const std::source_location& location) const -> void {
     if (cmE <= fSumMass) {
-        Throw<std::domain_error>(fmt::format("C.m. energy ({}) <= sum of final-state masses ({})", cmE, fSumMass), location);
+        Throw<std::domain_error>(fmt::format("C.m. energy ({}) <= sum of final-state masses ({}).", cmE, fSumMass), location);
     }
 }
 
