@@ -173,6 +173,7 @@ public:
     auto MCMCInitialized() -> auto { return fMCMCInitialized; }
     /// @brief Initialize Markov chain
     /// @param rng Reference to CLHEP random engine
+    /// @return The biased autocorrelation function
     auto MCMCInitialize(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> AutocorrelationFunction;
 
     /// @brief Generate event in c.m. frame
@@ -229,7 +230,7 @@ protected:
 private:
     /// @brief Estimate autocorrelation function and initialize thinning
     /// @param rng Reference to CLHEP random engine
-    /// @return The autocorrelation function (row = lag, column = dimension)
+    /// @return The biased autocorrelation function
     auto EstimateACFAndDecideThinning(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction;
 
     /// @brief Markov chain burn in stage

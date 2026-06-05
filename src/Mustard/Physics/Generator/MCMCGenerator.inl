@@ -330,7 +330,7 @@ auto MCMCGenerator<M, N, A>::EstimateACFAndDecideThinning(CLHEP::HepRandomEngine
     sampleMean /= fACFSampleSize;
 
     // Compute autocorrelation via Wiener-Khinchin theorem (FFT-based)
-    const auto maxLag{fACFSampleSize / 4};
+    const auto maxLag{2 * fACFSampleSize / 3};
     AutocorrelationFunction autocorrelationFunction(maxLag + 1);
     {
         Eigen::FFT<double> fft{{}, Eigen::FFT<double>::HalfSpectrum};
@@ -358,13 +358,9 @@ auto MCMCGenerator<M, N, A>::EstimateACFAndDecideThinning(CLHEP::HepRandomEngine
                 std::ranges::for_each(autocorrelationFunction, [k](auto& rho) { rho[k] = 1; });
                 continue;
             }
-            // Keep only the first maxLag+1 lags (the rest are redundant due to zero-padding)
-            // and apply debiasing correction: the raw FFT-based ACF gives the biased estimator
-            //   rho_biased[lag] = sum_{i=0}^{N-1-lag} x[i] x[i+lag] / sum_{i=0}^{N-1} x[i]^2
-            // where numerator has N-lag terms and denominator N terms, causing a (1 - lag/N)
-            // bias. Dividing by (1-lag/N) converts to the unbiased estimator.
+            // Keep only the first maxLag+1 lags
             for (int lag{}; lag <= maxLag; ++lag) {
-                autocorrelationFunction[lag][k] = signal[lag] / (signal[0] * (1 - lag / fACFSampleSize));
+                autocorrelationFunction[lag][k] = signal[lag] / signal[0];
             }
         }
     }
