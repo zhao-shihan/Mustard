@@ -55,7 +55,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
 CPMFindPackage(
     NAME mplr
     GITHUB_REPOSITORY zhao-shihan/mplr
-    VERSION 0.26.409
+    VERSION 0.26.605
     OPTIONS "MPLR_INSTALL ON")
 
 # Eigen
@@ -120,7 +120,7 @@ CPMFindPackage(
 CPMFindPackage(
     NAME Microsoft.GSL
     GITHUB_REPOSITORY microsoft/GSL
-    VERSION 4.2.1
+    VERSION 4.2.2
     OPTIONS "GSL_INSTALL ON")
 
 # muc

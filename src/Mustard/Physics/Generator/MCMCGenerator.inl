@@ -25,7 +25,7 @@ MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::
     fThinningRatio{1.2},
     fACFSampleSize{fgDefaultInvalidACFSampleSize},
     fMCMCInitialized{},
-    fThinningSize{},
+    fSamplingInterval{},
     fMC{} {
     if (thinningRatio) {
         ThinningRatio(*thinningRatio);
@@ -168,14 +168,9 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     BurnIn(rng);
     MasterPrintLn("Markov chain burnt in.");
 
+    // Estimate covariance of random state u weighted by |M|^2 * acceptance * |J| for diagnostic purposes
     if (Env::VerboseLevelReach<'I'>()) {
-        struct {
-            Eigen::Vector<double, MarkovChain::dim> u;
-            Eigen::Matrix<double, MarkovChain::dim, MarkovChain::dim> uuT;
-        } mean;
-        mean.u.setZero();
-        mean.uuT.setZero();
-        double sumMSqAcceptanceDetJ{};
+        Statistic<MarkovChain::dim> stat;
         for (int i{}; i < fACFSampleSize;) {
             Eigen::Vector<double, MarkovChain::dim> u;
             rng.flatArray(u.size(), u.data());
@@ -185,23 +180,22 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
             }
             const auto acceptance{this->Acceptance(event.p)};
             const auto mSqAcceptanceDetJ{this->MSqAcceptanceDetJ(event.p, acceptance, detJ)};
-            const auto uMSqAcceptanceDetJ{(mSqAcceptanceDetJ * u).eval()};
-            mean.u += uMSqAcceptanceDetJ;
-            mean.uuT += uMSqAcceptanceDetJ * u.transpose();
-            sumMSqAcceptanceDetJ += mSqAcceptanceDetJ;
+            stat.Fill(u, mSqAcceptanceDetJ);
             ++i;
         }
-        mean.u /= sumMSqAcceptanceDetJ;
-        mean.uuT /= sumMSqAcceptanceDetJ;
-        const auto covariance{(mean.uuT - mean.u * mean.u.transpose()).eval()};
         std::ostringstream covOSS;
         covOSS << "Covariance of random state u (weighted by |M|^2 * acceptance * |J|):\n"
-               << covariance;
+               << stat.Covariance();
         PrintInfo(covOSS.view());
     }
 
-    // Estimate autocorrelation and decide thinning
-    auto autocorrelationFunction{EstimateACFAndDecideThinning(rng)};
+    MasterPrintLn("Estimating autocorrelation and decide sampling interval...");
+    auto rho{EstimateACFAndDecideThinning(rng)};
+    auto tau{EstimateIntegratedAutocorrelation(rho)};
+    MasterPrintLn("Approximate mean integrated autocorrelation: {:.2f}.", tau);
+    fSamplingInterval = std::min(fThinningRatio * tau,
+                                 static_cast<double>(std::numeric_limits<int>::max() / 2));
+    MasterPrintLn("Thinning Markov chain by 1/{}.", fSamplingInterval + 1);
 
     fMCMCInitialized = true;
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
@@ -211,7 +205,7 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     MasterPrint("{} initialized in {:.3f}s.\n"
                 "\n",
                 thisName, time);
-    return autocorrelationFunction;
+    return rho;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -220,7 +214,7 @@ auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStat
         PrintWarning("Markov chain not initialized. Initializing it.");
         MCMCInitialize(rng);
     }
-    for (int i{}; i < fThinningSize; ++i) {
+    for (int i{}; i < fSamplingInterval; ++i) {
         NextEvent(rng);
     }
     NextEvent(rng);
@@ -266,7 +260,7 @@ auto MCMCGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> pID, double cut
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::MCMCInitializationRequired() -> void {
     fMCMCInitialized = false;
-    fThinningSize = 0;
+    fSamplingInterval = 0;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -312,9 +306,7 @@ auto MCMCGenerator<M, N, A>::ProposePID(CLHEP::HepRandomEngine& rng, const std::
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::EstimateACFAndDecideThinning(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction {
-    // Estimate autocorrelation and decide thinning
-    MasterPrintLn("Estimating autocorrelation and decide thinning...");
+auto MCMCGenerator<M, N, A>::EstimateACF(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction {
     using ArrayDimMC = Eigen::Array<double, MarkovChain::dim, 1>;
 
     std::vector<ArrayDimMC> sample(fACFSampleSize);
@@ -329,9 +321,9 @@ auto MCMCGenerator<M, N, A>::EstimateACFAndDecideThinning(CLHEP::HepRandomEngine
     }
     sampleMean /= fACFSampleSize;
 
-    // Compute autocorrelation via Wiener-Khinchin theorem (FFT-based)
+    // Compute autocorrelation via Wiener-Khinchin theorem
     const auto maxLag{2 * fACFSampleSize / 3};
-    AutocorrelationFunction autocorrelationFunction(maxLag + 1);
+    AutocorrelationFunction rho(maxLag + 1);
     {
         Eigen::FFT<double> fft{{}, Eigen::FFT<double>::HalfSpectrum};
         const auto paddedSize{2 * fACFSampleSize};
@@ -355,16 +347,20 @@ auto MCMCGenerator<M, N, A>::EstimateACFAndDecideThinning(CLHEP::HepRandomEngine
             // Check zero-lag autocovariance
             if (signal[0] < std::numeric_limits<double>::min()) [[unlikely]] {
                 PrintWarning(fmt::format("Zero-lag autocovariance for dimension {} is not normal (got {}). Setting ACF to 1.", k, signal[0]));
-                std::ranges::for_each(autocorrelationFunction, [k](auto& rho) { rho[k] = 1; });
+                std::ranges::for_each(rho, [k](auto& rho) { rho[k] = 1; });
                 continue;
             }
             // Keep only the first maxLag+1 lags
             for (int lag{}; lag <= maxLag; ++lag) {
-                autocorrelationFunction[lag][k] = signal[lag] / signal[0];
+                rho[lag][k] = signal[lag] / signal[0];
             }
         }
     }
+    return rho;
+}
 
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MCMCGenerator<M, N, A>::EstimateIntegratedAutocorrelation(const AutocorrelationFunction& rho) -> double {
     // Integrate autocorrelation by summing all lags until "convergence"
     // sumAutocorrelation = sum(rho_k, 1, k_c)
     ArrayDimMC sumAutocorrelation;
@@ -379,8 +375,8 @@ auto MCMCGenerator<M, N, A>::EstimateACFAndDecideThinning(CLHEP::HepRandomEngine
             if (negativeRhoCount[k] >= convergenceThreshold) {
                 continue;
             }
-            sumAutocorrelation[k] += autocorrelationFunction[lag][k];
-            negativeRhoCount[k] += (autocorrelationFunction[lag][k] < 0);
+            sumAutocorrelation[k] += rho[lag][k];
+            negativeRhoCount[k] += (rho[lag][k] < 0);
         }
     }
     if (not std::ranges::all_of(negativeRhoCount, [&](auto n) { return n >= convergenceThreshold; })) {
@@ -399,14 +395,10 @@ auto MCMCGenerator<M, N, A>::EstimateACFAndDecideThinning(CLHEP::HepRandomEngine
     }
     // Here sumAutocorrelation = sum(rho_k, 1, k_c),
     // So N_eff = N / (1 + 2 * sum(rho_k, 1, k_c)) = N / (1 + 2 * sumAutocorrelation)
-    //   => integratedAutocorrelation = N / N_eff = 1 + 2 * sumAutocorrelation
-    const auto integratedAutocorrelation{1 + 2 * meanSumAutocorrelation};
-    MasterPrintLn("Approximate mean integrated autocorrelation: {:.2f}.", integratedAutocorrelation);
-    fThinningSize = std::min(fThinningRatio * integratedAutocorrelation,
-                             static_cast<double>(std::numeric_limits<int>::max() / 2));
-    MasterPrintLn("Thinning Markov chain by 1/{}.", fThinningSize + 1);
+    //   => tau = N / N_eff = 1 + 2 * sumAutocorrelation
+    const auto tau{1 + 2 * meanSumAutocorrelation};
 
-    return autocorrelationFunction;
+    return tau;
 }
 
 } // namespace Mustard::inline Physics::inline Generator

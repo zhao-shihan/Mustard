@@ -21,14 +21,13 @@
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Estimate.h++"
-#include "Mustard/Math/MCIntegrationUtility.h++"
+#include "Mustard/Math/Statistic.h++"
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
-#include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -113,9 +112,8 @@ public:
     /// @return (1) Monte Carlo integration result of 1/S × |M|² × acceptance integral on phase space
     ///         (2) Effective sample size
     ///         (3) Current integration state
-    auto PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
-                            MCIntegrationState integrationState = {},
-                            CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::tuple<Estimate, double, MCIntegrationState>;
+    auto PhaseSpaceIntegral(Executor<long long>& executor, double precisionGoal, Statistic<1> statistic = {},
+                            CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Statistic<1>;
 
 protected:
     /// @brief Set initial-state 4-momenta
@@ -201,8 +199,8 @@ protected:
 
 private:
     /// @brief Monte Carlo integration implementation
-    auto Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                   MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Estimate, double>;
+    auto MCIntegrate(Statistic<1>& statistic, std::regular_invocable<const Event&> auto&& integrand, double precisionGoal,
+                     Executor<long long>& executor, CLHEP::HepRandomEngine& rng) -> void;
 
 protected:
     [[no_unique_address]] A fMatrixElement; ///< Matrix element

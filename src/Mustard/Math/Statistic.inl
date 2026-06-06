@@ -18,283 +18,185 @@
 
 namespace Mustard::inline Math {
 
-constexpr Statistic<1>::Statistic() :
-    fSumWX{},
-    fSumWX2{},
-    fSumWX3{},
-    fSumWX4{},
-    fSumW{},
-    fSumW2{} {}
+MUSTARD_ALWAYS_INLINE Statistic<1>::Statistic() :
+    fN{},
+    fW{},
+    fW2{},
+    fM{},
+    fM2{} {}
 
-template<std::ranges::input_range S>
-    requires std::convertible_to<std::ranges::range_value_t<S>, double>
-constexpr Statistic<1>::Statistic(const S& sample, double weight) :
+MUSTARD_ALWAYS_INLINE Statistic<1>::Statistic(const SerializedType& data) :
     Statistic{} {
-    Fill(sample, weight);
+    Deserialize(data);
 }
 
-template<std::ranges::input_range S, std::ranges::input_range W>
-    requires std::convertible_to<std::ranges::range_value_t<S>, double> and std::convertible_to<std::ranges::range_value_t<W>, double>
-constexpr Statistic<1>::Statistic(const S& sample, const W& weight) :
+MUSTARD_ALWAYS_INLINE auto Statistic<1>::Fill(double x, double w) -> void {
+    if (w == 0) {
+        return;
+    }
+    ++fN;
+    const auto prevW{fW};
+    fW += w;
+    fW2 += muc::pow(w, 2);
+    fM += w * x;
+    if (prevW == 0 or fW == 0) [[unlikely]] {
+        return;
+    }
+    fM2 += w * (fW / prevW) * muc::pow(x - fM / fW, 2);
+}
+
+MUSTARD_ALWAYS_INLINE auto Statistic<1>::operator+=(const Statistic& other) -> Statistic& {
+    if (other.fW == 0) {
+        return *this;
+    }
+    fN += other.fN;
+    const auto prevW{fW};
+    fW += other.fW;
+    fW2 += other.fW2;
+    fM += other.fM;
+    if (prevW == 0 or fW == 0) [[unlikely]] {
+        return *this;
+    }
+    fM2 += other.fM2;
+    fM2 += other.fW * (fW / prevW) * muc::pow(fM / fW - other.fM / other.fW, 2);
+    return *this;
+}
+
+MUSTARD_ALWAYS_INLINE auto Statistic<1>::Serialize() const -> SerializedType {
+    return std::bit_cast<SerializedType>(*this);
+}
+
+MUSTARD_ALWAYS_INLINE auto Statistic<1>::Deserialize(const SerializedType& data) -> void {
+    std::memcpy(this, &data, sizeof(*this));
+}
+
+MUSTARD_ALWAYS_INLINE auto Statistic<1>::Debias() const -> double {
+    const auto tmp{muc::pow(fW, 2)};
+    return tmp / (tmp - fW2);
+}
+
+template<int N>
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+MUSTARD_STRONG_INLINE Statistic<N>::Statistic() :
+    fN{},
+    fW{},
+    fW2{},
+    fM{},
+    fM2{} {
+    // Eigen does not zero-initialize by default, so we need to do it ourselves.
+    fM.setZero();
+    fM2.setZero();
+}
+
+template<int N>
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+MUSTARD_STRONG_INLINE Statistic<N>::Statistic(const SerializedType& data) :
     Statistic{} {
-    Fill(sample, weight);
-}
-
-constexpr auto Statistic<1>::Fill(double sample, double weight) -> void {
-    const auto wx{weight * sample};
-    fSumWX += wx;
-    wx *= sample;
-    fSumWX2 += wx;
-    wx *= sample;
-    fSumWX3 += wx;
-    wx *= sample;
-    fSumWX4 += wx;
-    fSumW += weight;
-    fSumW2 += muc::pow(weight, 2);
-}
-
-template<std::ranges::input_range S>
-    requires std::convertible_to<std::ranges::range_value_t<S>, double>
-constexpr auto Statistic<1>::Fill(const S& sample, double weight) -> void {
-    for (auto&& s : sample) {
-        Fill(s, weight);
-    }
-}
-
-template<std::ranges::input_range S, std::ranges::input_range W>
-    requires std::convertible_to<std::ranges::range_value_t<S>, double> and std::convertible_to<std::ranges::range_value_t<W>, double>
-constexpr auto Statistic<1>::Fill(const S& sample, const W& weight) -> void {
-    if (std::ranges::size(sample) > std::ranges::size(weight)) {
-        Throw<std::invalid_argument>("Size of sample exceeds size of weight.");
-    }
-    auto s = std::ranges::begin(sample);
-    auto w = std::ranges::begin(weight);
-    const auto sEnd = std::ranges::end(sample);
-    while (s != sEnd) {
-        Fill(*s++, *w++);
-    }
-}
-
-template<int K>
-    requires(0 <= K and K <= 4)
-constexpr auto Statistic<1>::Moment() const -> double {
-    if constexpr (K == 0) {
-        return 1;
-    }
-    if constexpr (K == 1) {
-        return fSumWX / fSumW;
-    }
-    if constexpr (K == 2) {
-        return fSumWX2 / fSumW;
-    }
-    if constexpr (K == 3) {
-        return fSumWX3 / fSumW;
-    }
-    if constexpr (K == 4) {
-        return fSumWX4 / fSumW;
-    }
-}
-
-template<int K>
-    requires(0 <= K and K <= 4)
-constexpr auto Statistic<1>::CentralMoment() const -> double {
-    if constexpr (K == 0) {
-        return 1;
-    }
-    if constexpr (K == 1) {
-        return 0;
-    }
-    if constexpr (K == 2) {
-        return Moment<2>() - muc::pow(Moment<1>(), 2);
-    }
-    if constexpr (K == 3) {
-        return muc::polynomial({Moment<3>(), -3 * Moment<2>(), 0, 2}, Moment<1>());
-    }
-    if constexpr (K == 4) {
-        return muc::polynomial({Moment<4>(), -4 * Moment<3>(), 6 * Moment<2>(), 0, -3}, Moment<1>());
-    }
+    Deserialize(data);
 }
 
 template<int N>
-    requires(N > 0)
-Statistic<N>::Statistic() :
-    fSumWX{Eigen::Vector<double, N>::Zero()},
-    fSumWXX{Eigen::Matrix<double, N, N>::Zero()},
-    fSumWX3{Eigen::Vector<double, N>::Zero()},
-    fSumWX4{Eigen::Vector<double, N>::Zero()},
-    fSumW{},
-    fSumW2{} {}
-
-template<int N>
-    requires(N > 0)
-template<std::ranges::input_range S>
-    requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N>
-Statistic<N>::Statistic(const S& sample, double weight) :
-    Statistic{} {
-    Fill(sample, weight);
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+template<typename T>
+    requires Concept::InputVectorAny<std::decay_t<T>, N>
+MUSTARD_STRONG_INLINE auto Statistic<N>::Fill(T&& x0, double w) -> void {
+    if (w == 0) {
+        return;
+    }
+    ++fN;
+    const auto prevW{fW};
+    fW += w;
+    fW2 += muc::pow(w, 2);
+    const auto& x{VectorCast<MeanType>(x0)};
+    fM += w * x;
+    if (prevW == 0 or fW == 0) [[unlikely]] {
+        return;
+    }
+    const auto delta{(x - fM / fW).eval()};
+    fM2 += w * (fW / prevW) * delta * delta.transpose();
 }
 
 template<int N>
-    requires(N > 0)
-template<std::ranges::input_range S, std::ranges::input_range W>
-    requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N> and std::convertible_to<std::ranges::range_value_t<W>, double>
-Statistic<N>::Statistic(const S& sample, const W& weight) :
-    Statistic{} {
-    Fill(sample, weight);
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+MUSTARD_STRONG_INLINE auto Statistic<N>::operator+=(const Statistic& other) -> Statistic& {
+    if (other.fW == 0) {
+        return *this;
+    }
+    fN += other.fN;
+    const auto prevW{fW};
+    fW += other.fW;
+    fW2 += other.fW2;
+    fM += other.fM;
+    if (prevW == 0 or fW == 0) [[unlikely]] {
+        return *this;
+    }
+    const auto delta{(fM / fW - other.fM / other.fW).eval()};
+    fM2 += other.fM2;
+    fM2 += other.fW * (fW / prevW) * delta * delta.transpose();
+    return *this;
 }
 
 template<int N>
-    requires(N > 0)
-template<Concept::InputVectorAny<N> T>
-auto Statistic<N>::Fill(const T& sample, double weight) -> void {
-    const auto x{VectorCast<Eigen::Vector<double, N>>(sample)};
-    Eigen::Vector<double, N> wx{weight * x};
-    fSumWX += wx;
-    fSumWXX += wx * x.transpose();
-    wx = wx.cwiseProduct(x).cwiseProduct(x).eval();
-    fSumWX3 += wx;
-    wx = wx.cwiseProduct(x).eval();
-    fSumWX4 += wx;
-    fSumW += weight;
-    fSumW2 += muc::pow(weight, 2);
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+MUSTARD_STRONG_INLINE auto Statistic<N>::Serialize() const -> SerializedType {
+    SerializedType data;
+    data.fN = fN;
+    data.fW = fW;
+    data.fW2 = fW2;
+    std::memcpy(data.fM, fM.data(), N * sizeof(double));
+    std::memcpy(data.fM2, fM2.data(), N * N * sizeof(double));
+    return data;
 }
 
 template<int N>
-    requires(N > 0)
-template<std::ranges::input_range S>
-    requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N>
-auto Statistic<N>::Fill(const S& sample, double weight) -> void {
-    for (auto&& s : sample) {
-        Fill(s, weight);
-    }
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+MUSTARD_STRONG_INLINE auto Statistic<N>::Deserialize(const SerializedType& data) -> void {
+    fN = data.fN;
+    fW = data.fW;
+    fW2 = data.fW2;
+    std::memcpy(fM.data(), data.fM, N * sizeof(double));
+    std::memcpy(fM2.data(), data.fM2, N * N * sizeof(double));
 }
 
 template<int N>
-    requires(N > 0)
-template<std::ranges::input_range S, std::ranges::input_range W>
-    requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N> and std::convertible_to<std::ranges::range_value_t<W>, double>
-auto Statistic<N>::Fill(const S& sample, const W& weight) -> void {
-    if (std::ranges::size(sample) > std::ranges::size(weight)) {
-        Throw<std::invalid_argument>("Size of sample exceeds size of weight.");
-    }
-    auto s = std::ranges::begin(sample);
-    auto w = std::ranges::begin(weight);
-    const auto sEnd = std::ranges::end(sample);
-    while (s != sEnd) {
-        Fill(*s++, *w++);
-    }
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+MUSTARD_ALWAYS_INLINE auto Statistic<N>::Debias() const -> double {
+    const auto tmp{muc::pow(fW, 2)};
+    return tmp / (tmp - fW2);
 }
 
 template<int N>
-    requires(N > 0)
-template<int K>
-    requires(0 <= K and K <= 4)
-auto Statistic<N>::Moment(int i) const -> double {
-    if constexpr (K == 0) {
-        return 1;
-    }
-    if constexpr (K == 1) {
-        return fSumWX[i] / fSumW;
-    }
-    if constexpr (K == 2) {
-        return fSumWXX(i, i) / fSumW;
-    }
-    if constexpr (K == 3) {
-        return fSumWX3[i] / fSumW;
-    }
-    if constexpr (K == 4) {
-        return fSumWX4[i] / fSumW;
-    }
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+SerializedStatistic<N>::SerializedStatistic() :
+    fN{},
+    fW{},
+    fW2{},
+    fM{},
+    fM2{} {}
+
+template<int N>
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+SerializedStatistic<N>::SerializedStatistic(const std::string& base64) :
+    SerializedStatistic{} {
+    DecodeBase64(base64);
 }
 
 template<int N>
-    requires(N > 0)
-template<int K>
-    requires(0 <= K and K <= 4)
-auto Statistic<N>::Moment() const -> Eigen::Vector<double, N> {
-    if constexpr (K == 0) {
-        return Eigen::Vector<double, N>::Constant(1);
-    }
-    if constexpr (K == 1) {
-        return fSumWX / fSumW;
-    }
-    if constexpr (K == 2) {
-        return fSumWXX.diagonal() / fSumW;
-    }
-    if constexpr (K == 3) {
-        return fSumWX3 / fSumW;
-    }
-    if constexpr (K == 4) {
-        return fSumWX4 / fSumW;
-    }
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+auto SerializedStatistic<N>::EncodeBase64() const -> std::string {
+    const auto byteArray{std::bit_cast<std::array<char, sizeof(*this)>>(*this)};
+    return std::string{TBase64::Encode(byteArray.data(), byteArray.size()).View()};
 }
 
 template<int N>
-    requires(N > 0)
-template<int K>
-    requires(0 <= K and K <= 4)
-auto Statistic<N>::CentralMoment(int i) const -> double {
-    if constexpr (K == 0) {
-        return 1;
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+auto SerializedStatistic<N>::DecodeBase64(const std::string& base64) -> void {
+    const auto byteString{TBase64::Decode(base64.c_str())};
+    if (byteString.Length() != sizeof(*this)) {
+        Throw<std::runtime_error>(fmt::format("Decoded base64 string is invalid. Expected {} bytes, got {} bytes.",
+                                              sizeof(*this), byteString.Length()));
     }
-    if constexpr (K == 1) {
-        return 0;
-    }
-    if constexpr (K == 2) {
-        return Moment<2>(i) - muc::pow(Moment<1>(i), 2);
-    }
-    if constexpr (K == 3) {
-        return muc::polynomial({Moment<3>(i), -3 * Moment<2>(i), 0, 2}, Moment<1>(i));
-    }
-    if constexpr (K == 4) {
-        return muc::polynomial({Moment<4>(i), -4 * Moment<3>(i), 6 * Moment<2>(i), 0, -3}, Moment<1>(i));
-    }
-}
-
-template<int N>
-    requires(N > 0)
-template<int K>
-    requires(0 <= K and K <= 4)
-auto Statistic<N>::CentralMoment() const -> Eigen::Vector<double, N> {
-    if constexpr (K == 0) {
-        return Eigen::Vector<double, N>::Constant(1);
-    }
-    if constexpr (K == 1) {
-        return Eigen::Vector<double, N>::Zeros();
-    }
-    if constexpr (K == 2) {
-        const auto m1 = Moment<1>();
-        return Moment<2>() - m1.cwiseProduct(m1);
-    }
-    if constexpr (K == 3) {
-        const auto m1 = Moment<1>();
-        return Moment<3>() + m1.cwiseProduct(-3 * Moment<2>() + 2 * m1.cwiseProduct(m1));
-    }
-    if constexpr (K == 4) {
-        const auto m1 = Moment<1>();
-        return Moment<4>() + m1.cwiseProduct(-4 * Moment<3>() + m1.cwiseProduct(6 * Moment<2>() - 3 * m1.cwiseProduct(m1)));
-    }
-}
-
-template<int N>
-    requires(N > 0)
-auto Statistic<N>::Mixed2ndCentralMoment() const -> Eigen::Matrix<double, N, N> {
-    const auto m1 = Moment<1>();
-    return Mixed2ndMoment() - m1 * m1.transpose();
-}
-
-template<int N>
-    requires(N > 0)
-auto Statistic<N>::Skewness() const -> Eigen::Vector<double, N> {
-    const auto stdDev = StdDev();
-    return CentralMoment<3>() / stdDev.cwiseProduct(stdDev).cwiseProduct(stdDev);
-}
-
-template<int N>
-    requires(N > 0)
-auto Statistic<N>::Kurtosis() const -> Eigen::Vector<double, N> {
-    const auto variance = Variance();
-    return CentralMoment<4>() / variance.cwiseProduct(variance);
+    std::memcpy(this, byteString.Data(), sizeof(*this));
 }
 
 } // namespace Mustard::inline Math

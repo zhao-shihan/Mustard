@@ -45,9 +45,8 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
-                                                              MCIntegrationState integrationState,
-                                                              CLHEP::HepRandomEngine& rng) -> std::tuple<Estimate, double, MCIntegrationState> {
+auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<long long>& executor, double precisionGoal, Statistic<1> statistic,
+                                                              CLHEP::HepRandomEngine& rng) -> Statistic<1> {
     MasterPrintLn("Integrating |M|^2 * (Acceptance) over phase space in {}.\n", muc::try_demangle(typeid(*this).name()));
     if (fInfraredUnsafePID.empty()) {
         MasterPrintLn("No infrared cutoff is set.\n");
@@ -81,28 +80,28 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
     executor.TaskName("sample");
 
     // Start integration
-    const auto Integrand{[this](const Event& event) {
+    const auto integrand{[this](const Event& event) {
         const auto& [detJ, _, pF]{event};
         const auto acceptance{Acceptance(pF)};
         return MSqAcceptanceDetJ(pF, acceptance, detJ);
     }};
     muc::chrono::stopwatch stopwatch;
-    const auto [integral, nEff]{Integrate(Integrand, precisionGoal, integrationState, executor, rng)};
+    MCIntegrate(statistic, integrand, precisionGoal, executor, rng);
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
     if (mplr::available()) {
         mplr::comm_world().reduce(mplr::max<double>{}, 0, time);
     }
 
     // Report result
-    const auto& [sumF, sumF2, nSample]{integrationState};
+    const auto integral{statistic.MeanEstimate()};
     MasterPrint("Integration completed in {:.3f}s.\n"
                 "Integration state (integration can be continued from here):\n"
-                "  {} {} {}\n"
+                "  {}\n"
                 "The integral of |M|^2 * (Acceptance) over phase space:\n"
                 "  {} +/- {}  (rel. unc.: {:.3}%, N_eff: {:.2f})\n",
-                time, sumF, sumF2, nSample, integral.value, integral.uncertainty,
-                integral.uncertainty / std::abs(integral.value) * 100, nEff);
-    return {integral, nEff, integrationState};
+                time, statistic.Serialize().EncodeBase64(), integral.value, integral.uncertainty,
+                integral.RelativeUncertainty() * 100, statistic.EffectiveSampleSize());
+    return statistic;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -304,64 +303,47 @@ auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMom
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                                                     MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Estimate, double> {
+auto MatrixElementBasedGenerator<M, N, A>::MCIntegrate(Statistic<1>& statistic, std::regular_invocable<const Event&> auto&& integrand, double precisionGoal,
+                                                       Executor<long long>& executor, CLHEP::HepRandomEngine& rng) -> void {
     if (precisionGoal <= 0) [[unlikely]] {
         Mustard::PrintWarning(fmt::format("Non-positive precision goal (got {}), taking its absolute value.", precisionGoal));
         precisionGoal = std::abs(precisionGoal);
     }
-    // Core integration method
-    const auto integrate{[&](unsigned long long nSample) {
-        using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
-        muc::array2d sum{};
-        muc::array2d compensation{};
-        const auto KahanAdd{[&](muc::array2d value) { // improve numeric stability
-            const auto correctedValue{value - compensation};
-            const auto newSum{sum + correctedValue};
-            compensation = (newSum - sum) - correctedValue;
-            sum = newSum;
-        }};
-        executor.Run(nSample, [&](auto) {
+    // Integration loop
+    MasterPrintLn("Integration starts. Precision goal: {:.3}.", precisionGoal);
+    const auto batchSizeForPrecision{muc::llround(muc::pow(precisionGoal, -2))};
+    auto batchSize{std::max(1000000ll * executor.NProcess(), batchSizeForPrecision)};
+    for (int checkpoint{};; ++checkpoint) {
+        if (statistic.SampleSize() == 0) {
+            MasterPrintLn("[Checkpoint {}] Restarting integration.", checkpoint);
+        } else {
+            MasterPrintLn("[Checkpoint {}] Continuing integration from state\n"
+                          "  {}",
+                          checkpoint, statistic.Serialize().EncodeBase64());
+        }
+        MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
+        Statistic<1> batchStatistic;
+        executor.Run(batchSize, [&](auto) {
             const auto event{PhaseSpace(rng)};
             if (not InfraredSafe(event.p)) {
                 return;
             }
-            const auto value{Integrand(event)};
-            KahanAdd({value, muc::pow(value, 2)});
+            batchStatistic.Fill(integrand(event));
         });
         if (mplr::available()) {
-            mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
+            auto serializedBatchStatistic{batchStatistic.Serialize()};
+            mplr::comm_world().allreduce(std::plus{}, serializedBatchStatistic);
+            batchStatistic.Deserialize(serializedBatchStatistic);
         }
-        state.sumF += sum[0];
-        state.sumF2 += sum[1];
-        state.n += nSample;
-        Estimate integral;
-        integral.value = state.sumF / state.n;
-        integral.uncertainty = std::sqrt((state.sumF2 / state.n - muc::pow(integral.value, 2)) / state.n);
-        const auto nEff{muc::pow(state.sumF, 2) / state.sumF2};
-        return std::pair{integral, nEff};
-    }};
-    // Integration loop
-    MasterPrintLn("Integration starts. Precision goal: {:.3}.", precisionGoal);
-    const auto initialBatchSize{muc::to_unsigned(muc::llround(muc::pow(precisionGoal, -2)))};
-    auto batchSize{std::max(1000000ull * executor.NProcess(), initialBatchSize)};
-    for (int checkpoint{};; ++checkpoint) {
-        if (state.n == 0) {
-            MasterPrintLn("[Checkpoint {}] Restarting integration.", checkpoint);
-        } else {
-            MasterPrintLn("[Checkpoint {}] Continuing integration from state\n"
-                          "  {} {} {}",
-                          checkpoint, state.sumF, state.sumF2, state.n);
-        }
-        MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
-        const auto [integral, nEff]{integrate(batchSize)};
-        const auto precision{integral.uncertainty / std::abs(integral.value)};
+        statistic += batchStatistic;
+        const auto integral{statistic.MeanEstimate()};
+        const auto nEff{statistic.EffectiveSampleSize()};
+        const auto precision{integral.RelativeUncertainty()};
         if (precision <= precisionGoal) {
             MasterPrint("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} reached.\n"
                         "\n"
                         "Integration completed with {} samples.\n",
-                        precision, nEff, precisionGoal, state.n);
-            return {integral, nEff};
+                        precision, nEff, precisionGoal, statistic.SampleSize());
         }
         MasterPrint("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} not reached.\n"
                     "\n",
@@ -373,7 +355,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
             constexpr auto zFactor{1};  // decrease z sigma to increase stability
             const auto counterFactor{1 - zFactor / std::sqrt(nEff)};
             const auto factor{std::max(0., counterFactor * muc::pow(precision / precisionGoal, 2) - 1)};
-            batchSize = factor * state.n;
+            batchSize = factor * statistic.SampleSize();
         } else { // increase the batch size by 10 if we have not even stepped into the real phase space
             batchSize *= 10;
         }
@@ -381,7 +363,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         const auto batchSizeLowerBound{std::max<long long>(executor.NProcess(), std::llround(nSamplePerMin))};
         // and not too large
         const auto batchSizeUpperBound{std::llround(15 * nSamplePerMin)};
-        batchSize = std::clamp<unsigned long long>(batchSize, batchSizeLowerBound, batchSizeUpperBound);
+        batchSize = std::clamp(batchSize, batchSizeLowerBound, batchSizeUpperBound);
     }
 }
 

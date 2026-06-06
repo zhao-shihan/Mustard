@@ -34,6 +34,7 @@ namespace Mustard::inline Math {
 struct Estimate {
     double value;
     double uncertainty;
+    auto RelativeUncertainty() const -> auto { return uncertainty / std::abs(value); }
 };
 
 /// @brief Add two estimates with uncertainty propagation.

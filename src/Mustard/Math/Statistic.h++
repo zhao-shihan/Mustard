@@ -20,178 +20,165 @@
 
 #include "Mustard/Concept/InputVector.h++"
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Estimate.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/VectorCast.h++"
+
+#include "TBase64.h"
 
 #include "Eigen/Core"
 
+#include "mplr/mplr.hpp"
+
 #include "muc/math"
-#include "muc/numeric"
+
+#include "gsl/gsl"
+
+#include "fmt/format.h"
 
 #include <cmath>
-#include <concepts>
-#include <initializer_list>
-#include <ranges>
+#include <cstring>
 #include <stdexcept>
+#include <string>
+#include <type_traits>
 
 namespace Mustard::inline Math {
 
 template<int N>
-    requires(N > 0)
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
 class Statistic;
+
+template<int N>
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+struct SerializedStatistic;
 
 template<>
 class Statistic<1> {
 public:
-    constexpr Statistic();
-    template<std::ranges::input_range S = std::initializer_list<double>>
-        requires std::convertible_to<std::ranges::range_value_t<S>, double>
-    constexpr explicit Statistic(const S& sample, double weight = 1);
-    template<std::ranges::input_range S = std::initializer_list<double>, std::ranges::input_range W = std::initializer_list<double>>
-        requires std::convertible_to<std::ranges::range_value_t<S>, double> and std::convertible_to<std::ranges::range_value_t<W>, double>
-    constexpr Statistic(const S& sample, const W& weight);
+    using MeanType = double;
+    using CovarianceType = double;
+    using SerializedType = SerializedStatistic<1>;
 
-    constexpr auto Fill(double sample, double weight = 1) -> void;
-    template<std::ranges::input_range S = std::initializer_list<double>>
-        requires std::convertible_to<std::ranges::range_value_t<S>, double>
-    constexpr auto Fill(const S& sample, double weight = 1) -> void;
-    template<std::ranges::input_range S = std::initializer_list<double>, std::ranges::input_range W = std::initializer_list<double>>
-        requires std::convertible_to<std::ranges::range_value_t<S>, double> and std::convertible_to<std::ranges::range_value_t<W>, double>
-    constexpr auto Fill(const S& sample, const W& weight) -> void;
+public:
+    MUSTARD_ALWAYS_INLINE Statistic();
+    MUSTARD_ALWAYS_INLINE explicit Statistic(const SerializedType& data);
 
-    constexpr auto Sum() const -> const auto& { return fSumWX; }
-    constexpr auto SumProduct() const -> const auto& { return fSumWX2; }
-    constexpr auto SumCubic() const -> const auto& { return fSumWX3; }
-    constexpr auto SumQuartic() const -> const auto& { return fSumWX4; }
+    MUSTARD_ALWAYS_INLINE auto Fill(double x, double w = 1) -> void;
 
-    constexpr auto WeightSum() const -> const auto& { return fSumW; }
+    auto SampleSize() const -> auto { return fN; }
+    auto WeightSum() const -> auto { return fW; }
+    auto WeightSquareSum() const -> auto { return fW2; }
 
-    template<int K>
-        requires(0 <= K and K <= 4)
-    constexpr auto Moment() const -> double;
-    template<int K>
-        requires(0 <= K and K <= 4)
-    constexpr auto CentralMoment() const -> double;
-
-    constexpr auto Mean() const -> auto { return Moment<1>(); }
-    constexpr auto MeanSquare() const -> auto { return Moment<2>(); }
-    constexpr auto MeanCubic() const -> auto { return Moment<3>(); }
-    constexpr auto MeanQuartic() const -> auto { return Moment<4>(); }
-
-    constexpr auto Variance() const -> auto { return CentralMoment<2>(); }
+    auto Sum() const -> auto { return fM; }
+    auto Mean() const -> auto { return fM / fW; }
+    auto Variance() const -> auto { return Debias() * (fM2 / fW); }
     auto StdDev() const -> auto { return std::sqrt(Variance()); }
 
-    auto Skewness() const -> auto { return CentralMoment<3>() / muc::pow(StdDev(), 3); }
-
-    constexpr auto Kurtosis() const -> auto { return CentralMoment<4>() / muc::pow(Variance(), 2); }
-
-    constexpr auto EffectiveN() const -> auto { return muc::pow(fSumW, 2) / fSumW2; }
-    constexpr auto VarianceOfMean() const -> auto { return Variance() / EffectiveN(); }
+    auto EffectiveSampleSize() const -> auto { return muc::pow(fW, 2) / fW2; }
+    auto VarianceOfMean() const -> auto { return Variance() / EffectiveSampleSize(); }
     auto StdDevOfMean() const -> auto { return std::sqrt(VarianceOfMean()); }
+    auto MeanEstimate() const -> Estimate { return {Mean(), StdDevOfMean()}; }
+
+    MUSTARD_ALWAYS_INLINE auto operator+=(const Statistic& other) -> Statistic&;
+    friend auto operator+(Statistic lhs, const Statistic& rhs) -> auto { return lhs += rhs; }
+
+    MUSTARD_ALWAYS_INLINE auto Serialize() const -> SerializedType;
+    MUSTARD_ALWAYS_INLINE auto Deserialize(const SerializedType& data) & -> void;
 
 private:
-    double fSumWX;
-    double fSumWX2;
-    double fSumWX3;
-    double fSumWX4;
-    double fSumW;
-    double fSumW2;
+    MUSTARD_ALWAYS_INLINE auto Debias() const -> double;
+
+private:
+    long long fN;
+    double fW;
+    double fW2;
+    double fM;
+    double fM2;
 };
 
 template<int N>
-    requires(N > 0)
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
 class Statistic {
 public:
-    Statistic();
-    template<std::ranges::input_range S = std::initializer_list<Eigen::Vector<double, N>>>
-        requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N>
-    explicit Statistic(const S& sample, double weight = 1);
-    template<std::ranges::input_range S = std::initializer_list<Eigen::Vector<double, N>>, std::ranges::input_range W = std::initializer_list<double>>
-        requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N> and std::convertible_to<std::ranges::range_value_t<W>, double>
-    Statistic(const S& sample, const W& weight);
+    using MeanType = Eigen::Vector<double, N>;
+    using CovarianceType = Eigen::Matrix<double, N, N>;
+    using SerializedType = SerializedStatistic<N>;
 
-    template<Concept::InputVectorAny<N> T = Eigen::Vector<double, N>>
-    auto Fill(const T& sample, double weight = 1) -> void;
-    template<std::ranges::input_range S = std::initializer_list<Eigen::Vector<double, N>>>
-        requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N>
-    auto Fill(const S& sample, double weight = 1) -> void;
-    template<std::ranges::input_range S = std::initializer_list<Eigen::Vector<double, N>>, std::ranges::input_range W = std::initializer_list<double>>
-        requires Concept::InputVectorAny<std::ranges::range_value_t<S>, N> and std::convertible_to<std::ranges::range_value_t<W>, double>
-    auto Fill(const S& sample, const W& weight) -> void;
+public:
+    MUSTARD_STRONG_INLINE Statistic();
+    MUSTARD_STRONG_INLINE explicit Statistic(const SerializedType& data);
 
-    auto Sum(int i) const -> auto { return fSumWX[i]; }
-    auto SumProduct(int i, int j) const -> auto { return fSumWXX(i, j); }
-    auto SumSquare(int i) const -> auto { return SumProduct(i, i); }
-    auto SumCubic(int i) const -> auto { return fSumWX3[i]; }
-    auto SumQuartic(int i) const -> auto { return fSumWX4[i]; }
-    auto Sum() const -> const auto& { return fSumWX; }
-    auto SumProduct() const -> const auto& { return fSumWXX; }
-    auto SumSquare() const -> auto { return SumProduct().diagonal().eval(); }
-    auto SumCubic() const -> const auto& { return fSumWX3; }
-    auto SumQuartic() const -> const auto& { return fSumWX4; }
+    template<typename T = MeanType>
+        requires Concept::InputVectorAny<std::decay_t<T>, N>
+    MUSTARD_STRONG_INLINE auto Fill(T&& x, double w = 1) -> void;
 
-    auto WeightSum() const -> const auto& { return fSumW; }
+    auto SampleSize() const -> auto { return fN; }
+    auto WeightSum() const -> auto { return fW; }
+    auto WeightSquareSum() const -> auto { return fW2; }
 
-    template<int K>
-        requires(0 <= K and K <= 4)
-    auto Moment(int i) const -> double;
-    template<int K>
-        requires(0 <= K and K <= 4)
-    auto Moment() const -> Eigen::Vector<double, N>;
-
-    template<int K>
-        requires(0 <= K and K <= 4)
-    auto CentralMoment(int i) const -> double;
-    template<int K>
-        requires(0 <= K and K <= 4)
-    auto CentralMoment() const -> Eigen::Vector<double, N>;
-
-    auto Mixed2ndMoment(int i, int j) const -> auto { return fSumWXX(i, j) / fSumW; }
-    auto Mixed2ndMoment() const -> auto { return (fSumWXX / fSumW).eval(); }
-
-    auto Mixed2ndCentralMoment(int i, int j) const -> auto { return Mixed2ndMoment(i, j) - Moment<1>(i) * Moment<1>(j); }
-    auto Mixed2ndCentralMoment() const -> Eigen::Matrix<double, N, N>;
-
-    auto Mean(int i) const -> auto { return Moment<1>(i); }
-    auto MeanSquare(int i) const -> auto { return Moment<2>(i); }
-    auto MeanCubic(int i) const -> auto { return Moment<3>(i); }
-    auto MeanQuartic(int i) const -> auto { return Moment<4>(i); }
-    auto MeanProduct(int i, int j) const -> auto { return Mixed2ndMoment(i, j); }
-    auto Mean() const -> auto { return Moment<1>(); }
-    auto MeanSquare() const -> auto { return Moment<2>(); }
-    auto MeanCubic() const -> auto { return Moment<3>(); }
-    auto MeanQuartic() const -> auto { return Moment<4>(); }
-    auto MeanProduct() const -> auto { return Mixed2ndMoment(); }
-
-    auto Variance(int i) const -> auto { return CentralMoment<2>(i); }
+    auto Sum(int i) const -> auto { return fM[i]; }
+    auto Mean(int i) const -> auto { return fM[i] / fW; }
+    auto Covariance(int i, int j) const -> auto { return Debias() * (fM2(i, j) / fW); }
+    auto Variance(int i) const -> auto { return Covariance(i, i); }
     auto StdDev(int i) const -> auto { return std::sqrt(Variance(i)); }
-    auto Covariance(int i, int j) const -> auto { return Mixed2ndCentralMoment(i, j); }
-    auto Variance() const -> auto { return CentralMoment<2>(); }
-    auto StdDev() const -> auto { return Variance().cwiseSqrt().eval(); }
-    auto Covariance() const -> auto { return Mixed2ndCentralMoment(); }
+    auto Sum() const -> const auto& { return fM; }
+    auto Mean() const -> auto { return (fM / fW).eval(); }
+    auto Covariance() const -> auto { return CovarianceExpression().eval(); }
+    auto Variance() const -> auto { return VarianceExpression().eval(); }
+    auto StdDev() const -> auto { return VarianceExpression().cwiseSqrt().eval(); }
 
-    auto Skewness(int i) const -> auto { return CentralMoment<3>(i) / muc::pow(StdDev(i), 3); }
-    auto Skewness() const -> Eigen::Vector<double, N>;
-
-    auto Kurtosis(int i) const -> auto { return CentralMoment<4>(i) / muc::pow(Variance(i), 2); }
-    auto Kurtosis() const -> Eigen::Vector<double, N>;
-
-    constexpr auto EffectiveN() const -> auto { return muc::pow(fSumW, 2) / fSumW2; }
-    constexpr auto VarianceOfMean(int i) const -> auto { return Variance(i) / EffectiveN(); }
-    constexpr auto VarianceOfMean() const -> auto { return (Variance() / EffectiveN()).eval(); }
-    constexpr auto CovarianceOfMean(int i, int j) const -> auto { return Covariance(i, j) / EffectiveN(); }
-    constexpr auto CovarianceOfMean() const -> auto { return (Covariance() / EffectiveN()).eval(); }
+    auto EffectiveSampleSize() const -> auto { return muc::pow(fW, 2) / fW2; }
+    auto VarianceOfMean(int i) const -> auto { return Variance(i) / EffectiveSampleSize(); }
+    auto CovarianceOfMean(int i, int j) const -> auto { return Covariance(i, j) / EffectiveSampleSize(); }
     auto StdDevOfMean(int i) const -> auto { return std::sqrt(VarianceOfMean(i)); }
-    auto StdDevOfMean() const -> auto { return VarianceOfMean().cwiseSqrt().eval(); }
+    auto MeanEstimate(int i) const -> Estimate { return {Mean(i), StdDevOfMean(i)}; }
+    auto VarianceOfMean() const -> auto { return VarianceOfMeanExpression().eval(); }
+    auto CovarianceOfMean() const -> auto { return (CovarianceExpression() / EffectiveSampleSize()).eval(); }
+    auto StdDevOfMean() const -> auto { return VarianceOfMeanExpression().cwiseSqrt().eval(); }
+
+    MUSTARD_STRONG_INLINE auto operator+=(const Statistic& other) -> Statistic&;
+    friend auto operator+(Statistic lhs, const Statistic& rhs) -> auto { return lhs += rhs; }
+
+    MUSTARD_STRONG_INLINE auto Serialize() const -> SerializedType;
+    MUSTARD_STRONG_INLINE auto Deserialize(const SerializedType& data) & -> void;
 
 private:
-    Eigen::Vector<double, N> fSumWX;
-    Eigen::Matrix<double, N, N> fSumWXX;
-    Eigen::Vector<double, N> fSumWX3;
-    Eigen::Vector<double, N> fSumWX4;
-    double fSumW;
-    double fSumW2;
+    MUSTARD_ALWAYS_INLINE auto Debias() const -> double;
+    auto CovarianceExpression() const -> auto { return Debias() * (fM2 / fW); }
+    auto VarianceExpression() const -> auto { return Debias() * (fM2.diagonal() / fW); }
+    auto VarianceOfMeanExpression() const -> auto { return VarianceExpression() / EffectiveSampleSize(); }
+
+private:
+    long long fN;
+    double fW;
+    double fW2;
+    MeanType fM;
+    CovarianceType fM2;
+};
+
+template<int N>
+    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+struct SerializedStatistic {
+public:
+    SerializedStatistic();
+    SerializedStatistic(const std::string& base64);
+
+    auto EncodeBase64() const -> std::string;
+    auto DecodeBase64(const std::string& base64) & -> void;
+
+    auto operator+(const SerializedStatistic& other) -> auto { return (Statistic<N>{*this} + Statistic<N>{other}).Serialize(); }
+
+public:
+    long long fN;
+    double fW;
+    double fW2;
+    double fM[N];
+    double fM2[N * N];
 };
 
 } // namespace Mustard::inline Math
+
+MPLR_REFLECTION_TEMPLATE((int N), (Mustard::Math::SerializedStatistic<N>),
+                         fN, fW, fW2, fM, fM2)
 
 #include "Mustard/Math/Statistic.inl"

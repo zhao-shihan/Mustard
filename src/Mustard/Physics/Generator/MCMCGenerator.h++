@@ -20,6 +20,7 @@
 
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Statistic.h++"
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
@@ -228,10 +229,8 @@ protected:
     auto ProposePID(CLHEP::HepRandomEngine& rng, const std::array<int, N>& pID0, std::array<int, N>& pID) -> void;
 
 private:
-    /// @brief Estimate autocorrelation function and initialize thinning
-    /// @param rng Reference to CLHEP random engine
-    /// @return The biased autocorrelation function
-    auto EstimateACFAndDecideThinning(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction;
+    auto EstimateACF(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction;
+    auto EstimateIntegratedAutocorrelation(const AutocorrelationFunction& acf) -> double;
 
     /// @brief Markov chain burn in stage
     /// @param rng Reference to CLHEP random engine
@@ -246,7 +245,7 @@ protected:
     int fACFSampleSize;    ///< Sample size for estimating autocorrelation function (ACF)
                            //
     bool fMCMCInitialized; ///< Initialization completed flag
-    int fThinningSize;     ///< Samples discarded between two generated
+    int fSamplingInterval; ///< Samples discarded between two generated
     MarkovChain fMC;       ///< Current Markov chain state
 
     static constexpr auto fgDefaultInvalidACFSampleSize{static_cast<decltype(fACFSampleSize)>(-1)};
