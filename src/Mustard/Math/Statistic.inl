@@ -86,7 +86,7 @@ MUSTARD_ALWAYS_INLINE auto Statistic<1>::Debias() const -> double {
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 MUSTARD_STRONG_INLINE Statistic<N>::Statistic() :
     fN{},
     fW{},
@@ -99,14 +99,14 @@ MUSTARD_STRONG_INLINE Statistic<N>::Statistic() :
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 MUSTARD_STRONG_INLINE Statistic<N>::Statistic(const SerializedType& data) :
     Statistic{} {
     Deserialize(data);
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 template<typename T>
     requires Concept::InputVectorAny<std::decay_t<T>, N>
 MUSTARD_STRONG_INLINE auto Statistic<N>::Fill(T&& x0, double w) -> void {
@@ -127,7 +127,7 @@ MUSTARD_STRONG_INLINE auto Statistic<N>::Fill(T&& x0, double w) -> void {
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 MUSTARD_STRONG_INLINE auto Statistic<N>::operator+=(const Statistic& other) -> Statistic& {
     if (other.fW == 0) {
         return *this;
@@ -147,7 +147,7 @@ MUSTARD_STRONG_INLINE auto Statistic<N>::operator+=(const Statistic& other) -> S
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 MUSTARD_STRONG_INLINE auto Statistic<N>::Serialize() const -> SerializedType {
     SerializedType data;
     data.fN = fN;
@@ -159,7 +159,7 @@ MUSTARD_STRONG_INLINE auto Statistic<N>::Serialize() const -> SerializedType {
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 MUSTARD_STRONG_INLINE auto Statistic<N>::Deserialize(const SerializedType& data) -> void {
     fN = data.fN;
     fW = data.fW;
@@ -169,14 +169,14 @@ MUSTARD_STRONG_INLINE auto Statistic<N>::Deserialize(const SerializedType& data)
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 MUSTARD_ALWAYS_INLINE auto Statistic<N>::Debias() const -> double {
     const auto tmp{muc::pow(fW, 2)};
     return tmp / (tmp - fW2);
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 SerializedStatistic<N>::SerializedStatistic() :
     fN{},
     fW{},
@@ -185,21 +185,21 @@ SerializedStatistic<N>::SerializedStatistic() :
     fM2{} {}
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 SerializedStatistic<N>::SerializedStatistic(const std::string& base64) :
     SerializedStatistic{} {
     DecodeBase64(base64);
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 auto SerializedStatistic<N>::EncodeBase64() const -> std::string {
     const auto byteArray{std::bit_cast<std::array<char, sizeof(*this)>>(*this)};
     return std::string{TBase64::Encode(byteArray.data(), byteArray.size()).View()};
 }
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 auto SerializedStatistic<N>::DecodeBase64(const std::string& base64) -> void {
     const auto byteString{TBase64::Decode(base64.c_str())};
     if (byteString.Length() != sizeof(*this)) {

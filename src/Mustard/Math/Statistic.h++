@@ -45,11 +45,11 @@
 namespace Mustard::inline Math {
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 class Statistic;
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 struct SerializedStatistic;
 
 template<>
@@ -97,7 +97,7 @@ private:
 };
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 class Statistic {
 public:
     using MeanType = Eigen::Vector<double, N>;
@@ -157,7 +157,7 @@ private:
 };
 
 template<int N>
-    requires(0 < N and N * sizeof(double) <= EIGEN_STACK_ALLOCATION_LIMIT)
+    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
 struct SerializedStatistic {
 public:
     SerializedStatistic();
