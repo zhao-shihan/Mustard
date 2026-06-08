@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "mplr/mplr.hpp"
+
 #include "muc/array"
 #include "muc/math"
 
@@ -36,6 +38,12 @@ struct Estimate {
     double uncertainty;
     auto RelativeUncertainty() const -> auto { return uncertainty / std::abs(value); }
 };
+
+} // namespace Mustard::inline Math
+
+MPLR_REFLECTION(Mustard::Estimate, value, uncertainty)
+
+namespace Mustard::inline Math {
 
 /// @brief Add two estimates with uncertainty propagation.
 /// @param a First estimate
