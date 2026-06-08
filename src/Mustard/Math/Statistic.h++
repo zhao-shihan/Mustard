@@ -83,7 +83,7 @@ public:
     friend auto operator+(Statistic lhs, const Statistic& rhs) -> auto { return lhs += rhs; }
 
     MUSTARD_ALWAYS_INLINE auto Serialize() const -> SerializedType;
-    MUSTARD_ALWAYS_INLINE auto Deserialize(const SerializedType& data) & -> void;
+    MUSTARD_ALWAYS_INLINE auto Deserialize(const SerializedType& data) -> void;
 
 private:
     MUSTARD_ALWAYS_INLINE auto Debias() const -> double;
@@ -140,7 +140,7 @@ public:
     friend auto operator+(Statistic lhs, const Statistic& rhs) -> auto { return lhs += rhs; }
 
     MUSTARD_STRONG_INLINE auto Serialize() const -> SerializedType;
-    MUSTARD_STRONG_INLINE auto Deserialize(const SerializedType& data) & -> void;
+    MUSTARD_STRONG_INLINE auto Deserialize(const SerializedType& data) -> void;
 
 private:
     MUSTARD_ALWAYS_INLINE auto Debias() const -> double;
@@ -164,7 +164,7 @@ public:
     SerializedStatistic(const std::string& base64);
 
     auto EncodeBase64() const -> std::string;
-    auto DecodeBase64(const std::string& base64) & -> void;
+    auto DecodeBase64(const std::string& base64) -> void;
 
     auto operator+(const SerializedStatistic& other) -> auto { return (Statistic<N>{*this} + Statistic<N>{other}).Serialize(); }
 

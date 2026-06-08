@@ -63,11 +63,21 @@ MUSTARD_ALWAYS_INLINE auto Statistic<1>::operator+=(const Statistic& other) -> S
 }
 
 MUSTARD_ALWAYS_INLINE auto Statistic<1>::Serialize() const -> SerializedType {
-    return std::bit_cast<SerializedType>(*this);
+    SerializedType data;
+    data.fN = fN;
+    data.fW = fW;
+    data.fW2 = fW2;
+    *data.fM = fM;
+    *data.fM2 = fM2;
+    return data;
 }
 
 MUSTARD_ALWAYS_INLINE auto Statistic<1>::Deserialize(const SerializedType& data) -> void {
-    std::memcpy(this, &data, sizeof(*this));
+    fN = data.fN;
+    fW = data.fW;
+    fW2 = data.fW2;
+    fM = *data.fM;
+    fM2 = *data.fM2;
 }
 
 MUSTARD_ALWAYS_INLINE auto Statistic<1>::Debias() const -> double {
