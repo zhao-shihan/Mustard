@@ -46,4 +46,4 @@ public:
 
 } // namespace Mustard::Geant4X::inline Decay::impl
 
-#include "Mustard/Geant4X/Decay/internal/ExtendDecayIt.inl"
+#include "Mustard/Geant4X/Decay/impl/ExtendDecayIt.inl"

@@ -98,4 +98,4 @@ private:
 
 } // namespace Mustard::Env::inline ObjectRegistry::impl
 
-#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.inl"
+#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.inl"

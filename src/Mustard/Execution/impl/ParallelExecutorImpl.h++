@@ -20,7 +20,7 @@
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Execution/Dispatcher.h++"
-#include "Mustard/Execution/internal/ExecutorImplBase.h++"
+#include "Mustard/Execution/impl/ExecutorImplBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
@@ -72,4 +72,4 @@ private:
 
 } // namespace Mustard::inline Execution::impl
 
-#include "Mustard/Execution/internal/ParallelExecutorImpl.inl"
+#include "Mustard/Execution/impl/ParallelExecutorImpl.inl"

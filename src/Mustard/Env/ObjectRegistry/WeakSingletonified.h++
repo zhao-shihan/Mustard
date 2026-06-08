@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Concept/NonCopyable.h++"
-#include "Mustard/Env/ObjectRegistry/internal/SingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonBase.h++"
 
 #include <concepts>
 #include <type_traits>

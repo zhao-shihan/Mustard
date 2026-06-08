@@ -20,9 +20,9 @@
 
 #include "Mustard/Execution/DefaultDispatcher.h++"
 #include "Mustard/Execution/Dispatcher.h++"
-#include "Mustard/Execution/internal/ExecutorImplBase.h++"
-#include "Mustard/Execution/internal/ParallelExecutorImpl.h++"
-#include "Mustard/Execution/internal/SequentialExecutorImpl.h++"
+#include "Mustard/Execution/impl/ExecutorImplBase.h++"
+#include "Mustard/Execution/impl/ParallelExecutorImpl.h++"
+#include "Mustard/Execution/impl/SequentialExecutorImpl.h++"
 
 #include "mplr/mplr.hpp"
 

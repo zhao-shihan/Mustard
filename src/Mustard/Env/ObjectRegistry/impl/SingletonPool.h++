@@ -20,7 +20,7 @@
 
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Env/ObjectRegistry/Singletonified.h++"
-#include "Mustard/Env/ObjectRegistry/internal/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Allocator.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"
@@ -118,4 +118,4 @@ class SingletonFactory : public NonConstructibleBase {
 
 } // namespace Mustard::Env::inline ObjectRegistry
 
-#include "Mustard/Env/ObjectRegistry/internal/SingletonPool.inl"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.inl"

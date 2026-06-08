@@ -20,7 +20,7 @@
 
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
-#include "Mustard/Math/internal/FastLogOn01.h++"
+#include "Mustard/Math/impl/FastLogOn01.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "CLHEP/Random/RandomEngine.h"

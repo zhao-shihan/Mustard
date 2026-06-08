@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Concept/NonCopyable.h++"
-#include "Mustard/Env/ObjectRegistry/internal/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
 
 #include <concepts>
 #include <type_traits>

@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Env/ObjectRegistry/WeakSingletonified.h++"
-#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Execution/Dispatcher.h++"
-#include "Mustard/Execution/internal/ExecutorImplBase.h++"
+#include "Mustard/Execution/impl/ExecutorImplBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/ProgressBar.h++"
 
@@ -52,4 +52,4 @@ private:
 
 } // namespace Mustard::inline Execution::impl
 
-#include "Mustard/Execution/internal/SequentialExecutorImpl.inl"
+#include "Mustard/Execution/impl/SequentialExecutorImpl.inl"

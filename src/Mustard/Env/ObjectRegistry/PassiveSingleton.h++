@@ -20,8 +20,8 @@
 
 #include "Mustard/Env/ObjectRegistry/PassiveSingletonified.h++"
 #include "Mustard/Env/ObjectRegistry/WeakSingleton.h++"
-#include "Mustard/Env/ObjectRegistry/internal/PassiveSingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl/PassiveSingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "muc/utility"

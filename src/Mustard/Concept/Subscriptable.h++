@@ -44,7 +44,7 @@ concept SubscriptableToMaybeReferenced =
     SubscriptableTo<T, U> or
     SubscriptableTo<T, U&>;
 
-#include "Mustard/Concept/internal/AccessToMaybeCVConceptMacro.inl"
+#include "Mustard/Concept/impl/AccessToMaybeCVConceptMacro.inl"
 
 template<typename T, typename U>
 concept SubscriptableToMaybeConst =

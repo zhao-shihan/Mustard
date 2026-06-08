@@ -21,7 +21,7 @@
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Env/VerboseLevel.h++"
-#include "Mustard/Env/internal/EnvBase.h++"
+#include "Mustard/Env/impl/EnvBase.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/optional"

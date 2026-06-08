@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Env/ObjectRegistry/Singletonified.h++"
-#include "Mustard/Env/ObjectRegistry/internal/SingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/internal/SingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/Utility/NonConstructibleBase.h++"

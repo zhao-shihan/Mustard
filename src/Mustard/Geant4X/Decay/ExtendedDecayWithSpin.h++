@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Decay/internal/ExtendDecayIt.h++"
+#include "Mustard/Geant4X/Decay/impl/ExtendDecayIt.h++"
 
 #include "G4DecayWithSpin.hh"
 
