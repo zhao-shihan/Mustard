@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/ObjectRegistry/internal/SingletonPool.h++"
-#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.h++"
-#include "Mustard/Env/internal/EnvBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
+#include "Mustard/Env/impl/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "muc/bit"

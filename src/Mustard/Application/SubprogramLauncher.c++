@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Application/SubprogramLauncher.h++"
-#include "Mustard/CLI/internal/MakeDefaultArgParser.h++"
+#include "Mustard/CLI/impl/MakeDefaultArgParser.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "argparse/argparse.hpp"

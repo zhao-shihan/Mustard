@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/ObjectRegistry/internal/SingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.h++"
 
 #include <queue>
 #include <ranges>

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/CLI/internal/MakeDefaultArgParser.h++"
+#include "Mustard/CLI/impl/MakeDefaultArgParser.h++"
 #include "Mustard/Version.h++"
 
 #include "fmt/core.h"

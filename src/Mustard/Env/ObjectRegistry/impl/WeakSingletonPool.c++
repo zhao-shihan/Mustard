@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/ObjectRegistry/internal/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
 
 #include "fmt/core.h"
 
