@@ -28,6 +28,9 @@ set(MUSTARD_VERSION ${MUSTARD_VERSION_MAJOR}.${MUSTARD_VERSION_MINOR}.${MUSTARD_
 project(Mustard VERSION ${MUSTARD_VERSION}
                 LANGUAGES CXX)
 
+set(MUSTARD_CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${MUSTARD_CMAKE_MODULE_PATH})
+
 # =============================================================================
 # Options
 # =============================================================================
@@ -43,6 +46,7 @@ option(MUSTARD_ENABLE_MSVC_STD_CONFORMITY "Build Mustard with standard-conformit
 option(MUSTARD_FULL_UNITY_BUILD "Building Mustard use unity build technique COMPLETELY." OFF)
 option(MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS "Add compiler flag to show even more compiler warnings (GCC: -Weffc++, Clang: -Weverything, MSVC: /Wall)." OFF)
 option(MUSTARD_SIGNAL_HANDLER "Build with signal handling. Signal handlers are registered at the construction of environment." ON)
+option(MUSTARD_USE_FFTW "Use FFTW for Fourier transform." ON)
 option(MUSTARD_USE_G4VIS "Build Geant4 applications of Mustard with available visualization. Note that whether Geant4 supports visualization is determined by options with which Geant4 is built. Mustard does not, and cannot, affect whether G4 enables visualization." ON)
 option(MUSTARD_USE_MIMALLOC "Using mimalloc as the underlying implementation of Mustard memory allocation library." ON)
 option(MUSTARD_USE_SHARED_MSVC_RT "Select the MSVC runtime library for use (MSVC only). ON for shared (.dll), OFF for static (.lib). If you run into link error related to MSVC runtime, you can try flip this." ON)
@@ -99,23 +103,19 @@ endif()
 message(STATUS "Mustard install path: ${CMAKE_INSTALL_PREFIX} (add -DCMAKE_INSTALL_PREFIX=<install_path> into CMake command if you wish to change it)")
 
 # =============================================================================
-# Global compile options
+# Complie configs and dependencies
 # =============================================================================
 
-include(${PROJECT_SOURCE_DIR}/cmake/GlobalCompileConfig.cmake)
-
-# =============================================================================
-# Dependencies
-# =============================================================================
-
-include(${PROJECT_SOURCE_DIR}/cmake/LookForPackages.cmake)
+# Global compile configs, before adding dependencies
+include(GlobalCompileConfig)
+# Find and configure dependencies.
+include(LookForPackages)
+# Compile configs for Mustard itself, after dependencies are added.
+include(MustardCompileConfig)
 
 # =============================================================================
 # Let's dive in...
 # =============================================================================
-
-# Config for Mustard
-include(${PROJECT_SOURCE_DIR}/cmake/MustardCompileConfig.cmake)
 
 add_subdirectory(src)
 if(MUSTARD_BUILD_TESTING)
@@ -143,7 +143,7 @@ install(EXPORT MustardTargets
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 
 include(CMakePackageConfigHelpers)
-configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/MustardConfig.cmake.in
+configure_package_config_file(${MUSTARD_CMAKE_MODULE_PATH}/MustardConfig.cmake.in
                               ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
                               INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake

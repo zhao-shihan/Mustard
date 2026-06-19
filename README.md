@@ -55,12 +55,12 @@ The following dependencies are required, but built-in if not found.
 | [**argparse**](https://github.com/p-ranav/argparse)                         | 3.2         | Argument parsing for modern C++                          |
 | [**zhao-shihan/backward-cpp**](https://github.com/zhao-shihan/backward-cpp) | 1.6.1       | A beautiful stack trace pretty printer for C++           |
 | [**envparse**](https://github.com/zhao-shihan/envparse)                     | 1.0.0       | A simple, header-only environment variable parser in C++ |
-| [**fmt**](https://github.com/fmtlib/fmt)                                    | 12.1.0      | A modern formatting library                              |
-| [**zhao-shihan/gtl**](https://github.com/zhao-shihan/gtl)                   | 1.2.1       | Greg's Template Library of useful classes                |
+| [**fmt**](https://github.com/fmtlib/fmt)                                    | 12.2.0      | A modern formatting library                              |
+| [**zhao-shihan/gtl**](https://github.com/zhao-shihan/gtl)                   | 1.2.2       | Greg's Template Library of useful classes                |
 | [**zhao-shihan/indicators**](https://github.com/zhao-shihan/indicators)     | 2.3.2       | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.2       | ISO C++ guidelines support library                       |
 | [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.26.605    | A C++17 message passing library based on MPI             |
-| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.602    | A standard non-standard C++ library                      |
+| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.619    | A standard non-standard C++ library                      |
 | [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
 
 #### Optional dependencies
@@ -71,7 +71,8 @@ The following dependencies are only required when certain options are set.
 | :-------------------------------------------------------- | :---------- | :------------------------------------------------------------------ |
 | [**Geant4**](https://geant4.org/) visualization component | N/A         | Required when `MUSTARD_USE_G4VIS` is set                            |
 | [**Geant4**](https://geant4.org/) static library          | N/A         | Required when `MUSTARD_USE_STATIC_G4` is set                        |
-| [**mimalloc**](https://github.com/p-ranav/argparse)       | 3.2.8       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found) |
+| [**FFTW**](https://fftw.org/)                             | 3.3.11      | Required when `MUSTARD_USE_FFTW` is set (built-in if not found)     |
+| [**mimalloc**](https://github.com/p-ranav/argparse)       | 3.3.2       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found) |
 
 ## Projects using this library
 

@@ -162,14 +162,6 @@ if(MUSTARD_WERROR)
 endif()
 
 # =============================================================================
-# GTL-induced compile options for Mustard
-# =============================================================================
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-interference-size)
-endif()
-
-# =============================================================================
 # MPI-induced compile options for Mustard
 # =============================================================================
 
@@ -185,3 +177,16 @@ list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MPICH_SKIP_MPICXX=1)
 
 # Inform Eigen not to enable multithreading, though we are not using OpenMP. It is safer to do so.
 list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_DONT_PARALLELIZE=1)
+
+# If option is set, inform Eigen to use FFTW as the default backend for FFT.
+if(MUSTARD_USE_FFTW)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_FFTW_DEFAULT=1)
+endif()
+
+# =============================================================================
+# GTL-induced compile options for Mustard
+# =============================================================================
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-interference-size)
+endif()

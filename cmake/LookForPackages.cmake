@@ -15,7 +15,7 @@
 # Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 # =============================================================================
-# System-only dependencies (REQUIRED, no source fallback)
+# System-only packages (REQUIRED, no source fallback)
 # =============================================================================
 
 # ROOT
@@ -39,16 +39,15 @@ find_package(
 # CPM.cmake, for package management
 # =============================================================================
 
-set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm" CACHE PATH "CPM source cache directory")
 file(DOWNLOAD
      https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
-     ${PROJECT_SOURCE_DIR}/cmake/CPM.cmake
+     ${MUSTARD_CMAKE_MODULE_PATH}/CPM.cmake
      EXPECTED_HASH SHA256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844)
-include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
+set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm" CACHE PATH "CPM source cache directory")
+include(CPM)
 
 # =============================================================================
-# Public dependencies (try find_package first, fall back via CPM)
-#   (Somewhat sorted by dependency order)
+# Public dependencies (somewhat sorted by dependency order)
 # =============================================================================
 
 # mplr (-> MPI)
@@ -57,6 +56,22 @@ CPMFindPackage(
     GITHUB_REPOSITORY zhao-shihan/mplr
     VERSION 0.26.605
     OPTIONS "MPLR_INSTALL ON")
+
+# FFTW
+if(MUSTARD_USE_FFTW)
+    file(DOWNLOAD
+         https://github.com/egpbos/findFFTW/raw/d449ea0bcbf94a4a1c3dbb2108aa57609a4967ff/FindFFTW.cmake
+         ${MUSTARD_CMAKE_MODULE_PATH}/FindFFTW.cmake
+         EXPECTED_HASH SHA256=56a669b2496797b9214a60c3c2e0c36be9292d8be0cd5b5c3c56320503e2c2ff)
+    set(MUSTARD_FFTW_MINIMUM_REQUIRED 3.3.11)
+    CPMFindPackage(
+        NAME FFTW
+        VERSION ${MUSTARD_FFTW_MINIMUM_REQUIRED}
+        URL "https://fftw.org/fftw-${MUSTARD_FFTW_MINIMUM_REQUIRED}.tar.gz"
+        OPTIONS "CMAKE_POLICY_VERSION_MINIMUM 3.5" # Remove this option in next FFTW release!
+                "BUILD_TESTS ${BUILD_TESTING}"
+                "DISABLE_FORTRAN ON")
+endif()
 
 # Eigen
 set(MUSTARD_EIGEN_MINIMUM_REQUIRED 5.0.1)
@@ -82,7 +97,7 @@ CPMFindPackage(
             "YAML_MSVC_SHARED_RT ${MUSTARD_USE_SHARED_MSVC_RT}")
 
 # fmt
-set(MUSTARD_FMT_MINIMUM_REQUIRED 12.1.0)
+set(MUSTARD_FMT_MINIMUM_REQUIRED 12.2.0)
 CPMFindPackage(
     NAME fmt
     GITHUB_REPOSITORY fmtlib/fmt
@@ -91,8 +106,7 @@ CPMFindPackage(
     OPTIONS "FMT_INSTALL ON")
 
 # =============================================================================
-# Public light-weight dependencies (try find_package first, fall back via CPM)
-#   (Sorted alphabetically)
+# Public light-weight dependencies (sorted alphabetically)
 # =============================================================================
 
 # argparse
@@ -113,7 +127,7 @@ CPMFindPackage(
 CPMFindPackage(
     NAME gtl
     GITHUB_REPOSITORY zhao-shihan/gtl
-    VERSION 1.2.1
+    VERSION 1.2.2
     OPTIONS "GTL_INSTALL ON")
 
 # Microsoft.GSL
@@ -127,12 +141,11 @@ CPMFindPackage(
 CPMFindPackage(
     NAME muc
     GITHUB_REPOSITORY zhao-shihan/muc
-    VERSION 0.26.602
+    VERSION 0.26.619
     OPTIONS "MUC_INSTALL ON")
 
 # =============================================================================
-# Private dependencies (try find_package first, fall back via CPM)
-#   (Somewhat sorted by dependency order)
+# Private dependencies (somewhat sorted by dependency order)
 # =============================================================================
 
 # backward-cpp
@@ -156,7 +169,7 @@ if(MUSTARD_USE_MIMALLOC)
     CPMFindPackage(
         NAME mimalloc
         GITHUB_REPOSITORY microsoft/mimalloc
-        VERSION 3.2.8
+        VERSION 3.3.2
         OPTIONS "MI_OVERRIDE OFF"
                 "MI_OSX_INTERPOSE OFF"
                 "MI_OSX_ZONE OFF"
