@@ -23,7 +23,7 @@
 #include "mplr/mplr.hpp"
 
 #include "fmt/color.h"
-#include "fmt/core.h"
+#include "fmt/format.h"
 #include "fmt/ostream.h"
 #include "fmt/xchar.h"
 

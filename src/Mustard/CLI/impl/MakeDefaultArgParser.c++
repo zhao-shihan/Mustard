@@ -19,7 +19,7 @@
 #include "Mustard/CLI/impl/MakeDefaultArgParser.h++"
 #include "Mustard/Version.h++"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cstdlib>
 

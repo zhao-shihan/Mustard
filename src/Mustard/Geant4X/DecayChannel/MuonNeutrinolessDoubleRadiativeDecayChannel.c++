@@ -19,7 +19,7 @@
 #include "Mustard/Geant4X/DecayChannel/MuonNeutrinolessDoubleRadiativeDecayChannel.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <stdexcept>
 

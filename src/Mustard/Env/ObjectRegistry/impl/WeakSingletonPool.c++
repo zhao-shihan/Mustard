@@ -19,7 +19,7 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <utility>
 

@@ -28,7 +28,7 @@
 #include "muc/math"
 #include "muc/numeric"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <algorithm>
 #include <array>

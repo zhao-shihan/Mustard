@@ -22,7 +22,7 @@
 
 #include "mplr/mplr.hpp"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <ostream>
 #include <source_location>

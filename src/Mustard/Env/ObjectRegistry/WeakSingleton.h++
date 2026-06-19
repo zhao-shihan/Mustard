@@ -27,7 +27,7 @@
 #include "muc/mutex"
 #include "muc/utility"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <memory>
 #include <mutex>

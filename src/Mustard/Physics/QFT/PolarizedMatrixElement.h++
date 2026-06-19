@@ -22,7 +22,7 @@
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <array>
 

@@ -21,7 +21,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Version.h++"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cstdio>
 #include <cstdlib>

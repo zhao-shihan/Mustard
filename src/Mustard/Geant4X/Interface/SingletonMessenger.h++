@@ -32,7 +32,7 @@
 
 #include "gsl/gsl"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <concepts>
 #include <exception>

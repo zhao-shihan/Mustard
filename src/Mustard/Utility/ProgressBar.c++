@@ -23,7 +23,7 @@
 
 #include "muc/chrono"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cmath>
 #include <functional>
