@@ -18,25 +18,21 @@ find_package(Python3 QUIET)
 
 if(Python3_FOUND)
     # Run generate-test-scripts.py to produce GitHub workflow YAMLs and run-tests.sh
-    add_custom_target(
-        GenerateTestScripts ALL
+    add_custom_target(GenerateTestScripts ALL
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/generate-test-scripts.py"
-            > "${CMAKE_CURRENT_BINARY_DIR}/generate-test-scripts.log" 2>&1
+        > "${CMAKE_CURRENT_BINARY_DIR}/generate-test-scripts.log" 2>&1
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-        COMMENT "Generating local test scripts and GitHub test workflows"
-    )
+        COMMENT "Generating local test scripts and GitHub test workflows")
     # Copy run-tests.sh to the build/test directory
-    add_custom_command(
-        TARGET GenerateTestScripts POST_BUILD
+    add_custom_command(TARGET GenerateTestScripts POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/run-tests.sh"
-            "${CMAKE_BINARY_DIR}/test/run-tests.sh"
+        "${CMAKE_CURRENT_SOURCE_DIR}/run-tests.sh"
+        "${CMAKE_BINARY_DIR}/test/run-tests.sh"
         COMMAND chmod +x "${CMAKE_BINARY_DIR}/test/run-tests.sh"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/parexec.sh"
-            "${CMAKE_BINARY_DIR}/test/parexec.sh"
-        COMMENT "Copying local test scripts"
-    )
+        "${CMAKE_CURRENT_SOURCE_DIR}/parexec.sh"
+        "${CMAKE_BINARY_DIR}/test/parexec.sh"
+        COMMENT "Copying local test scripts")
 else()
     message(WARNING "Python3 not found, skipping generation of test scripts")
 endif()

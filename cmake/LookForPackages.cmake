@@ -40,9 +40,9 @@ find_package(
 # =============================================================================
 
 file(DOWNLOAD
-     https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
-     ${MUSTARD_CMAKE_MODULE_PATH}/CPM.cmake
-     EXPECTED_HASH SHA256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844)
+    https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
+    ${MUSTARD_CMAKE_MODULE_PATH}/CPM.cmake
+    EXPECTED_HASH SHA256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844)
 set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm" CACHE PATH "CPM source cache directory")
 include(CPM)
 
@@ -60,17 +60,17 @@ CPMFindPackage(
 # FFTW
 if(MUSTARD_USE_FFTW)
     file(DOWNLOAD
-         https://github.com/egpbos/findFFTW/raw/d449ea0bcbf94a4a1c3dbb2108aa57609a4967ff/FindFFTW.cmake
-         ${MUSTARD_CMAKE_MODULE_PATH}/FindFFTW.cmake
-         EXPECTED_HASH SHA256=56a669b2496797b9214a60c3c2e0c36be9292d8be0cd5b5c3c56320503e2c2ff)
+        https://github.com/egpbos/findFFTW/raw/d449ea0bcbf94a4a1c3dbb2108aa57609a4967ff/FindFFTW.cmake
+        ${MUSTARD_CMAKE_MODULE_PATH}/FindFFTW.cmake
+        EXPECTED_HASH SHA256=56a669b2496797b9214a60c3c2e0c36be9292d8be0cd5b5c3c56320503e2c2ff)
     set(MUSTARD_FFTW_MINIMUM_REQUIRED 3.3.11)
     CPMFindPackage(
         NAME FFTW
         VERSION ${MUSTARD_FFTW_MINIMUM_REQUIRED}
         URL "https://fftw.org/fftw-${MUSTARD_FFTW_MINIMUM_REQUIRED}.tar.gz"
         OPTIONS "CMAKE_POLICY_VERSION_MINIMUM 3.5" # Remove this option in next FFTW release!
-                "BUILD_TESTS ${BUILD_TESTING}"
-                "DISABLE_FORTRAN ON")
+        "BUILD_TESTS ${BUILD_TESTING}"
+        "DISABLE_FORTRAN ON")
 endif()
 
 # Eigen
@@ -81,7 +81,7 @@ CPMFindPackage(
     VERSION ${MUSTARD_EIGEN_MINIMUM_REQUIRED}
     GIT_TAG ${MUSTARD_EIGEN_MINIMUM_REQUIRED} # Eigen doesn't use standard tagging...
     OPTIONS "EIGEN_BUILD_TESTING ${BUILD_TESTING}"
-            "EIGEN_BUILD_CMAKE_PACKAGE ON")
+    "EIGEN_BUILD_CMAKE_PACKAGE ON")
 
 # yaml-cpp
 set(MUSTARD_YAML_CPP_MINIMUM_REQUIRED 0.9.0)
@@ -91,10 +91,10 @@ CPMFindPackage(
     VERSION ${MUSTARD_YAML_CPP_MINIMUM_REQUIRED}
     GIT_TAG yaml-cpp-${MUSTARD_YAML_CPP_MINIMUM_REQUIRED} # yaml-cpp doesn't use standard tagging...
     OPTIONS "YAML_CPP_BUILD_TOOLS OFF"
-            "YAML_CPP_INSTALL ON"
-            "YAML_CPP_FORMAT_SOURCE OFF"
-            "YAML_CPP_BUILD_TESTS ${BUILD_TESTING}"
-            "YAML_MSVC_SHARED_RT ${MUSTARD_USE_SHARED_MSVC_RT}")
+    "YAML_CPP_INSTALL ON"
+    "YAML_CPP_FORMAT_SOURCE OFF"
+    "YAML_CPP_BUILD_TESTS ${BUILD_TESTING}"
+    "YAML_MSVC_SHARED_RT ${MUSTARD_USE_SHARED_MSVC_RT}")
 
 # fmt
 set(MUSTARD_FMT_MINIMUM_REQUIRED 12.2.0)
@@ -154,8 +154,8 @@ CPMFindPackage(
     GITHUB_REPOSITORY zhao-shihan/backward-cpp
     VERSION 1.6.1
     OPTIONS "BACKWARD_SHARED OFF"
-            "BACKWARD_INSTALL ON"
-            "BACKWARD_TESTS ${BUILD_TESTING}")
+    "BACKWARD_INSTALL ON"
+    "BACKWARD_TESTS ${BUILD_TESTING}")
 
 # indicators
 CPMFindPackage(
@@ -171,9 +171,9 @@ if(MUSTARD_USE_MIMALLOC)
         GITHUB_REPOSITORY microsoft/mimalloc
         VERSION 3.3.2
         OPTIONS "MI_OVERRIDE OFF"
-                "MI_OSX_INTERPOSE OFF"
-                "MI_OSX_ZONE OFF"
-                "MI_BUILD_SHARED OFF"
-                "MI_BUILD_OBJECT OFF"
-                "MI_BUILD_TESTS ${BUILD_TESTING}")
+        "MI_OSX_INTERPOSE OFF"
+        "MI_OSX_ZONE OFF"
+        "MI_BUILD_SHARED OFF"
+        "MI_BUILD_OBJECT OFF"
+        "MI_BUILD_TESTS ${BUILD_TESTING}")
 endif()

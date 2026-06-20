@@ -19,18 +19,22 @@ add_library(Mustard ${MUSTARD_SRC})
 add_library(Mustard::Mustard ALIAS Mustard)
 
 # Mustard
-target_include_directories(Mustard PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                                          $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-target_compile_options(Mustard PUBLIC ${MUSTARD_PUBLIC_COMPILE_OPTIONS}
-                               PRIVATE ${MUSTARD_PRIVATE_COMPILE_OPTIONS})
-target_compile_definitions(Mustard PUBLIC ${MUSTARD_PUBLIC_COMPILE_DEFINITIONS}
-                                   PRIVATE ${MUSTARD_PRIVATE_COMPILE_DEFINITIONS})
+target_include_directories(Mustard
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+target_compile_options(Mustard
+    PUBLIC ${MUSTARD_PUBLIC_COMPILE_OPTIONS}
+    PRIVATE ${MUSTARD_PRIVATE_COMPILE_OPTIONS})
+target_compile_definitions(Mustard
+    PUBLIC ${MUSTARD_PUBLIC_COMPILE_DEFINITIONS}
+    PRIVATE ${MUSTARD_PRIVATE_COMPILE_DEFINITIONS})
 
 # Generate version header
 include(CMakePackageConfigHelpers)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl.in
-               ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl
-               @ONLY)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl
+    @ONLY)
 
 # System dependencies
 

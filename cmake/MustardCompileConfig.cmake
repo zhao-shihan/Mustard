@@ -58,7 +58,7 @@ endif()
 if(MUSTARD_ENABLE_IPO)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT MUSTARD_ENABLE_IPO_SUPPORTED
-                        OUTPUT MUSTARD_IPO_SUPPORTED_ERROR)
+        OUTPUT MUSTARD_IPO_SUPPORTED_ERROR)
     if(MUSTARD_ENABLE_IPO_SUPPORTED)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
         message(STATUS "LTO/IPO enabled for Mustard")
@@ -112,8 +112,8 @@ if(NOT MUSTARD_SHOW_MORE_COMPILER_WARNINGS)
         # # Eigen (operator 'operator-name': deprecated between enumerations of different types)
         # list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd5054)
     endif()
-# Even more warnings, if required
 elseif(MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS)
+    # Even more warnings, if required
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Weffc++)
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")

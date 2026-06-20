@@ -25,8 +25,9 @@ set(MUSTARD_VERSION_MINOR 26)
 set(MUSTARD_VERSION_PATCH 315)
 set(MUSTARD_VERSION ${MUSTARD_VERSION_MAJOR}.${MUSTARD_VERSION_MINOR}.${MUSTARD_VERSION_PATCH})
 
-project(Mustard VERSION ${MUSTARD_VERSION}
-                LANGUAGES CXX)
+project(Mustard
+    VERSION ${MUSTARD_VERSION}
+    LANGUAGES CXX)
 
 set(MUSTARD_CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${MUSTARD_CMAKE_MODULE_PATH})
@@ -85,12 +86,13 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 if(NOT MUSTARD_COMPILER_OKAY)
-    message(FATAL_ERROR "Mustard cannot be built with ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}.\n"
-                        "  Recommended compilers:\n"
-                        "    GNU Compiler (at least GCC ${MUSTARD_MINIMUM_GCC_VERSION})\n"
-                        "    LLVM Clang (at least Clang ${MUSTARD_MINIMUM_CLANG_VERSION})\n"
-                        "    Intel oneAPI DPC++/C++ Compiler (at least IntelLLVM ${MUSTARD_MINIMUM_INTELLLVM_VERSION})\n"
-                        "    Microsoft Visual C++ (at least MSVC ${MUSTARD_MINIMUM_MSVC_VERSION})")
+    message(FATAL_ERROR
+        "Mustard cannot be built with ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}.\n"
+        "  Recommended compilers:\n"
+        "    GNU Compiler (at least GCC ${MUSTARD_MINIMUM_GCC_VERSION})\n"
+        "    LLVM Clang (at least Clang ${MUSTARD_MINIMUM_CLANG_VERSION})\n"
+        "    Intel oneAPI DPC++/C++ Compiler (at least IntelLLVM ${MUSTARD_MINIMUM_INTELLLVM_VERSION})\n"
+        "    Microsoft Visual C++ (at least MSVC ${MUSTARD_MINIMUM_MSVC_VERSION})")
 endif()
 
 # =============================================================================
@@ -128,26 +130,30 @@ add_subdirectory(tooling)
 # =============================================================================
 
 include(GNUInstallDirs)
-set_target_properties(Mustard PROPERTIES VERSION ${MUSTARD_VERSION}
-                                         SOVERSION ${MUSTARD_VERSION}
-                                         DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
+set_target_properties(Mustard PROPERTIES
+    VERSION ${MUSTARD_VERSION}
+    SOVERSION ${MUSTARD_VERSION}
+    DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
 
-install(DIRECTORY src/Mustard DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN *.h++ PATTERN *.inl)
+install(DIRECTORY src/Mustard
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING PATTERN *.h++ PATTERN *.inl)
 install(TARGETS Mustard EXPORT MustardTargets
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(EXPORT MustardTargets
-        NAMESPACE Mustard::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+    NAMESPACE Mustard::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 
 include(CMakePackageConfigHelpers)
-configure_package_config_file(${MUSTARD_CMAKE_MODULE_PATH}/MustardConfig.cmake.in
-                              ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
-                              INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
-write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
-                                 COMPATIBILITY SameMajorVersion)
+configure_package_config_file(
+    ${MUSTARD_CMAKE_MODULE_PATH}/MustardConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
+    COMPATIBILITY SameMajorVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+    ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
