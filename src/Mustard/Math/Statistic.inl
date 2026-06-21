@@ -18,98 +18,88 @@
 
 namespace Mustard::inline Math {
 
-MUSTARD_ALWAYS_INLINE Statistic<1>::Statistic() :
+namespace impl {
+
+// =========================================================================
+// StatisticBase
+// =========================================================================
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+StatisticBase<ADerived, K, C>::StatisticBase(std::monostate) :
     fN{},
     fW{},
     fW2{},
     fM{},
     fM2{} {}
 
-MUSTARD_ALWAYS_INLINE Statistic<1>::Statistic(const SerializedType& data) :
-    Statistic{} {
-    Deserialize(data);
-}
-
-MUSTARD_ALWAYS_INLINE auto Statistic<1>::Fill(double x, double w) -> void {
-    if (w == 0) {
-        return;
-    }
-    ++fN;
-    const auto prevW{fW};
-    fW += w;
-    fW2 += muc::pow(w, 2);
-    fM += w * x;
-    if (prevW == 0 or fW == 0) [[unlikely]] {
-        return;
-    }
-    fM2 += w * (fW / prevW) * muc::pow(x - fM / fW, 2);
-}
-
-MUSTARD_ALWAYS_INLINE auto Statistic<1>::operator+=(const Statistic& other) -> Statistic& {
-    if (other.fW == 0) {
-        return *this;
-    }
-    fN += other.fN;
-    const auto prevW{fW};
-    fW += other.fW;
-    fW2 += other.fW2;
-    fM += other.fM;
-    if (prevW == 0 or fW == 0) [[unlikely]] {
-        return *this;
-    }
-    fM2 += other.fM2;
-    fM2 += other.fW * (fW / prevW) * muc::pow(fM / fW - other.fM / other.fW, 2);
-    return *this;
-}
-
-MUSTARD_ALWAYS_INLINE auto Statistic<1>::Serialize() const -> SerializedType {
-    SerializedType data;
-    data.fN = fN;
-    data.fW = fW;
-    data.fW2 = fW2;
-    *data.fM = fM;
-    *data.fM2 = fM2;
-    return data;
-}
-
-MUSTARD_ALWAYS_INLINE auto Statistic<1>::Deserialize(const SerializedType& data) -> void {
-    fN = data.fN;
-    fW = data.fW;
-    fW2 = data.fW2;
-    fM = *data.fM;
-    fM2 = *data.fM2;
-}
-
-MUSTARD_ALWAYS_INLINE auto Statistic<1>::Debias() const -> double {
-    const auto tmp{muc::pow(fW, 2)};
-    return tmp / (tmp - fW2);
-}
-
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-MUSTARD_STRONG_INLINE Statistic<N>::Statistic() :
-    fN{},
-    fW{},
-    fW2{},
-    fM{},
-    fM2{} {
-    // Eigen does not zero-initialize by default, so we need to do it ourselves.
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+StatisticBase<ADerived, K, C>::StatisticBase() // clang-format off
+    requires(K != Eigen::Dynamic) : // clang-format on
+    StatisticBase{std::monostate{}} {
     fM.setZero();
     fM2.setZero();
 }
 
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-MUSTARD_STRONG_INLINE Statistic<N>::Statistic(const SerializedType& data) :
-    Statistic{} {
-    Deserialize(data);
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+StatisticBase<ADerived, K, C>::StatisticBase(const StatisticBase& other) :
+    StatisticBase{std::monostate{}} {
+    CopyFrom(other);
 }
 
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-template<typename T>
-    requires Concept::InputVectorAny<std::decay_t<T>, N>
-MUSTARD_STRONG_INLINE auto Statistic<N>::Fill(T&& x0, double w) -> void {
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+StatisticBase<ADerived, K, C>::StatisticBase(int dim) // clang-format off
+    requires(K == Eigen::Dynamic) : // clang-format on
+    StatisticBase{std::monostate{}} {
+    if (dim <= 0) {
+        Throw<std::invalid_argument>(fmt::format("Dimension must be positive, got {}.", dim));
+    }
+    fM.resize(dim);
+    fM.setZero();
+    if constexpr (C == CovarianceOption::Full) {
+        fM2.resize(dim, dim);
+    } else {
+        fM2.resize(dim);
+    }
+    fM2.setZero();
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int L, CovarianceOption D>
+    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+StatisticBase<ADerived, K, C>::StatisticBase(const Statistic<L, D>& other) :
+    StatisticBase{std::monostate{}} {
+    CopyFrom(other);
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+StatisticBase<ADerived, K, C>::StatisticBase(const PODType& data) // clang-format off
+    requires(K != Eigen::Dynamic) : // clang-format on
+    StatisticBase{std::monostate{}} {
+    FromPOD(data);
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::Dimension() const -> int {
+    if constexpr (K != Eigen::Dynamic) {
+        return K;
+    } else {
+        return fM.size();
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+auto StatisticBase<ADerived, K, C>::Fill(const Eigen::MatrixBase<AVec>& xXpr, double w) -> void {
+    const auto& x{xXpr.eval()};
+    CheckDimensionMatch(x);
     if (w == 0) {
         return;
     }
@@ -117,96 +107,165 @@ MUSTARD_STRONG_INLINE auto Statistic<N>::Fill(T&& x0, double w) -> void {
     const auto prevW{fW};
     fW += w;
     fW2 += muc::pow(w, 2);
-    const auto& x{VectorCast<MeanType>(x0)};
     fM += w * x;
     if (prevW == 0 or fW == 0) [[unlikely]] {
         return;
     }
-    const auto delta{(x - fM / fW).eval()};
-    fM2 += w * (fW / prevW) * delta * delta.transpose();
+    AppendM2CrossTerm(w, prevW, x - MeanXpr());
 }
 
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-MUSTARD_STRONG_INLINE auto Statistic<N>::operator+=(const Statistic& other) -> Statistic& {
-    if (other.fW == 0) {
-        return *this;
-    }
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int L, CovarianceOption D>
+    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+auto StatisticBase<ADerived, K, C>::operator+=(const Statistic<L, D>& other) -> ADerived& {
+    CheckDimensionMatch(other.fM);
     fN += other.fN;
     const auto prevW{fW};
     fW += other.fW;
     fW2 += other.fW2;
     fM += other.fM;
-    if (prevW == 0 or fW == 0) [[unlikely]] {
-        return *this;
+    if constexpr (C == D and D == CovarianceOption::Full) {
+        fM2 += other.fM2;
+    } else {
+        fM2.diagonal() += other.fM2.diagonal();
     }
-    const auto delta{(fM / fW - other.fM / other.fW).eval()};
-    fM2 += other.fM2;
-    fM2 += other.fW * (fW / prevW) * delta * delta.transpose();
-    return *this;
+    if (prevW == 0 or fW == 0 or other.fW == 0) [[unlikely]] {
+        return Self();
+    }
+    AppendM2CrossTerm(other.fW, prevW, MeanXpr() - other.MeanXpr());
+    return Self();
 }
 
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-MUSTARD_STRONG_INLINE auto Statistic<N>::Serialize() const -> SerializedType {
-    SerializedType data;
-    data.fN = fN;
-    data.fW = fW;
-    data.fW2 = fW2;
-    std::memcpy(data.fM, fM.data(), N * sizeof(double));
-    std::memcpy(data.fM2, fM2.data(), N * N * sizeof(double));
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::ToPOD() const -> PODType
+    requires(K != Eigen::Dynamic) {
+    PODType data;
+    data.n = fN;
+    data.w = fW;
+    data.w2 = fW2;
+    std::memcpy(data.m, fM.data(), K * sizeof(double));
+    if constexpr (C == CovarianceOption::Full) {
+        std::memcpy(data.m2, fM2.data(), K * K * sizeof(double));
+    } else {
+        std::memcpy(data.m2, fM2.diagonal().data(), K * sizeof(double));
+    }
     return data;
 }
 
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-MUSTARD_STRONG_INLINE auto Statistic<N>::Deserialize(const SerializedType& data) -> void {
-    fN = data.fN;
-    fW = data.fW;
-    fW2 = data.fW2;
-    std::memcpy(fM.data(), data.fM, N * sizeof(double));
-    std::memcpy(fM2.data(), data.fM2, N * N * sizeof(double));
-}
-
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-MUSTARD_ALWAYS_INLINE auto Statistic<N>::Debias() const -> double {
-    const auto tmp{muc::pow(fW, 2)};
-    return tmp / (tmp - fW2);
-}
-
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-SerializedStatistic<N>::SerializedStatistic() :
-    fN{},
-    fW{},
-    fW2{},
-    fM{},
-    fM2{} {}
-
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-SerializedStatistic<N>::SerializedStatistic(const std::string& base64) :
-    SerializedStatistic{} {
-    DecodeBase64(base64);
-}
-
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-auto SerializedStatistic<N>::EncodeBase64() const -> std::string {
-    const auto byteArray{std::bit_cast<std::array<char, sizeof(*this)>>(*this)};
-    return std::string{TBase64::Encode(byteArray.data(), byteArray.size()).View()};
-}
-
-template<int N>
-    requires(0 < N and N * N <= EIGEN_STACK_ALLOCATION_LIMIT / sizeof(double))
-auto SerializedStatistic<N>::DecodeBase64(const std::string& base64) -> void {
-    const auto byteString{TBase64::Decode(base64.c_str())};
-    if (byteString.Length() != sizeof(*this)) {
-        Throw<std::runtime_error>(fmt::format("Decoded base64 string is invalid. Expected {} bytes, got {} bytes.",
-                                              sizeof(*this), byteString.Length()));
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::FromPOD(const PODType& data) -> void
+    requires(K != Eigen::Dynamic) {
+    fN = data.n;
+    fW = data.w;
+    fW2 = data.w2;
+    std::memcpy(fM.data(), data.m, K * sizeof(double));
+    if constexpr (C == CovarianceOption::Full) {
+        std::memcpy(fM2.data(), data.m2, K * K * sizeof(double));
+    } else {
+        std::memcpy(fM2.diagonal().data(), data.m2, K * sizeof(double));
     }
-    std::memcpy(this, byteString.Data(), sizeof(*this));
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+auto StatisticBase<ADerived, K, C>::AppendM2CrossTerm(double otherW, double prevW, const Eigen::MatrixBase<AVec>& deltaXpr) -> void {
+    const auto& delta{deltaXpr.eval()};
+    const auto www{otherW * (fW / prevW)};
+    if constexpr (C == CovarianceOption::Full) {
+        fM2.noalias() += www * delta * delta.transpose();
+    } else {
+        fM2.diagonal() += www * delta.cwiseSquare();
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+    requires((AVec::RowsAtCompileTime == K or
+              K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) and
+             AVec::ColsAtCompileTime == 1)
+auto StatisticBase<ADerived, K, C>::CheckDimensionMatch(const Eigen::MatrixBase<AVec>& y) const -> void {
+    if constexpr (K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) {
+        if (Dimension() != y.size()) {
+            Throw<std::invalid_argument>(fmt::format("Dimension mismatch: dim(self)={}, dim(other)={}",
+                                                     Dimension(), y.size()));
+        }
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AOther, int L, CovarianceOption D>
+    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+auto StatisticBase<ADerived, K, C>::CopyFrom(const StatisticBase<AOther, L, D>& other) -> ADerived& {
+    if constexpr (K != Eigen::Dynamic) { // dynamic dimension matrices will be resized so do not check
+        CheckDimensionMatch(other.fM);
+    }
+    fN = other.fN;
+    fW = other.fW;
+    fW2 = other.fW2;
+    fM = other.fM;
+    if constexpr (C == D) {
+        fM2 = other.fM2;
+    } else {
+        if constexpr (K == Eigen::Dynamic) {
+            if constexpr (C == CovarianceOption::Full) {
+                fM2.resize(other.Dimension(), other.Dimension());
+            } else {
+                fM2.resize(other.Dimension());
+            }
+        }
+        if constexpr (C == CovarianceOption::Full) {
+            fM2.setZero();
+        }
+        fM2.diagonal() = other.fM2.diagonal();
+    }
+    return Self();
+}
+
+} // namespace impl
+
+// =========================================================================
+// operator+(Statistic<K, C>, Statistic<L, D>)
+// =========================================================================
+
+template<int K, CovarianceOption C, int L, CovarianceOption D>
+auto operator+(const Statistic<K, C>& lhs, const Statistic<L, D>& rhs) -> impl::StatisticCombineResultType<K, C, L, D> {
+    impl::StatisticCombineResultType<K, C, L, D> result{lhs};
+    result += rhs;
+    return result; // NRVO
+}
+
+template<int K, CovarianceOption C, int L, CovarianceOption D>
+auto operator+(const Statistic<K, C>& lhs, Statistic<L, D>&& rhs) -> impl::StatisticCombineResultType<K, C, L, D> {
+    impl::StatisticCombineResultType<K, C, L, D> result{std::move(rhs)};
+    result += lhs;
+    return result; // NRVO
+}
+
+template<int K, CovarianceOption C, int L, CovarianceOption D>
+auto operator+(Statistic<K, C>&& lhs, const Statistic<L, D>& rhs) -> impl::StatisticCombineResultType<K, C, L, D> {
+    impl::StatisticCombineResultType<K, C, L, D> result{std::move(lhs)};
+    result += rhs;
+    return result; // NRVO
+}
+
+template<int K, CovarianceOption C, int L, CovarianceOption D>
+auto operator+(Statistic<K, C>&& lhs, Statistic<L, D>&& rhs) -> impl::StatisticCombineResultType<K, C, L, D> {
+    if constexpr (std::same_as<impl::StatisticCombineResultType<K, C, L, D>, Statistic<K, C>> or
+                  not std::same_as<impl::StatisticCombineResultType<K, C, L, D>, Statistic<L, D>>) {
+        impl::StatisticCombineResultType<K, C, L, D> result{std::move(lhs)};
+        result += rhs;
+        return result; // NRVO
+    } else {
+        impl::StatisticCombineResultType<K, C, L, D> result{std::move(rhs)};
+        result += lhs;
+        return result; // NRVO
+    }
 }
 
 } // namespace Mustard::inline Math

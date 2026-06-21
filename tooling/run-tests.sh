@@ -21,6 +21,12 @@ echo "  -> ./MustardTest TestCreateTemporaryFile"
 echo "  -> parexec ./MustardTest TestCreateTemporaryFile"
 parexec ./MustardTest TestCreateTemporaryFile
 
+echo "Running TestEstimate/TestStatistic..."
+echo "  -> ./MustardTest TestEstimate"
+./MustardTest TestEstimate
+echo "  -> ./MustardTest TestStatistic"
+./MustardTest TestStatistic
+
 echo "Running TestExecutor/TestExecutor..."
 echo "  -> ./MustardTest TestExecutor"
 ./MustardTest TestExecutor

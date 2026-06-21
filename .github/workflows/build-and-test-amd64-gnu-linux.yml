@@ -96,6 +96,7 @@ jobs:
         test:
           - TestCLHEPXMT1993732-TestCLHEPXMT1993764-TestCLHEPXXoshiro256StarStar-TestCLHEPXXoshiro512StarStar
           - TestCreateTemporaryFile-TestCreateTemporaryFile
+          - TestEstimate-TestStatistic
           - TestExecutor-TestExecutor
           - TestExecutorSequential
           - TestFieldTypeName
@@ -144,6 +145,10 @@ jobs:
                 "TestCreateTemporaryFile-TestCreateTemporaryFile")
                   ./MustardTest TestCreateTemporaryFile
                   parexec --use-hwthreads ./MustardTest TestCreateTemporaryFile
+                  ;;
+                "TestEstimate-TestStatistic")
+                  ./MustardTest TestEstimate
+                  ./MustardTest TestStatistic
                   ;;
                 "TestExecutor-TestExecutor")
                   ./MustardTest TestExecutor

@@ -20,6 +20,7 @@
 #include "Mustard/Testing/TestCLHEPXXoshiro256StarStar/TestCLHEPXXoshiro256StarStar.h++"
 #include "Mustard/Testing/TestCLHEPXXoshiro512StarStar/TestCLHEPXXoshiro512StarStar.h++"
 #include "Mustard/Testing/TestCreateTemporaryFile/TestCreateTemporaryFile.h++"
+#include "Mustard/Testing/TestEstimate/TestEstimate.h++"
 #include "Mustard/Testing/TestExecutor/TestExecutor.h++"
 #include "Mustard/Testing/TestExecutorSequential/TestExecutorSequential.h++"
 #include "Mustard/Testing/TestFieldMap/TestFieldMap.h++"
@@ -45,6 +46,7 @@
 #include "Mustard/Testing/TestSingleRDFEventProcessor/TestSingleRDFEventProcessor.h++"
 #include "Mustard/Testing/TestSingleRDFEventReader/TestSingleRDFEventReader.h++"
 #include "Mustard/Testing/TestSingleton/TestSingleton.h++"
+#include "Mustard/Testing/TestStatistic/TestStatistic.h++"
 #include "Mustard/Testing/TestUniform/TestUniform.h++"
 #include "Mustard/Testing/TestVectorConcept/TestVectorConcept.h++"
 #include "Mustard/Testing/TestXoshiro256Plus/TestXoshiro256Plus.h++"
@@ -65,6 +67,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestCLHEPXXoshiro256StarStar>();
     launcher.AddSubprogram<TestCLHEPXXoshiro512StarStar>();
     launcher.AddSubprogram<TestCreateTemporaryFile>();
+    launcher.AddSubprogram<TestEstimate>();
     launcher.AddSubprogram<TestExecutor>();
     launcher.AddSubprogram<TestExecutorSequential>();
     launcher.AddSubprogram<TestFieldMap>();
@@ -90,6 +93,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestSingleRDFEventProcessor>();
     launcher.AddSubprogram<TestSingleRDFEventReader>();
     launcher.AddSubprogram<TestSingleton>();
+    launcher.AddSubprogram<TestStatistic>();
     launcher.AddSubprogram<TestUniform>();
     launcher.AddSubprogram<TestVectorConcept>();
     launcher.AddSubprogram<TestXoshiro256Plus>();
