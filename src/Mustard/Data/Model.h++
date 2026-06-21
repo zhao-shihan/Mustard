@@ -50,7 +50,7 @@ concept UniqueStdTuple = requires {
     requires muc::instantiated_from<T, std::tuple>;
     requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
         return (... and ([]<gsl::index... Js, gsl::index I>(gslx::index_sequence<Js...>, std::integral_constant<gsl::index, I>) consteval {
-                    return (... and static_cast<bool>((I != Js) xor (std::tuple_element_t<I, T>::Name() == std::tuple_element_t<Js, T>::Name())));
+                    return (... and ((I == Js) == (std::tuple_element_t<I, T>::Name() == std::tuple_element_t<Js, T>::Name())));
                 }(gslx::make_index_sequence<std::tuple_size_v<T>>{}, std::integral_constant<gsl::index, Is>{})));
     }(gslx::make_index_sequence<std::tuple_size_v<T>>{}));
 };
