@@ -29,7 +29,7 @@
 
 namespace Mustard::Parallel {
 
-auto ProcessSpecificPath(const std::filesystem::path& path) -> std::filesystem::path {
+auto ProcessSpecificPath(const std::filesystem::path& path, std::string_view suffix) -> std::filesystem::path {
     auto stem{path.stem()};
     if (stem.empty()) {
         Throw<std::invalid_argument>("File name is empty.");
@@ -60,7 +60,8 @@ auto ProcessSpecificPath(const std::filesystem::path& path) -> std::filesystem::
     // wait for create_directories
     intraNodeComm.barrier();
     // construct full path
-    return parent / stem.concat(fmt::format("_mpi{}.", worldComm.rank())).replace_extension(path.extension());
+    return parent / stem.concat(fmt::format("{}{}.", suffix, worldComm.rank()))
+                        .replace_extension(path.extension());
 }
 
 } // namespace Mustard::Parallel
