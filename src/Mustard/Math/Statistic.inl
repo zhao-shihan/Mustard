@@ -173,12 +173,12 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<typename AVec>
 auto StatisticBase<ADerived, K, C>::AppendM2CrossTerm(double otherW, double prevW, const Eigen::MatrixBase<AVec>& deltaXpr) -> void {
-    const auto& delta{deltaXpr.eval()};
     const auto www{otherW * (fW / prevW)};
     if constexpr (C == CovarianceOption::Full) {
+        const auto& delta{deltaXpr.eval()};
         fM2.noalias() += www * delta * delta.transpose();
     } else {
-        fM2.diagonal() += www * delta.cwiseSquare();
+        fM2.diagonal() += www * deltaXpr.cwiseSquare();
     }
 }
 
@@ -201,7 +201,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<typename AOther, int L, CovarianceOption D>
     requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-auto StatisticBase<ADerived, K, C>::CopyFrom(const StatisticBase<AOther, L, D>& other) -> ADerived& {
+auto StatisticBase<ADerived, K, C>::CopyFrom(const StatisticBase<AOther, L, D>& other) & -> ADerived& {
     if constexpr (K != Eigen::Dynamic) { // dynamic dimension matrices will be resized so do not check
         CheckDimensionMatch(other.fM);
     }

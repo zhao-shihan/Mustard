@@ -129,7 +129,7 @@ auto MakeTestCov(int dim) -> auto {
             for (auto j{0}; j < dim; ++j) {
                 if (i == j) {
                     m(i, j) = diagVals[i];
-                } else if (i == j - 1 || j == i - 1) {
+                } else if (i == j - 1 or j == i - 1) {
                     m(i, j) = 0.1;
                 } else {
                     m(i, j) = 0.0;
@@ -145,9 +145,9 @@ auto MakeTestCov(int dim) -> auto {
         Eigen::Matrix<double, K, K> m;
         for (auto i{0}; i < K; ++i) {
             for (auto j{0}; j < K; ++j) {
-                if (i == j && i < dim) {
+                if (i == j and i < dim) {
                     m(i, j) = diagVals[i];
-                } else if ((i == j - 1 || j == i - 1) && i < dim && j < dim) {
+                } else if ((i == j - 1 or j == i - 1) and i < dim and j < dim) {
                     m(i, j) = 0.1;
                 } else {
                     m(i, j) = 0.0;
@@ -407,6 +407,31 @@ constexpr auto sec0Smoke{[]<int K, CovarianceOption C>() {
         scalar = Dot(e3, est).Value();
         scalar = Dot(e3, x).Value();
         scalar = Dot(x, e3).Value();
+
+        // ---- matrix-vector multiply (K!=1 only) ----
+        if constexpr (isDynamic) {
+            Eigen::MatrixXd matA{dim, dim};
+            matA.setIdentity();
+            Eigen::MatrixXd matRect{dim + 1, dim};
+            matRect.setOnes();
+            auto resultMatA{e3.RightMultiply(matA)};
+            e3 = newEst();
+            resultMatA = e3 * matA;
+            e3 = newEst();
+            auto resultMatRect{matRect * e3};
+            resultMatRect = e3.LeftMultiply(matRect);
+        } else {
+            Eigen::Matrix<double, K, K> matA;
+            matA.setIdentity();
+            Eigen::Matrix<double, K + 1, K> matRect;
+            matRect.setOnes();
+            auto resultMatA{e3.RightMultiply(matA)};
+            e3 = newEst();
+            resultMatA = e3 * matA;
+            e3 = newEst();
+            auto resultMatRect{matRect * e3};
+            resultMatRect = e3.LeftMultiply(matRect);
+        }
 
         // ---- reduction operations (K!=1 only) ----
         scalar = est.Sum().Value();
@@ -713,6 +738,24 @@ auto sec0SmokeCrossType() -> void {
         scalar = pow(ed3, ef3).Value(0);
         scalar = ef3.Dot(ed3).Value();
         scalar = Dot(ef3, ed3).Value();
+
+        // matrix-vector multiply cross-type
+        {
+            Eigen::Matrix3d matA;
+            matA.setIdentity();
+            Eigen::Matrix<double, 4, 3> matRect;
+            matRect.setOnes();
+            // RightMultiply
+            auto matResultF{ef3.RightMultiply(matA)};
+            auto matResultD{ed3.RightMultiply(matA)};
+            matResultF = ef3 * matA;
+            matResultD = ed3 * matA;
+            // LeftMultiply
+            auto matResultRectF{matRect * ef3};
+            auto matResultRectD{matRect * ed3};
+            matResultRectF = ef3.LeftMultiply(matRect);
+            matResultRectD = ed3.LeftMultiply(matRect);
+        }
 
         // compound assignment cross-type
         {
@@ -1154,7 +1197,7 @@ constexpr auto sec1Construction{[]<int K, CovarianceOption C>() {
                 CheckClose(e.Uncertainty()(i), std::sqrt(cov.diagonal()(i)), fmt::format("1: Uncertainty()({})", i));
             }
         }
-        if constexpr (isFull && K != 1) {
+        if constexpr (isFull and K != 1) {
             CheckClose(e.Covariance(), cov, "1: Covariance()");
         }
 
@@ -1164,7 +1207,7 @@ constexpr auto sec1Construction{[]<int K, CovarianceOption C>() {
             CheckClose(e2.Variance(), e.Variance(), "1: Copy Variance()");
         } else {
             CheckClose(e2.Value(0), e.Value(0), "1: Copy Value(0)");
-            if constexpr (isFull && dim >= 2) {
+            if constexpr (isFull and dim >= 2) {
                 CheckClose(e2.Covariance(0, 1), e.Covariance(0, 1), "1: Copy Cov(0,1)");
             }
         }
@@ -1175,7 +1218,7 @@ constexpr auto sec1Construction{[]<int K, CovarianceOption C>() {
             CheckClose(e3.Variance(), 0.4, "1: Move Variance()");
         } else {
             CheckClose(e3.Value(0), 1.0, "1: Move Value(0)");
-            if constexpr (isFull && dim >= 2) {
+            if constexpr (isFull and dim >= 2) {
                 CheckClose(e3.Covariance(0, 1), 0.1, "1: Move Cov(0,1)");
             }
         }
@@ -1299,7 +1342,7 @@ constexpr auto sec3Assignment{[]<int K, CovarianceOption C>() {
         CheckClose(e1.Variance(), 0.4, "3c: SelfAssign Variance()");
     } else {
         CheckClose(e1.Value(0), 1.0, "3c: SelfAssign Value(0)");
-        if constexpr (isFull && dim >= 2) {
+        if constexpr (isFull and dim >= 2) {
             CheckClose(e1.Covariance(0, 1), 0.1, "3c: SelfAssign Cov(0,1)");
         }
     }
@@ -1512,7 +1555,7 @@ constexpr auto sec4AddSubInPlace{[]<int K, CovarianceOption C>() {
         }
     }
 
-    if constexpr (isFull && K != 1 && dim >= 2) {
+    if constexpr (isFull and K != 1 and dim >= 2) {
         // Full += Diagonal: off-diagonals from Full preserved
         const auto diagCov{MakeTestCov<K, CovarianceOption::Diagonal>(dim)};
         auto eD{MakeEstimate<K, CovarianceOption::Diagonal>(v, diagCov)};
@@ -1521,7 +1564,7 @@ constexpr auto sec4AddSubInPlace{[]<int K, CovarianceOption C>() {
         CheckClose(eF.Covariance(0, 1), 0.1, "4h: Cov(0,1) Full+=Diag preserved");
     }
 
-    if constexpr (isFull && K != 1 && dim >= 2) {
+    if constexpr (isFull and K != 1 and dim >= 2) {
         // Full *= Diagonal: Cov = diag(y)·Cov_full·diag(y) + diag contribution on diagonal
         // Off-diagonal: cov_ij = y_i * cov_full(i,j) * y_j
         const auto diagCov{MakeTestCov<K, CovarianceOption::Diagonal>(dim)};
@@ -1533,7 +1576,7 @@ constexpr auto sec4AddSubInPlace{[]<int K, CovarianceOption C>() {
         CheckClose(eF.Covariance(0, 1), cov.coeff(0, 1) * v(0) * v(1), "4i: Cov(0,1) Full*=Diag");
     }
 
-    if constexpr (isFull && K != 1 && dim >= 2) {
+    if constexpr (isFull and K != 1 and dim >= 2) {
         // Full /= Diagonal: Cov = diag(1/y)·Cov_full·diag(1/y) + diag contribution on diagonal
         // Off-diagonal: cov_ij = cov_full(i,j) / (y_i * y_j)
         const auto diagCov{MakeTestCov<K, CovarianceOption::Diagonal>(dim)};
@@ -2282,6 +2325,317 @@ constexpr auto sec8DotProduct{[]<int K, CovarianceOption C>() {
 
         // Result type is Estimate<1, C>
         static_assert(std::is_same_v<decltype(e1.Dot(e2)), Estimate<1, C>>);
+    }
+}};
+
+// =========================================================================
+// Section 8h: Matrix-vector RightMultiply — square and non-square
+// =========================================================================
+
+constexpr auto sec8hRightMultiply{[]<int K, CovarianceOption C>() {
+    if constexpr (K != 1) {
+        constexpr int dim{(K == Eigen::Dynamic) ? 3 : K};
+        using Est = Estimate<K, C>;
+
+        const auto v{MakeTestValue<K, C>(dim)};
+        const auto cov{MakeTestCov<K, C>(dim)};
+
+        // ---- RightMultiply with square matrix ----
+        {
+            Eigen::Matrix<double, K, K> matA;
+            if constexpr (K == Eigen::Dynamic) { matA.resize(dim, dim); }
+            matA.setIdentity();
+
+            Est e{v, cov};
+            auto result{e.RightMultiply(matA)};
+            // result should be Estimate<K, C> (same dimension)
+            for (auto i{0}; i < dim; ++i) {
+                CheckClose(result.Value(i), v(i),
+                           fmt::format("8h: RightMultiply sq Value({})", i));
+            }
+        }
+
+        // ---- RightMultiply with non-square matrix (K × (K+1)) ----
+        {
+            constexpr int M{K == Eigen::Dynamic ? Eigen::Dynamic : K + 1};
+            constexpr int actualM{(K == Eigen::Dynamic) ? dim + 1 : K + 1};
+
+            Eigen::Matrix<double, K, M> matRect;
+            if constexpr (K == Eigen::Dynamic or M == Eigen::Dynamic) {
+                matRect.resize(dim, actualM);
+            }
+            for (auto i{0}; i < dim; ++i) {
+                for (auto j{0}; j < actualM; ++j) {
+                    matRect(i, j) = (i + 1) * 10 + (j + 1);
+                }
+            }
+
+            Est e{v, cov};
+            auto result{e.RightMultiply(matRect)};
+            CheckEq(result.Dimension(), actualM, "8h: RightMultiply non-sq dim");
+
+            // expected value = A^T * v
+            for (auto j{0}; j < actualM; ++j) {
+                auto expectedVal{0.0};
+                for (auto i{0}; i < dim; ++i) {
+                    expectedVal += matRect(i, j) * v(i);
+                }
+                CheckClose(result.Value(j), expectedVal,
+                           fmt::format("8h: RightMultiply non-sq Value({})", j));
+            }
+
+            // expected covariance = A^T * Cov * A
+            for (auto j1{0}; j1 < actualM; ++j1) {
+                for (auto j2{0}; j2 < actualM; ++j2) {
+                    auto expectedCov{0.0};
+                    for (auto p{0}; p < dim; ++p) {
+                        for (auto q{0}; q < dim; ++q) {
+                            auto cov_pq{[&] {
+                                if constexpr (C == CovarianceOption::Full) {
+                                    return cov(p, q);
+                                } else {
+                                    return (p == q) ? cov.diagonal()(p) : 0.0;
+                                }
+                            }()};
+                            expectedCov += matRect(p, j1) * cov_pq * matRect(q, j2);
+                        }
+                    }
+                    if constexpr (C == CovarianceOption::Full) {
+                        CheckClose(result.Covariance(j1, j2), expectedCov,
+                                   fmt::format("8h: RightMultiply non-sq Cov({},{})", j1, j2));
+                    } else {
+                        if (j1 == j2) {
+                            CheckClose(result.Covariance(j1, j2), expectedCov,
+                                       fmt::format("8h: RightMultiply non-sq Var({})", j1));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}};
+
+// =========================================================================
+// Section 8i: Matrix-vector operator*
+// =========================================================================
+
+constexpr auto sec8iMatrixMultiplyOperator{[]<int K, CovarianceOption C>() {
+    if constexpr (K != 1) {
+        constexpr int dim{(K == Eigen::Dynamic) ? 3 : K};
+        using Est = Estimate<K, C>;
+
+        const auto v{MakeTestValue<K, C>(dim)};
+        const auto cov{MakeTestCov<K, C>(dim)};
+
+        // ---- operator*(est, matrix) ----
+        {
+            Eigen::Matrix<double, K, K> matA;
+            if constexpr (K == Eigen::Dynamic) { matA.resize(dim, dim); }
+            matA.setIdentity();
+
+            Est e{v, cov};
+            auto r1{e * matA};
+            auto r2{e.RightMultiply(matA)};
+            for (auto i{0}; i < dim; ++i) {
+                CheckClose(r1.Value(i), r2.Value(i),
+                           fmt::format("8i: operator*(est, mat) Value({})", i));
+            }
+        }
+
+        // ---- operator*(matrix, est) (A is (K+1)×K) ----
+        {
+            constexpr int M{K == Eigen::Dynamic ? Eigen::Dynamic : K + 1};
+            constexpr int actualM{(K == Eigen::Dynamic) ? dim + 1 : K + 1};
+
+            Eigen::Matrix<double, M, K> matRect;
+            if constexpr (K == Eigen::Dynamic or M == Eigen::Dynamic) {
+                matRect.resize(actualM, dim);
+            }
+            for (auto i{0}; i < actualM; ++i) {
+                for (auto j{0}; j < dim; ++j) {
+                    matRect(i, j) = (i + 1) * 10 + (j + 1);
+                }
+            }
+
+            Est e{v, cov};
+            auto r1{matRect * e};
+            auto r2{e.LeftMultiply(matRect)};
+            for (auto j{0}; j < actualM; ++j) {
+                CheckClose(r1.Value(j), r2.Value(j),
+                           fmt::format("8i: operator*(mat, est) Value({})", j));
+            }
+        }
+    }
+}};
+
+// =========================================================================
+// Section 8j: Matrix-vector multiply — dimension mismatch throws
+// =========================================================================
+
+constexpr auto sec8jRightMultiplyException{[]<int K, CovarianceOption C>() {
+    if constexpr (K != 1) {
+        constexpr int dim{(K == Eigen::Dynamic) ? 3 : K};
+        using Est = Estimate<K, C>;
+
+        const auto v{MakeTestValue<K, C>(dim)};
+        const auto cov{MakeTestCov<K, C>(dim)};
+        Est e{v, cov};
+
+        constexpr bool isDynamic{K == Eigen::Dynamic};
+
+        // Row mismatch on RightMultiply
+        if constexpr (isDynamic) {
+            auto threw{false};
+            try {
+                Eigen::MatrixXd bad{2, 2};
+                bad.setIdentity();
+                e.RightMultiply(bad);
+            } catch (const std::invalid_argument&) { threw = true; }
+            if (not threw) {
+                Throw<std::runtime_error>("8j: RightMultiply row mismatch should throw");
+            }
+
+            threw = false;
+            try {
+                Eigen::MatrixXd bad{3, 2};
+                bad.setIdentity();
+                e.LeftMultiply(bad);
+            } catch (const std::invalid_argument&) { threw = true; }
+            if (not threw) {
+                Throw<std::runtime_error>("8j: LeftMultiply col mismatch should throw");
+            }
+        }
+    }
+}};
+
+// =========================================================================
+// Section 8k: Matrix-vector LeftMultiply — square and non-square
+// =========================================================================
+
+constexpr auto sec8kLeftMultiply{[]<int K, CovarianceOption C>() {
+    if constexpr (K != 1) {
+        constexpr int dim{(K == Eigen::Dynamic) ? 3 : K};
+        using Est = Estimate<K, C>;
+
+        const auto v{MakeTestValue<K, C>(dim)};
+        const auto cov{MakeTestCov<K, C>(dim)};
+
+        // ---- LeftMultiply with square matrix ----
+        {
+            // construct anti-diagonal matrix A: A(i,j) = (i == dim-1-j) ? 2.0 : 0.0
+            Eigen::Matrix<double, K, K> matA;
+            if constexpr (K == Eigen::Dynamic) {
+                matA.resize(dim, dim);
+            }
+            matA.setZero();
+            for (auto i{0}; i < dim; ++i) {
+                matA(i, dim - 1 - i) = 2.0;
+            }
+
+            // expected value = A * v
+            Eigen::Vector<double, K> expectedValue;
+            if constexpr (K == Eigen::Dynamic) { expectedValue.resize(dim); }
+            expectedValue.setZero();
+            for (auto i{0}; i < dim; ++i) {
+                for (auto j{0}; j < dim; ++j) {
+                    expectedValue(i) += matA(i, j) * v(j);
+                }
+            }
+
+            Est e{v, cov};
+            auto result{e.LeftMultiply(matA)};
+
+            for (auto i{0}; i < dim; ++i) {
+                CheckClose(result.Value(i), expectedValue(i),
+                           fmt::format("8k: LeftMultiply sq Value({})", i));
+            }
+
+            // expected covariance = A * Cov * A^T
+            for (auto i{0}; i < dim; ++i) {
+                for (auto j{0}; j < dim; ++j) {
+                    auto expectedCov{0.0};
+                    for (auto p{0}; p < dim; ++p) {
+                        for (auto q{0}; q < dim; ++q) {
+                            auto cov_pq{[&] {
+                                if constexpr (C == CovarianceOption::Full) {
+                                    return cov(p, q);
+                                } else {
+                                    return (p == q) ? cov.diagonal()(p) : 0.0;
+                                }
+                            }()};
+                            expectedCov += matA(i, p) * cov_pq * matA(j, q);
+                        }
+                    }
+                    if constexpr (C == CovarianceOption::Full) {
+                        CheckClose(result.Covariance(i, j), expectedCov,
+                                   fmt::format("8k: LeftMultiply sq Cov({},{})", i, j));
+                    } else {
+                        if (i == j) {
+                            CheckClose(result.Covariance(i, j), expectedCov,
+                                       fmt::format("8k: LeftMultiply sq Var({})", i));
+                        }
+                    }
+                }
+            }
+        }
+
+        // ---- LeftMultiply with non-square matrix ((K+1) × K) ----
+        {
+            constexpr int M{K == Eigen::Dynamic ? Eigen::Dynamic : K + 1};
+            constexpr int actualM{(K == Eigen::Dynamic) ? dim + 1 : K + 1};
+
+            Eigen::Matrix<double, M, K> matRect;
+            if constexpr (K == Eigen::Dynamic or M == Eigen::Dynamic) {
+                matRect.resize(actualM, dim);
+            }
+            for (auto i{0}; i < actualM; ++i) {
+                for (auto j{0}; j < dim; ++j) {
+                    matRect(i, j) = (i + 1) * 10 + (j + 1);
+                }
+            }
+
+            Est e{v, cov};
+            auto result{e.LeftMultiply(matRect)};
+            CheckEq(result.Dimension(), actualM, "8k: LeftMultiply non-sq dim");
+
+            // expected value = A * v
+            for (auto i{0}; i < actualM; ++i) {
+                auto expectedVal{0.0};
+                for (auto j{0}; j < dim; ++j) {
+                    expectedVal += matRect(i, j) * v(j);
+                }
+                CheckClose(result.Value(i), expectedVal,
+                           fmt::format("8k: LeftMultiply non-sq Value({})", i));
+            }
+
+            // expected covariance = A * Cov * A^T
+            for (auto i1{0}; i1 < actualM; ++i1) {
+                for (auto i2{0}; i2 < actualM; ++i2) {
+                    auto expectedCov{0.0};
+                    for (auto p{0}; p < dim; ++p) {
+                        for (auto q{0}; q < dim; ++q) {
+                            auto cov_pq{[&] {
+                                if constexpr (C == CovarianceOption::Full) {
+                                    return cov(p, q);
+                                } else {
+                                    return (p == q) ? cov.diagonal()(p) : 0.0;
+                                }
+                            }()};
+                            expectedCov += matRect(i1, p) * cov_pq * matRect(i2, q);
+                        }
+                    }
+                    if constexpr (C == CovarianceOption::Full) {
+                        CheckClose(result.Covariance(i1, i2), expectedCov,
+                                   fmt::format("8k: LeftMultiply non-sq Cov({},{})", i1, i2));
+                    } else {
+                        if (i1 == i2) {
+                            CheckClose(result.Covariance(i1, i2), expectedCov,
+                                       fmt::format("8k: LeftMultiply non-sq Var({})", i1));
+                        }
+                    }
+                }
+            }
+        }
     }
 }};
 
@@ -3143,7 +3497,7 @@ constexpr auto sec17NegateChaining{[]<int K, CovarianceOption C>() {
                 CheckClose(e.Value(i), -x(i), fmt::format("17a: Negate value({})", i));
             }
         }
-        if constexpr (isFull && K != 1) {
+        if constexpr (isFull and K != 1) {
             CheckClose(e.Covariance(), cov, "17a: Negate cov unchanged");
         }
     }
@@ -3318,7 +3672,7 @@ constexpr auto sec19EdgeCases{[]<int K, CovarianceOption C>() {
             CheckClose(e.Value(), x(0), "19: Self-assign Value()");
         } else {
             CheckClose(e.Value(0), x(0), "19: Self-assign Value(0)");
-            if constexpr (isFull && dim >= 2) {
+            if constexpr (isFull and dim >= 2) {
                 CheckClose(e.Covariance(0, 1), cov(0, 1), "19: Self-assign Cov(0,1)");
             }
         }
@@ -3497,6 +3851,106 @@ constexpr auto sec20CrossVerification{[] {
 }};
 
 // =========================================================================
+// Section 21: Normalize
+// =========================================================================
+constexpr auto sec21Normalize{[]<int K, CovarianceOption C>() {
+    if constexpr (K != 1) {
+        constexpr int dim{(K == Eigen::Dynamic) ? 3 : K};
+        using Est = Estimate<K, C>;
+
+        const auto v{MakeTestValue<K, C>(dim)};
+        const auto cov{MakeTestCov<K, C>(dim)};
+
+        // 21a. Normalized() const& — value has unit norm
+        {
+            Est e{v, cov};
+            const auto result{e.Normalized()};
+            CheckClose(result.Value().norm(), 1.0, "21a: Normalized() const& value has unit norm");
+        }
+
+        // 21b. Normalized() && — value has unit norm
+        {
+            Est e{v, cov};
+            const auto result{std::move(e).Normalized()};
+            CheckClose(result.Value().norm(), 1.0, "21b: Normalized() && value has unit norm");
+        }
+
+        // 21c. Normalize() & — in-place yields unit norm
+        {
+            Est e{v, cov};
+            e.Normalize();
+            CheckClose(e.Value().norm(), 1.0, "21c: Normalize() & value has unit norm");
+        }
+
+        // 21d. const& and && produce equivalent results
+        {
+            Est e1{v, cov};
+            Est e2{v, cov};
+            const auto r1{e1.Normalized()};
+            const auto r2{std::move(e2).Normalized()};
+            CheckClose(r1.Value(), r2.Value(), "21d: const& and && produce same value");
+            CheckClose(r1.Covariance(), r2.Covariance(), "21d: const& and && produce same covariance");
+        }
+
+        // 21e. Covariance — verify against analytical Jacobian
+        {
+            Est e{v, cov};
+            const auto mu{e.Value()};
+            const auto sqNorm{mu.squaredNorm()};
+            const auto norm{std::sqrt(sqNorm)};
+
+            // Compute analytical Jacobian jac = (I - mu*mu^T / ||mu||^2) / ||mu||
+            if constexpr (K == Eigen::Dynamic) {
+                Eigen::MatrixXd jac{Eigen::MatrixXd::Identity(dim, dim) / norm
+                                    - mu * mu.transpose() / (sqNorm * norm)};
+                Eigen::MatrixXd expectedCov{jac * e.Covariance() * jac};
+                const auto result{e.Normalized()};
+                if constexpr (C == CovarianceOption::Full) {
+                    CheckClose(result.Covariance(), expectedCov,
+                               "21e: covariance matches analytical Jacobian (Full)");
+                } else {
+                    CheckClose(result.Variance(), expectedCov.diagonal(),
+                               "21e: covariance matches analytical Jacobian (Diag)");
+                }
+            } else {
+                Eigen::Matrix<double, K, K> jac{
+                    decltype(jac)::Identity() / norm - mu * mu.transpose() / (sqNorm * norm)};
+                Eigen::Matrix<double, K, K> expectedCov{jac * e.Covariance() * jac};
+                const auto result{e.Normalized()};
+                if constexpr (C == CovarianceOption::Full) {
+                    CheckClose(result.Covariance(), expectedCov,
+                               "21e: covariance matches analytical Jacobian (Full)");
+                } else {
+                    CheckClose(result.Variance(), expectedCov.diagonal(),
+                               "21e: covariance matches analytical Jacobian (Diag)");
+                }
+            }
+        }
+
+        // 21f. Near-zero vector — Normalize is a no-op
+        {
+            auto zeroVec{MakeTestValue<K, C>(dim)};
+            zeroVec.setZero();
+            Est e{zeroVec, cov};
+            const auto origVal{e.Value()};
+            const auto origCov{e.Covariance()};
+            e.Normalize();
+            CheckClose(e.Value(), origVal, "21f: near-zero Normalize() leaves value unchanged");
+            CheckClose(e.Covariance(), origCov, "21f: near-zero Normalize() leaves covariance unchanged");
+        }
+
+        // 21g. Chaining — Normalize().Sum() works
+        {
+            Est e{v, cov};
+            const auto sum{e.Normalized().Sum()};
+            // sum value should be close to sum of unit vector components
+            const auto expectedSumVal{v.normalized().sum()};
+            CheckClose(sum.Value(), expectedSumVal, "21g: Normalized().Sum() value");
+        }
+    }
+}};
+
+// =========================================================================
 // Section 23: Prod
 // =========================================================================
 constexpr auto sec23Prod{[]<int K, CovarianceOption C>() {
@@ -3517,11 +3971,11 @@ constexpr auto sec23Prod{[]<int K, CovarianceOption C>() {
             CheckClose(result.Value(), expectedValue, "23a: Prod() const value");
         }
 
-        // 23b. Prod() && (via rvalue)
+        // 23b. Prod() and (via rvalue)
         {
             Est e{v, cov};
             const auto result{std::move(e).Prod()};
-            CheckClose(result.Value(), expectedValue, "23b: Prod() && value");
+            CheckClose(result.Value(), expectedValue, "23b: Prod() and value");
         }
     }
 }};
@@ -3551,7 +4005,7 @@ constexpr auto sec24SquaredNorm{[]<int K, CovarianceOption C>() {
         {
             Est e{v, cov};
             const auto result{std::move(e).SquaredNorm()};
-            CheckClose(result.Value(), expectedValue, "24b: SquaredNorm() && value");
+            CheckClose(result.Value(), expectedValue, "24b: SquaredNorm() and value");
         }
     }
 }};
@@ -3582,7 +4036,7 @@ constexpr auto sec25Norm{[]<int K, CovarianceOption C>() {
         {
             Est e{v, cov};
             const auto result{std::move(e).Norm()};
-            CheckClose(result.Value(), expectedValue, "25b: Norm() && value");
+            CheckClose(result.Value(), expectedValue, "25b: Norm() and value");
         }
 
         // 25c. Norm() == SquaredNorm().Sqrt()
@@ -3650,7 +4104,7 @@ constexpr auto sec27HarmonicMean{[]<int K, CovarianceOption C>() {
         {
             Est e{v, cov};
             const auto result{std::move(e).HarmonicMean()};
-            CheckClose(result.Value(), expectedValue, "27b: HarmonicMean() && value");
+            CheckClose(result.Value(), expectedValue, "27b: HarmonicMean() and value");
         }
     }
 }};
@@ -3681,7 +4135,7 @@ constexpr auto sec28GeometricMean{[]<int K, CovarianceOption C>() {
         {
             Est e{v, cov};
             const auto result{std::move(e).GeometricMean()};
-            CheckClose(result.Value(), expectedValue, "28b: GeometricMean() && value");
+            CheckClose(result.Value(), expectedValue, "28b: GeometricMean() and value");
         }
     }
 }};
@@ -3712,7 +4166,7 @@ constexpr auto sec29QuadraticMean{[]<int K, CovarianceOption C>() {
         {
             Est e{v, cov};
             const auto result{std::move(e).QuadraticMean()};
-            CheckClose(result.Value(), expectedValue, "29b: QuadraticMean() && value");
+            CheckClose(result.Value(), expectedValue, "29b: QuadraticMean() and value");
         }
     }
 }};
@@ -3743,7 +4197,7 @@ constexpr auto sec30CubicMean{[]<int K, CovarianceOption C>() {
         {
             Est e{v, cov};
             const auto result{std::move(e).CubicMean()};
-            CheckClose(result.Value(), expectedValue, "30b: CubicMean() && value");
+            CheckClose(result.Value(), expectedValue, "30b: CubicMean() and value");
         }
     }
 }};
@@ -3926,6 +4380,26 @@ auto TestEstimate::Main(int argc, char* argv[]) const -> int {
     RunOverAllDims<AllStaticDims>(sec8DotProduct);
     PrintLn("  8 passed: dot product (K=2,3,5,10 Full/Diag + dynamic)");
 
+    // Section 8h: Matrix-vector RightMultiply
+    PrintLn("--- Section 8h: Matrix-vector RightMultiply ---");
+    RunOverAllDims<AllStaticDims>(sec8hRightMultiply);
+    PrintLn("  8h passed: RightMultiply (K=2,3,5,10 Full/Diag + dynamic)");
+
+    // Section 8i: Matrix-vector operator*
+    PrintLn("--- Section 8i: Matrix-vector operator* ---");
+    RunOverAllDims<AllStaticDims>(sec8iMatrixMultiplyOperator);
+    PrintLn("  8i passed: operator* (K=2,3,5,10 Full/Diag + dynamic)");
+
+    // Section 8j: Matrix-vector multiply — dimension mismatch
+    PrintLn("--- Section 8j: Matrix-vector multiply — exception ---");
+    RunOverAllDims<AllStaticDims>(sec8jRightMultiplyException);
+    PrintLn("  8j passed: RightMultiply/LeftMultiply exception (K=2,3,5,10 Full/Diag + dynamic)");
+
+    // Section 8k: Matrix-vector LeftMultiply
+    PrintLn("--- Section 8k: Matrix-vector LeftMultiply ---");
+    RunOverAllDims<AllStaticDims>(sec8kLeftMultiply);
+    PrintLn("  8k passed: LeftMultiply (K=2,3,5,10 Full/Diag + dynamic)");
+
     // =====================================================================
     // Sections 9-16: Math Functions
     // For each math function, covariance is propagated via Jacobian:
@@ -4011,6 +4485,13 @@ auto TestEstimate::Main(int argc, char* argv[]) const -> int {
     PrintLn("--- Section 20: Cross-Verification ---");
     sec20CrossVerification();
     PrintLn("  20 passed: cross-verification");
+
+    // =====================================================================
+    // Section 21: Normalize
+    // =====================================================================
+    PrintLn("--- Section 21: Normalize ---");
+    RunOverAllDims<AllStaticDims>(sec21Normalize);
+    PrintLn("  21 passed: normalize (K=2,3,5,10 Full/Diag + dynamic)");
 
     // =====================================================================
     // Section 22: Sum

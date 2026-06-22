@@ -338,7 +338,7 @@ private:
     /// @param other Source statistic to copy from
     template<typename AOther, int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto CopyFrom(const StatisticBase<AOther, L, D>& other) -> ADerived&;
+    auto CopyFrom(const StatisticBase<AOther, L, D>& other) & -> ADerived&;
 
     auto Self() & -> auto&& { return static_cast<ADerived&>(*this); }
     auto Self() const& -> auto&& { return static_cast<const ADerived&>(*this); }

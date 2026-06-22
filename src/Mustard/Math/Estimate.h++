@@ -652,7 +652,46 @@ public:
     /// @brief Inner product with a plain vector.
     /// @return A scalar estimate with value = self·v and properly propagated uncertainty.
     template<typename AVec>
+        requires(AVec::ColsAtCompileTime == 1)
     auto Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+
+    /// @}
+    /// @name Matrix-vector product
+    /// @{
+
+    /// @brief Left-multiply: returns @f$A x@f$ as a new estimate.
+    /// @param aXpr A @f$M\times K@f$ matrix (Eigen expression)
+    /// @return A new `Estimate<M, C>` with value @f$A \mu@f$ and covariance @f$A \Sigma A^\mathsf{T}@f$.
+    template<typename AMat>
+        requires(AMat::ColsAtCompileTime == K or
+                 K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
+    auto LeftMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> Estimate<AMat::RowsAtCompileTime, C>;
+
+    /// @brief Right-multiply: returns @f$x^\mathsf{T} A@f$, stored as @f$A^\mathsf{T} x@f$.
+    /// @param aXpr A @f$K\times M@f$ matrix (Eigen expression)
+    /// @return A new `Estimate<M, C>` with value @f$A^\mathsf{T} \mu@f$ and covariance @f$A^\mathsf{T} \Sigma A@f$.
+    /// @note Equivalent to @f$\texttt{LeftMultiply}(A^\mathsf{T})@f$.
+    template<typename AMat>
+        requires(AMat::RowsAtCompileTime == K or
+                 K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
+    auto RightMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> auto { return LeftMultiply(aXpr.transpose()); }
+
+    /// @}
+    /// @name Normalization
+    /// @brief Normalize the vector to unit length with proper uncertainty propagation.
+    /// @note Only available for vector estimates (@f$K \neq 1@f$).
+    /// @{
+
+    /// @brief In-place normalization: @f$x \to x / \|x\|@f$.
+    /// The covariance matrix is updated via the Delta method:
+    /// @f$\operatorname{Cov} \leftarrow J \operatorname{Cov} J^\mathsf{T}@f$,
+    /// where @f$J = (I - \mu\mu^\mathsf{T}/\|\mu\|^2) / \|\mu\|@f$.
+    /// If the vector length squared is close to zero (as determined by `muc::isclose`),
+    /// the estimate is returned unchanged.
+    auto Normalize() & -> ADerived&;
+    /// @brief Return a normalized copy: @f$x \to x / \|x\|@f$.
+    auto Normalized() const& -> ADerived;
+    auto Normalized() && -> ADerived;
 
     /// @}
     /// @name Reduction operations
@@ -739,7 +778,21 @@ private:
         requires((AVec::RowsAtCompileTime == K or
                   K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) and
                  AVec::ColsAtCompileTime == 1)
-    auto CheckDimensionMatch(const Eigen::MatrixBase<AVec>& yXpr) const -> void;
+    auto CheckVectorDimensionMatch(const Eigen::MatrixBase<AVec>& yXpr) const -> void;
+
+    /// @brief Check that a plain matrix has compatible row dimension (number of rows == @f$K@f$).
+    /// @throws std::invalid_argument if dimensions differ (only checked for dynamic dimension)
+    template<typename AMat>
+        requires(AMat::RowsAtCompileTime == K or
+                 K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
+    auto CheckMatrixRowDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void;
+
+    /// @brief Check that a plain matrix has compatible column dimension (number of columns == @f$K@f$).
+    /// @throws std::invalid_argument if dimensions differ (only checked for dynamic dimension)
+    template<typename AMat>
+        requires(AMat::ColsAtCompileTime == K or
+                 K == Eigen::Dynamic or AMat::ColsAtCompileTime == Eigen::Dynamic)
+    auto CheckMatrixColDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void;
 
     /// @brief Copy estimate state from another estimate with possibly different CovarianceOption.
     ///
@@ -755,7 +808,7 @@ private:
     /// @param other Source estimate to copy from
     template<typename AOther, int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto CopyFrom(const EstimateBase<AOther, L, D>& other) -> ADerived&;
+    auto CopyFrom(const EstimateBase<AOther, L, D>& other) & -> ADerived&;
 
     template<typename AJac>
         requires(AJac::ColsAtCompileTime == 1)
@@ -1010,7 +1063,7 @@ auto operator+(Estimate<K, C>&& est) -> auto { return std::move(est); }
 template<int K, CovarianceOption C>
 auto operator-(const Estimate<K, C>& est) -> auto { return est.Negate(); }
 template<int K, CovarianceOption C>
-auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est).Negate(); }
+auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est.NegateInPlace()); }
 
 /// @}
 /// @name Binary operators
@@ -1034,19 +1087,19 @@ auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est).Negate(); }
     auto Op(Estimate<K, C>&& lhs, Estimate<L, D>&& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>;           \
                                                                                                                \
     template<int K, CovarianceOption C, typename AVec>                                                         \
-        requires(K != 1)                                                                                       \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                      \
     auto Op(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C>;                  \
                                                                                                                \
     template<int K, CovarianceOption C, typename AVec>                                                         \
-        requires(K != 1)                                                                                       \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                      \
     auto Op(Estimate<K, C>&& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C>;                       \
                                                                                                                \
     template<typename AVec, int K, CovarianceOption C>                                                         \
-        requires(K != 1)                                                                                       \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                      \
     auto Op(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> Estimate<K, C>;                  \
                                                                                                                \
     template<typename AVec, int K, CovarianceOption C>                                                         \
-        requires(K != 1)                                                                                       \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                      \
     auto Op(const Eigen::MatrixBase<AVec>& lhs, Estimate<K, C>&& rhs) -> Estimate<K, C>;                       \
                                                                                                                \
     template<int K, CovarianceOption C>                                                                        \
@@ -1074,160 +1127,45 @@ MUSTARD_MATH_ESTIMATE_BINARY_OP_DECLARATIONS(pow)
 /// an && overload (moves, transforms in place, returns by value).
 /// @{
 
-template<int K, CovarianceOption C>
-auto square(const Estimate<K, C>& est) -> auto { return est.Square(); }
-template<int K, CovarianceOption C>
-auto square(Estimate<K, C>&& est) -> auto { return std::move(est).Square(); }
+#define MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(func, Func, FuncInPlace) \
+    template<int K, CovarianceOption C>                                                \
+    auto func(const Estimate<K, C>& est) -> auto { return est.Func(); }                \
+                                                                                       \
+    template<int K, CovarianceOption C>                                                \
+    auto func(Estimate<K, C>&& est) -> auto { return std::move(est.FuncInPlace()); }
 
-template<int K, CovarianceOption C>
-auto cube(const Estimate<K, C>& est) -> auto { return est.Cube(); }
-template<int K, CovarianceOption C>
-auto cube(Estimate<K, C>&& est) -> auto { return std::move(est).Cube(); }
-
-template<int K, CovarianceOption C>
-auto sqrt(const Estimate<K, C>& est) -> auto { return est.Sqrt(); }
-template<int K, CovarianceOption C>
-auto sqrt(Estimate<K, C>&& est) -> auto { return std::move(est).Sqrt(); }
-
-template<int K, CovarianceOption C>
-auto cbrt(const Estimate<K, C>& est) -> auto { return est.Cbrt(); }
-template<int K, CovarianceOption C>
-auto cbrt(Estimate<K, C>&& est) -> auto { return std::move(est).Cbrt(); }
-
-template<int K, CovarianceOption C>
-auto rsqrt(const Estimate<K, C>& est) -> auto { return est.Rsqrt(); }
-template<int K, CovarianceOption C>
-auto rsqrt(Estimate<K, C>&& est) -> auto { return std::move(est).Rsqrt(); }
-
-template<int K, CovarianceOption C>
-auto inverse(const Estimate<K, C>& est) -> auto { return est.Inverse(); }
-template<int K, CovarianceOption C>
-auto inverse(Estimate<K, C>&& est) -> auto { return std::move(est).Inverse(); }
-
-template<int K, CovarianceOption C>
-auto abs(const Estimate<K, C>& est) -> auto { return est.Abs(); }
-template<int K, CovarianceOption C>
-auto abs(Estimate<K, C>&& est) -> auto { return std::move(est).Abs(); }
-
-template<int K, CovarianceOption C>
-auto exp(const Estimate<K, C>& est) -> auto { return est.Exp(); }
-template<int K, CovarianceOption C>
-auto exp(Estimate<K, C>&& est) -> auto { return std::move(est).Exp(); }
-
-template<int K, CovarianceOption C>
-auto exp2(const Estimate<K, C>& est) -> auto { return est.Exp2(); }
-template<int K, CovarianceOption C>
-auto exp2(Estimate<K, C>&& est) -> auto { return std::move(est).Exp2(); }
-
-template<int K, CovarianceOption C>
-auto expm1(const Estimate<K, C>& est) -> auto { return est.Expm1(); }
-template<int K, CovarianceOption C>
-auto expm1(Estimate<K, C>&& est) -> auto { return std::move(est).Expm1(); }
-
-template<int K, CovarianceOption C>
-auto log(const Estimate<K, C>& est) -> auto { return est.Log(); }
-template<int K, CovarianceOption C>
-auto log(Estimate<K, C>&& est) -> auto { return std::move(est).Log(); }
-
-template<int K, CovarianceOption C>
-auto log10(const Estimate<K, C>& est) -> auto { return est.Log10(); }
-template<int K, CovarianceOption C>
-auto log10(Estimate<K, C>&& est) -> auto { return std::move(est).Log10(); }
-
-template<int K, CovarianceOption C>
-auto log2(const Estimate<K, C>& est) -> auto { return est.Log2(); }
-template<int K, CovarianceOption C>
-auto log2(Estimate<K, C>&& est) -> auto { return std::move(est).Log2(); }
-
-template<int K, CovarianceOption C>
-auto log1p(const Estimate<K, C>& est) -> auto { return est.Log1p(); }
-template<int K, CovarianceOption C>
-auto log1p(Estimate<K, C>&& est) -> auto { return std::move(est).Log1p(); }
-
-template<int K, CovarianceOption C>
-auto sin(const Estimate<K, C>& est) -> auto { return est.Sin(); }
-template<int K, CovarianceOption C>
-auto sin(Estimate<K, C>&& est) -> auto { return std::move(est).Sin(); }
-
-template<int K, CovarianceOption C>
-auto cos(const Estimate<K, C>& est) -> auto { return est.Cos(); }
-template<int K, CovarianceOption C>
-auto cos(Estimate<K, C>&& est) -> auto { return std::move(est).Cos(); }
-
-template<int K, CovarianceOption C>
-auto tan(const Estimate<K, C>& est) -> auto { return est.Tan(); }
-template<int K, CovarianceOption C>
-auto tan(Estimate<K, C>&& est) -> auto { return std::move(est).Tan(); }
-
-template<int K, CovarianceOption C>
-auto asin(const Estimate<K, C>& est) -> auto { return est.Asin(); }
-template<int K, CovarianceOption C>
-auto asin(Estimate<K, C>&& est) -> auto { return std::move(est).Asin(); }
-
-template<int K, CovarianceOption C>
-auto acos(const Estimate<K, C>& est) -> auto { return est.Acos(); }
-template<int K, CovarianceOption C>
-auto acos(Estimate<K, C>&& est) -> auto { return std::move(est).Acos(); }
-
-template<int K, CovarianceOption C>
-auto atan(const Estimate<K, C>& est) -> auto { return est.Atan(); }
-template<int K, CovarianceOption C>
-auto atan(Estimate<K, C>&& est) -> auto { return std::move(est).Atan(); }
-
-template<int K, CovarianceOption C>
-auto sinh(const Estimate<K, C>& est) -> auto { return est.Sinh(); }
-template<int K, CovarianceOption C>
-auto sinh(Estimate<K, C>&& est) -> auto { return std::move(est).Sinh(); }
-
-template<int K, CovarianceOption C>
-auto cosh(const Estimate<K, C>& est) -> auto { return est.Cosh(); }
-template<int K, CovarianceOption C>
-auto cosh(Estimate<K, C>&& est) -> auto { return std::move(est).Cosh(); }
-
-template<int K, CovarianceOption C>
-auto tanh(const Estimate<K, C>& est) -> auto { return est.Tanh(); }
-template<int K, CovarianceOption C>
-auto tanh(Estimate<K, C>&& est) -> auto { return std::move(est).Tanh(); }
-
-template<int K, CovarianceOption C>
-auto asinh(const Estimate<K, C>& est) -> auto { return est.Asinh(); }
-template<int K, CovarianceOption C>
-auto asinh(Estimate<K, C>&& est) -> auto { return std::move(est).Asinh(); }
-
-template<int K, CovarianceOption C>
-auto acosh(const Estimate<K, C>& est) -> auto { return est.Acosh(); }
-template<int K, CovarianceOption C>
-auto acosh(Estimate<K, C>&& est) -> auto { return std::move(est).Acosh(); }
-
-template<int K, CovarianceOption C>
-auto atanh(const Estimate<K, C>& est) -> auto { return est.Atanh(); }
-template<int K, CovarianceOption C>
-auto atanh(Estimate<K, C>&& est) -> auto { return std::move(est).Atanh(); }
-
-template<int K, CovarianceOption C>
-auto logistic(const Estimate<K, C>& est) -> auto { return est.Logistic(); }
-template<int K, CovarianceOption C>
-auto logistic(Estimate<K, C>&& est) -> auto { return std::move(est).Logistic(); }
-
-template<int K, CovarianceOption C>
-auto erf(const Estimate<K, C>& est) -> auto { return est.Erf(); }
-template<int K, CovarianceOption C>
-auto erf(Estimate<K, C>&& est) -> auto { return std::move(est).Erf(); }
-
-template<int K, CovarianceOption C>
-auto erfc(const Estimate<K, C>& est) -> auto { return est.Erfc(); }
-template<int K, CovarianceOption C>
-auto erfc(Estimate<K, C>&& est) -> auto { return std::move(est).Erfc(); }
-
-template<int K, CovarianceOption C>
-auto lgamma(const Estimate<K, C>& est) -> auto { return est.Lgamma(); }
-template<int K, CovarianceOption C>
-auto lgamma(Estimate<K, C>&& est) -> auto { return std::move(est).Lgamma(); }
-
-template<int K, CovarianceOption C>
-auto ndtri(const Estimate<K, C>& est) -> auto { return est.Ndtri(); }
-template<int K, CovarianceOption C>
-auto ndtri(Estimate<K, C>&& est) -> auto { return std::move(est).Ndtri(); }
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(square, Square, SquareInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(cube, Cube, CubeInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(sqrt, Sqrt, SqrtInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(cbrt, Cbrt, CbrtInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(rsqrt, Rsqrt, RsqrtInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(inverse, Inverse, InverseInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(abs, Abs, AbsInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(exp, Exp, ExpInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(exp2, Exp2, Exp2InPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(expm1, Expm1, Expm1InPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(log, Log, LogInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(log10, Log10, Log10InPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(log2, Log2, Log2InPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(log1p, Log1p, Log1pInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(sin, Sin, SinInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(cos, Cos, CosInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(tan, Tan, TanInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(asin, Asin, AsinInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(acos, Acos, AcosInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(atan, Atan, AtanInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(sinh, Sinh, SinhInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(cosh, Cosh, CoshInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(tanh, Tanh, TanhInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(asinh, Asinh, AsinhInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(acosh, Acosh, AcoshInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(atanh, Atanh, AtanhInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(logistic, Logistic, LogisticInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(erf, Erf, ErfInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(erfc, Erfc, ErfcInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(lgamma, Lgamma, LgammaInPlace)
+MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(ndtri, Ndtri, NdtriInPlace)
+#undef MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS
 
 /// @}
 /// @name Dot product
@@ -1247,6 +1185,23 @@ auto Dot(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> auto 
 template<typename AVec, int K, CovarianceOption C>
     requires(K != 1)
 auto Dot(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> auto { return rhs.Dot(lhs); }
+
+/// @}
+/// @name Matrix-vector operator*
+/// @brief `A * est` (left-multiply) and `est * A` (right-multiply).
+/// @note Uses @f$\texttt{AMat::ColsAtCompileTime} \neq 1@f$ to avoid ambiguity
+///       with the element-wise vector-Estimate `operator*`.
+/// @{
+
+template<typename AMat, int K, CovarianceOption C>
+    requires(K != 1 and AMat::ColsAtCompileTime != 1 and
+             (AMat::ColsAtCompileTime == K or K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic))
+auto operator*(const Eigen::MatrixBase<AMat>& aXpr, const Estimate<K, C>& est) -> auto { return est.LeftMultiply(aXpr); }
+
+template<int K, CovarianceOption C, typename AMat>
+    requires(K != 1 and AMat::ColsAtCompileTime != 1 and
+             (AMat::RowsAtCompileTime == K or K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic))
+auto operator*(const Estimate<K, C>& est, const Eigen::MatrixBase<AMat>& aXpr) -> auto { return est.RightMultiply(aXpr); }
 
 /// @}
 
