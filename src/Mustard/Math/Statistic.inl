@@ -171,6 +171,35 @@ auto StatisticBase<ADerived, K, C>::FromPOD(const PODType& data) -> void
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::Corr(int i, int j, auto (StatisticBase::*cov)(int, int) const->auto,
+                                         auto (StatisticBase::*var)(int) const->auto) const -> double {
+    if (i == j) {
+        return 1;
+    }
+    if constexpr (C == CovarianceOption::Diagonal) {
+        return 0;
+    }
+    return (this->*cov)(i, j) / std::sqrt((this->*var)(i) * (this->*var)(j));
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::Corr(auto (StatisticBase::*covXpr)() const->auto,
+                                         auto (StatisticBase::*varXpr)() const->auto) const -> CovarianceType {
+    if constexpr (C == CovarianceOption::Full) {
+        const auto sigma{(this->*varXpr)().cwiseSqrt().cwiseInverse().eval()};
+        auto corr{(sigma.asDiagonal() * (this->*covXpr)() * sigma.asDiagonal()).eval()};
+        corr.diagonal().setOnes();
+        return corr;
+    } else {
+        CovarianceType corr(Dimension());
+        corr.diagonal().setOnes();
+        return corr;
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
 template<typename AVec>
 auto StatisticBase<ADerived, K, C>::AppendM2CrossTerm(double otherW, double prevW, const Eigen::MatrixBase<AVec>& deltaXpr) -> void {
     const auto www{otherW * (fW / prevW)};

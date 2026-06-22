@@ -108,6 +108,33 @@ auto EstimateBase<ADerived, K, C>::Dimension() const -> int {
     }
 }
 
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto EstimateBase<ADerived, K, C>::Correlation(int i, int j) const -> double {
+    if (i == j) {
+        return 1;
+    }
+    if constexpr (C == CovarianceOption::Diagonal) {
+        return 0;
+    }
+    return Covariance(i, j) / std::sqrt(Variance(i) * Variance(j));
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto EstimateBase<ADerived, K, C>::Correlation() const -> CovarianceType {
+    if constexpr (C == CovarianceOption::Full) {
+        const auto sigma{VarXpr().cwiseSqrt().cwiseInverse().eval()};
+        auto corr{(sigma.asDiagonal() * fCov * sigma.asDiagonal()).eval()};
+        corr.diagonal().setOnes();
+        return corr;
+    } else {
+        CovarianceType corr(Dimension());
+        corr.diagonal().setOnes();
+        return corr;
+    }
+}
+
 // -----------------------------------------------------------------------------
 // operator+=
 // -----------------------------------------------------------------------------

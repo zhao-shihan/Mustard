@@ -342,6 +342,10 @@ constexpr auto sec0Smoke{[]<int K, CovarianceOption C>() {
         scalar = e3.StdDev(0);
         scalar = e3.Uncertainty(0);
         scalar = e3.RelativeUncertainty(0);
+        scalar = e3.Correlation(0, 0);
+        if constexpr (dim >= 2) {
+            scalar = e3.Correlation(0, 1);
+        }
     }
 
     // ---- full vector/matrix accessors ----
@@ -350,6 +354,7 @@ constexpr auto sec0Smoke{[]<int K, CovarianceOption C>() {
         vec = e3.Value();
         if constexpr (K != 1) {
             mat = e3.Covariance();
+            mat = e3.Correlation();
         }
         vec = e3.Variance();
         vec = e3.StdDev();
@@ -1199,6 +1204,25 @@ constexpr auto sec1Construction{[]<int K, CovarianceOption C>() {
         }
         if constexpr (isFull and K != 1) {
             CheckClose(e.Covariance(), cov, "1: Covariance()");
+        }
+
+        // Correlation checks
+        if constexpr (isFull and K != 1) {
+            CheckClose(e.Correlation(0, 0), 1.0, "1: Corr(0,0)=1");
+            if constexpr (dim >= 2) {
+                CheckClose(e.Correlation(1, 1), 1.0, "1: Corr(1,1)=1");
+                CheckClose(e.Correlation(0, 1), 0.1 / std::sqrt(0.12), "1: Corr(0,1)");
+                CheckClose(e.Correlation(1, 0), 0.1 / std::sqrt(0.12), "1: Corr(1,0) sym");
+            }
+            const auto corrMat{e.Correlation()};
+            CheckClose(corrMat(0, 0), 1.0, "1: Correlation()(0,0)");
+            if constexpr (dim >= 2) {
+                CheckClose(corrMat(0, 1), 0.1 / std::sqrt(0.12), "1: Correlation()(0,1)");
+            }
+        }
+        if constexpr (not isFull and K != 1 and dim >= 2) {
+            CheckClose(e.Correlation(0, 0), 1.0, "1: Corr(0,0)=1 diag");
+            CheckClose(e.Correlation(0, 1), 0.0, "1: Corr(0,1)=0 diag");
         }
 
         Est e2{e};
@@ -3772,6 +3796,36 @@ constexpr auto sec19ExpLogRoundtrip{[]<int K, CovarianceOption C>() {
 }};
 
 // =========================================================================
+// Section 19c: Correlation — zero-variance edge case
+// =========================================================================
+constexpr auto sec19cCorrZeroVar{[]<int K, CovarianceOption C>() {
+    constexpr int dim{(K == Eigen::Dynamic) ? 2 : K};
+    constexpr bool isFull{C == CovarianceOption::Full};
+
+    if constexpr (isFull and K != 1) {
+        auto v{MakeTestValue<K, C>(dim)};
+        auto cov{MakeTestCov<K, C>(dim)};
+        cov.diagonal()(0) = 0.0;
+        if constexpr (dim >= 2) {
+            cov(0, 1) = 0.0;
+            cov(1, 0) = 0.0;
+        }
+        auto e{MakeEstimate<K, C>(v, cov)};
+
+        CheckClose(e.Correlation(0, 0), 1.0, "19c: Corr(0,0)=1 even Var=0");
+        if constexpr (dim >= 2) {
+            if (not std::isnan(e.Correlation(0, 1))) {
+                Throw<std::runtime_error>("19c: Corr(0,1) should be NaN when Var=0");
+            }
+            if (not std::isnan(e.Correlation(1, 0))) {
+                Throw<std::runtime_error>("19c: Corr(1,0) should be NaN when Var=0");
+            }
+            CheckClose(e.Correlation(1, 1), 1.0, "19c: Corr(1,1)=1");
+        }
+    }
+}};
+
+// =========================================================================
 // Section 20: Cross-Verification
 // These are inherently dimension-comparison tests — keep as-is
 // =========================================================================
@@ -4478,6 +4532,8 @@ auto TestEstimate::Main(int argc, char* argv[]) const -> int {
     PrintLn("  19 passed: edge cases and numerical stress (K=1,2,3,5,10 Full/Diag + dynamic)");
     RunOverAllDims<AllStaticDims>(sec19ExpLogRoundtrip);
     PrintLn("  19 passed: exponential/logarithmic round-trip (K=1,2,3,5,10 Full/Diag + dynamic)");
+    RunOverAllDims<AllStaticDims>(sec19cCorrZeroVar);
+    PrintLn("  19 passed: correlation zero-variance edge case (K=2,3,5,10 Full + dynamic)");
 
     // =====================================================================
     // Section 20: Cross-Verification

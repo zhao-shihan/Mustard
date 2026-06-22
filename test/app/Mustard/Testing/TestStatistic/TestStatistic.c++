@@ -230,6 +230,8 @@ constexpr auto sec0SmokeStatic{[]<int K, CovarianceOption C>() {
     if constexpr (K != 1) {
         s1.Covariance();
         s1.CovarianceOfMean();
+        s1.Correlation();
+        s1.CorrelationOfMean();
     }
     s1.VarianceOfMean();
     s1.StdDevOfMean();
@@ -254,9 +256,12 @@ constexpr auto sec0SmokeStatic{[]<int K, CovarianceOption C>() {
             s1.StdDevOfMean(i);
             s1.MeanEstimate(i);
             s1.Covariance(i, i);
+            s1.Correlation(i, i);
             if constexpr (dim >= 2) {
                 s1.Covariance(i, (i + 1) % dim);
                 s1.CovarianceOfMean(i, (i + 1) % dim);
+                s1.Correlation(i, (i + 1) % dim);
+                s1.CorrelationOfMean(i, (i + 1) % dim);
             }
         }
     }
@@ -310,6 +315,8 @@ constexpr auto sec0SmokeDynamic{[]<int K, CovarianceOption C>() {
     s1.StdDev();
     s1.Covariance();
     s1.CovarianceOfMean();
+    s1.Correlation();
+    s1.CorrelationOfMean();
     s1.VarianceOfMean();
     s1.StdDevOfMean();
     s1.MeanEstimate();
@@ -324,8 +331,11 @@ constexpr auto sec0SmokeDynamic{[]<int K, CovarianceOption C>() {
         s1.StdDevOfMean(i);
         s1.MeanEstimate(i);
         s1.Covariance(i, i);
+        s1.Correlation(i, i);
         s1.Covariance(i, (i + 1) % dim);
         s1.CovarianceOfMean(i, (i + 1) % dim);
+        s1.Correlation(i, (i + 1) % dim);
+        s1.CorrelationOfMean(i, (i + 1) % dim);
     }
 
     // Merge
@@ -593,6 +603,26 @@ constexpr auto sec2FillAndStatistics{[]<int K, CovarianceOption C>() {
                                fmt::format("2: Cov({},{})", i, j));
                     CheckClose(s.Covariance(j, i), 0.0,
                                fmt::format("2: Cov({},{})", j, i));
+                }
+            }
+        }
+        // Correlation checks
+        for (auto i{0}; i < dim; ++i) {
+            CheckClose(s.Correlation(i, i), 1.0,
+                       fmt::format("2: Corr({},{})", i, i));
+            CheckClose(s.CorrelationOfMean(i, i), 1.0,
+                       fmt::format("2: CorrOfMean({},{})", i, i));
+            for (auto j{i + 1}; j < dim; ++j) {
+                if constexpr (C == CovarianceOption::Full) {
+                    CheckClose(s.Correlation(i, j), 1.0,
+                               fmt::format("2: Corr({},{})", i, j));
+                    CheckClose(s.CorrelationOfMean(i, j), 1.0,
+                               fmt::format("2: CorrOfMean({},{})", i, j));
+                } else {
+                    CheckClose(s.Correlation(i, j), 0.0,
+                               fmt::format("2: Corr({},{})", i, j));
+                    CheckClose(s.CorrelationOfMean(i, j), 0.0,
+                               fmt::format("2: CorrOfMean({},{})", i, j));
                 }
             }
         }
@@ -1877,6 +1907,36 @@ constexpr auto sec10CrossDimRvalueAdd{[] {
     }
 }};
 
+// =========================================================================
+// Section 9b: Correlation — zero-variance edge case
+// =========================================================================
+constexpr auto sec9bCorrZeroVar{[]<int K, CovarianceOption C>() {
+    constexpr auto dim{(K == Eigen::Dynamic) ? 2 : K};
+    constexpr bool isFull{C == CovarianceOption::Full};
+
+    if constexpr (isFull and K != 1) {
+        using Stat = Statistic<K, C>;
+        Stat s{MakeStatistic<K, C>(dim)};
+        // Feed the same observation twice → zero variance for all components
+        auto v{MakeSeqVector<K>(dim, 1.0)};
+        s.Fill(v);
+        s.Fill(v);
+
+        CheckClose(s.Correlation(0, 0), 1.0, "9b: Corr(0,0)=1 even Var=0");
+        if constexpr (dim >= 2) {
+            if (not std::isnan(s.Correlation(0, 1))) {
+                Throw<std::runtime_error>("9b: Corr(0,1) should be NaN when Var=0");
+            }
+            if (not std::isnan(s.CorrelationOfMean(0, 1))) {
+                Throw<std::runtime_error>("9b: CorrOfMean(0,1) should be NaN when Var=0");
+            }
+            CheckClose(s.Correlation(1, 1), 1.0, "9b: Corr(1,1)=1");
+            CheckClose(s.CorrelationOfMean(0, 0), 1.0, "9b: CorrOfMean(0,0)=1");
+            CheckClose(s.CorrelationOfMean(1, 1), 1.0, "9b: CorrOfMean(1,1)=1");
+        }
+    }
+}};
+
 } // namespace TestStatisticSection
 
 // =========================================================================
@@ -1980,6 +2040,8 @@ auto TestStatistic::Main(int argc, char* argv[]) const -> int {
     PrintLn("--- Section 9: Partition Consistency (K>=1) ---");
     RunOverAllDims<AllStaticDims>(sec9PartitionConsistency);
     PrintLn("  9 passed: partition consistency (K=1,2,3,5,10 Full/Diag + dynamic)");
+    RunOverAllDims<AllStaticDims>(sec9bCorrZeroVar);
+    PrintLn("  9 passed: correlation zero-variance edge case (K=2,3,5,10 Full + dynamic)");
 
     // =====================================================================
     // Section 10: Cross-Verification

@@ -205,6 +205,11 @@ public:
     /// @param i First component index (0-based)
     /// @param j Second component index (0-based)
     auto Covariance(int i, int j) const -> auto { return CovCoeff() * fM2.coeff(i, j); }
+    /// @brief Sample correlation coefficient between components i and j,
+    ///        @f$\rho_{ij} = \operatorname{Cov}_{ij} / \sqrt{\operatorname{Var}_i \operatorname{Var}_j}@f$.
+    /// @param i First component index (0-based)
+    /// @param j Second component index (0-based)
+    auto Correlation(int i, int j) const -> auto { return Corr(i, j, &StatisticBase::Covariance, &StatisticBase::Variance); }
     /// @brief Sample variance of the i-th component, @f$\sigma_i^2 = \operatorname{Cov}_{ii}@f$.
     /// @param i Component index (0-based)
     auto Variance(int i) const -> auto { return Covariance(i, i); }
@@ -217,6 +222,8 @@ public:
     auto Mean() const -> auto { return MeanXpr().eval(); }
     /// @brief Full sample covariance matrix (or diagonal matrix for `CovarianceOption::Diagonal`).
     auto Covariance() const -> CovarianceType { return CovXpr(); }
+    /// @brief Full sample correlation matrix (or identity diagonal matrix if `C == CovarianceOption::Diagonal`).
+    auto Correlation() const -> CovarianceType { return Corr(&StatisticBase::CovXpr, &StatisticBase::VarXpr); }
     /// @brief Variance vector (diagonal of the covariance matrix).
     auto Variance() const -> auto { return VarXpr().eval(); }
     /// @brief Standard deviation vector, @f$\sigma = \sqrt{\operatorname{Var}}@f$.
@@ -232,6 +239,11 @@ public:
     /// @param i First component index (0-based)
     /// @param j Second component index (0-based)
     auto CovarianceOfMean(int i, int j) const -> auto { return CovMeanCoeff() * fM2.coeff(i, j); }
+    /// @brief Correlation of the sample mean between components i and j,
+    ///        @f$\rho_{\bar{x},ij} = \operatorname{Cov}(\bar{x})_{ij} / \sqrt{\operatorname{Var}(\bar{x})_i \operatorname{Var}(\bar{x})_j}@f$.
+    /// @param i First component index (0-based)
+    /// @param j Second component index (0-based)
+    auto CorrelationOfMean(int i, int j) const -> auto { return Corr(i, j, &StatisticBase::CovarianceOfMean, &StatisticBase::VarianceOfMean); }
     /// @brief Variance of the sample mean for the i-th component.
     /// @param i Component index (0-based)
     auto VarianceOfMean(int i) const -> auto { return CovarianceOfMean(i, i); }
@@ -245,6 +257,8 @@ public:
     auto MeanEstimate(int i) const -> Estimate<1, C> { return {Mean(i), VarianceOfMean(i)}; }
     /// @brief Full covariance matrix of the sample mean.
     auto CovarianceOfMean() const -> CovarianceType { return CovMeanXpr(); }
+    /// @brief Full correlation matrix of the sample mean (or identity diagonal matrix if `C == CovarianceOption::Diagonal`).
+    auto CorrelationOfMean() const -> CovarianceType { return Corr(&StatisticBase::CovMeanXpr, &StatisticBase::VarMeanXpr); }
     /// @brief Variance vector of the sample mean.
     auto VarianceOfMean() const -> auto { return VarMeanXpr().eval(); }
     /// @brief Standard deviation vector of the sample mean.
@@ -303,6 +317,13 @@ protected:
     auto VarMeanXpr() const -> auto { return CovMeanCoeff() * fM2.diagonal(); }
     /// @brief Covariance-of-mean matrix expression (unevaluated expression).
     auto CovMeanXpr() const -> auto { return CovMeanCoeff() * fM2; }
+
+    /// @brief Sample correlation helper
+    auto Corr(int i, int j, auto (StatisticBase::*cov)(int, int) const->auto,
+              auto (StatisticBase::*var)(int) const->auto) const -> double;
+    /// @brief Sample correlation helper
+    auto Corr(auto (StatisticBase::*covXpr)() const->auto,
+              auto (StatisticBase::*varXpr)() const->auto) const -> CovarianceType;
 
     /// @brief Accumulate the @f$M_2@f$ cross-term from a weighted deviation.
     /// @param otherW  Weight of the incoming data (@f$w_i@f$ or @f$W_B@f$)

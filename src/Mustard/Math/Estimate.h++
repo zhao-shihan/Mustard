@@ -210,6 +210,10 @@ public:
     /// @param i First component index (0-based)
     /// @param j Second component index (0-based)
     auto Covariance(int i, int j) const -> auto { return fCov.coeff(i, j); }
+    /// @brief Correlation coefficient between components i and j.
+    /// @param i First component index (0-based)
+    /// @param j Second component index (0-based)
+    auto Correlation(int i, int j) const -> double;
     /// @brief Variance of the i-th component, @f$\operatorname{Cov}_{ii}@f$.
     /// @param i Component index (0-based)
     auto Variance(int i) const -> auto { return Covariance(i, i); }
@@ -226,6 +230,8 @@ public:
     auto Value() const -> const auto& { return fX; }
     /// @brief Full covariance matrix (or diagonal matrix if `C == CovarianceOption::Diagonal`).
     auto Covariance() const -> const auto& { return fCov; }
+    /// @brief Full correlation matrix (or identity diagonal matrix if `C == CovarianceOption::Diagonal`).
+    auto Correlation() const -> CovarianceType;
     /// @brief Variance vector.
     auto Variance() const -> auto { return VarXpr().eval(); }
     /// @brief Standard deviation vector.
