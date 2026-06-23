@@ -20,7 +20,7 @@
 #include "Mustard/Data/Processing/Processor.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Testing/SingleTestingDataModel.h++"
+#include "Mustard/Testing/DataModel/SingleTestingDataModel.h++"
 #include "Mustard/Testing/TestSingleRDFEntryProcessor/TestSingleRDFEntryProcessor.h++"
 
 #include <cstdlib>
@@ -30,6 +30,8 @@
 #include <string_view>
 
 namespace Mustard::Testing {
+
+using namespace Mustard::Testing::DataModel;
 
 TestSingleRDFEntryProcessor::TestSingleRDFEntryProcessor() :
     Subprogram{"TestSingleRDFEntryProcessor", "Test Mustard::Data::Processor::Run over entries with single RDF."} {}

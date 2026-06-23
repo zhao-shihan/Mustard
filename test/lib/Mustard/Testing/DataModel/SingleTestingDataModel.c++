@@ -15,11 +15,11 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Data/Object/Tuple.h++"
-#include "Mustard/Testing/SingleTestingDataModel.h++"
+#include "Mustard/Testing/DataModel/SingleTestingDataModel.h++"
 
 #include "fmt/format.h"
 
-namespace Mustard::Testing {
+namespace Mustard::Testing::DataModel {
 
 auto MakeEntry(int eventID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModel> {
     auto event{Mustard::Data::MakeArcTuple<TestingModel>()};
@@ -46,4 +46,4 @@ auto MakeEntry(int eventID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<Test
     return event;
 }
 
-} // namespace Mustard::Testing
+} // namespace Mustard::Testing::DataModel

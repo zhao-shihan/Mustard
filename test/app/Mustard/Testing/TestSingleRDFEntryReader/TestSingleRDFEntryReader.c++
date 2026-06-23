@@ -24,7 +24,7 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/File.h++"
 #include "Mustard/IO/Print.h++"
-#include "Mustard/Testing/SingleTestingDataModel.h++"
+#include "Mustard/Testing/DataModel/SingleTestingDataModel.h++"
 #include "Mustard/Testing/TestSingleRDFEntryReader/TestSingleRDFEntryReader.h++"
 
 #include <array>
@@ -41,6 +41,8 @@
 #include <vector>
 
 namespace Mustard::Testing {
+
+using namespace Mustard::Testing::DataModel;
 
 TestSingleRDFEntryReader::TestSingleRDFEntryReader() :
     Subprogram{"TestSingleRDFEntryReader", "Test Mustard::Data::RDFEntryReader<M>."} {}

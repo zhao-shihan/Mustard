@@ -33,7 +33,7 @@
 // - as well as some other types... you should test before applying to TTree.
 // - RNTuple support to map/set families are broken.
 
-namespace Mustard::Testing {
+namespace Mustard::Testing::DataModel {
 
 struct TestingModel
     : Mustard::Data::Model<
@@ -59,4 +59,4 @@ struct TestingModel
 
 auto MakeEntry(int eventID, gsl::index entryIdx) -> Mustard::Data::ArcTuple<TestingModel>;
 
-} // namespace Mustard::Testing
+} // namespace Mustard::Testing::DataModel

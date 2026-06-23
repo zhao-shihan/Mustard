@@ -24,7 +24,7 @@
 #include "Mustard/Env/MonteCarloEnv.h++"
 #include "Mustard/IO/File.h++"
 #include "Mustard/IO/Print.h++"
-#include "Mustard/Testing/SingleTestingDataModel.h++"
+#include "Mustard/Testing/DataModel/SingleTestingDataModel.h++"
 #include "Mustard/Testing/TestSingleRDFEventReader/TestSingleRDFEventReader.h++"
 
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -43,6 +43,8 @@
 #include <vector>
 
 namespace Mustard::Testing {
+
+using namespace Mustard::Testing::DataModel;
 
 TestSingleRDFEventReader::TestSingleRDFEventReader() :
     Subprogram{"TestSingleRDFEventReader", "Test Mustard::Data::RDFEventReader<T, M>."} {}

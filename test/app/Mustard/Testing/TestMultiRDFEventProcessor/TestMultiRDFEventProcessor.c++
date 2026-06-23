@@ -20,7 +20,7 @@
 #include "Mustard/Data/Processing/Processor.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Testing/MultiTestingDataModel.h++"
+#include "Mustard/Testing/DataModel/MultiTestingDataModel.h++"
 #include "Mustard/Testing/TestMultiRDFEventProcessor/TestMultiRDFEventProcessor.h++"
 
 #include <algorithm>
@@ -31,6 +31,8 @@
 #include <string_view>
 
 namespace Mustard::Testing {
+
+using namespace Mustard::Testing::DataModel;
 
 TestMultiRDFEventProcessor::TestMultiRDFEventProcessor() :
     Subprogram{"TestMultiRDFEventProcessor", "Test Mustard::Data::Processor::Run over events with multiple RDF."} {}
