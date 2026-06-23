@@ -20,8 +20,8 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 
+#include "Eigen/Cholesky"
 #include "Eigen/Core"
-#include "Eigen/LU"
 #include "unsupported/Eigen/SpecialFunctions"
 
 #include "mplr/mplr.hpp"
@@ -247,7 +247,7 @@ public:
 
     /// @brief In-place combination of two independent estimates using inverse-covariance weighting.
     ///
-    /// Merges @f$\mathit{other}@f$ into @c *this using the Best Linear Unbiased Estimator (BLUE) formula:
+    /// Combines another estimate into @c *this:
     /// @f[
     /// \Sigma = (\Sigma_{\mathrm{self}}^{-1} + \Sigma_{\mathrm{other}}^{-1})^{-1}
     /// @f]
@@ -411,19 +411,10 @@ public:
     auto DivideInPlace(const Estimate<L, D>& other) & -> ADerived&;
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto DivideInPlace(Estimate<L, D>&& other) & -> ADerived&;
-    template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto Divide(const Estimate<L, D>& other) const& -> ADerived;
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Divide(Estimate<L, D>&& other) const& -> ADerived;
-    template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto Divide(const Estimate<L, D>& other) && -> ADerived;
-    template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Divide(Estimate<L, D>&& other) && -> ADerived;
 
     /// @brief In-place divide from a scalar estimate: @f$x_i \to \mathit{c}.x / x_i@f$.
     /// @note The operands are assumed independent.
@@ -431,15 +422,9 @@ public:
     template<CovarianceOption D>
     auto DivideInPlace(const Estimate<1, D>& c) & -> ADerived&;
     template<CovarianceOption D>
-    auto DivideInPlace(Estimate<1, D>&& c) & -> auto& { return DivideInPlace(c); }
-    template<CovarianceOption D>
     auto Divide(const Estimate<1, D>& c) const& -> ADerived;
     template<CovarianceOption D>
-    auto Divide(Estimate<1, D>&& c) const& -> ADerived;
-    template<CovarianceOption D>
     auto Divide(const Estimate<1, D>& c) && -> ADerived;
-    template<CovarianceOption D>
-    auto Divide(Estimate<1, D>&& c) && -> ADerived;
 
     /// @brief In-place divide: @f$x_i \to v_i / x_i@f$.
     template<typename AVec>
@@ -1167,7 +1152,7 @@ auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est.NegateInPlac
 /// @note The operands are assumed independent.
 /// @{
 
-#define MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(Op)                                       \
+#define MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(Op)                                              \
     template<int K, CovarianceOption C, int L, CovarianceOption D>                                             \
     auto Op(const Estimate<K, C>& lhs, const Estimate<L, D>& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>; \
                                                                                                                \
@@ -1179,14 +1164,6 @@ auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est.NegateInPlac
                                                                                                                \
     template<int K, CovarianceOption C, int L, CovarianceOption D>                                             \
     auto Op(Estimate<K, C>&& lhs, Estimate<L, D>&& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>;
-
-MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(operator+)
-MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(operator-)
-MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(operator*)
-MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(operator/)
-MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(pow)
-MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(Combine)
-#undef MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS
 
 #define MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(Op)                               \
     template<int K, CovarianceOption C, typename AVec>                                        \
@@ -1205,13 +1182,6 @@ MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(Combine)
         requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
     auto Op(const Eigen::MatrixBase<AVec>& lhs, Estimate<K, C>&& rhs) -> Estimate<K, C>;
 
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator+)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator-)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator*)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator/)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(pow)
-#undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS
-
 #define MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(Op)       \
     template<int K, CovarianceOption C>                               \
     auto Op(const Estimate<K, C>& lhs, double rhs) -> Estimate<K, C>; \
@@ -1225,11 +1195,30 @@ MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(pow)
     template<int K, CovarianceOption C>                               \
     auto Op(double lhs, Estimate<K, C>&& rhs) -> Estimate<K, C>;
 
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(Combine)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(operator+)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator+)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(operator+)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(operator-)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator-)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(operator-)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(operator*)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator*)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(operator*)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(operator/)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator/)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(operator/)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(pow)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(pow)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(pow)
+
+#undef MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS
+#undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS
 #undef MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS
 
 /// @}

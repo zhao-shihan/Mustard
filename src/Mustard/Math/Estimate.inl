@@ -145,36 +145,28 @@ template<int L, CovarianceOption D>
     requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
 auto EstimateBase<ADerived, K, C>::CombineInPlace(const Estimate<L, D>& other) & -> ADerived& {
     CheckVectorDimensionMatch(other.fX);
-    if constexpr (C == CovarianceOption::Full and D == CovarianceOption::Full) {
-        // Both Full: full matrix inversion
-        auto invSelf{fCov.inverse().eval()};
-        auto invOther{other.fCov.inverse().eval()};
-        auto newCov{(invSelf + invOther).inverse().eval()};
-        fX = newCov * (invSelf * fX + invOther * other.fX);
+    if constexpr (C == D and D == CovarianceOption::Full) {
+        // (A^{-1} + B^{-1})^{-1} = A (A + B)^{-1} B, avoids explicit inverses of dense matrices
+        auto newCov{(fCov * (fCov + other.fCov).ldlt().solve(other.fCov)).eval()};
+        fX = newCov * (fCov.ldlt().solve(fX) + other.fCov.ldlt().solve(other.fX));
         fCov = std::move(newCov);
-    } else if constexpr (C == CovarianceOption::Full and D == CovarianceOption::Diagonal) {
-        // Self Full, Other Diagonal
-        auto invSelf{fCov.inverse().eval()};
-        auto invVarOther{other.VarXpr().cwiseInverse().eval()};
-        auto invSum{invSelf.eval()};
-        invSum.diagonal() += invVarOther;
-        auto newCov{invSum.inverse().eval()};
-        fX = newCov * (invSelf * fX + invVarOther.cwiseProduct(other.fX));
+    } else if constexpr (C == CovarianceOption::Full) {
+        // (A^{-1} + B^{-1})^{-1} = A (A + B)^{-1} B, avoids explicit inverses of dense matrices
+        auto newCov{other.fCov.toDenseMatrix()};
+        newCov = fCov * (fCov + newCov).ldlt().solve(newCov);
+        fX = newCov * (fCov.ldlt().solve(fX) + other.fCov.inverse() * other.fX);
         fCov = std::move(newCov);
-    } else if constexpr (C == CovarianceOption::Diagonal and D == CovarianceOption::Full) {
-        // Self Diagonal, Other Full: use only variances from both
-        auto invVarSelf{VarXpr().cwiseInverse().eval()};
-        auto invVarOther{other.VarXpr().cwiseInverse().eval()};
-        auto newVar{(invVarSelf + invVarOther).cwiseInverse().eval()};
-        fX = newVar.cwiseProduct(invVarSelf.cwiseProduct(fX) + invVarOther.cwiseProduct(other.fX));
-        VarXpr() = newVar;
+    } else if constexpr (D == CovarianceOption::Full) {
+        // diag(A (A + B)^{-1} B) = A diag((A + B)^{-1} B) for diagonal A
+        CovarianceType newCov{(fCov * (fCov.toDenseMatrix() + other.fCov).ldlt().solve(other.fCov).diagonal().asDiagonal())};
+        fX = newCov * (fCov.inverse() * fX + other.fCov.ldlt().solve(other.fX));
+        fCov = std::move(newCov);
     } else {
-        // Both Diagonal: element-wise inverse-variance weighting
-        auto invVarSelf{VarXpr().cwiseInverse().eval()};
-        auto invVarOther{other.VarXpr().cwiseInverse().eval()};
-        auto newVar{(invVarSelf + invVarOther).cwiseInverse().eval()};
-        fX = newVar.cwiseProduct(invVarSelf.cwiseProduct(fX) + invVarOther.cwiseProduct(other.fX));
-        VarXpr() = newVar;
+        // Direct computation for diagonal matrices
+        const CovarianceType invCovX{fCov.inverse()};
+        const CovarianceType invCovY{other.fCov.inverse()};
+        fCov = (invCovX + invCovY).inverse();
+        fX = fCov * (invCovX * fX + invCovY * other.fX);
     }
     return Self();
 }
@@ -437,28 +429,6 @@ auto EstimateBase<ADerived, K, C>::DivideInPlace(const Estimate<L, D>& other) & 
     const auto invX{fX.cwiseInverse().eval()};
     fX = other.fX.cwiseProduct(invX);
     CovCwiseBinaryUpdate(other, fX.cwiseProduct(invX), invX);
-    return Self();
-}
-
-template<typename ADerived, int K, CovarianceOption C>
-    requires GoodStatisticDimension<K>::value
-template<int L, CovarianceOption D>
-    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::DivideInPlace(Estimate<L, D>&& other) & -> ADerived& {
-    CheckVectorDimensionMatch(other.fX);
-    if constexpr (std::equality_comparable_with<decltype(&other), decltype(this)>) {
-        if (&other == this) {
-            // use the lvalue version to avoid "aliasing" issue
-            Self() = Divide(other);
-            return Self();
-        }
-    }
-    // Cov = diag(-y/x^2)·Cov(x)·diag(-y/x^2) + diag(1/x)·Cov(y)·diag(1/x)
-    // We drop the minus sign since it gets squared anyway.
-    fX = fX.cwiseInverse();
-    other.ArrX() *= ArrX();
-    CovCwiseBinaryUpdate(other, other.fX.cwiseProduct(fX), fX);
-    fX = other.ArrX();
     return Self();
 }
 
@@ -1183,8 +1153,12 @@ template<typename AVec>
 auto EstimateBase<ADerived, K, C>::CovRankUpdate(double c, const Eigen::DenseBase<AVec>& uXpr) -> void {
     const auto& u{impl::ToMatXpr(uXpr)};
     if constexpr (C == CovarianceOption::Full) {
-        fCov.template selfadjointView<Eigen::Upper>().rankUpdate(u, c);
-        fCov.template triangularView<Eigen::Lower>() = fCov.template triangularView<Eigen::Upper>();
+        if constexpr (K <= 8 and K != Eigen::Dynamic) {
+            fCov += c * u * u.transpose();
+        } else {
+            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(u, c);
+            fCov.template triangularView<Eigen::Upper>() = fCov.transpose();
+        }
     } else {
         VarXpr() += c * u.cwiseSquare();
     }
@@ -1198,8 +1172,12 @@ auto EstimateBase<ADerived, K, C>::CovRankUpdate(double c, const Eigen::DenseBas
     const auto& u{impl::ToMatXpr(uXpr)};
     const auto& v{impl::ToMatXpr(vXpr)};
     if constexpr (C == CovarianceOption::Full) {
-        fCov.template selfadjointView<Eigen::Upper>().rankUpdate(u, v, c);
-        fCov.template triangularView<Eigen::Lower>() = fCov.template triangularView<Eigen::Upper>();
+        if constexpr (K <= 8 and K != Eigen::Dynamic) {
+            fCov += c * (u * v.transpose() + v * u.transpose());
+        } else {
+            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(u, v, c);
+            fCov.template triangularView<Eigen::Upper>() = fCov.transpose();
+        }
     } else {
         VarXpr() += 2 * c * u.cwiseProduct(v);
     }
@@ -1272,137 +1250,24 @@ Estimate<K, C>::Estimate(const Eigen::MatrixBase<AVec>& x, const Eigen::EigenBas
 // Forwarding functions definitions
 // =========================================================================
 
-#define MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(RetType, source, Op, operand) \
-    RetType result{source};                                                                   \
-    result.Op(operand);                                                                       \
+#define MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(source, Op, operand) \
+    result{source};                                                                  \
+    result.Op(operand);                                                              \
     return result; // NRVO should kick in to avoid unnecessary copy/move
-
-#define MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE impl::EstimateBinaryOpResult<K, C, L, D>
-
-#define MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(Op, FwdOpInPlace, BwdOpInPlace)                      \
-    template<int K, CovarianceOption C, int L, CovarianceOption D>                                                \
-    auto Op(const Estimate<K, C>& lhs, const Estimate<L, D>& rhs) -> MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE {   \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE,         \
-                                                                lhs, FwdOpInPlace, rhs)                           \
-    }                                                                                                             \
-                                                                                                                  \
-    template<int K, CovarianceOption C, int L, CovarianceOption D>                                                \
-    auto Op(const Estimate<K, C>& lhs, Estimate<L, D>&& rhs) -> MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE {        \
-        if constexpr (std::same_as<MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE, Estimate<L, D>>) {                   \
-            MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE,     \
-                                                                    std::move(rhs), BwdOpInPlace, lhs)            \
-        } else {                                                                                                  \
-            MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE,     \
-                                                                    lhs, FwdOpInPlace, std::move(rhs))            \
-        }                                                                                                         \
-    }                                                                                                             \
-                                                                                                                  \
-    template<int K, CovarianceOption C, int L, CovarianceOption D>                                                \
-    auto Op(Estimate<K, C>&& lhs, const Estimate<L, D>& rhs) -> MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE {        \
-        if constexpr (std::same_as<MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE, Estimate<K, C>>) {                   \
-            MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE,     \
-                                                                    std::move(lhs), FwdOpInPlace, rhs)            \
-        } else {                                                                                                  \
-            MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE,     \
-                                                                    rhs, BwdOpInPlace, std::move(lhs))            \
-        }                                                                                                         \
-    }                                                                                                             \
-                                                                                                                  \
-    template<int K, CovarianceOption C, int L, CovarianceOption D>                                                \
-    auto Op(Estimate<K, C>&& lhs, Estimate<L, D>&& rhs) -> MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE {             \
-        if constexpr (std::same_as<MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE, Estimate<K, C>> or                   \
-                      not std::same_as<MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE, Estimate<L, D>>) {               \
-            MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE,     \
-                                                                    std::move(lhs), FwdOpInPlace, std::move(rhs)) \
-        } else {                                                                                                  \
-            MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE,     \
-                                                                    std::move(rhs), BwdOpInPlace, std::move(lhs)) \
-        }                                                                                                         \
-    }
-
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(operator+, operator+=, operator+=)
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(operator-, operator-=, NegateAddInPlace)
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(operator*, operator*=, operator*=)
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(operator/, operator/=, DivideInPlace)
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(Combine, CombineInPlace, CombineInPlace)
-#undef MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS
-
-#define MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(Op, FwdOpInPlace, BwdOpInPlace)     \
-    template<int K, CovarianceOption C, typename AVec>                                         \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                      \
-    auto Op(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C> { \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, lhs, FwdOpInPlace, rhs)  \
-    }                                                                                          \
-                                                                                               \
-    template<int K, CovarianceOption C, typename AVec>                                         \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                      \
-    auto Op(Estimate<K, C>&& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C> {      \
-        return std::move(lhs.FwdOpInPlace(rhs));                                               \
-    }                                                                                          \
-                                                                                               \
-    template<typename AVec, int K, CovarianceOption C>                                         \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                      \
-    auto Op(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> Estimate<K, C> { \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, rhs, BwdOpInPlace, lhs)  \
-    }                                                                                          \
-                                                                                               \
-    template<typename AVec, int K, CovarianceOption C>                                         \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                      \
-    auto Op(const Eigen::MatrixBase<AVec>& lhs, Estimate<K, C>&& rhs) -> Estimate<K, C> {      \
-        return std::move(rhs.BwdOpInPlace(lhs));                                               \
-    }
-
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(operator+, operator+=, operator+=)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(operator-, operator-=, NegateAddInPlace)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(operator*, operator*=, operator*=)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(operator/, operator/=, DivideInPlace)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
-#undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS
-
-#define MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(Op, FwdOpInPlace, BwdOpInPlace)    \
-    template<int K, CovarianceOption C>                                                       \
-    auto Op(const Estimate<K, C>& lhs, double rhs) -> Estimate<K, C> {                        \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, lhs, FwdOpInPlace, rhs) \
-    }                                                                                         \
-                                                                                              \
-    template<int K, CovarianceOption C>                                                       \
-    auto Op(Estimate<K, C>&& lhs, double rhs) -> Estimate<K, C> {                             \
-        return std::move(lhs.FwdOpInPlace(rhs));                                              \
-    }                                                                                         \
-                                                                                              \
-    template<int K, CovarianceOption C>                                                       \
-    auto Op(double lhs, const Estimate<K, C>& rhs) -> Estimate<K, C> {                        \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, rhs, BwdOpInPlace, lhs) \
-    }                                                                                         \
-                                                                                              \
-    template<int K, CovarianceOption C>                                                       \
-    auto Op(double lhs, Estimate<K, C>&& rhs) -> Estimate<K, C> {                             \
-        return std::move(rhs.BwdOpInPlace(lhs));                                              \
-    }
-
-MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator+, operator+=, operator+=)
-MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator-, operator-=, NegateAddInPlace)
-MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator*, operator*=, operator*=)
-MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator/, operator/=, DivideInPlace)
-MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
-#undef MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS
-
-#undef MUSTARD_MATH_ESTIMATE_BINARY_OP_RET_TYPE
 
 namespace impl {
 
-#define MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Op, OpInPlace)                   \
-    template<typename ADerived, int K, CovarianceOption C>                                 \
-        requires GoodStatisticDimension<K>::value                                          \
-    auto EstimateBase<ADerived, K, C>::Op() const& -> ADerived {                           \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, Self(), OpInPlace, ) \
-    }                                                                                      \
-                                                                                           \
-    template<typename ADerived, int K, CovarianceOption C>                                 \
-        requires GoodStatisticDimension<K>::value                                          \
-    auto EstimateBase<ADerived, K, C>::Op() && -> ADerived {                               \
-        return std::move(OpInPlace());                                                     \
+#define MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Op, OpInPlace)                  \
+    template<typename ADerived, int K, CovarianceOption C>                                \
+        requires GoodStatisticDimension<K>::value                                         \
+    auto EstimateBase<ADerived, K, C>::Op() const& -> ADerived {                          \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(Self(), OpInPlace, ) \
+    }                                                                                     \
+                                                                                          \
+    template<typename ADerived, int K, CovarianceOption C>                                \
+        requires GoodStatisticDimension<K>::value                                         \
+    auto EstimateBase<ADerived, K, C>::Op() && -> ADerived {                              \
+        return std::move(OpInPlace());                                                    \
     }
 
 MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Abs, AbsInPlace)
@@ -1440,76 +1305,37 @@ MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Tan, TanInPlace)
 MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Tanh, TanhInPlace)
 #undef MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS
 
-#define MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Op, OpInPlace)               \
-    template<typename ADerived, int K, CovarianceOption C>                                      \
-        requires GoodStatisticDimension<K>::value                                               \
-    template<int L, CovarianceOption D>                                                         \
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)                          \
-    auto EstimateBase<ADerived, K, C>::Op(const Estimate<L, D>& other) const& -> ADerived {     \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, Self(), OpInPlace, other) \
-    }                                                                                           \
-                                                                                                \
-    template<typename ADerived, int K, CovarianceOption C>                                      \
-        requires GoodStatisticDimension<K>::value                                               \
-    template<int L, CovarianceOption D>                                                         \
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)                          \
-    auto EstimateBase<ADerived, K, C>::Op(const Estimate<L, D>& other) && -> ADerived {         \
-        return std::move(OpInPlace(other));                                                     \
-    }                                                                                           \
-                                                                                                \
-    template<typename ADerived, int K, CovarianceOption C>                                      \
-        requires GoodStatisticDimension<K>::value                                               \
-    template<CovarianceOption D>                                                                \
-    auto EstimateBase<ADerived, K, C>::Op(const Estimate<1, D>& c) const& -> ADerived {         \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, Self(), OpInPlace, c)     \
-    }                                                                                           \
-                                                                                                \
-    template<typename ADerived, int K, CovarianceOption C>                                      \
-        requires GoodStatisticDimension<K>::value                                               \
-    template<CovarianceOption D>                                                                \
-    auto EstimateBase<ADerived, K, C>::Op(const Estimate<1, D>& c) && -> ADerived {             \
-        return std::move(OpInPlace(c));                                                         \
+#define MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Op, OpInPlace)       \
+    template<typename ADerived, int K, CovarianceOption C>                                     \
+        requires GoodStatisticDimension<K>::value                                              \
+    template<int L, CovarianceOption D>                                                        \
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)                         \
+    auto EstimateBase<ADerived, K, C>::Op(const Estimate<L, D>& other) const& -> ADerived {    \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(Self(), OpInPlace, other) \
+    }                                                                                          \
+                                                                                               \
+    template<typename ADerived, int K, CovarianceOption C>                                     \
+        requires GoodStatisticDimension<K>::value                                              \
+    template<int L, CovarianceOption D>                                                        \
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)                         \
+    auto EstimateBase<ADerived, K, C>::Op(const Estimate<L, D>& other) && -> ADerived {        \
+        return std::move(OpInPlace(other));                                                    \
     }
 
-#define MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_WITH_RVALUE_OPERAND_DEFINITION(Op, OpInPlace)      \
-    MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Op, OpInPlace)                              \
-                                                                                                           \
-    template<typename ADerived, int K, CovarianceOption C>                                                 \
-        requires GoodStatisticDimension<K>::value                                                          \
-    template<int L, CovarianceOption D>                                                                    \
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)                                     \
-    auto EstimateBase<ADerived, K, C>::Op(Estimate<L, D>&& other) const& -> ADerived {                     \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, Self(), OpInPlace, std::move(other)) \
-    }                                                                                                      \
-                                                                                                           \
-    template<typename ADerived, int K, CovarianceOption C>                                                 \
-        requires GoodStatisticDimension<K>::value                                                          \
-    template<int L, CovarianceOption D>                                                                    \
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)                                     \
-    auto EstimateBase<ADerived, K, C>::Op(Estimate<L, D>&& other) && -> ADerived {                         \
-        return std::move(OpInPlace(std::move(other)));                                                     \
-    }                                                                                                      \
-                                                                                                           \
-    template<typename ADerived, int K, CovarianceOption C>                                                 \
-        requires GoodStatisticDimension<K>::value                                                          \
-    template<CovarianceOption D>                                                                           \
-    auto EstimateBase<ADerived, K, C>::Op(Estimate<1, D>&& other) const& -> ADerived {                     \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, Self(), OpInPlace, std::move(other)) \
-    }                                                                                                      \
-                                                                                                           \
-    template<typename ADerived, int K, CovarianceOption C>                                                 \
-        requires GoodStatisticDimension<K>::value                                                          \
-    template<CovarianceOption D>                                                                           \
-    auto EstimateBase<ADerived, K, C>::Op(Estimate<1, D>&& other) && -> ADerived {                         \
-        return std::move(OpInPlace(std::move(other)));                                                     \
+#define MUSTARD_MATH_ESTIMATE_SCALAR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Op, OpInPlace)   \
+    template<typename ADerived, int K, CovarianceOption C>                                 \
+        requires GoodStatisticDimension<K>::value                                          \
+    template<CovarianceOption D>                                                           \
+    auto EstimateBase<ADerived, K, C>::Op(const Estimate<1, D>& c) const& -> ADerived {    \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(Self(), OpInPlace, c) \
+    }                                                                                      \
+                                                                                           \
+    template<typename ADerived, int K, CovarianceOption C>                                 \
+        requires GoodStatisticDimension<K>::value                                          \
+    template<CovarianceOption D>                                                           \
+    auto EstimateBase<ADerived, K, C>::Op(const Estimate<1, D>& c) && -> ADerived {        \
+        return std::move(OpInPlace(c));                                                    \
     }
-
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_WITH_RVALUE_OPERAND_DEFINITION(Divide, DivideInPlace)
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(NegateAdd, NegateAddInPlace)
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Pow, PowInPlace)
-#undef MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_DEFINITION
-#undef MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_WITH_RVALUE_OPERAND_DEFINITION
 
 #define MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(Op, OpInPlace)                     \
     template<typename ADerived, int K, CovarianceOption C>                                          \
@@ -1517,7 +1343,7 @@ MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Pow, PowInPlace)
     template<typename AVec>                                                                         \
         requires(K != 1)                                                                            \
     auto EstimateBase<ADerived, K, C>::Op(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived { \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, Self(), OpInPlace, yXpr)      \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(Self(), OpInPlace, yXpr)       \
     }                                                                                               \
                                                                                                     \
     template<typename ADerived, int K, CovarianceOption C>                                          \
@@ -1528,33 +1354,158 @@ MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Pow, PowInPlace)
         return std::move(OpInPlace(yXpr));                                                          \
     }
 
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(Divide, DivideInPlace)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(NegateAdd, NegateAddInPlace)
-MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(Pow, PowInPlace)
-#undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION
-
-#define MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(Op, OpInPlace)             \
-    template<typename ADerived, int K, CovarianceOption C>                                  \
-        requires GoodStatisticDimension<K>::value                                           \
-    auto EstimateBase<ADerived, K, C>::Op(double c) const& -> ADerived {                    \
-        MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(auto, Self(), OpInPlace, c) \
-    }                                                                                       \
-                                                                                            \
-    template<typename ADerived, int K, CovarianceOption C>                                  \
-        requires GoodStatisticDimension<K>::value                                           \
-    auto EstimateBase<ADerived, K, C>::Op(double c) && -> ADerived {                        \
-        return std::move(OpInPlace(c));                                                     \
+#define MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(Op, OpInPlace)            \
+    template<typename ADerived, int K, CovarianceOption C>                                 \
+        requires GoodStatisticDimension<K>::value                                          \
+    auto EstimateBase<ADerived, K, C>::Op(double c) const& -> ADerived {                   \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(Self(), OpInPlace, c) \
+    }                                                                                      \
+                                                                                           \
+    template<typename ADerived, int K, CovarianceOption C>                                 \
+        requires GoodStatisticDimension<K>::value                                          \
+    auto EstimateBase<ADerived, K, C>::Op(double c) && -> ADerived {                       \
+        return std::move(OpInPlace(c));                                                    \
     }
 
-MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(Divide, DivideInPlace)
-MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(NegateAdd, NegateAddInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(NegateAdd, NegateAddInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(NegateAdd, NegateAddInPlace)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(NegateAdd, NegateAddInPlace)
+
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Divide, DivideInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Divide, DivideInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(Divide, DivideInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(Divide, DivideInPlace)
+
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Pow, PowInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Pow, PowInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(Pow, PowInPlace)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(Pow, PowInPlace)
+
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
+
+#undef MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION
+#undef MUSTARD_MATH_ESTIMATE_SCALAR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION
+#undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION
 #undef MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION
 
 } // namespace impl
 
+#define MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(Op, FwdOpInPlace, BwdOpInPlace)                    \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                              \
+    auto Op(const Estimate<K, C>& lhs, const Estimate<L, D>& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D> { \
+        impl::EstimateBinaryOpResult<K, C, L, D> MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(       \
+            lhs, FwdOpInPlace, rhs)                                                                             \
+    }                                                                                                           \
+                                                                                                                \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                              \
+    auto Op(const Estimate<K, C>& lhs, Estimate<L, D>&& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D> {      \
+        if constexpr (std::same_as<impl::EstimateBinaryOpResult<K, C, L, D>, Estimate<L, D>>) {                 \
+            impl::EstimateBinaryOpResult<K, C, L, D> MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(   \
+                std::move(rhs), BwdOpInPlace, lhs)                                                              \
+        } else {                                                                                                \
+            impl::EstimateBinaryOpResult<K, C, L, D> MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(   \
+                lhs, FwdOpInPlace, std::move(rhs))                                                              \
+        }                                                                                                       \
+    }                                                                                                           \
+                                                                                                                \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                              \
+    auto Op(Estimate<K, C>&& lhs, const Estimate<L, D>& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D> {      \
+        if constexpr (std::same_as<impl::EstimateBinaryOpResult<K, C, L, D>, Estimate<K, C>>) {                 \
+            impl::EstimateBinaryOpResult<K, C, L, D> MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(   \
+                std::move(lhs), FwdOpInPlace, rhs)                                                              \
+        } else {                                                                                                \
+            impl::EstimateBinaryOpResult<K, C, L, D> MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(   \
+                rhs, BwdOpInPlace, std::move(lhs))                                                              \
+        }                                                                                                       \
+    }                                                                                                           \
+                                                                                                                \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                              \
+    auto Op(Estimate<K, C>&& lhs, Estimate<L, D>&& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D> {           \
+        if constexpr (std::same_as<impl::EstimateBinaryOpResult<K, C, L, D>, Estimate<K, C>> or                 \
+                      not std::same_as<impl::EstimateBinaryOpResult<K, C, L, D>, Estimate<L, D>>) {             \
+            impl::EstimateBinaryOpResult<K, C, L, D> MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(   \
+                std::move(lhs), FwdOpInPlace, std::move(rhs))                                                   \
+        } else {                                                                                                \
+            impl::EstimateBinaryOpResult<K, C, L, D> MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(   \
+                std::move(rhs), BwdOpInPlace, std::move(lhs))                                                   \
+        }                                                                                                       \
+    }
+
+#define MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(Op, FwdOpInPlace, BwdOpInPlace)     \
+    template<int K, CovarianceOption C, typename AVec>                                         \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                      \
+    auto Op(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C> { \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(lhs, FwdOpInPlace, rhs)   \
+    }                                                                                          \
+                                                                                               \
+    template<int K, CovarianceOption C, typename AVec>                                         \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                      \
+    auto Op(Estimate<K, C>&& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C> {      \
+        return std::move(lhs.FwdOpInPlace(rhs));                                               \
+    }                                                                                          \
+                                                                                               \
+    template<typename AVec, int K, CovarianceOption C>                                         \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                      \
+    auto Op(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> Estimate<K, C> { \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(rhs, BwdOpInPlace, lhs)   \
+    }                                                                                          \
+                                                                                               \
+    template<typename AVec, int K, CovarianceOption C>                                         \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                      \
+    auto Op(const Eigen::MatrixBase<AVec>& lhs, Estimate<K, C>&& rhs) -> Estimate<K, C> {      \
+        return std::move(rhs.BwdOpInPlace(lhs));                                               \
+    }
+
+#define MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(Op, FwdOpInPlace, BwdOpInPlace)   \
+    template<int K, CovarianceOption C>                                                      \
+    auto Op(const Estimate<K, C>& lhs, double rhs) -> Estimate<K, C> {                       \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(lhs, FwdOpInPlace, rhs) \
+    }                                                                                        \
+                                                                                             \
+    template<int K, CovarianceOption C>                                                      \
+    auto Op(Estimate<K, C>&& lhs, double rhs) -> Estimate<K, C> {                            \
+        return std::move(lhs.FwdOpInPlace(rhs));                                             \
+    }                                                                                        \
+                                                                                             \
+    template<int K, CovarianceOption C>                                                      \
+    auto Op(double lhs, const Estimate<K, C>& rhs) -> Estimate<K, C> {                       \
+        auto MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(rhs, BwdOpInPlace, lhs) \
+    }                                                                                        \
+                                                                                             \
+    template<int K, CovarianceOption C>                                                      \
+    auto Op(double lhs, Estimate<K, C>&& rhs) -> Estimate<K, C> {                            \
+        return std::move(rhs.BwdOpInPlace(lhs));                                             \
+    }
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(Combine, CombineInPlace, CombineInPlace)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(operator+, operator+=, operator+=)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(operator+, operator+=, operator+=)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator+, operator+=, operator+=)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(operator-, operator-=, NegateAddInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(operator-, operator-=, NegateAddInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator-, operator-=, NegateAddInPlace)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(operator*, operator*=, operator*=)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(operator*, operator*=, operator*=)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator*, operator*=, operator*=)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(operator/, operator/=, DivideInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(operator/, operator/=, DivideInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator/, operator/=, DivideInPlace)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
+
+#undef MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS
+#undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS
+#undef MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS
 #undef MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY
 
 } // namespace Mustard::inline Math

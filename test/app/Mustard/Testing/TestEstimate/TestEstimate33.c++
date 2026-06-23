@@ -20,6 +20,8 @@
 #include "Mustard/Testing/TestEstimate/TestEstimate.h++"
 #include "Mustard/Testing/TestEstimate/TestEstimateCommon.h++"
 
+#include "Eigen/LU"
+
 #include <cstdlib>
 
 namespace Mustard::Testing {
