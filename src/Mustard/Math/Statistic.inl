@@ -116,6 +116,18 @@ auto StatisticBase<ADerived, K, C>::Fill(const Eigen::MatrixBase<AVec>& xXpr, do
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::Correlation(int i, int j) const -> double {
+    return Corr(i, j, [this](int a, int b) { return Covariance(a, b); }, [this](int a) { return Variance(a); });
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::CorrelationOfMean(int i, int j) const -> double {
+    return Corr(i, j, [this](int a, int b) { return CovarianceOfMean(a, b); }, [this](int a) { return VarianceOfMean(a); });
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
 template<int L, CovarianceOption D>
     requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
 auto StatisticBase<ADerived, K, C>::operator+=(const Statistic<L, D>& other) -> ADerived& {
@@ -171,21 +183,19 @@ auto StatisticBase<ADerived, K, C>::FromPOD(const PODType& data) -> void
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
-auto StatisticBase<ADerived, K, C>::Corr(int i, int j, auto (StatisticBase::*cov)(int, int) const->auto,
-                                         auto (StatisticBase::*var)(int) const->auto) const -> double {
+auto StatisticBase<ADerived, K, C>::Corr(int i, int j, auto cov, auto var) const -> double {
     if (i == j) {
         return 1;
     }
     if constexpr (C == CovarianceOption::Diagonal) {
         return 0;
     }
-    return (this->*cov)(i, j) / std::sqrt((this->*var)(i) * (this->*var)(j));
+    return cov(i, j) / std::sqrt(var(i) * var(j));
 }
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
-auto StatisticBase<ADerived, K, C>::Corr(auto (StatisticBase::*covXpr)() const->auto,
-                                         auto (StatisticBase::*varXpr)() const->auto) const -> CovarianceType {
+auto StatisticBase<ADerived, K, C>::Corr(auto covXpr, auto varXpr) const -> CovarianceType {
     if constexpr (C == CovarianceOption::Full) {
         const auto sigma{(this->*varXpr)().cwiseSqrt().cwiseInverse().eval()};
         auto corr{(sigma.asDiagonal() * (this->*covXpr)() * sigma.asDiagonal()).eval()};

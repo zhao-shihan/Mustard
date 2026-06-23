@@ -20,10 +20,25 @@
 
 namespace Mustard::Testing {
 
-class TestStatistic : public Application::Subprogram {
-public:
-    TestStatistic();
-    auto Main(int argc, char* argv[]) const -> int override;
-};
+#define MUSTARD_TESTING_TEST_STATISTIC(N)                        \
+    class TestStatistic##N : public Application::Subprogram {    \
+    public:                                                      \
+        TestStatistic##N();                                      \
+        auto Main(int argc, char* argv[]) const -> int override; \
+    };
+
+MUSTARD_TESTING_TEST_STATISTIC(0)
+MUSTARD_TESTING_TEST_STATISTIC(1)
+MUSTARD_TESTING_TEST_STATISTIC(2)
+MUSTARD_TESTING_TEST_STATISTIC(3)
+MUSTARD_TESTING_TEST_STATISTIC(4)
+MUSTARD_TESTING_TEST_STATISTIC(5)
+MUSTARD_TESTING_TEST_STATISTIC(6)
+MUSTARD_TESTING_TEST_STATISTIC(7)
+MUSTARD_TESTING_TEST_STATISTIC(8)
+MUSTARD_TESTING_TEST_STATISTIC(9)
+MUSTARD_TESTING_TEST_STATISTIC(10)
+
+#undef MUSTARD_TESTING_TEST_STATISTIC
 
 } // namespace Mustard::Testing

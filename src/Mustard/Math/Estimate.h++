@@ -273,6 +273,10 @@ public:
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator+=(const Estimate<L, D>& other) -> ADerived&;
+    /// @brief Element-wise addition of a scalar estimate to the value.
+    /// @note The operands are assumed independent.
+    template<CovarianceOption D>
+    auto operator+=(const Estimate<1, D>& c) -> ADerived&;
     /// @brief Element-wise addition of a vector to the value (covariance unchanged).
     template<typename AVec>
         requires(K != 1)
@@ -291,6 +295,10 @@ public:
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator-=(const Estimate<L, D>& other) -> ADerived&;
+    /// @brief Element-wise subtraction of a scalar estimate from the value.
+    /// @note The operands are assumed independent.
+    template<CovarianceOption D>
+    auto operator-=(const Estimate<1, D>& c) -> ADerived&;
     /// @brief Element-wise subtraction of a vector from the value (covariance unchanged).
     template<typename AVec>
         requires(K != 1)
@@ -307,6 +315,10 @@ public:
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator*=(const Estimate<L, D>& other) -> ADerived&;
+    /// @brief Element-wise multiplication by a scalar estimate.
+    /// @note The operands are assumed independent.
+    template<CovarianceOption D>
+    auto operator*=(const Estimate<1, D>& c) -> ADerived&;
     /// @brief Element-wise multiplication by a plain vector.
     template<typename AVec>
         requires(K != 1)
@@ -324,11 +336,15 @@ public:
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator/=(const Estimate<L, D>& other) -> ADerived&;
-    /// @brief Element-wise division by another estimate.
-    /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator/=(Estimate<L, D>&& other) -> ADerived&;
+    /// @brief Element-wise division by a scalar estimate.
+    /// @note The operands are assumed independent.
+    template<CovarianceOption D>
+    auto operator/=(const Estimate<1, D>& c) -> auto& { return Self() *= c.Inverse(); }
+    template<CovarianceOption D>
+    auto operator/=(Estimate<1, D>&& c) -> auto& { return Self() *= std::move(c).Inverse(); }
     /// @brief Element-wise division by a plain vector.
     template<typename AVec>
         requires(K != 1)
@@ -358,6 +374,15 @@ public:
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto NegateAdd(const Estimate<L, D>& other) && -> ADerived;
+
+    /// @brief In-place negate-and-add from a scalar estimate: @f$x \to \mathit{c}.x - x@f$.
+    /// @note The operands are assumed independent.
+    template<CovarianceOption D>
+    auto NegateAddInPlace(const Estimate<1, D>& c) & -> ADerived&;
+    template<CovarianceOption D>
+    auto NegateAdd(const Estimate<1, D>& c) const& -> ADerived;
+    template<CovarianceOption D>
+    auto NegateAdd(const Estimate<1, D>& c) && -> ADerived;
 
     /// @brief In-place negate-and-add: @f$x_i \to v_i - x_i@f$ (covariance unchanged).
     template<typename AVec>
@@ -399,6 +424,22 @@ public:
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto Divide(Estimate<L, D>&& other) && -> ADerived;
+
+    /// @brief In-place divide from a scalar estimate: @f$x_i \to \mathit{c}.x / x_i@f$.
+    /// @note The operands are assumed independent.
+    /// @note Rvalue overloads are intended to resolve ambiguity from Estimate<L, D> overloads.
+    template<CovarianceOption D>
+    auto DivideInPlace(const Estimate<1, D>& c) & -> ADerived&;
+    template<CovarianceOption D>
+    auto DivideInPlace(Estimate<1, D>&& c) & -> auto& { return DivideInPlace(c); }
+    template<CovarianceOption D>
+    auto Divide(const Estimate<1, D>& c) const& -> ADerived;
+    template<CovarianceOption D>
+    auto Divide(Estimate<1, D>&& c) const& -> ADerived;
+    template<CovarianceOption D>
+    auto Divide(const Estimate<1, D>& c) && -> ADerived;
+    template<CovarianceOption D>
+    auto Divide(Estimate<1, D>&& c) && -> ADerived;
 
     /// @brief In-place divide: @f$x_i \to v_i / x_i@f$.
     template<typename AVec>
@@ -623,6 +664,15 @@ public:
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto Pow(const Estimate<L, D>& other) && -> ADerived;
 
+    /// @brief In-place element-wise power with a scalar estimate exponent: @f$x_i \to x_i^{\mathit{c}}@f$.
+    /// @note The operands are assumed independent.
+    template<CovarianceOption D>
+    auto PowInPlace(const Estimate<1, D>& c) & -> ADerived&;
+    template<CovarianceOption D>
+    auto Pow(const Estimate<1, D>& c) const& -> ADerived;
+    template<CovarianceOption D>
+    auto Pow(const Estimate<1, D>& c) && -> ADerived;
+
     /// @brief In-place element-wise power: @f$x_i \to x_i^{\mathit{expo}_i}@f$.
     template<typename AVec>
         requires(K != 1)
@@ -650,6 +700,15 @@ public:
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto Exp(const Estimate<L, D>& other) && -> ADerived;
+
+    /// @brief In-place element-wise power from a scalar estimate base: @f$x_i \to \mathit{c}^{x_i}@f$.
+    /// @note The operands are assumed independent.
+    template<CovarianceOption D>
+    auto ExpInPlace(const Estimate<1, D>& c) & -> ADerived&;
+    template<CovarianceOption D>
+    auto Exp(const Estimate<1, D>& c) const& -> ADerived;
+    template<CovarianceOption D>
+    auto Exp(const Estimate<1, D>& c) && -> ADerived;
 
     /// @brief In-place element-wise power from a vector base: @f$x_i \to \mathit{base}_i^{x_i}@f$.
     template<typename AVec>
@@ -838,12 +897,18 @@ private:
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto CopyFrom(const EstimateBase<AOther, L, D>& other) & -> ADerived&;
 
+    template<typename AVec>
+        requires(AVec::ColsAtCompileTime == 1)
+    auto CovRankUpdate(double c, const Eigen::DenseBase<AVec>& uXpr) -> void;
+    template<typename AVecU, typename AVecV>
+        requires(AVecU::ColsAtCompileTime == 1 and AVecV::ColsAtCompileTime == 1)
+    auto CovRankUpdate(double c, const Eigen::DenseBase<AVecU>& uXpr, const Eigen::DenseBase<AVecV>& vXpr) -> void;
     template<typename AJac>
         requires(AJac::ColsAtCompileTime == 1)
-    auto CwiseUnaryUpdateCov(const Eigen::DenseBase<AJac>& diagJacXpr) -> void;
+    auto CovCwiseUnaryUpdate(const Eigen::DenseBase<AJac>& diagJacXpr) -> void;
     template<int L, CovarianceOption D, typename AJacX, typename AJacY>
         requires(AJacX::ColsAtCompileTime == 1 and AJacY::ColsAtCompileTime == 1)
-    auto CwiseBinaryUpdateCov(const Estimate<L, D>& other,
+    auto CovCwiseBinaryUpdate(const Estimate<L, D>& other,
                               const Eigen::DenseBase<AJacX>& diagJacXXpr,
                               const Eigen::DenseBase<AJacY>& diagJacYXpr) -> void;
 

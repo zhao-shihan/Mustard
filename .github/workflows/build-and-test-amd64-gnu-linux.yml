@@ -96,7 +96,7 @@ jobs:
         test:
           - TestCLHEPXMT1993732-TestCLHEPXMT1993764-TestCLHEPXXoshiro256StarStar-TestCLHEPXXoshiro512StarStar
           - TestCreateTemporaryFile-TestCreateTemporaryFile
-          - TestEstimate-TestStatistic
+          - TestEstimate0-TestEstimate1-TestEstimate2-TestEstimate3-TestEstimate4-TestEstimate5-TestEstimate6-TestEstimate7-TestEstimate8-TestEstimate9-TestEstimate10-TestEstimate11-TestEstimate12-TestEstimate13-TestEstimate14-TestEstimate15-TestEstimate16-TestEstimate17-TestEstimate18-TestEstimate19-TestEstimate20-TestEstimate21-TestEstimate22-TestEstimate23-TestEstimate24-TestEstimate25-TestEstimate26-TestEstimate27-TestEstimate28-TestEstimate29-TestEstimate30-TestEstimate31-TestEstimate32-TestEstimate33
           - TestExecutor-TestExecutor
           - TestExecutorSequential
           - TestFieldTypeName
@@ -111,6 +111,7 @@ jobs:
           - TestSingleRDFEntryReader-TestSingleRDFEntryProcessor-TestSingleRDFEntryProcessor
           - TestSingleRDFEventReader-TestSingleRDFEventProcessor-TestSingleRDFEventProcessor
           - TestSingleton-TestSingleton
+          - TestStatistic0-TestStatistic1-TestStatistic2-TestStatistic3-TestStatistic4-TestStatistic5-TestStatistic6-TestStatistic7-TestStatistic8-TestStatistic9-TestStatistic10
           - TestVectorConcept
           - TestXoshiro256Plus-TestXoshiro256PlusPlus-TestXoshiro256StarStar-TestXoshiro512Plus-TestXoshiro512PlusPlus-TestXoshiro512StarStar
     container:
@@ -146,9 +147,41 @@ jobs:
                   ./MustardTest TestCreateTemporaryFile
                   parexec --use-hwthreads ./MustardTest TestCreateTemporaryFile
                   ;;
-                "TestEstimate-TestStatistic")
-                  ./MustardTest TestEstimate
-                  ./MustardTest TestStatistic
+                "TestEstimate0-TestEstimate1-TestEstimate2-TestEstimate3-TestEstimate4-TestEstimate5-TestEstimate6-TestEstimate7-TestEstimate8-TestEstimate9-TestEstimate10-TestEstimate11-TestEstimate12-TestEstimate13-TestEstimate14-TestEstimate15-TestEstimate16-TestEstimate17-TestEstimate18-TestEstimate19-TestEstimate20-TestEstimate21-TestEstimate22-TestEstimate23-TestEstimate24-TestEstimate25-TestEstimate26-TestEstimate27-TestEstimate28-TestEstimate29-TestEstimate30-TestEstimate31-TestEstimate32-TestEstimate33")
+                  ./MustardTest TestEstimate0
+                  ./MustardTest TestEstimate1
+                  ./MustardTest TestEstimate2
+                  ./MustardTest TestEstimate3
+                  ./MustardTest TestEstimate4
+                  ./MustardTest TestEstimate5
+                  ./MustardTest TestEstimate6
+                  ./MustardTest TestEstimate7
+                  ./MustardTest TestEstimate8
+                  ./MustardTest TestEstimate9
+                  ./MustardTest TestEstimate10
+                  ./MustardTest TestEstimate11
+                  ./MustardTest TestEstimate12
+                  ./MustardTest TestEstimate13
+                  ./MustardTest TestEstimate14
+                  ./MustardTest TestEstimate15
+                  ./MustardTest TestEstimate16
+                  ./MustardTest TestEstimate17
+                  ./MustardTest TestEstimate18
+                  ./MustardTest TestEstimate19
+                  ./MustardTest TestEstimate20
+                  ./MustardTest TestEstimate21
+                  ./MustardTest TestEstimate22
+                  ./MustardTest TestEstimate23
+                  ./MustardTest TestEstimate24
+                  ./MustardTest TestEstimate25
+                  ./MustardTest TestEstimate26
+                  ./MustardTest TestEstimate27
+                  ./MustardTest TestEstimate28
+                  ./MustardTest TestEstimate29
+                  ./MustardTest TestEstimate30
+                  ./MustardTest TestEstimate31
+                  ./MustardTest TestEstimate32
+                  ./MustardTest TestEstimate33
                   ;;
                 "TestExecutor-TestExecutor")
                   ./MustardTest TestExecutor
@@ -211,6 +244,19 @@ jobs:
                 "TestSingleton-TestSingleton")
                   ./MustardTest TestSingleton
                   parexec --use-hwthreads ./MustardTest TestSingleton
+                  ;;
+                "TestStatistic0-TestStatistic1-TestStatistic2-TestStatistic3-TestStatistic4-TestStatistic5-TestStatistic6-TestStatistic7-TestStatistic8-TestStatistic9-TestStatistic10")
+                  ./MustardTest TestStatistic0
+                  ./MustardTest TestStatistic1
+                  ./MustardTest TestStatistic2
+                  ./MustardTest TestStatistic3
+                  ./MustardTest TestStatistic4
+                  ./MustardTest TestStatistic5
+                  ./MustardTest TestStatistic6
+                  ./MustardTest TestStatistic7
+                  ./MustardTest TestStatistic8
+                  ./MustardTest TestStatistic9
+                  ./MustardTest TestStatistic10
                   ;;
                 "TestVectorConcept")
                   ./MustardTest TestVectorConcept

@@ -21,11 +21,75 @@ echo "  -> ./MustardTest TestCreateTemporaryFile"
 echo "  -> parexec ./MustardTest TestCreateTemporaryFile"
 parexec ./MustardTest TestCreateTemporaryFile
 
-echo "Running TestEstimate/TestStatistic..."
-echo "  -> ./MustardTest TestEstimate"
-./MustardTest TestEstimate
-echo "  -> ./MustardTest TestStatistic"
-./MustardTest TestStatistic
+echo "Running TestEstimate0/TestEstimate1/TestEstimate2/TestEstimate3/TestEstimate4/TestEstimate5/TestEstimate6/TestEstimate7/TestEstimate8/TestEstimate9/TestEstimate10/TestEstimate11/TestEstimate12/TestEstimate13/TestEstimate14/TestEstimate15/TestEstimate16/TestEstimate17/TestEstimate18/TestEstimate19/TestEstimate20/TestEstimate21/TestEstimate22/TestEstimate23/TestEstimate24/TestEstimate25/TestEstimate26/TestEstimate27/TestEstimate28/TestEstimate29/TestEstimate30/TestEstimate31/TestEstimate32/TestEstimate33..."
+echo "  -> ./MustardTest TestEstimate0"
+./MustardTest TestEstimate0
+echo "  -> ./MustardTest TestEstimate1"
+./MustardTest TestEstimate1
+echo "  -> ./MustardTest TestEstimate2"
+./MustardTest TestEstimate2
+echo "  -> ./MustardTest TestEstimate3"
+./MustardTest TestEstimate3
+echo "  -> ./MustardTest TestEstimate4"
+./MustardTest TestEstimate4
+echo "  -> ./MustardTest TestEstimate5"
+./MustardTest TestEstimate5
+echo "  -> ./MustardTest TestEstimate6"
+./MustardTest TestEstimate6
+echo "  -> ./MustardTest TestEstimate7"
+./MustardTest TestEstimate7
+echo "  -> ./MustardTest TestEstimate8"
+./MustardTest TestEstimate8
+echo "  -> ./MustardTest TestEstimate9"
+./MustardTest TestEstimate9
+echo "  -> ./MustardTest TestEstimate10"
+./MustardTest TestEstimate10
+echo "  -> ./MustardTest TestEstimate11"
+./MustardTest TestEstimate11
+echo "  -> ./MustardTest TestEstimate12"
+./MustardTest TestEstimate12
+echo "  -> ./MustardTest TestEstimate13"
+./MustardTest TestEstimate13
+echo "  -> ./MustardTest TestEstimate14"
+./MustardTest TestEstimate14
+echo "  -> ./MustardTest TestEstimate15"
+./MustardTest TestEstimate15
+echo "  -> ./MustardTest TestEstimate16"
+./MustardTest TestEstimate16
+echo "  -> ./MustardTest TestEstimate17"
+./MustardTest TestEstimate17
+echo "  -> ./MustardTest TestEstimate18"
+./MustardTest TestEstimate18
+echo "  -> ./MustardTest TestEstimate19"
+./MustardTest TestEstimate19
+echo "  -> ./MustardTest TestEstimate20"
+./MustardTest TestEstimate20
+echo "  -> ./MustardTest TestEstimate21"
+./MustardTest TestEstimate21
+echo "  -> ./MustardTest TestEstimate22"
+./MustardTest TestEstimate22
+echo "  -> ./MustardTest TestEstimate23"
+./MustardTest TestEstimate23
+echo "  -> ./MustardTest TestEstimate24"
+./MustardTest TestEstimate24
+echo "  -> ./MustardTest TestEstimate25"
+./MustardTest TestEstimate25
+echo "  -> ./MustardTest TestEstimate26"
+./MustardTest TestEstimate26
+echo "  -> ./MustardTest TestEstimate27"
+./MustardTest TestEstimate27
+echo "  -> ./MustardTest TestEstimate28"
+./MustardTest TestEstimate28
+echo "  -> ./MustardTest TestEstimate29"
+./MustardTest TestEstimate29
+echo "  -> ./MustardTest TestEstimate30"
+./MustardTest TestEstimate30
+echo "  -> ./MustardTest TestEstimate31"
+./MustardTest TestEstimate31
+echo "  -> ./MustardTest TestEstimate32"
+./MustardTest TestEstimate32
+echo "  -> ./MustardTest TestEstimate33"
+./MustardTest TestEstimate33
 
 echo "Running TestExecutor/TestExecutor..."
 echo "  -> ./MustardTest TestExecutor"
@@ -122,6 +186,30 @@ echo "  -> ./MustardTest TestSingleton"
 ./MustardTest TestSingleton
 echo "  -> parexec ./MustardTest TestSingleton"
 parexec ./MustardTest TestSingleton
+
+echo "Running TestStatistic0/TestStatistic1/TestStatistic2/TestStatistic3/TestStatistic4/TestStatistic5/TestStatistic6/TestStatistic7/TestStatistic8/TestStatistic9/TestStatistic10..."
+echo "  -> ./MustardTest TestStatistic0"
+./MustardTest TestStatistic0
+echo "  -> ./MustardTest TestStatistic1"
+./MustardTest TestStatistic1
+echo "  -> ./MustardTest TestStatistic2"
+./MustardTest TestStatistic2
+echo "  -> ./MustardTest TestStatistic3"
+./MustardTest TestStatistic3
+echo "  -> ./MustardTest TestStatistic4"
+./MustardTest TestStatistic4
+echo "  -> ./MustardTest TestStatistic5"
+./MustardTest TestStatistic5
+echo "  -> ./MustardTest TestStatistic6"
+./MustardTest TestStatistic6
+echo "  -> ./MustardTest TestStatistic7"
+./MustardTest TestStatistic7
+echo "  -> ./MustardTest TestStatistic8"
+./MustardTest TestStatistic8
+echo "  -> ./MustardTest TestStatistic9"
+./MustardTest TestStatistic9
+echo "  -> ./MustardTest TestStatistic10"
+./MustardTest TestStatistic10
 
 echo "Running TestVectorConcept..."
 echo "  -> ./MustardTest TestVectorConcept"

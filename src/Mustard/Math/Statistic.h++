@@ -209,7 +209,7 @@ public:
     ///        @f$\rho_{ij} = \operatorname{Cov}_{ij} / \sqrt{\operatorname{Var}_i \operatorname{Var}_j}@f$.
     /// @param i First component index (0-based)
     /// @param j Second component index (0-based)
-    auto Correlation(int i, int j) const -> auto { return Corr(i, j, &StatisticBase::Covariance, &StatisticBase::Variance); }
+    auto Correlation(int i, int j) const -> double;
     /// @brief Sample variance of the i-th component, @f$\sigma_i^2 = \operatorname{Cov}_{ii}@f$.
     /// @param i Component index (0-based)
     auto Variance(int i) const -> auto { return Covariance(i, i); }
@@ -243,7 +243,7 @@ public:
     ///        @f$\rho_{\bar{x},ij} = \operatorname{Cov}(\bar{x})_{ij} / \sqrt{\operatorname{Var}(\bar{x})_i \operatorname{Var}(\bar{x})_j}@f$.
     /// @param i First component index (0-based)
     /// @param j Second component index (0-based)
-    auto CorrelationOfMean(int i, int j) const -> auto { return Corr(i, j, &StatisticBase::CovarianceOfMean, &StatisticBase::VarianceOfMean); }
+    auto CorrelationOfMean(int i, int j) const -> double;
     /// @brief Variance of the sample mean for the i-th component.
     /// @param i Component index (0-based)
     auto VarianceOfMean(int i) const -> auto { return CovarianceOfMean(i, i); }
@@ -319,11 +319,9 @@ protected:
     auto CovMeanXpr() const -> auto { return CovMeanCoeff() * fM2; }
 
     /// @brief Sample correlation helper
-    auto Corr(int i, int j, auto (StatisticBase::*cov)(int, int) const->auto,
-              auto (StatisticBase::*var)(int) const->auto) const -> double;
+    auto Corr(int i, int j, auto cov, auto var) const -> double;
     /// @brief Sample correlation helper
-    auto Corr(auto (StatisticBase::*covXpr)() const->auto,
-              auto (StatisticBase::*varXpr)() const->auto) const -> CovarianceType;
+    auto Corr(auto covXpr, auto varXpr) const -> CovarianceType;
 
     /// @brief Accumulate the @f$M_2@f$ cross-term from a weighted deviation.
     /// @param otherW  Weight of the incoming data (@f$w_i@f$ or @f$W_B@f$)

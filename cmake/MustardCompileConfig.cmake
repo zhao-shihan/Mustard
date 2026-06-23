@@ -183,10 +183,16 @@ if(MUSTARD_USE_FFTW)
     list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_FFTW_DEFAULT=1)
 endif()
 
+# Suppress a false warning from Eigen.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-array-bounds)
+endif()
+
 # =============================================================================
 # GTL-induced compile options for Mustard
 # =============================================================================
 
+# Suppress a warning from GTL.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-interference-size)
 endif()
