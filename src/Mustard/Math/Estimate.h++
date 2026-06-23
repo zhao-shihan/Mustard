@@ -21,6 +21,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "Eigen/Core"
+#include "Eigen/LU"
 #include "unsupported/Eigen/SpecialFunctions"
 
 #include "mplr/mplr.hpp"
@@ -241,6 +242,27 @@ public:
     /// @brief Per-component relative uncertainty vector.
     auto RelativeUncertainty() const -> auto { return StdDevXpr().cwiseQuotient(fX.cwiseAbs()).eval(); }
 
+    /// @name Statistical operations
+    /// @{
+
+    /// @brief In-place combination of two independent estimates using inverse-covariance weighting.
+    ///
+    /// Merges @f$\mathit{other}@f$ into @c *this using the Best Linear Unbiased Estimator (BLUE) formula:
+    /// @f[
+    /// \Sigma = (\Sigma_{\mathrm{self}}^{-1} + \Sigma_{\mathrm{other}}^{-1})^{-1}
+    /// @f]
+    /// @f[
+    /// \mu = \Sigma \cdot (\Sigma_{\mathrm{self}}^{-1} \mu_{\mathrm{self}} + \Sigma_{\mathrm{other}}^{-1} \mu_{\mathrm{other}})
+    /// @f]
+    ///
+    /// @param other Another independent estimate of the same quantity
+    /// @return Reference to @c *this
+    /// @note The operands are assumed independent.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto CombineInPlace(const Estimate<L, D>& other) & -> ADerived&;
+
+    /// @}
     /// @name `operator+=`
     /// @{
 
@@ -917,6 +939,7 @@ public:
     using Base::AtanInPlace;
     using Base::Cbrt;
     using Base::CbrtInPlace;
+    using Base::CombineInPlace;
     using Base::Cos;
     using Base::Cosh;
     using Base::CoshInPlace;
@@ -1079,7 +1102,7 @@ auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est.NegateInPlac
 /// @note The operands are assumed independent.
 /// @{
 
-#define MUSTARD_MATH_ESTIMATE_BINARY_OP_DECLARATIONS(Op)                                                       \
+#define MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(Op)                                       \
     template<int K, CovarianceOption C, int L, CovarianceOption D>                                             \
     auto Op(const Estimate<K, C>& lhs, const Estimate<L, D>& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>; \
                                                                                                                \
@@ -1090,42 +1113,59 @@ auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est.NegateInPlac
     auto Op(Estimate<K, C>&& lhs, const Estimate<L, D>& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>;      \
                                                                                                                \
     template<int K, CovarianceOption C, int L, CovarianceOption D>                                             \
-    auto Op(Estimate<K, C>&& lhs, Estimate<L, D>&& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>;           \
-                                                                                                               \
-    template<int K, CovarianceOption C, typename AVec>                                                         \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                      \
-    auto Op(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C>;                  \
-                                                                                                               \
-    template<int K, CovarianceOption C, typename AVec>                                                         \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                      \
-    auto Op(Estimate<K, C>&& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C>;                       \
-                                                                                                               \
-    template<typename AVec, int K, CovarianceOption C>                                                         \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                      \
-    auto Op(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> Estimate<K, C>;                  \
-                                                                                                               \
-    template<typename AVec, int K, CovarianceOption C>                                                         \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                      \
-    auto Op(const Eigen::MatrixBase<AVec>& lhs, Estimate<K, C>&& rhs) -> Estimate<K, C>;                       \
-                                                                                                               \
-    template<int K, CovarianceOption C>                                                                        \
-    auto Op(const Estimate<K, C>& lhs, double rhs) -> Estimate<K, C>;                                          \
-                                                                                                               \
-    template<int K, CovarianceOption C>                                                                        \
-    auto Op(Estimate<K, C>&& lhs, double rhs) -> Estimate<K, C>;                                               \
-                                                                                                               \
-    template<int K, CovarianceOption C>                                                                        \
-    auto Op(double lhs, const Estimate<K, C>& rhs) -> Estimate<K, C>;                                          \
-                                                                                                               \
-    template<int K, CovarianceOption C>                                                                        \
+    auto Op(Estimate<K, C>&& lhs, Estimate<L, D>&& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>;
+
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(operator+)
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(operator-)
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(operator*)
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(operator/)
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(pow)
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS(Combine)
+#undef MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_OP_DECLARATIONS
+
+#define MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(Op)                               \
+    template<int K, CovarianceOption C, typename AVec>                                        \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
+    auto Op(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C>; \
+                                                                                              \
+    template<int K, CovarianceOption C, typename AVec>                                        \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
+    auto Op(Estimate<K, C>&& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C>;      \
+                                                                                              \
+    template<typename AVec, int K, CovarianceOption C>                                        \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
+    auto Op(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> Estimate<K, C>; \
+                                                                                              \
+    template<typename AVec, int K, CovarianceOption C>                                        \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
+    auto Op(const Eigen::MatrixBase<AVec>& lhs, Estimate<K, C>&& rhs) -> Estimate<K, C>;
+
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator+)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator-)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator*)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator/)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(pow)
+#undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS
+
+#define MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(Op)       \
+    template<int K, CovarianceOption C>                               \
+    auto Op(const Estimate<K, C>& lhs, double rhs) -> Estimate<K, C>; \
+                                                                      \
+    template<int K, CovarianceOption C>                               \
+    auto Op(Estimate<K, C>&& lhs, double rhs) -> Estimate<K, C>;      \
+                                                                      \
+    template<int K, CovarianceOption C>                               \
+    auto Op(double lhs, const Estimate<K, C>& rhs) -> Estimate<K, C>; \
+                                                                      \
+    template<int K, CovarianceOption C>                               \
     auto Op(double lhs, Estimate<K, C>&& rhs) -> Estimate<K, C>;
 
-MUSTARD_MATH_ESTIMATE_BINARY_OP_DECLARATIONS(operator+)
-MUSTARD_MATH_ESTIMATE_BINARY_OP_DECLARATIONS(operator-)
-MUSTARD_MATH_ESTIMATE_BINARY_OP_DECLARATIONS(operator*)
-MUSTARD_MATH_ESTIMATE_BINARY_OP_DECLARATIONS(operator/)
-MUSTARD_MATH_ESTIMATE_BINARY_OP_DECLARATIONS(pow)
-#undef MUSTARD_MATH_ESTIMATE_BINARY_OP_DECLARATIONS
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(operator+)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(operator-)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(operator*)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(operator/)
+MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(pow)
+#undef MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS
 
 /// @}
 /// @name Element-wise math functions
