@@ -1,5 +1,7 @@
 **/.cache/
 **/.ipynb_checkpoints/
+**/.kilo/
+**/.opencode/
 **/.temp/
 **/.tmp/
 **/.vs/
