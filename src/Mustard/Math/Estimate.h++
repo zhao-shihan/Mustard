@@ -98,12 +98,10 @@ namespace impl {
 /// @tparam C Covariance option (`CovarianceOption::Full` or `Diagonal`)
 ///
 /// @note When two `Estimate` objects with different `CovarianceOption` interact,
-///       the result type's covariance option is `Full` if either operand is `Full`
-///       (see `EstimateBinaryOpResult`). However, operations that merge covariances
-///       (e.g., `operator+=`, `operator-=`) only preserve off-diagonal elements
-///       when *both* operands are `Full`. If either operand is `Diagonal`, any
-///       off-diagonal elements from a `Full` operand are discarded — only the
-///       diagonal (variances) participates in the merge.
+///       a `Diagonal` operand is treated as a covariance matrix whose off-diagonal
+///       elements are zero. The full covariance propagation formula is applied
+///       using this representation, and off-diagonal elements are discarded from
+///       the result when the result type is `Diagonal` (see `EstimateBinaryOpResult`).
 ///
 /// @note All binary operations between two `Estimate` objects (including
 ///       `operator+=`, `operator-=`, `operator*=`, `operator/=`, `Dot`,
@@ -1106,9 +1104,9 @@ namespace impl {
 /// The result covariance option is `Full` if either operand stores the full covariance
 /// matrix, and `Diagonal` only if both are diagonal.
 ///
-/// @note Although the result type may be `Full`, the actual off-diagonal covariance
-///       information in the result only comes from operands that store it. A `Diagonal`
-///       operand contributes only variance information to the result.
+/// @note A `Diagonal` operand is treated as having zero off-diagonal covariance
+///       elements in the computation. When the result type is `Diagonal`,
+///       off-diagonal elements are discarded from the computed result.
 ///
 /// @tparam K Left-hand dimension
 /// @tparam C Left-hand covariance option
