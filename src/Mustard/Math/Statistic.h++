@@ -196,10 +196,10 @@ public:
 
     /// @brief Weighted sum of the i-th component, @f$M_i = \sum w_k x_{k,i}@f$.
     /// @param i Component index (0-based)
-    auto Sum(int i) const -> auto { return fM.coeff(i); }
+    auto Sum(int i) const -> auto { return fM[i]; }
     /// @brief Arithmetic mean of the i-th component, @f$\bar{x}_i = M_i / W@f$.
     /// @param i Component index (0-based)
-    auto Mean(int i) const -> auto { return fM.coeff(i) / fW; }
+    auto Mean(int i) const -> auto { return fM[i] / fW; }
     /// @brief Sample covariance between components i and j,
     ///        @f$\operatorname{Cov}_{ij} = \frac{W}{W^2 - W_2} M_{2,ij}@f$.
     /// @param i First component index (0-based)
