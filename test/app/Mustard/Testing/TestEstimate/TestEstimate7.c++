@@ -150,7 +150,6 @@ constexpr auto sec5Divide{[]<int K, CovarianceOption C>() {
     const auto v{MakeTestValue<K, C>(dim)};
     const auto cov{MakeTestCov<K, C>(dim)};
 
-    auto e1{MakeEstimate<K, C>(v, cov)};
     auto e2{MakeEstimate<K, C>(v, cov)};
 
     // DivideInPlace(e2)
