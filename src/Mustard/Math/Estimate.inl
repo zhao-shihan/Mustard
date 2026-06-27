@@ -1221,6 +1221,159 @@ auto EstimateBase<ADerived, K, C>::Normalize() & -> ADerived& {
 }
 
 // -----------------------------------------------------------------------------
+// Block operations
+// -----------------------------------------------------------------------------
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int L, CovarianceOption D>
+    requires GoodStatisticDimension<L>::value
+auto EstimateBase<ADerived, K, C>::Concat(const Estimate<L, D>& other) const -> EstimateConcatResult<K, C, L, D> {
+    using ResultType = EstimateConcatResult<K, C, L, D>;
+    const auto setResult{[this, &other](ResultType& result) {
+        const auto dim1{Dimension()};
+        const auto dim2{other.Dimension()};
+        result.fX.head(dim1) = fX;
+        result.fX.tail(dim2) = other.fX;
+        if constexpr (typename ResultType::FullCovariance{}) {
+            if constexpr (C == CovarianceOption::Full) {
+                result.fCov.topLeftCorner(dim1, dim1) = fCov;
+            } else {
+                result.fCov.topLeftCorner(dim1, dim1).setZero();
+                result.fCov.topLeftCorner(dim1, dim1).diagonal() = VarXpr();
+            }
+            if constexpr (D == CovarianceOption::Full) {
+                result.fCov.bottomRightCorner(dim2, dim2) = other.fCov;
+            } else {
+                result.fCov.bottomRightCorner(dim2, dim2).setZero();
+                result.fCov.bottomRightCorner(dim2, dim2).diagonal() = other.VarXpr();
+            }
+        } else {
+            result.fCov.diagonal().head(dim1) = VarXpr();
+            result.fCov.diagonal().tail(dim2) = other.VarXpr();
+        }
+    }};
+    if constexpr (typename ResultType::StaticDimension{}) {
+        ResultType result;
+        setResult(result);
+        return result;
+    } else {
+        ResultType result{Dimension() + other.Dimension()};
+        setResult(result);
+        return result;
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto EstimateBase<ADerived, K, C>::Head(int n) const -> Estimate<Eigen::Dynamic, C>
+    requires(K != 1) {
+    if (n <= 0 or n > Dimension()) {
+        Throw<std::out_of_range>(fmt::format("n={} out of range [1, {}]", n, Dimension()));
+    }
+    Estimate<Eigen::Dynamic, C> result{n};
+    result.fX = fX.head(n);
+    if constexpr (C == CovarianceOption::Full) {
+        result.fCov = fCov.topLeftCorner(n, n);
+    } else {
+        result.fCov.diagonal() = VarXpr().head(n);
+    }
+    return result;
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int N>
+    requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+auto EstimateBase<ADerived, K, C>::Head() const -> Estimate<N, C> {
+    if constexpr (K == Eigen::Dynamic) {
+        if (N > Dimension()) {
+            Throw<std::out_of_range>(fmt::format("N exceeds dimension {}", N, Dimension()));
+        }
+    }
+    Estimate<N, C> result;
+    result.fX = fX.template head<N>();
+    if constexpr (C == CovarianceOption::Full) {
+        result.fCov = fCov.template topLeftCorner<N, N>();
+    } else {
+        result.fCov.diagonal() = VarXpr().template head<N>();
+    }
+    return result;
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto EstimateBase<ADerived, K, C>::Tail(int n) const -> Estimate<Eigen::Dynamic, C>
+    requires(K != 1) {
+    if (n <= 0 or n > Dimension()) {
+        Throw<std::out_of_range>(fmt::format("n={} out of range [1, {}]", n, Dimension()));
+    }
+    Estimate<Eigen::Dynamic, C> result{n};
+    result.fX = fX.tail(n);
+    if constexpr (C == CovarianceOption::Full) {
+        result.fCov = fCov.bottomRightCorner(n, n);
+    } else {
+        result.fCov.diagonal() = VarXpr().tail(n);
+    }
+    return result;
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int N>
+    requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+auto EstimateBase<ADerived, K, C>::Tail() const -> Estimate<N, C> {
+    if constexpr (K == Eigen::Dynamic) {
+        if (N > Dimension()) {
+            Throw<std::out_of_range>(fmt::format("N exceeds dimension {}", N, Dimension()));
+        }
+    }
+    Estimate<N, C> result;
+    result.fX = fX.template tail<N>();
+    if constexpr (C == CovarianceOption::Full) {
+        result.fCov = fCov.template bottomRightCorner<N, N>();
+    } else {
+        result.fCov.diagonal() = VarXpr().template tail<N>();
+    }
+    return result;
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto EstimateBase<ADerived, K, C>::Segment(int i, int n) const -> Estimate<Eigen::Dynamic, C>
+    requires(K != 1) {
+    if (i < 0 or n <= 0 or i + n > Dimension()) {
+        Throw<std::out_of_range>(fmt::format("i={}, n={} out of range [0, {}]", i, n, Dimension() - n));
+    }
+    Estimate<Eigen::Dynamic, C> result{n};
+    result.fX = fX.segment(i, n);
+    if constexpr (C == CovarianceOption::Full) {
+        result.fCov = fCov.block(i, i, n, n);
+    } else {
+        result.fCov.diagonal() = VarXpr().segment(i, n);
+    }
+    return result;
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int N>
+    requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+auto EstimateBase<ADerived, K, C>::Segment(int i) const -> Estimate<N, C> {
+    if (i < 0 or i + N > Dimension()) {
+        Throw<std::out_of_range>(fmt::format("i={} out of range [0, {}]", N, i, Dimension() - N));
+    }
+    Estimate<N, C> result;
+    result.fX = fX.template segment<N>(i);
+    if constexpr (C == CovarianceOption::Full) {
+        result.fCov = fCov.template block<N, N>(i, i);
+    } else {
+        result.fCov.diagonal() = VarXpr().segment(i, N);
+    }
+    return result;
+}
+
+// -----------------------------------------------------------------------------
 // Other member functions
 // -----------------------------------------------------------------------------
 

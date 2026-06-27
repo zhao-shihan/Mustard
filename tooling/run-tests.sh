@@ -21,7 +21,7 @@ echo "  -> ./MustardTest TestCreateTemporaryFile"
 echo "  -> parexec ./MustardTest TestCreateTemporaryFile"
 parexec ./MustardTest TestCreateTemporaryFile
 
-echo "Running TestEstimate0/TestEstimate1/TestEstimate2/TestEstimate3/TestEstimate4/TestEstimate5/TestEstimate6/TestEstimate7/TestEstimate8/TestEstimate9/TestEstimate10/TestEstimate11/TestEstimate12/TestEstimate13/TestEstimate14/TestEstimate15/TestEstimate16/TestEstimate17/TestEstimate18/TestEstimate19/TestEstimate20/TestEstimate21/TestEstimate22/TestEstimate23/TestEstimate24/TestEstimate25/TestEstimate26/TestEstimate27/TestEstimate28/TestEstimate29/TestEstimate30/TestEstimate31/TestEstimate32/TestEstimate33/TestEstimate34/TestEstimate35/TestEstimate36..."
+echo "Running TestEstimate0/TestEstimate1/TestEstimate2/TestEstimate3/TestEstimate4/TestEstimate5/TestEstimate6/TestEstimate7/TestEstimate8/TestEstimate9/TestEstimate10/TestEstimate11/TestEstimate12/TestEstimate13/TestEstimate14/TestEstimate15/TestEstimate16/TestEstimate17/TestEstimate18/TestEstimate19/TestEstimate20/TestEstimate21/TestEstimate22/TestEstimate23/TestEstimate24/TestEstimate25/TestEstimate26/TestEstimate27/TestEstimate28/TestEstimate29/TestEstimate30/TestEstimate31/TestEstimate32/TestEstimate33/TestEstimate34/TestEstimate35/TestEstimate36/TestEstimate37..."
 echo "  -> ./MustardTest TestEstimate0"
 ./MustardTest TestEstimate0
 echo "  -> ./MustardTest TestEstimate1"
@@ -96,6 +96,8 @@ echo "  -> ./MustardTest TestEstimate35"
 ./MustardTest TestEstimate35
 echo "  -> ./MustardTest TestEstimate36"
 ./MustardTest TestEstimate36
+echo "  -> ./MustardTest TestEstimate37"
+./MustardTest TestEstimate37
 
 echo "Running TestExecutor/TestExecutor..."
 echo "  -> ./MustardTest TestExecutor"

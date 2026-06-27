@@ -78,6 +78,29 @@ struct EstimatePOD : std::monostate {};
 
 namespace impl {
 
+/// @brief Determines the result type of `Concat` between two `Estimate` objects.
+///
+/// The result dimension is @f$K+L@f$ when both @f$K@f$ and @f$L@f$ are compile-time
+/// constants and @f$K+L@f$ fits within the Eigen stack allocation limit; otherwise
+/// it is `Eigen::Dynamic` (runtime-determined).
+///
+/// The result covariance option is `Full` if either operand stores the full covariance
+/// matrix, and `Diagonal` only if both are diagonal.
+///
+/// @tparam K Left-hand dimension
+/// @tparam C Left-hand covariance option
+/// @tparam L Right-hand dimension
+/// @tparam D Right-hand covariance option
+template<int K, CovarianceOption C, int L, CovarianceOption D>
+using EstimateConcatResult = Estimate<
+    (K != Eigen::Dynamic and L != Eigen::Dynamic and
+     GoodStatisticDimension<K + L>::value) ?
+        K + L :
+        Eigen::Dynamic,
+    (C == CovarianceOption::Full or D == CovarianceOption::Full) ?
+        CovarianceOption::Full :
+        CovarianceOption::Diagonal>;
+
 /// @brief Core implementation for a value with associated covariance (uncertainty).
 ///
 /// Stores an @f$K@f$-dimensional value vector and its covariance matrix.
@@ -922,6 +945,40 @@ public:
     auto Normalized() && -> ADerived;
 
     /// @}
+    /// @name Block operations
+    /// @{
+
+    /// @brief Concatenate two estimates: value vectors are concatenated,
+    ///        covariance matrices arranged block-diagonally.
+    template<int L, CovarianceOption D>
+        requires GoodStatisticDimension<L>::value
+    auto Concat(const Estimate<L, D>& other) const -> EstimateConcatResult<K, C, L, D>;
+
+    /// @brief First n components with corresponding sub-covariance.
+    auto Head(int n) const -> Estimate<Eigen::Dynamic, C>
+        requires(K != 1);
+    /// @brief First N components (compile-time dimension).
+    template<int N>
+        requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+    auto Head() const -> Estimate<N, C>;
+
+    /// @brief Last n components with corresponding sub-covariance.
+    auto Tail(int n) const -> Estimate<Eigen::Dynamic, C>
+        requires(K != 1);
+    /// @brief Last N components (compile-time dimension).
+    template<int N>
+        requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+    auto Tail() const -> Estimate<N, C>;
+
+    /// @brief n components starting at position i.
+    auto Segment(int i, int n) const -> Estimate<Eigen::Dynamic, C>
+        requires(K != 1);
+    /// @brief N components starting at position i (compile-time dimension).
+    template<int N>
+        requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+    auto Segment(int i) const -> Estimate<N, C>;
+
+    /// @}
 
     /// @brief Convert the current state to a plain-old-data struct for MPI reduction and Base64 encoding.
     /// @return A `EstimatePOD<K, C>` containing copies of value and covariance.
@@ -1097,6 +1154,7 @@ public:
     using Base::Cbrt;
     using Base::CbrtInPlace;
     using Base::CombineInPlace;
+    using Base::Concat;
     using Base::Cos;
     using Base::Cosh;
     using Base::CoshInPlace;
