@@ -72,7 +72,7 @@ The following dependencies are only required when certain options are set.
 | [**Geant4**](https://geant4.org/) visualization component | N/A         | Required when `MUSTARD_USE_G4VIS` is set                            |
 | [**Geant4**](https://geant4.org/) static library          | N/A         | Required when `MUSTARD_USE_STATIC_G4` is set                        |
 | [**FFTW**](https://fftw.org/)                             | 3.3.11      | Required when `MUSTARD_USE_FFTW` is set (built-in if not found)     |
-| [**mimalloc**](https://github.com/p-ranav/argparse)       | 3.3.2       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found) |
+| [**mimalloc**](https://github.com/microsoft/mimalloc)     | 3.3.2       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found) |
 
 ## Projects using this library
 
