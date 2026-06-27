@@ -204,7 +204,7 @@ public:
 
     /// @brief i-th component of the value vector.
     /// @param i Component index (0-based)
-    auto Value(int i) const -> auto { return fX.coeff(i); }
+    auto Value(int i) const -> auto { return fX[i]; }
     /// @brief Covariance between components i and j.
     /// @param i First component index (0-based)
     /// @param j Second component index (0-based)
@@ -710,60 +710,6 @@ public:
     auto Exp(double c) && -> ADerived;
 
     /// @}
-    /// @name Dot product
-    /// @{
-
-    /// @brief Inner product of two vector estimates.
-    /// @return A scalar estimate with value = self·other and properly propagated uncertainty.
-    /// @note The operands are assumed independent.
-    template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Dot(const Estimate<L, D>& other) const -> Estimate<1, C>;
-    /// @brief Inner product with a plain vector.
-    /// @return A scalar estimate with value = self·v and properly propagated uncertainty.
-    template<typename AVec>
-        requires(AVec::ColsAtCompileTime == 1)
-    auto Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
-
-    /// @}
-    /// @name Matrix-vector product
-    /// @{
-
-    /// @brief Left-multiply: returns @f$A x@f$ as a new estimate.
-    /// @param aXpr A @f$M\times K@f$ matrix (Eigen expression)
-    /// @return A new `Estimate<M, C>` with value @f$A \mu@f$ and covariance @f$A \Sigma A^\mathsf{T}@f$.
-    template<typename AMat>
-        requires(AMat::ColsAtCompileTime == K or
-                 K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
-    auto LeftMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> Estimate<AMat::RowsAtCompileTime, C>;
-
-    /// @brief Right-multiply: returns @f$x^\mathsf{T} A@f$, stored as @f$A^\mathsf{T} x@f$.
-    /// @param aXpr A @f$K\times M@f$ matrix (Eigen expression)
-    /// @return A new `Estimate<M, C>` with value @f$A^\mathsf{T} \mu@f$ and covariance @f$A^\mathsf{T} \Sigma A@f$.
-    /// @note Equivalent to @f$\texttt{LeftMultiply}(A^\mathsf{T})@f$.
-    template<typename AMat>
-        requires(AMat::RowsAtCompileTime == K or
-                 K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
-    auto RightMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> auto { return LeftMultiply(aXpr.transpose()); }
-
-    /// @}
-    /// @name Normalization
-    /// @brief Normalize the vector to unit length with proper uncertainty propagation.
-    /// @note Only available for vector estimates (@f$K \neq 1@f$).
-    /// @{
-
-    /// @brief In-place normalization: @f$x \to x / \|x\|@f$.
-    /// The covariance matrix is updated via the Delta method:
-    /// @f$\operatorname{Cov} \leftarrow J \operatorname{Cov} J^\mathsf{T}@f$,
-    /// where @f$J = (I - \mu\mu^\mathsf{T}/\|\mu\|^2) / \|\mu\|@f$.
-    /// If the vector length squared is close to zero (as determined by `muc::isclose`),
-    /// the estimate is returned unchanged.
-    auto Normalize() & -> ADerived&;
-    /// @brief Return a normalized copy: @f$x \to x / \|x\|@f$.
-    auto Normalized() const& -> ADerived;
-    auto Normalized() && -> ADerived;
-
-    /// @}
     /// @name Reduction operations
     /// @brief Operations that collapse a vector estimate into a scalar estimate.
     /// @note These are member functions only (no free functions). They are not exposed
@@ -814,6 +760,166 @@ public:
     /// @brief Cubic mean, @f$\sqrt[3]{\frac{1}{K}\sum_i x_i^3}@f$.
     auto CubicMean() const& -> auto { return ADerived{Self()}.CubicMean(); }
     auto CubicMean() && -> auto { return CubeInPlace().Mean().Cbrt(); }
+
+    /// @}
+    /// @name Dot product and related operations
+    /// @{
+
+    /// @brief Inner product of two vector estimates.
+    /// @return A scalar estimate with value = self·other and properly propagated uncertainty.
+    /// @note The operands are assumed independent.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto Dot(const Estimate<L, D>& other) const -> Estimate<1, C>;
+    /// @brief Inner product with a plain vector.
+    /// @return A scalar estimate with value = self·v and properly propagated uncertainty.
+    template<typename AVec>
+        requires(AVec::ColsAtCompileTime == 1)
+    auto Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+
+    /// @brief Cosine of the angle between two vectors, @f$\frac{x \cdot y}{|x|\,|y|}@f$.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto Cosine(const Estimate<L, D>& other) const -> Estimate<1, C>;
+    /// @brief Cosine with a plain vector (no uncertainty on @p yXpr).
+    template<typename AVec>
+        requires(AVec::ColsAtCompileTime == 1)
+    auto Cosine(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+
+    /// @brief Angle between two vectors, @f$\arccos(\frac{x \cdot y}{|x|\,|y|})@f$, in radians.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto Angle(const Estimate<L, D>& other) const -> auto { return Cosine(other).Acos(); }
+    /// @brief Angle with a plain vector, in radians.
+    template<typename AVec>
+        requires(AVec::ColsAtCompileTime == 1)
+    auto Angle(const Eigen::MatrixBase<AVec>& yXpr) const -> auto { return Cosine(yXpr).Acos(); }
+
+    /// @brief Scalar projection of @c *this onto @p other, @f$\frac{x \cdot y}{|y|}@f$.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto ScalarProjTo(const Estimate<L, D>& other) const -> Estimate<1, C>;
+    /// @brief Scalar projection of @c *this onto a plain vector (no uncertainty on @p yXpr).
+    template<typename AVec>
+        requires(AVec::ColsAtCompileTime == 1)
+    auto ScalarProjTo(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+
+    /// @brief Scalar projection of @p other onto @c *this, @f$\frac{y \cdot x}{|x|}@f$.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto ScalarProjFrom(const Estimate<L, D>& other) const -> auto { return other.ScalarProjTo(Self()); }
+    /// @brief Scalar projection of @p yXpr onto @c *this, @f$\frac{y \cdot x}{|x|}@f$.
+    template<typename AVec>
+        requires(AVec::ColsAtCompileTime == 1)
+    auto ScalarProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+
+    /// @}
+    /// @name Vector projection
+    /// @brief Project one vector onto another, producing a vector estimate.
+    /// @note The operands are assumed independent.
+    /// @{
+
+    /// @brief In-place projection of @c *this onto @p other.
+    ///
+    /// Replaces @c *this with the projection onto @p other:
+    /// @f$x \gets \frac{x \cdot y}{\|y\|^2} y@f$.
+    /// @param other The vector to project onto
+    /// @return Reference to @c *this
+    /// @note The operands are assumed independent.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto ProjToInPlace(const Estimate<L, D>& other) & -> ADerived&;
+    /// @brief In-place projection of @c *this onto a plain vector @p yXpr.
+    template<typename AVec>
+        requires(K != 1)
+    auto ProjToInPlace(const Eigen::MatrixBase<AVec>& yXpr) & -> ADerived&;
+
+    /// @brief Projection of @c *this onto @p other, returning a new estimate.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto ProjTo(const Estimate<L, D>& other) const& -> ADerived;
+    /// @brief Moving projection of @c *this onto @p other.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto ProjTo(const Estimate<L, D>& other) && -> ADerived;
+    /// @brief Projection onto a plain vector @p yXpr, returning a new estimate.
+    template<typename AVec>
+        requires(K != 1)
+    auto ProjTo(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived;
+    /// @brief Moving projection onto a plain vector @p yXpr.
+    template<typename AVec>
+        requires(K != 1)
+    auto ProjTo(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
+
+    /// @brief In-place projection of @p other onto @c *this.
+    ///
+    /// Replaces @c *this with the projection of @p other onto @c *this:
+    /// @f$x \gets \frac{y \cdot x}{\|x\|^2} x@f$.
+    /// @param other The vector to project onto @c *this
+    /// @return Reference to @c *this
+    /// @note The operands are assumed independent.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto ProjFromInPlace(const Estimate<L, D>& other) & -> ADerived&;
+    /// @brief In-place projection of a plain vector @p yXpr onto @c *this.
+    template<typename AVec>
+        requires(K != 1)
+    auto ProjFromInPlace(const Eigen::MatrixBase<AVec>& yXpr) & -> ADerived&;
+
+    /// @brief Projection of @p other onto @c *this, returning a new estimate.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto ProjFrom(const Estimate<L, D>& other) const& -> ADerived;
+    /// @brief Moving projection of @p other onto @c *this.
+    template<int L, CovarianceOption D>
+        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+    auto ProjFrom(const Estimate<L, D>& other) && -> ADerived;
+    /// @brief Projection of a plain vector @p yXpr onto @c *this, returning a new estimate.
+    template<typename AVec>
+        requires(K != 1)
+    auto ProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived;
+    /// @brief Moving projection of a plain vector @p yXpr onto @c *this.
+    template<typename AVec>
+        requires(K != 1)
+    auto ProjFrom(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
+
+    /// @}
+    /// @name Matrix-vector product
+    /// @{
+
+    /// @brief Left-multiply: returns @f$A x@f$ as a new estimate.
+    /// @param aXpr A @f$M\times K@f$ matrix (Eigen expression)
+    /// @return A new `Estimate<M, C>` with value @f$A \mu@f$ and covariance @f$A \Sigma A^\mathsf{T}@f$.
+    template<typename AMat>
+        requires(AMat::ColsAtCompileTime == K or
+                 K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
+    auto LeftMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> Estimate<AMat::RowsAtCompileTime, C>;
+
+    /// @brief Right-multiply: returns @f$x^\mathsf{T} A@f$, stored as @f$A^\mathsf{T} x@f$.
+    /// @param aXpr A @f$K\times M@f$ matrix (Eigen expression)
+    /// @return A new `Estimate<M, C>` with value @f$A^\mathsf{T} \mu@f$ and covariance @f$A^\mathsf{T} \Sigma A@f$.
+    /// @note Equivalent to @f$\texttt{LeftMultiply}(A^\mathsf{T})@f$.
+    template<typename AMat>
+        requires(AMat::RowsAtCompileTime == K or
+                 K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
+    auto RightMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> auto { return LeftMultiply(aXpr.transpose()); }
+
+    /// @}
+    /// @name Normalization
+    /// @brief Normalize the vector to unit length with proper uncertainty propagation.
+    /// @note Only available for vector estimates (@f$K \neq 1@f$).
+    /// @{
+
+    /// @brief In-place normalization: @f$x \to x / \|x\|@f$.
+    /// The covariance matrix is updated via the Delta method:
+    /// @f$\operatorname{Cov} \leftarrow J \operatorname{Cov} J^\mathsf{T}@f$,
+    /// where @f$J = (I - \mu\mu^\mathsf{T}/\|\mu\|^2) / \|\mu\|@f$.
+    /// If the vector length squared is close to zero (as determined by `muc::isclose`),
+    /// the estimate is returned unchanged.
+    auto Normalize() & -> ADerived&;
+    /// @brief Return a normalized copy: @f$x \to x / \|x\|@f$.
+    auto Normalized() const& -> ADerived;
+    auto Normalized() && -> ADerived;
 
     /// @}
 
@@ -880,6 +986,9 @@ private:
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto CopyFrom(const EstimateBase<AOther, L, D>& other) & -> ADerived&;
 
+    template<typename AVec>
+        requires(AVec::ColsAtCompileTime == 1)
+    auto CovBilinearForm(const Eigen::DenseBase<AVec>& uXpr) const -> double;
     template<typename AVec>
         requires(AVec::ColsAtCompileTime == 1)
     auto CovRankUpdate(double c, const Eigen::DenseBase<AVec>& uXpr) -> void;
@@ -1215,6 +1324,8 @@ MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(pow)
 MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(pow)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(pow)
 
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(Project)
+
 #undef MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS
 #undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS
 #undef MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS
@@ -1266,23 +1377,27 @@ MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(ndtri, Ndtri, NdtriInPlace
 #undef MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS
 
 /// @}
-/// @name Dot product
+/// @name Dot product and related operations
 /// @{
 
-/// @brief Inner product of two vector estimates.
-/// @note The operands are assumed independent.
-template<int K, CovarianceOption C, int L, CovarianceOption D>
-    requires(K != 1)
-auto Dot(const Estimate<K, C>& lhs, const Estimate<L, D>& rhs) -> auto { return lhs.Dot(rhs); }
+#define MUSTARD_MATH_ESTIMATE_DOT_LIKE_OP_DEFINITIONS(Op, FwdOp, BwdOp)                                       \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                            \
+        requires(K != 1)                                                                                      \
+    auto Op(const Estimate<K, C>& lhs, const Estimate<L, D>& rhs) -> auto { return lhs.FwdOp(rhs); }          \
+                                                                                                              \
+    template<int K, CovarianceOption C, typename AVec>                                                        \
+        requires(K != 1)                                                                                      \
+    auto Op(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> auto { return lhs.FwdOp(rhs); } \
+                                                                                                              \
+    template<typename AVec, int K, CovarianceOption C>                                                        \
+        requires(K != 1)                                                                                      \
+    auto Op(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> auto { return rhs.BwdOp(lhs); }
 
-template<int K, CovarianceOption C, typename AVec>
-    requires(K != 1)
-auto Dot(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> auto { return lhs.Dot(rhs); }
-
-/// @brief Inner product of a plain vector and an estimate.
-template<typename AVec, int K, CovarianceOption C>
-    requires(K != 1)
-auto Dot(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> auto { return rhs.Dot(lhs); }
+MUSTARD_MATH_ESTIMATE_DOT_LIKE_OP_DEFINITIONS(Dot, Dot, Dot)
+MUSTARD_MATH_ESTIMATE_DOT_LIKE_OP_DEFINITIONS(Cosine, Cosine, Cosine)
+MUSTARD_MATH_ESTIMATE_DOT_LIKE_OP_DEFINITIONS(Angle, Angle, Angle)
+MUSTARD_MATH_ESTIMATE_DOT_LIKE_OP_DEFINITIONS(ScalarProj, ScalarProjTo, ScalarProjFrom)
+#undef MUSTARD_MATH_ESTIMATE_DOT_LIKE_OP_DEFINITIONS
 
 /// @}
 /// @name Matrix-vector operator*
@@ -1322,6 +1437,9 @@ struct EstimatePOD<K, C> {
                    K * K :
                    K];
 
+    /// @brief Combine two estimates.
+    template<int L, CovarianceOption D>
+    auto Combine(const EstimatePOD<L, D>& other) -> auto { return Combine(Estimate<K, C>{*this}, Estimate<L, D>{other}).ToPOD(); }
     /// @brief Add two estimates.
     template<int L, CovarianceOption D>
     auto operator+(const EstimatePOD<L, D>& other) -> auto { return (Estimate<K, C>{*this} + Estimate<L, D>{other}).ToPOD(); }

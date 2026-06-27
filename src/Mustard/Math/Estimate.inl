@@ -913,56 +913,6 @@ auto EstimateBase<ADerived, K, C>::ExpInPlace(double c) & -> ADerived& {
 }
 
 // -----------------------------------------------------------------------------
-// Dot product (vector-vector)
-// -----------------------------------------------------------------------------
-
-template<typename ADerived, int K, CovarianceOption C>
-    requires GoodStatisticDimension<K>::value
-template<int L, CovarianceOption D>
-    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::Dot(const Estimate<L, D>& other) const -> Estimate<1, C> {
-    CheckVectorDimensionMatch(other.fX);
-    const auto x{fX.dot(other.fX)};
-    auto var{(other.fX.transpose() * this->fCov * other.fX).coeff(0, 0) +
-             (this->fX.transpose() * other.fCov * this->fX).coeff(0, 0)};
-    return {x, var};
-}
-
-template<typename ADerived, int K, CovarianceOption C>
-    requires GoodStatisticDimension<K>::value
-template<typename AVec>
-    requires(AVec::ColsAtCompileTime == 1)
-auto EstimateBase<ADerived, K, C>::Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
-    CheckVectorDimensionMatch(yXpr);
-    const auto& y{yXpr.eval()};
-    const auto x{fX.dot(y)};
-    const auto var{(y.transpose() * fCov * y).coeff(0, 0)};
-    return {x, var};
-}
-
-// -----------------------------------------------------------------------------
-// Matrix-vector product
-// -----------------------------------------------------------------------------
-
-template<typename ADerived, int K, CovarianceOption C>
-    requires GoodStatisticDimension<K>::value
-template<typename AMat>
-    requires(AMat::ColsAtCompileTime == K or
-             K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::LeftMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> Estimate<AMat::RowsAtCompileTime, C> {
-    CheckMatrixColDimensionMatch(aXpr);
-    const auto& a{aXpr.eval()};
-    const auto x{a * fX};
-    if constexpr (C == CovarianceOption::Full) {
-        const auto cov{a * fCov * a.transpose()};
-        return {x, cov};
-    } else {
-        const auto var{a.cwiseSquare() * VarXpr()};
-        return {x, var.asDiagonal()};
-    }
-}
-
-// -----------------------------------------------------------------------------
 // Reduction operations
 // -----------------------------------------------------------------------------
 
@@ -995,6 +945,243 @@ auto EstimateBase<ADerived, K, C>::LpNorm() && -> Estimate<1, C> {
         return SquareInPlace().SquareInPlace().Sum().Sqrt().Sqrt();
     } else {
         return AbsInPlace().PowInPlace(P).Sum().Pow(1. / P);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Dot product and related operations
+// -----------------------------------------------------------------------------
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int L, CovarianceOption D>
+    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+auto EstimateBase<ADerived, K, C>::Dot(const Estimate<L, D>& other) const -> Estimate<1, C> {
+    CheckVectorDimensionMatch(other.fX);
+    const auto x{fX.dot(other.fX)};
+    const auto var{CovBilinearForm(other.fX) + other.CovBilinearForm(fX)};
+    return {x, var};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+    requires(AVec::ColsAtCompileTime == 1)
+auto EstimateBase<ADerived, K, C>::Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
+    CheckVectorDimensionMatch(yXpr);
+    const auto& y{yXpr.eval()};
+    const auto x{fX.dot(y)};
+    const auto var{CovBilinearForm(y)};
+    return {x, var};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int L, CovarianceOption D>
+    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+auto EstimateBase<ADerived, K, C>::Cosine(const Estimate<L, D>& other) const -> Estimate<1, C> {
+    CheckVectorDimensionMatch(other.fX);
+    const auto xNormSq{fX.squaredNorm()};
+    const auto yNormSq{other.fX.squaredNorm()};
+    const auto xyNormSq{xNormSq * yNormSq};
+    if (muc::isclose(xyNormSq, 0.)) {
+        return {};
+    }
+    const auto xDotY{fX.dot(other.fX)};
+    auto delta{(other.fX - (xDotY / xNormSq) * fX).eval()};
+    auto var{CovBilinearForm(delta)};
+    delta.noalias() = fX - (xDotY / yNormSq) * other.fX;
+    var += other.CovBilinearForm(delta);
+    return {xDotY / std::sqrt(xyNormSq), var / xyNormSq};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+    requires(AVec::ColsAtCompileTime == 1)
+auto EstimateBase<ADerived, K, C>::Cosine(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
+    CheckVectorDimensionMatch(yXpr);
+    const auto& y{yXpr.eval()};
+    const auto xNormSq{fX.squaredNorm()};
+    const auto yNormSq{y.squaredNorm()};
+    const auto xyNormSq{xNormSq * yNormSq};
+    if (muc::isclose(xyNormSq, 0.)) {
+        return {};
+    }
+    const auto xDotY{fX.dot(y)};
+    const auto var{CovBilinearForm(y - (xDotY / xNormSq) * fX)};
+    return {xDotY / std::sqrt(xyNormSq), var / xyNormSq};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int L, CovarianceOption D>
+    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+auto EstimateBase<ADerived, K, C>::ScalarProjTo(const Estimate<L, D>& other) const -> Estimate<1, C> {
+    CheckVectorDimensionMatch(other.fX);
+    const auto yNormSq{other.fX.squaredNorm()};
+    if (muc::isclose(yNormSq, 0.)) {
+        return {};
+    }
+    const auto c{fX.dot(other.fX) / yNormSq};
+    const auto var{CovBilinearForm(other.fX) +
+                   other.CovBilinearForm(fX - c * other.fX)};
+    return {c * std::sqrt(yNormSq), var / yNormSq};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+    requires(AVec::ColsAtCompileTime == 1)
+auto EstimateBase<ADerived, K, C>::ScalarProjTo(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
+    CheckVectorDimensionMatch(yXpr);
+    const auto& y{yXpr.eval()};
+    const auto yNormSq{y.squaredNorm()};
+    if (muc::isclose(yNormSq, 0.)) {
+        return {};
+    }
+    const auto var{CovBilinearForm(y)};
+    return {fX.dot(y) / std::sqrt(yNormSq), var / yNormSq};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+    requires(AVec::ColsAtCompileTime == 1)
+auto EstimateBase<ADerived, K, C>::ScalarProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
+    CheckVectorDimensionMatch(yXpr);
+    const auto xNormSq{fX.squaredNorm()};
+    if (muc::isclose(xNormSq, 0.)) {
+        return {};
+    }
+    const auto& y{yXpr.eval()};
+    const auto c{y.dot(fX) / xNormSq};
+    const auto var{CovBilinearForm(y - c * fX)};
+    return {c * std::sqrt(xNormSq), var / xNormSq};
+}
+
+// -----------------------------------------------------------------------------
+// Vector projection
+// -----------------------------------------------------------------------------
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int L, CovarianceOption D>
+    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+auto EstimateBase<ADerived, K, C>::ProjToInPlace(const Estimate<L, D>& other) & -> ADerived& {
+    impl::EstimateBinaryOpResult<K, C, L, D> result{other};
+    result.ProjFromInPlace(Self());
+    return Self() = std::move(result);
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+    requires(K != 1)
+auto EstimateBase<ADerived, K, C>::ProjToInPlace(const Eigen::MatrixBase<AVec>& yXpr) & -> ADerived& {
+    CheckVectorDimensionMatch(yXpr);
+    const auto& y{yXpr.eval()};
+    const auto yNormSq{y.squaredNorm()};
+    const auto yNormQr{muc::pow(yNormSq, 2)};
+    if (muc::isclose(yNormQr, 0.)) {
+        fX.setZero();
+        fCov.setZero();
+        return Self();
+    }
+    fX = (fX.dot(y) / yNormSq) * y;
+    const auto b{CovBilinearForm(y) / yNormQr};
+    fCov.setZero();
+    CovRankUpdate(b, y);
+    return Self();
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int L, CovarianceOption D>
+    requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
+auto EstimateBase<ADerived, K, C>::ProjFromInPlace(const Estimate<L, D>& other) & -> ADerived& {
+    CheckVectorDimensionMatch(other.fX);
+    const auto xNormSq{fX.squaredNorm()};
+    const auto xNormQr{muc::pow(xNormSq, 2)};
+    if (muc::isclose(xNormQr, 0.)) {
+        fX.setZero();
+        fCov.setZero();
+        return Self();
+    }
+    const auto invXNormSq{1 / xNormSq};
+    const auto c{invXNormSq * other.fX.dot(fX)};
+    const auto v{(invXNormSq * (other.fX - 2 * c * fX)).eval()};
+    const auto w{(fCov * v).eval()};
+    const auto b{other.CovBilinearForm(fX) / xNormQr + v.dot(w)};
+    if constexpr (C == CovarianceOption::Full) {
+        fCov *= muc::pow(c, 2);
+    } else {
+        VarXpr() *= muc::pow(c, 2);
+    }
+    CovRankUpdate(b, fX);
+    CovRankUpdate(c, fX, w);
+    fX *= c;
+    return Self();
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+    requires(K != 1)
+auto EstimateBase<ADerived, K, C>::ProjFromInPlace(const Eigen::MatrixBase<AVec>& yXpr) & -> ADerived& {
+    CheckVectorDimensionMatch(yXpr);
+    const auto xNormSq{fX.squaredNorm()};
+    const auto xNormQr{muc::pow(xNormSq, 2)};
+    if (muc::isclose(xNormQr, 0.)) {
+        fX.setZero();
+        fCov.setZero();
+        return Self();
+    }
+    const auto& y{yXpr.eval()};
+    const auto invXNormSq{1 / xNormSq};
+    const auto c{invXNormSq * y.dot(fX)};
+    const auto v{(invXNormSq * (y - 2 * c * fX)).eval()};
+    const auto w{(fCov * v).eval()};
+    if constexpr (C == CovarianceOption::Full) {
+        fCov *= muc::pow(c, 2);
+    } else {
+        VarXpr() *= muc::pow(c, 2);
+    }
+    CovRankUpdate(v.dot(w), fX);
+    CovRankUpdate(c, fX, w);
+    fX *= c;
+    return Self();
+}
+
+// -----------------------------------------------------------------------------
+// Matrix-vector product
+// -----------------------------------------------------------------------------
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AMat>
+    requires(AMat::ColsAtCompileTime == K or
+             K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
+auto EstimateBase<ADerived, K, C>::LeftMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> Estimate<AMat::RowsAtCompileTime, C> {
+    CheckMatrixColDimensionMatch(aXpr);
+    const auto& a{aXpr.eval()};
+    const auto x{a * fX};
+    if constexpr (C == CovarianceOption::Full) {
+        if constexpr (K <= 8 and K != Eigen::Dynamic) {
+            return {x, a * fCov * a.transpose()};
+        } else {
+            using ResultCov = typename Estimate<AMat::RowsAtCompileTime, C>::CovarianceType;
+            ResultCov cov(a.rows(), a.rows());
+            cov.setZero();
+            const auto ldlt{fCov.template selfadjointView<Eigen::Lower>().ldlt()};
+            cov.template selfadjointView<Eigen::Lower>().rankUpdate(
+                a * ldlt.matrixL() * ldlt.vectorD().cwiseSqrt().asDiagonal());
+            cov.template triangularView<Eigen::Upper>() = cov.transpose();
+            return {x, cov};
+        }
+    } else {
+        const auto var{a.cwiseSquare() * VarXpr()};
+        return {x, var.asDiagonal()};
     }
 }
 
@@ -1150,17 +1337,36 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<typename AVec>
     requires(AVec::ColsAtCompileTime == 1)
+auto EstimateBase<ADerived, K, C>::CovBilinearForm(const Eigen::DenseBase<AVec>& uXpr) const -> double {
+    const auto& uMatXpr{impl::ToMatXpr(uXpr)};
+    if constexpr (C == CovarianceOption::Full) {
+        const auto& u{uMatXpr.eval()};
+        if constexpr (K <= 8 and K != Eigen::Dynamic) {
+            return u.dot(fCov * u);
+        } else {
+            return u.dot(fCov.template selfadjointView<Eigen::Lower>() * u);
+        }
+    } else {
+        return VarXpr().dot(uMatXpr.cwiseSquare());
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AVec>
+    requires(AVec::ColsAtCompileTime == 1)
 auto EstimateBase<ADerived, K, C>::CovRankUpdate(double c, const Eigen::DenseBase<AVec>& uXpr) -> void {
-    const auto& u{impl::ToMatXpr(uXpr)};
+    const auto& uMatXpr{impl::ToMatXpr(uXpr)};
     if constexpr (C == CovarianceOption::Full) {
         if constexpr (K <= 8 and K != Eigen::Dynamic) {
-            fCov += c * u * u.transpose();
+            const auto& u{uMatXpr.eval()};
+            fCov.noalias() += c * u * u.transpose();
         } else {
-            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(u, c);
+            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(uMatXpr, c);
             fCov.template triangularView<Eigen::Upper>() = fCov.transpose();
         }
     } else {
-        VarXpr() += c * u.cwiseSquare();
+        VarXpr() += c * uMatXpr.cwiseSquare();
     }
 }
 
@@ -1169,17 +1375,19 @@ template<typename ADerived, int K, CovarianceOption C>
 template<typename AVecU, typename AVecV>
     requires(AVecU::ColsAtCompileTime == 1 and AVecV::ColsAtCompileTime == 1)
 auto EstimateBase<ADerived, K, C>::CovRankUpdate(double c, const Eigen::DenseBase<AVecU>& uXpr, const Eigen::DenseBase<AVecV>& vXpr) -> void {
-    const auto& u{impl::ToMatXpr(uXpr)};
-    const auto& v{impl::ToMatXpr(vXpr)};
+    const auto& uMatXpr{impl::ToMatXpr(uXpr)};
+    const auto& vMatXpr{impl::ToMatXpr(vXpr)};
     if constexpr (C == CovarianceOption::Full) {
         if constexpr (K <= 8 and K != Eigen::Dynamic) {
-            fCov += c * (u * v.transpose() + v * u.transpose());
+            const auto& u{(c * uMatXpr).eval()};
+            const auto& v{vMatXpr.eval()};
+            fCov.noalias() += u * v.transpose() + v * u.transpose();
         } else {
-            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(u, v, c);
+            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(uMatXpr, vMatXpr, c);
             fCov.template triangularView<Eigen::Upper>() = fCov.transpose();
         }
     } else {
-        VarXpr() += 2 * c * u.cwiseProduct(v);
+        VarXpr() += 2 * c * uMatXpr.cwiseProduct(vMatXpr);
     }
 }
 
@@ -1387,6 +1595,12 @@ MUSTARD_MATH_ESTIMATE_SCALAR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlac
 MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_MATH_FUNC_DEFINITION(Exp, ExpInPlace)
 
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(ProjTo, ProjToInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(ProjTo, ProjToInPlace)
+
+MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION(ProjFrom, ProjFromInPlace)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION(ProjFrom, ProjFromInPlace)
+
 #undef MUSTARD_MATH_ESTIMATE_VECTOR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION
 #undef MUSTARD_MATH_ESTIMATE_SCALAR_ESTIMATE_BINARY_MATH_FUNC_DEFINITION
 #undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_MATH_FUNC_DEFINITION
@@ -1502,6 +1716,8 @@ MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(operator/, operator/=, Divide
 MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
 MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DEFINITIONS(pow, PowInPlace, ExpInPlace)
+
+MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS(Project, ProjToInPlace, ProjFromInPlace)
 
 #undef MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DEFINITIONS
 #undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DEFINITIONS
