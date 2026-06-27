@@ -101,6 +101,9 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestEstimate31>();
     launcher.AddSubprogram<TestEstimate32>();
     launcher.AddSubprogram<TestEstimate33>();
+    launcher.AddSubprogram<TestEstimate34>();
+    launcher.AddSubprogram<TestEstimate35>();
+    launcher.AddSubprogram<TestEstimate36>();
     launcher.AddSubprogram<TestExecutor>();
     launcher.AddSubprogram<TestExecutorSequential>();
     launcher.AddSubprogram<TestFieldMap>();

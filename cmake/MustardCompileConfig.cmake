@@ -185,7 +185,7 @@ endif()
 
 # Suppress a false warning from Eigen.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-array-bounds)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-array-bounds -Wno-maybe-uninitialized)
 endif()
 
 # =============================================================================
