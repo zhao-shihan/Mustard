@@ -214,8 +214,13 @@ template<typename AVec>
 auto StatisticBase<ADerived, K, C>::AppendM2CrossTerm(double otherW, double prevW, const Eigen::MatrixBase<AVec>& deltaXpr) -> void {
     const auto www{otherW * (fW / prevW)};
     if constexpr (C == CovarianceOption::Full) {
-        const auto& delta{deltaXpr.eval()};
-        fM2.noalias() += www * delta * delta.transpose();
+        if constexpr (K <= 8 and K != Eigen::Dynamic) {
+            const auto& delta{deltaXpr.eval()};
+            fM2.noalias() += www * delta * delta.transpose();
+        } else {
+            fM2.template selfadjointView<Eigen::Lower>().rankUpdate(deltaXpr, www);
+            fM2.template triangularView<Eigen::Upper>() = fM2.transpose();
+        }
     } else {
         fM2.diagonal() += www * deltaXpr.cwiseSquare();
     }
