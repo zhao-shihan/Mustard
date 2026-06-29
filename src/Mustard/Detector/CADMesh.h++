@@ -1,3 +1,5 @@
+// -*- C++ -*-
+//
 // The MIT License (MIT)
 //
 // Copyright (c) 2011-2020 Christopher M. Poole <mail@christopherpoole.net>
