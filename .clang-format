@@ -111,21 +111,6 @@ IncludeCategories:
   - Regex: '"CLHEP/.*"'
     Priority: 2
     CaseSensitive: true
-  - Regex: '"ROOT/.*"'
-    Priority: 3
-    CaseSensitive: true
-  - Regex: '"R.*\.hxx"'
-    Priority: 3
-    CaseSensitive: true
-  - Regex: '"R.*\.h"'
-    Priority: 3
-    CaseSensitive: true
-  - Regex: '".*/T.*\.h"'
-    Priority: 3
-    CaseSensitive: true
-  - Regex: '"T.*\.h"'
-    Priority: 3
-    CaseSensitive: true
   - Regex: '"G4.*"'
     Priority: 4
     CaseSensitive: true
@@ -164,6 +149,31 @@ IncludeCategories:
     CaseSensitive: true
   - Regex: '"fmt/.*\.h"'
     Priority: 15
+    CaseSensitive: true
+  # more general (ROOT)
+  - Regex: '"ROOT/.*"'
+    Priority: 3
+    CaseSensitive: true
+  - Regex: '"R.*\.hxx"'
+    Priority: 3
+    CaseSensitive: true
+  - Regex: '"R.*\.h"'
+    Priority: 3
+    CaseSensitive: true
+  - Regex: '".*/T.*\.h"'
+    Priority: 3
+    CaseSensitive: true
+  - Regex: '"T.*\.h"'
+    Priority: 3
+    CaseSensitive: true
+  - Regex: '"Fit/.*\.h"'
+    Priority: 3
+    CaseSensitive: true
+  - Regex: '"Math/.*\.h"'
+    Priority: 3
+    CaseSensitive: true
+  - Regex: '"Minuit2/.*\.h"'
+    Priority: 3
     CaseSensitive: true
   # very general
   - Regex: '".*"'
