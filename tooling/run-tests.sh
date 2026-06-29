@@ -219,6 +219,16 @@ echo "  -> ./MustardTest TestStatistic9"
 echo "  -> ./MustardTest TestStatistic10"
 ./MustardTest TestStatistic10
 
+echo "Running TestStatisticalTTest/TestStatisticalZTest/TestStatisticalTSquaredTest/TestStatisticalChiSquaredTest..."
+echo "  -> ./MustardTest TestStatisticalTTest"
+./MustardTest TestStatisticalTTest
+echo "  -> ./MustardTest TestStatisticalZTest"
+./MustardTest TestStatisticalZTest
+echo "  -> ./MustardTest TestStatisticalTSquaredTest"
+./MustardTest TestStatisticalTSquaredTest
+echo "  -> ./MustardTest TestStatisticalChiSquaredTest"
+./MustardTest TestStatisticalChiSquaredTest
+
 echo "Running TestVectorConcept..."
 echo "  -> ./MustardTest TestVectorConcept"
 ./MustardTest TestVectorConcept

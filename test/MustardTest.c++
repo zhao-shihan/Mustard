@@ -47,6 +47,7 @@
 #include "Mustard/Testing/TestSingleRDFEventReader/TestSingleRDFEventReader.h++"
 #include "Mustard/Testing/TestSingleton/TestSingleton.h++"
 #include "Mustard/Testing/TestStatistic/TestStatistic.h++"
+#include "Mustard/Testing/TestStatisticalTest/TestStatisticalTest.h++"
 #include "Mustard/Testing/TestUniform/TestUniform.h++"
 #include "Mustard/Testing/TestVectorConcept/TestVectorConcept.h++"
 #include "Mustard/Testing/TestXoshiro256Plus/TestXoshiro256Plus.h++"
@@ -69,14 +70,6 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestCreateTemporaryFile>();
     launcher.AddSubprogram<TestEstimate0>();
     launcher.AddSubprogram<TestEstimate1>();
-    launcher.AddSubprogram<TestEstimate2>();
-    launcher.AddSubprogram<TestEstimate3>();
-    launcher.AddSubprogram<TestEstimate4>();
-    launcher.AddSubprogram<TestEstimate5>();
-    launcher.AddSubprogram<TestEstimate6>();
-    launcher.AddSubprogram<TestEstimate7>();
-    launcher.AddSubprogram<TestEstimate8>();
-    launcher.AddSubprogram<TestEstimate9>();
     launcher.AddSubprogram<TestEstimate10>();
     launcher.AddSubprogram<TestEstimate11>();
     launcher.AddSubprogram<TestEstimate12>();
@@ -87,6 +80,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestEstimate17>();
     launcher.AddSubprogram<TestEstimate18>();
     launcher.AddSubprogram<TestEstimate19>();
+    launcher.AddSubprogram<TestEstimate2>();
     launcher.AddSubprogram<TestEstimate20>();
     launcher.AddSubprogram<TestEstimate21>();
     launcher.AddSubprogram<TestEstimate22>();
@@ -97,6 +91,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestEstimate27>();
     launcher.AddSubprogram<TestEstimate28>();
     launcher.AddSubprogram<TestEstimate29>();
+    launcher.AddSubprogram<TestEstimate3>();
     launcher.AddSubprogram<TestEstimate30>();
     launcher.AddSubprogram<TestEstimate31>();
     launcher.AddSubprogram<TestEstimate32>();
@@ -105,6 +100,12 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestEstimate35>();
     launcher.AddSubprogram<TestEstimate36>();
     launcher.AddSubprogram<TestEstimate37>();
+    launcher.AddSubprogram<TestEstimate4>();
+    launcher.AddSubprogram<TestEstimate5>();
+    launcher.AddSubprogram<TestEstimate6>();
+    launcher.AddSubprogram<TestEstimate7>();
+    launcher.AddSubprogram<TestEstimate8>();
+    launcher.AddSubprogram<TestEstimate9>();
     launcher.AddSubprogram<TestExecutor>();
     launcher.AddSubprogram<TestExecutorSequential>();
     launcher.AddSubprogram<TestFieldMap>();
@@ -132,6 +133,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestSingleton>();
     launcher.AddSubprogram<TestStatistic0>();
     launcher.AddSubprogram<TestStatistic1>();
+    launcher.AddSubprogram<TestStatistic10>();
     launcher.AddSubprogram<TestStatistic2>();
     launcher.AddSubprogram<TestStatistic3>();
     launcher.AddSubprogram<TestStatistic4>();
@@ -140,7 +142,10 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestStatistic7>();
     launcher.AddSubprogram<TestStatistic8>();
     launcher.AddSubprogram<TestStatistic9>();
-    launcher.AddSubprogram<TestStatistic10>();
+    launcher.AddSubprogram<TestStatisticalChiSquaredTest>();
+    launcher.AddSubprogram<TestStatisticalTSquaredTest>();
+    launcher.AddSubprogram<TestStatisticalTTest>();
+    launcher.AddSubprogram<TestStatisticalZTest>();
     launcher.AddSubprogram<TestUniform>();
     launcher.AddSubprogram<TestVectorConcept>();
     launcher.AddSubprogram<TestXoshiro256Plus>();

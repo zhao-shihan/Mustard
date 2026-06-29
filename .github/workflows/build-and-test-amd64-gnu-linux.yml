@@ -112,6 +112,7 @@ jobs:
           - TestSingleRDFEventReader-TestSingleRDFEventProcessor-TestSingleRDFEventProcessor
           - TestSingleton-TestSingleton
           - TestStatistic0-TestStatistic1-TestStatistic2-TestStatistic3-TestStatistic4-TestStatistic5-TestStatistic6-TestStatistic7-TestStatistic8-TestStatistic9-TestStatistic10
+          - TestStatisticalTTest-TestStatisticalZTest-TestStatisticalTSquaredTest-TestStatisticalChiSquaredTest
           - TestVectorConcept
           - TestXoshiro256Plus-TestXoshiro256PlusPlus-TestXoshiro256StarStar-TestXoshiro512Plus-TestXoshiro512PlusPlus-TestXoshiro512StarStar
     container:
@@ -261,6 +262,12 @@ jobs:
                   ./MustardTest TestStatistic8
                   ./MustardTest TestStatistic9
                   ./MustardTest TestStatistic10
+                  ;;
+                "TestStatisticalTTest-TestStatisticalZTest-TestStatisticalTSquaredTest-TestStatisticalChiSquaredTest")
+                  ./MustardTest TestStatisticalTTest
+                  ./MustardTest TestStatisticalZTest
+                  ./MustardTest TestStatisticalTSquaredTest
+                  ./MustardTest TestStatisticalChiSquaredTest
                   ;;
                 "TestVectorConcept")
                   ./MustardTest TestVectorConcept
