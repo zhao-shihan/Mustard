@@ -146,18 +146,39 @@ StatisticalTSquaredTest::StatisticalTSquaredTest(const Estimate<K, C>& est1, dou
     if (n1 <= 1 or n2 <= 1) {
         Throw<std::invalid_argument>(fmt::format("Sample sizes must be greater than 1, got n1={} and n2={}", n1, n2));
     }
-    // Reference: Nel, D.G., and C.A. Van Der Merwe. 1986. “A Solution to the Multivariate Behrens-Fisher Problem.”
-    // Communications in Statistics - Theory and Methods 15 (12): 3719–35. doi:10.1080/03610928608829342.
-    const auto delta{est1 - est2};
-    const auto& deltaCov{delta.Covariance()};
-    const auto& cov1{est1.Covariance()};
-    const auto& cov2{est2.Covariance()};
+    // Reference: K. Krishnamoorthy, Jianqi Yu, Modified Nel and Van der Merwe test for the multivariate Behrens-Fisher problem,
+    // Statistics & Probability Letters, Volume 66, Issue 2, 2004, doi:10.1016/j.spl.2003.10.012.
     fNDF1 = Dimension();
-    // Diagonal matrix does not have .trace() ... so we use .diagonal().sum() instead
-    fNDF2 = ((deltaCov * deltaCov).diagonal().sum() + muc::pow(deltaCov.diagonal().sum(), 2)) /
-            (((cov1 * cov1).diagonal().sum() + muc::pow(cov1.diagonal().sum(), 2)) / (n1 - 1) +
-             ((cov2 * cov2).diagonal().sum() + muc::pow(cov2.diagonal().sum(), 2)) / (n2 - 1));
-    fTSq = InverseBilinearForm(deltaCov, delta.Value());
+    const auto delta{est1 - est2};
+    const auto& deltaX{delta.Value()};
+    const auto& deltaCov{delta.Covariance()};
+    constexpr auto denom{[](const auto& ss, auto n) {
+        // ss can be diagonal matrix which does not have .trace() ... so use .diagonal().sum() instead
+        return ((ss * ss).diagonal().sum() + muc::pow(ss.diagonal().sum(), 2)) / (n - 1);
+    }};
+    if constexpr (typename decltype(delta)::FullCovariance{}) {
+        const auto sLDLT{deltaCov.ldlt()};
+        using MatType = typename decltype(delta)::CovarianceType;
+        MatType ss;
+        if constexpr (C == CovarianceOption::Full) {
+            ss = sLDLT.solve(est1.Covariance());
+        } else {
+            ss = sLDLT.solve(MatType{est1.Covariance()});
+        }
+        fNDF2 = denom(ss, n1);
+        if constexpr (D == CovarianceOption::Full) {
+            ss = sLDLT.solve(est2.Covariance());
+        } else {
+            ss = sLDLT.solve(MatType{est2.Covariance()});
+        }
+        fNDF2 = fNDF1 * (1 + fNDF1) / (fNDF2 + denom(ss, n2));
+        fTSq = deltaX.dot(sLDLT.solve(deltaX));
+    } else {
+        const auto ss1{deltaCov.inverse() * est1.Covariance()};
+        const auto ss2{deltaCov.inverse() * est2.Covariance()};
+        fNDF2 = fNDF1 * (1 + fNDF1) / (denom(ss1, n1) + denom(ss2, n2));
+        fTSq = InverseBilinearForm(deltaCov, deltaX);
+    }
 }
 
 template<int K, CovarianceOption C, typename AVec>
