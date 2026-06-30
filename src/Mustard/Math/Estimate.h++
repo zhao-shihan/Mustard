@@ -46,6 +46,30 @@ enum struct CovarianceOption {
     Diagonal ///< Store only the diagonal elements of the covariance matrix (i.e., the variances)
 };
 
+// Forward declaration. See definitions below.
+template<int K, CovarianceOption C = CovarianceOption::Full>
+class Estimate;
+
+template<int K>
+using EstimateFull = Estimate<K, CovarianceOption::Full>;
+template<int K>
+using EstimateDiag = Estimate<K, CovarianceOption::Diagonal>;
+
+using Estimate1D = EstimateDiag<1>;
+using EstimateFullXD = EstimateFull<Eigen::Dynamic>;
+using EstimateDiagXD = EstimateDiag<Eigen::Dynamic>;
+
+// Dummy definition. See partial specialization below.
+template<int K, CovarianceOption C = CovarianceOption::Full>
+struct EstimatePOD : std::monostate {};
+
+template<int K>
+using EstimateFullPOD = EstimatePOD<K, CovarianceOption::Full>;
+template<int K>
+using EstimateDiagPOD = EstimatePOD<K, CovarianceOption::Diagonal>;
+
+using Estimate1DPOD = EstimateDiagPOD<1>;
+
 namespace impl {
 
 /// @brief Compile-time constraint validating the dimension parameter @f$K@f$.
@@ -65,18 +89,6 @@ struct GoodStatisticDimension
     : std::bool_constant<
           K == Eigen::Dynamic or
           (K > 0 and sizeof(double) * K * K <= EIGEN_STACK_ALLOCATION_LIMIT)> {};
-
-} // namespace impl
-
-// Forward declaration. See definitions below.
-template<int K, CovarianceOption C = CovarianceOption::Full>
-class Estimate;
-
-// Dummy definition. See partial specialization below.
-template<int K, CovarianceOption C = CovarianceOption::Full>
-struct EstimatePOD : std::monostate {};
-
-namespace impl {
 
 /// @brief Helper type to select a fixed-size vector whenever possible.
 ///

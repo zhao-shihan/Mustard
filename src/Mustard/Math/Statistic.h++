@@ -42,9 +42,25 @@ namespace Mustard::inline Math {
 template<int K, CovarianceOption C = CovarianceOption::Full>
 class Statistic;
 
+template<int K>
+using StatisticFull = Statistic<K, CovarianceOption::Full>;
+template<int K>
+using StatisticDiag = Statistic<K, CovarianceOption::Diagonal>;
+
+using Statistic1D = StatisticDiag<1>;
+using StatisticFullXD = StatisticFull<Eigen::Dynamic>;
+using StatisticDiagXD = StatisticDiag<Eigen::Dynamic>;
+
 // Dummy definition. See partial specialization below.
 template<int K, CovarianceOption C = CovarianceOption::Full>
 struct StatisticPOD : std::monostate {};
+
+template<int K>
+using StatisticFullPOD = StatisticPOD<K, CovarianceOption::Full>;
+template<int K>
+using StatisticDiagPOD = StatisticPOD<K, CovarianceOption::Diagonal>;
+
+using Statistic1DPOD = StatisticDiagPOD<1>;
 
 namespace impl {
 
