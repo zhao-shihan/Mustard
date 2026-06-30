@@ -1167,7 +1167,14 @@ auto EstimateBase<ADerived, K, C>::LeftMultiply(const Eigen::MatrixBase<AMat>& a
     const auto& a{aXpr.eval()};
     const auto x{a * fX};
     if constexpr (C == CovarianceOption::Full) {
-        if constexpr (K <= 8 and K != Eigen::Dynamic) {
+        // Direct: ~ 2 M K^2 + 2 M^2 K ops
+        // LDLT: ~ (1/3 K^3 + 7/2 K^2) +  (M K^2 + M K)  +   M^2 K   ops
+        //                 LDLT          A P^T L sqrt(D)  rank-update
+        // Direct < LDLT  <=>  K > 1/4 (-21 + 6 M + sqrt(441 + 12 M (-25 + 7 M)))
+        //   RHS = 3.79 M - 9.34 + 2.36/M + O(1/M^2) ~= 3.79 M - 9.34
+        // So when K > 3.79 M - 9.34 compute directly (keep the 9.34 is good for small K and M)
+        const auto dim{Dimension()};
+        if ((dim <= 8 and a.rows() <= 8) or dim > 3.79 * a.rows() - 9.34) {
             return {x, a * fCov * a.transpose()};
         } else {
             using ResultCov = typename Estimate<AMat::RowsAtCompileTime, C>::CovarianceType;
@@ -1175,13 +1182,12 @@ auto EstimateBase<ADerived, K, C>::LeftMultiply(const Eigen::MatrixBase<AMat>& a
             cov.setZero();
             const auto ldlt{fCov.template selfadjointView<Eigen::Lower>().ldlt()};
             cov.template selfadjointView<Eigen::Lower>().rankUpdate(
-                a * ldlt.matrixL() * ldlt.vectorD().cwiseSqrt().asDiagonal());
+                a * ldlt.transpositionsP() * ldlt.matrixL() * ldlt.vectorD().cwiseSqrt().asDiagonal());
             cov.template triangularView<Eigen::Upper>() = cov.transpose();
             return {x, cov};
         }
     } else {
-        const auto var{a.cwiseSquare() * VarXpr()};
-        return {x, var.asDiagonal()};
+        return {x, (a.cwiseSquare() * VarXpr()).asDiagonal()};
     }
 }
 
