@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Memory/ClassSpecificAllocation.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 namespace Mustard::Env::inline ObjectRegistry::impl {
 

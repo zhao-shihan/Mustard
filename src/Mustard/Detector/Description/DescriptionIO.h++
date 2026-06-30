@@ -23,7 +23,7 @@
 #include "Mustard/IO/CreateTemporaryFile.h++"
 #include "Mustard/IO/File.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include "yaml-cpp/yaml.h"
 

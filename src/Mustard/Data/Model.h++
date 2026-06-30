@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Data/Object/Field.h++"
-#include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/ceta_string"

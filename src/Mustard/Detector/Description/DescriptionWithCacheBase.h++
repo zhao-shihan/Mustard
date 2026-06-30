@@ -20,7 +20,7 @@
 
 #include "Mustard/Detector/Description/DescriptionBase.h++"
 #include "Mustard/Env/ObjectRegistry/Singleton.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include <concepts>
 #include <functional>

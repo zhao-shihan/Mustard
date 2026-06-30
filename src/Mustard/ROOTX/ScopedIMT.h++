@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 namespace Mustard::ROOTX {
 

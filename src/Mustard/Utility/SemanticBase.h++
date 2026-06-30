@@ -16,13 +16,58 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
 namespace Mustard::inline Utility {
 
-// note: rule of five, and
-// C.21: If you define or =delete any copy, move, or destructor function, define or =delete them all
+/// @brief A base class that prohibits construction.
+/// @details Declaring the default constructor as deleted prevents any instance
+/// of the class (or its derived classes) from being constructed. Use this as
+/// a purely organizational base to signal that the type is not meant to be
+/// instantiated.
+class NonConstructibleBase {
+public:
+    constexpr NonConstructibleBase() = delete;
+};
+
+/// @brief A base class that makes derived types move-only.
+/// @details Declaring the move constructor and move-assignment operator
+/// suppresses the implicit generation of copy operations.
+class MoveOnlyBase {
+protected:
+    constexpr MoveOnlyBase() noexcept = default;
+    constexpr ~MoveOnlyBase() = default;
+
+public:
+    constexpr MoveOnlyBase(MoveOnlyBase&&) noexcept = default;
+    constexpr auto operator=(MoveOnlyBase&&) noexcept -> MoveOnlyBase& = default;
+};
+
+/// @brief A base class that makes derived types non-copyable.
+/// @details Explicitly deletes the copy constructor and copy-assignment
+/// operator. As required by the rule of five, the move operations are omitted
+/// so they are implicitly suppressed (they fall back to copy, which is
+/// deleted).
+class NonCopyableBase {
+protected:
+    constexpr NonCopyableBase() noexcept = default;
+    constexpr ~NonCopyableBase() = default;
+
+public:
+    constexpr NonCopyableBase(const NonCopyableBase&) = delete;
+    constexpr auto operator=(const NonCopyableBase&) -> NonCopyableBase& = delete;
+};
+
+/// @brief A convenience base for classes with virtual destructors that should
+/// be fully copyable and movable.
+/// @details Classes with a virtual `=default` destructor must explicitly
+/// declare the remaining special member functions to satisfy the rule of five.
+/// Inheriting from this base avoids manual boilerplate.
+/// @note C.21: If you define or `=delete` any copy, move, or destructor
+/// function, define or `=delete` them all.
 class MovableVirtualBase {
 protected:
-    constexpr MovableVirtualBase() = default;
+    constexpr MovableVirtualBase() noexcept = default;
     constexpr virtual ~MovableVirtualBase() = default;
 
 public:
@@ -32,11 +77,16 @@ public:
     constexpr auto operator=(MovableVirtualBase&&) noexcept -> MovableVirtualBase& = default;
 };
 
-// note: rule of five, and
-// C.21: If you define or =delete any copy, move, or destructor function, define or =delete them all
+/// @brief A convenience base for classes with virtual destructors that should
+/// be move-only.
+/// @details Classes with a virtual `=default` destructor must explicitly
+/// declare the remaining special member functions to satisfy the rule of five.
+/// Inheriting from this base avoids manual boilerplate.
+/// @note C.21: If you define or `=delete` any copy, move, or destructor
+/// function, define or `=delete` them all.
 class MoveOnlyVirtualBase {
 protected:
-    constexpr MoveOnlyVirtualBase() = default;
+    constexpr MoveOnlyVirtualBase() noexcept = default;
     constexpr virtual ~MoveOnlyVirtualBase() = default;
 
 public:
@@ -44,15 +94,21 @@ public:
     constexpr auto operator=(MoveOnlyVirtualBase&&) noexcept -> MoveOnlyVirtualBase& = default;
 };
 
-// C.21: If you define or =delete any copy, move, or destructor function, define or =delete them all
+/// @brief A convenience base for classes with virtual destructors that should
+/// be non-copyable.
+/// @details Classes with a virtual `=default` destructor must explicitly
+/// declare the remaining special member functions to satisfy the rule of five.
+/// Inheriting from this base avoids manual boilerplate.
+/// @note C.21: If you define or `=delete` any copy, move, or destructor
+/// function, define or `=delete` them all.
 class NonCopyableVirtualBase {
 protected:
-    constexpr NonCopyableVirtualBase() = default;
+    constexpr NonCopyableVirtualBase() noexcept = default;
     constexpr virtual ~NonCopyableVirtualBase() = default;
 
 public:
-    constexpr NonCopyableVirtualBase(const NonCopyableVirtualBase&) noexcept = delete;
-    constexpr auto operator=(const NonCopyableVirtualBase&) noexcept -> NonCopyableVirtualBase& = delete;
+    constexpr NonCopyableVirtualBase(const NonCopyableVirtualBase&) = delete;
+    constexpr auto operator=(const NonCopyableVirtualBase&) -> NonCopyableVirtualBase& = delete;
 };
 
 } // namespace Mustard::inline Utility

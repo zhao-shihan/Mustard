@@ -21,7 +21,7 @@
 #include "Mustard/Env/ObjectRegistry/WeakSingletonified.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Allocator.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include "gtl/phmap.hpp"
 

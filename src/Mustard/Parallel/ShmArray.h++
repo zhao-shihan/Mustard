@@ -20,7 +20,7 @@
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/MoveOnlyBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include "gtl/vector.hpp"
 

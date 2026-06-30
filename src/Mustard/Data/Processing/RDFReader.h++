@@ -21,7 +21,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Allocator.h++"
 #include "Mustard/Memory/Arc.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include "ROOT/RDataFrame.hxx"
 #include "TROOT.h"

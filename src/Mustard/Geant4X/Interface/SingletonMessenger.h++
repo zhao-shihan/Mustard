@@ -21,7 +21,7 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include "G4UImessenger.hh"
 

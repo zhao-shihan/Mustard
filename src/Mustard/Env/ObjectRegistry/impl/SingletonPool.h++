@@ -23,7 +23,7 @@
 #include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Allocator.h++"
-#include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include "gtl/phmap.hpp"
 

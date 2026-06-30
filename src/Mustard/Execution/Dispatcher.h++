@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Parallel/MPIPredefined.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include <concepts>
 #include <utility>

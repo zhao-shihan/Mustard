@@ -23,7 +23,7 @@
 #include "Mustard/Env/ObjectRegistry/impl/SingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
-#include "Mustard/Utility/NonConstructibleBase.h++"
+#include "Mustard/Utility/SemanticBase.h++"
 
 #include "muc/mutex"
 #include "muc/utility"
