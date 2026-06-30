@@ -78,6 +78,36 @@ struct EstimatePOD : std::monostate {};
 
 namespace impl {
 
+/// @brief Helper type to select a fixed-size vector whenever possible.
+///
+/// In binary operations, evaluate to this type instead of .eval() directly
+/// to avoid unnecessary heap allocation when result dimension is known at compile time.
+template<int K, int L>
+using VecType = std::conditional_t<
+    L == Eigen::Dynamic,
+    Eigen::Vector<double, K>,
+    Eigen::Vector<double, L>>;
+
+/// @brief Helper type to select a fixed-size array whenever possible.
+///
+/// In binary operations, evaluate to this type instead of .eval() directly
+/// to avoid unnecessary heap allocation when result dimension is known at compile time.
+template<int K, int L>
+using ArrType = std::conditional_t<
+    L == Eigen::Dynamic,
+    Eigen::Array<double, K, 1>,
+    Eigen::Array<double, L, 1>>;
+
+/// @brief Helper type to select a fixed-size matrix whenever possible.
+///
+/// In binary operations, evaluate to this type instead of .eval() directly
+/// to avoid unnecessary heap allocation when result dimension is known at compile time.
+template<int K, int L>
+using MatType = std::conditional_t<
+    L == Eigen::Dynamic,
+    Eigen::Matrix<double, K, K>,
+    Eigen::Matrix<double, L, L>>;
+
 /// @brief Determines the result type of `Concat` between two `Estimate` objects.
 ///
 /// The result dimension is @f$K+L@f$ when both @f$K@f$ and @f$L@f$ are compile-time

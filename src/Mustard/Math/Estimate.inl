@@ -147,18 +147,18 @@ auto EstimateBase<ADerived, K, C>::CombineInPlace(const Estimate<L, D>& other) &
     CheckVectorDimensionMatch(other.fX);
     if constexpr (C == D and D == CovarianceOption::Full) {
         // (A^{-1} + B^{-1})^{-1} = A (A + B)^{-1} B, avoids explicit inverses of dense matrices
-        auto newCov{(fCov * (fCov + other.fCov).ldlt().solve(other.fCov)).eval()};
+        MatType<K, L> newCov{fCov * (fCov + other.fCov).ldlt().solve(other.fCov)};
         fX = newCov * (fCov.ldlt().solve(fX) + other.fCov.ldlt().solve(other.fX));
         fCov = std::move(newCov);
     } else if constexpr (C == CovarianceOption::Full) {
         // (A^{-1} + B^{-1})^{-1} = A (A + B)^{-1} B, avoids explicit inverses of dense matrices
-        auto newCov{other.fCov.toDenseMatrix()};
+        MatType<K, L> newCov{other.fCov};
         newCov = fCov * (fCov + newCov).ldlt().solve(newCov);
         fX = newCov * (fCov.ldlt().solve(fX) + other.fCov.inverse() * other.fX);
         fCov = std::move(newCov);
     } else if constexpr (D == CovarianceOption::Full) {
         // diag(A (A + B)^{-1} B) = A diag((A + B)^{-1} B) for diagonal A
-        CovarianceType newCov{(fCov * (fCov.toDenseMatrix() + other.fCov).ldlt().solve(other.fCov).diagonal().asDiagonal())};
+        CovarianceType newCov{(fCov * (MatType<K, L>{fCov} + other.fCov).ldlt().solve(other.fCov).diagonal().asDiagonal())};
         fX = newCov * (fCov.inverse() * fX + other.fCov.ldlt().solve(other.fX));
         fCov = std::move(newCov);
     } else {
@@ -336,7 +336,7 @@ auto EstimateBase<ADerived, K, C>::operator/=(const Estimate<L, D>& other) -> AD
     CheckVectorDimensionMatch(other.fX);
     // Cov = diag(1/y)·Cov(x)·diag(1/y) + diag(-x/y^2)·Cov(y)·diag(-x/y^2)
     // We drop the minus sign since it gets squared anyway.
-    const auto invY{other.fX.cwiseInverse().eval()};
+    const VecType<K, L> invY{other.fX.cwiseInverse()};
     ArrX() *= invY.array();
     CovCwiseBinaryUpdate(other, invY, fX.cwiseProduct(invY));
     return Self();
@@ -426,7 +426,7 @@ auto EstimateBase<ADerived, K, C>::DivideInPlace(const Estimate<L, D>& other) & 
     CheckVectorDimensionMatch(other.fX);
     // Cov = diag(-y/x^2)·Cov(x)·diag(-y/x^2) + diag(1/x)·Cov(y)·diag(1/x)
     // We drop the minus sign since it gets squared anyway.
-    const auto invX{fX.cwiseInverse().eval()};
+    const VecType<K, L> invX{fX.cwiseInverse()};
     fX = other.fX.cwiseProduct(invX);
     CovCwiseBinaryUpdate(other, fX.cwiseProduct(invX), invX);
     return Self();
@@ -453,7 +453,7 @@ auto EstimateBase<ADerived, K, C>::DivideInPlace(const Eigen::MatrixBase<AVec>& 
     CheckVectorDimensionMatch(yXpr);
     // Cov = diag(-y/x²)·Cov·diag(-y/x²)
     // We drop the minus sign since it gets squared anyway.
-    const auto invX{fX.cwiseInverse().eval()};
+    const VecType<K, AVec::SizeAtCompileTime> invX{fX.cwiseInverse()};
     fX = yXpr.cwiseProduct(invX);
     CovCwiseUnaryUpdate(fX.cwiseProduct(invX));
     return Self();
@@ -808,8 +808,8 @@ auto EstimateBase<ADerived, K, C>::PowInPlace(const Estimate<L, D>& other) & -> 
     CheckVectorDimensionMatch(other.fX);
     // x^y = exp(y·log(x))
     // Cov = diag(y/x·x^y)·Cov(x)·diag(y/x·x^y) + diag(x^y·log(x))·Cov(y)·diag(x^y·log(x))
-    const auto logX{log(ArrX()).eval()};
-    const auto xPowY{exp(other.ArrX() * logX).eval()};
+    const ArrType<K, L> logX{log(ArrX())};
+    const ArrType<K, L> xPowY{exp(other.ArrX() * logX)};
     CovCwiseBinaryUpdate(other, other.ArrX() / ArrX() * xPowY, xPowY * logX);
     ArrX() = xPowY;
     return Self();
@@ -840,8 +840,8 @@ auto EstimateBase<ADerived, K, C>::PowInPlace(const Eigen::MatrixBase<AVec>& yXp
     // x^y = exp(y·log(x))
     // Cov = diag(y/x·x^y)·Cov·diag(y/x·x^y)
     const auto& y{yXpr.eval()};
-    const auto logX{log(ArrX()).eval()};
-    const auto xPowY{exp(y.array() * logX).eval()};
+    const ArrType<K, AVec::SizeAtCompileTime> logX{log(ArrX())};
+    const ArrType<K, AVec::SizeAtCompileTime> xPowY{exp(y.array() * logX)};
     CovCwiseUnaryUpdate(y.array() / ArrX() * xPowY);
     ArrX() = xPowY;
     return Self();
@@ -865,8 +865,8 @@ auto EstimateBase<ADerived, K, C>::ExpInPlace(const Estimate<L, D>& other) & -> 
     CheckVectorDimensionMatch(other.fX);
     // y^x = exp(x·log(y))
     // Cov = diag(y^x·log(y))·Cov(x)·diag(y^x·log(y)) + diag(x/y·y^x)·Cov(y)·diag(x/y·y^x)
-    const auto logY{log(other.ArrX()).eval()};
-    const auto yPowX{exp(ArrX() * logY).eval()};
+    const ArrType<K, L> logY{log(other.ArrX())};
+    const ArrType<K, L> yPowX{exp(ArrX() * logY)};
     CovCwiseBinaryUpdate(other, yPowX * logY, ArrX() / other.ArrX() * yPowX);
     ArrX() = yPowX;
     return Self();
@@ -895,7 +895,7 @@ auto EstimateBase<ADerived, K, C>::ExpInPlace(const Eigen::MatrixBase<AVec>& yXp
     CheckVectorDimensionMatch(yXpr);
     // y^x = exp(x·log(y))
     // Cov = diag(y^x·log(y))·Cov·diag(y^x·log(y))
-    const auto logY{log(yXpr.array()).eval()};
+    const ArrType<K, AVec::SizeAtCompileTime> logY{log(yXpr.array())};
     ArrX() = exp(ArrX() * logY);
     CovCwiseUnaryUpdate(ArrX() * logY);
     return Self();
@@ -988,7 +988,7 @@ auto EstimateBase<ADerived, K, C>::Cosine(const Estimate<L, D>& other) const -> 
         return {};
     }
     const auto xDotY{fX.dot(other.fX)};
-    auto delta{(other.fX - (xDotY / xNormSq) * fX).eval()};
+    VecType<K, L> delta{other.fX - (xDotY / xNormSq) * fX};
     auto var{CovBilinearForm(delta)};
     delta.noalias() = fX - (xDotY / yNormSq) * other.fX;
     var += other.CovBilinearForm(delta);
@@ -1110,8 +1110,8 @@ auto EstimateBase<ADerived, K, C>::ProjFromInPlace(const Estimate<L, D>& other) 
     }
     const auto invXNormSq{1 / xNormSq};
     const auto c{invXNormSq * other.fX.dot(fX)};
-    const auto v{(invXNormSq * (other.fX - 2 * c * fX)).eval()};
-    const auto w{(fCov * v).eval()};
+    const VecType<K, L> v{invXNormSq * (other.fX - 2 * c * fX)};
+    const VecType<K, L> w{fCov * v};
     const auto b{other.CovBilinearForm(fX) / xNormQr + v.dot(w)};
     if constexpr (C == CovarianceOption::Full) {
         fCov *= muc::pow(c, 2);
@@ -1140,8 +1140,8 @@ auto EstimateBase<ADerived, K, C>::ProjFromInPlace(const Eigen::MatrixBase<AVec>
     const auto& y{yXpr.eval()};
     const auto invXNormSq{1 / xNormSq};
     const auto c{invXNormSq * y.dot(fX)};
-    const auto v{(invXNormSq * (y - 2 * c * fX)).eval()};
-    const auto w{(fCov * v).eval()};
+    const VecType<K, AVec::SizeAtCompileTime> v{invXNormSq * (y - 2 * c * fX)};
+    const VecType<K, AVec::SizeAtCompileTime> w{fCov * v};
     if constexpr (C == CovarianceOption::Full) {
         fCov *= muc::pow(c, 2);
     } else {
@@ -1491,16 +1491,16 @@ template<typename ADerived, int K, CovarianceOption C>
 template<typename AVec>
     requires(AVec::ColsAtCompileTime == 1)
 auto EstimateBase<ADerived, K, C>::CovBilinearForm(const Eigen::DenseBase<AVec>& uXpr) const -> double {
-    const auto& uMatXpr{impl::ToMatXpr(uXpr)};
+    const auto& uVecXpr{impl::ToMatXpr(uXpr)};
     if constexpr (C == CovarianceOption::Full) {
-        const auto& u{uMatXpr.eval()};
+        const auto& u{uVecXpr.eval()};
         if constexpr (K <= 8 and K != Eigen::Dynamic) {
             return u.dot(fCov * u);
         } else {
             return u.dot(fCov.template selfadjointView<Eigen::Lower>() * u);
         }
     } else {
-        return VarXpr().dot(uMatXpr.cwiseSquare());
+        return VarXpr().dot(uVecXpr.cwiseSquare());
     }
 }
 
@@ -1509,17 +1509,17 @@ template<typename ADerived, int K, CovarianceOption C>
 template<typename AVec>
     requires(AVec::ColsAtCompileTime == 1)
 auto EstimateBase<ADerived, K, C>::CovRankUpdate(double c, const Eigen::DenseBase<AVec>& uXpr) -> void {
-    const auto& uMatXpr{impl::ToMatXpr(uXpr)};
+    const auto& uVecXpr{impl::ToMatXpr(uXpr)};
     if constexpr (C == CovarianceOption::Full) {
         if constexpr (K <= 8 and K != Eigen::Dynamic) {
-            const auto& u{uMatXpr.eval()};
+            const auto& u{uVecXpr.eval()};
             fCov.noalias() += c * u * u.transpose();
         } else {
-            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(uMatXpr, c);
+            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(uVecXpr, c);
             fCov.template triangularView<Eigen::Upper>() = fCov.transpose();
         }
     } else {
-        VarXpr() += c * uMatXpr.cwiseSquare();
+        VarXpr() += c * uVecXpr.cwiseSquare();
     }
 }
 
@@ -1528,19 +1528,19 @@ template<typename ADerived, int K, CovarianceOption C>
 template<typename AVecU, typename AVecV>
     requires(AVecU::ColsAtCompileTime == 1 and AVecV::ColsAtCompileTime == 1)
 auto EstimateBase<ADerived, K, C>::CovRankUpdate(double c, const Eigen::DenseBase<AVecU>& uXpr, const Eigen::DenseBase<AVecV>& vXpr) -> void {
-    const auto& uMatXpr{impl::ToMatXpr(uXpr)};
-    const auto& vMatXpr{impl::ToMatXpr(vXpr)};
+    const auto& uVecXpr{impl::ToMatXpr(uXpr)};
+    const auto& vVecXpr{impl::ToMatXpr(vXpr)};
     if constexpr (C == CovarianceOption::Full) {
         if constexpr (K <= 8 and K != Eigen::Dynamic) {
-            const auto& u{(c * uMatXpr).eval()};
-            const auto& v{vMatXpr.eval()};
+            const auto& u{(c * uVecXpr).eval()};
+            const auto& v{vVecXpr.eval()};
             fCov.noalias() += u * v.transpose() + v * u.transpose();
         } else {
-            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(uMatXpr, vMatXpr, c);
+            fCov.template selfadjointView<Eigen::Lower>().rankUpdate(uVecXpr, vVecXpr, c);
             fCov.template triangularView<Eigen::Upper>() = fCov.transpose();
         }
     } else {
-        VarXpr() += 2 * c * uMatXpr.cwiseProduct(vMatXpr);
+        VarXpr() += 2 * c * uVecXpr.cwiseProduct(vVecXpr);
     }
 }
 
