@@ -1225,16 +1225,15 @@ auto EstimateBase<ADerived, K, C>::Concat(const Estimate<L, D>& other) const -> 
     result.fX.tail(dim2) = other.fX;
     if constexpr (typename ResultType::FullCovariance{}) {
         result.fCov.resize(dim, dim);
+        result.fCov.setZero();
         if constexpr (C == CovarianceOption::Full) {
             result.fCov.topLeftCorner(dim1, dim1) = fCov;
         } else {
-            result.fCov.topLeftCorner(dim1, dim1).setZero();
             result.fCov.topLeftCorner(dim1, dim1).diagonal() = VarXpr();
         }
         if constexpr (D == CovarianceOption::Full) {
             result.fCov.bottomRightCorner(dim2, dim2) = other.fCov;
         } else {
-            result.fCov.bottomRightCorner(dim2, dim2).setZero();
             result.fCov.bottomRightCorner(dim2, dim2).diagonal() = other.VarXpr();
         }
     } else {
