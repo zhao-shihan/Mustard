@@ -474,6 +474,54 @@ constexpr auto sec0CrossDimCopy{[] {
     CheckClose(eDyn2.Covariance(0, 1), 0.3, "0j: Dynamic from Static Cov(0,1)");
 }};
 
+// =========================================================================
+// Section 0: Implicit 1D Cross-Covariance Conversion
+// =========================================================================
+
+constexpr auto sec0Implicit1DConversion{[] {
+    constexpr auto full{CovarianceOption::Full};
+    constexpr auto diag{CovarianceOption::Diagonal};
+
+    Estimate<1, full> eFull{5.0, 0.25};
+    Estimate<1, diag> eDiag{3.0, 0.09};
+
+    // Copy-initialization: exercises operator Estimate<1, D>()
+    {
+        Estimate<1, diag> eFromFull = eFull;
+        CheckClose(eFromFull.Value(), 5.0, "0k: Diag=Full copy-init Value");
+        CheckClose(eFromFull.Variance(), 0.25, "0k: Diag=Full copy-init Variance");
+
+        Estimate<1, full> eFromDiag = eDiag;
+        CheckClose(eFromDiag.Value(), 3.0, "0k: Full=Diag copy-init Value");
+        CheckClose(eFromDiag.Variance(), 0.09, "0k: Full=Diag copy-init Variance");
+    }
+
+    // Function argument: implicit conversion in parameter passing
+    {
+        auto TakeFull{[](Estimate<1, full> e) {
+            CheckClose(e.Value(), 3.0, "0k: TakeFull(arg=Diag) Value");
+            CheckClose(e.Variance(), 0.09, "0k: TakeFull(arg=Diag) Variance");
+        }};
+        auto TakeDiag{[](Estimate<1, diag> e) {
+            CheckClose(e.Value(), 5.0, "0k: TakeDiag(arg=Full) Value");
+            CheckClose(e.Variance(), 0.25, "0k: TakeDiag(arg=Full) Variance");
+        }};
+        TakeFull(eDiag);
+        TakeDiag(eFull);
+    }
+
+    // Static cast
+    {
+        auto eCastDiag{static_cast<Estimate<1, diag>>(eFull)};
+        CheckClose(eCastDiag.Value(), 5.0, "0k: static_cast Full->Diag Value");
+        CheckClose(eCastDiag.Variance(), 0.25, "0k: static_cast Full->Diag Variance");
+
+        auto eCastFull{static_cast<Estimate<1, full>>(eDiag)};
+        CheckClose(eCastFull.Value(), 3.0, "0k: static_cast Diag->Full Value");
+        CheckClose(eCastFull.Variance(), 0.09, "0k: static_cast Diag->Full Variance");
+    }
+}};
+
 } // namespace TestEstimateSection
 
 auto TestEstimate0::Main(int argc, char* argv[]) const -> int {
@@ -496,6 +544,9 @@ auto TestEstimate0::Main(int argc, char* argv[]) const -> int {
 
     sec0CrossDimCopy();
     PrintLn("  0j passed: cross-dimension copy");
+
+    sec0Implicit1DConversion();
+    PrintLn("  0k passed: implicit 1D cross-covariance conversion");
 
     PrintLn("All TestEstimate0 tests passed.");
     return EXIT_SUCCESS;

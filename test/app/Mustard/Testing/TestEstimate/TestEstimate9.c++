@@ -241,8 +241,8 @@ constexpr auto sec6DotProduct{[]<int K, CovarianceOption C>() {
             CheckClose(dotResult3.Value(), expectedValue, "9e: Free Dot(v,e) value");
         }
 
-        // Result type is Estimate<1, C>
-        static_assert(std::is_same_v<decltype(e1.Dot(e2)), Estimate<1, C>>);
+        // Result type is Estimate1D
+        static_assert(std::is_same_v<decltype(e1.Dot(e2)), Estimate1D>);
     }
 }};
 

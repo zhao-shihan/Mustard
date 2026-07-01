@@ -918,7 +918,7 @@ auto EstimateBase<ADerived, K, C>::ExpInPlace(double c) & -> ADerived& {
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
-auto EstimateBase<ADerived, K, C>::Sum() const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::Sum() const -> Estimate1D {
     const auto value{fX.sum()};
     const auto var{[this] {
         if constexpr (C == CovarianceOption::Full) {
@@ -934,7 +934,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<double P>
     requires(P >= 1)
-auto EstimateBase<ADerived, K, C>::LpNorm() && -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::LpNorm() && -> Estimate1D {
     if constexpr (muc::isclose(P, 1.)) {
         return AbsInPlace().Sum();
     } else if constexpr (muc::isclose(P, 2.)) {
@@ -956,7 +956,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<int L, CovarianceOption D>
     requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::Dot(const Estimate<L, D>& other) const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::Dot(const Estimate<L, D>& other) const -> Estimate1D {
     CheckVectorDimensionMatch(other.fX);
     const auto x{fX.dot(other.fX)};
     const auto var{CovBilinearForm(other.fX) + other.CovBilinearForm(fX)};
@@ -967,7 +967,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<typename AVec>
     requires(AVec::ColsAtCompileTime == 1)
-auto EstimateBase<ADerived, K, C>::Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate1D {
     CheckVectorDimensionMatch(yXpr);
     const auto& y{yXpr.eval()};
     const auto x{fX.dot(y)};
@@ -979,7 +979,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<int L, CovarianceOption D>
     requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::Cosine(const Estimate<L, D>& other) const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::Cosine(const Estimate<L, D>& other) const -> Estimate1D {
     CheckVectorDimensionMatch(other.fX);
     const auto xNormSq{fX.squaredNorm()};
     const auto yNormSq{other.fX.squaredNorm()};
@@ -999,7 +999,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<typename AVec>
     requires(AVec::ColsAtCompileTime == 1)
-auto EstimateBase<ADerived, K, C>::Cosine(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::Cosine(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate1D {
     CheckVectorDimensionMatch(yXpr);
     const auto& y{yXpr.eval()};
     const auto xNormSq{fX.squaredNorm()};
@@ -1017,7 +1017,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<int L, CovarianceOption D>
     requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::ScalarProjTo(const Estimate<L, D>& other) const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::ScalarProjTo(const Estimate<L, D>& other) const -> Estimate1D {
     CheckVectorDimensionMatch(other.fX);
     const auto yNormSq{other.fX.squaredNorm()};
     if (muc::isclose(yNormSq, 0.)) {
@@ -1033,7 +1033,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<typename AVec>
     requires(AVec::ColsAtCompileTime == 1)
-auto EstimateBase<ADerived, K, C>::ScalarProjTo(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::ScalarProjTo(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate1D {
     CheckVectorDimensionMatch(yXpr);
     const auto& y{yXpr.eval()};
     const auto yNormSq{y.squaredNorm()};
@@ -1048,7 +1048,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<typename AVec>
     requires(AVec::ColsAtCompileTime == 1)
-auto EstimateBase<ADerived, K, C>::ScalarProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::ScalarProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate1D {
     CheckVectorDimensionMatch(yXpr);
     const auto xNormSq{fX.squaredNorm()};
     if (muc::isclose(xNormSq, 0.)) {
@@ -1399,7 +1399,7 @@ template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<std::regular_invocable<const ADVector<K, K>&> F>
     requires std::same_as<std::invoke_result_t<F, const ADVector<K, K>&>, ADScalar<K>>
-auto EstimateBase<ADerived, K, C>::Reduce(F&& func) const -> Estimate<1, C> {
+auto EstimateBase<ADerived, K, C>::Reduce(F&& func) const -> Estimate1D {
     const auto dim{Dimension()};
     ADVector<K, K> ax(dim);
     for (int i{}; i < dim; ++i) {

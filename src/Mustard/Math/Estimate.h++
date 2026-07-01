@@ -784,7 +784,7 @@ public:
 
     /// @brief Sum of all components, @f$\sum_i x_i@f$.
     /// @return A scalar estimate with value = sum of elements and properly propagated uncertainty.
-    auto Sum() const -> Estimate<1, C>;
+    auto Sum() const -> Estimate1D;
 
     /// @brief Product of all components, @f$\prod_i x_i@f$.
     /// @return A scalar estimate with value = product of elements and properly propagated uncertainty.
@@ -806,7 +806,7 @@ public:
     auto LpNorm() const& -> auto { return ADerived{Self()}.template LpNorm<P>(); }
     template<double P>
         requires(P >= 1)
-    auto LpNorm() && -> Estimate<1, C>;
+    auto LpNorm() && -> Estimate1D;
 
     /// @brief Arithmetic mean, @f$\frac{1}{K}\sum_i x_i@f$.
     auto Mean() const -> auto { return Sum() / Dimension(); }
@@ -836,21 +836,21 @@ public:
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Dot(const Estimate<L, D>& other) const -> Estimate<1, C>;
+    auto Dot(const Estimate<L, D>& other) const -> Estimate1D;
     /// @brief Inner product with a plain vector.
     /// @return A scalar estimate with value = self·v and properly propagated uncertainty.
     template<typename AVec>
         requires(AVec::ColsAtCompileTime == 1)
-    auto Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+    auto Dot(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate1D;
 
     /// @brief Cosine of the angle between two vectors, @f$\frac{x \cdot y}{|x|\,|y|}@f$.
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Cosine(const Estimate<L, D>& other) const -> Estimate<1, C>;
+    auto Cosine(const Estimate<L, D>& other) const -> Estimate1D;
     /// @brief Cosine with a plain vector (no uncertainty on @p yXpr).
     template<typename AVec>
         requires(AVec::ColsAtCompileTime == 1)
-    auto Cosine(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+    auto Cosine(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate1D;
 
     /// @brief Angle between two vectors, @f$\arccos(\frac{x \cdot y}{|x|\,|y|})@f$, in radians.
     template<int L, CovarianceOption D>
@@ -864,11 +864,11 @@ public:
     /// @brief Scalar projection of @c *this onto @p other, @f$\frac{x \cdot y}{|y|}@f$.
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto ScalarProjTo(const Estimate<L, D>& other) const -> Estimate<1, C>;
+    auto ScalarProjTo(const Estimate<L, D>& other) const -> Estimate1D;
     /// @brief Scalar projection of @c *this onto a plain vector (no uncertainty on @p yXpr).
     template<typename AVec>
         requires(AVec::ColsAtCompileTime == 1)
-    auto ScalarProjTo(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+    auto ScalarProjTo(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate1D;
 
     /// @brief Scalar projection of @p other onto @c *this, @f$\frac{y \cdot x}{|x|}@f$.
     template<int L, CovarianceOption D>
@@ -877,7 +877,7 @@ public:
     /// @brief Scalar projection of @p yXpr onto @c *this, @f$\frac{y \cdot x}{|x|}@f$.
     template<typename AVec>
         requires(AVec::ColsAtCompileTime == 1)
-    auto ScalarProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate<1, C>;
+    auto ScalarProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const -> Estimate1D;
 
     /// @}
     /// @name Vector projection
@@ -1053,7 +1053,7 @@ public:
     /// @note Function must return an ADScalar object.
     template<std::regular_invocable<const ADVector<K, K>&> F>
         requires std::same_as<std::invoke_result_t<F, const ADVector<K, K>&>, ADScalar<K>>
-    auto Reduce(F&& func) const -> Estimate<1, C>;
+    auto Reduce(F&& func) const -> Estimate1D;
 
     /// @brief Transform the estimate via a differentiable vector-to-vector function.
     /// Uses ADScalar (aka Eigen::AutoDiffScalar) to compute the Jacobian matrix and propagate covariance.
@@ -1203,6 +1203,11 @@ public:
 
     /// @brief Inherit assignment operators from the base class.
     using Base::operator=;
+
+    /// @brief Implicit conversion to another 1D estimate with different covariance option.
+    template<CovarianceOption D>
+        requires(C != D)
+    operator Estimate<1, D>() const { return {Value(), Variance()}; }
 
     /// @brief Return the dimension of the value space. Always returns 1.
     using Base::Dimension;
