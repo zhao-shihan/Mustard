@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/AutomaticDifferentiation.h++"
 
 #include "Eigen/Cholesky"
 #include "Eigen/Core"
@@ -949,6 +950,23 @@ public:
     auto ProjFrom(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
 
     /// @}
+    /// @name Normalization
+    /// @brief Normalize the vector to unit length with proper uncertainty propagation.
+    /// @note Only available for vector estimates (@f$K \neq 1@f$).
+    /// @{
+
+    /// @brief In-place normalization: @f$x \to x / \|x\|@f$.
+    /// The covariance matrix is updated via the Delta method:
+    /// @f$\operatorname{Cov} \leftarrow J \operatorname{Cov} J^\mathsf{T}@f$,
+    /// where @f$J = (I - \mu\mu^\mathsf{T}/\|\mu\|^2) / \|\mu\|@f$.
+    /// If the vector length squared is close to zero (as determined by `muc::isclose`),
+    /// the estimate is returned unchanged.
+    auto Normalize() & -> ADerived&;
+    /// @brief Return a normalized copy: @f$x \to x / \|x\|@f$.
+    auto Normalized() const& -> ADerived;
+    auto Normalized() && -> ADerived;
+
+    /// @}
     /// @name Matrix-vector product
     /// @{
 
@@ -970,23 +988,6 @@ public:
     auto RightMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> auto { return LeftMultiply(aXpr.transpose()); }
 
     /// @}
-    /// @name Normalization
-    /// @brief Normalize the vector to unit length with proper uncertainty propagation.
-    /// @note Only available for vector estimates (@f$K \neq 1@f$).
-    /// @{
-
-    /// @brief In-place normalization: @f$x \to x / \|x\|@f$.
-    /// The covariance matrix is updated via the Delta method:
-    /// @f$\operatorname{Cov} \leftarrow J \operatorname{Cov} J^\mathsf{T}@f$,
-    /// where @f$J = (I - \mu\mu^\mathsf{T}/\|\mu\|^2) / \|\mu\|@f$.
-    /// If the vector length squared is close to zero (as determined by `muc::isclose`),
-    /// the estimate is returned unchanged.
-    auto Normalize() & -> ADerived&;
-    /// @brief Return a normalized copy: @f$x \to x / \|x\|@f$.
-    auto Normalized() const& -> ADerived;
-    auto Normalized() && -> ADerived;
-
-    /// @}
     /// @name Block operations
     /// @{
 
@@ -1001,7 +1002,8 @@ public:
         requires(K != 1);
     /// @brief First N components (compile-time dimension).
     template<int N>
-        requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+        requires(K != 1 and N > 0 and N != Eigen::Dynamic and
+                 (N <= K or K == Eigen::Dynamic))
     auto Head() const -> Estimate<N, C>;
 
     /// @brief Last n components with corresponding sub-covariance.
@@ -1009,7 +1011,8 @@ public:
         requires(K != 1);
     /// @brief Last N components (compile-time dimension).
     template<int N>
-        requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+        requires(K != 1 and N > 0 and N != Eigen::Dynamic and
+                 (N <= K or K == Eigen::Dynamic))
     auto Tail() const -> Estimate<N, C>;
 
     /// @brief n components starting at position i.
@@ -1017,8 +1020,51 @@ public:
         requires(K != 1);
     /// @brief N components starting at position i (compile-time dimension).
     template<int N>
-        requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+        requires(K != 1 and N > 0 and N != Eigen::Dynamic and
+                 (N <= K or K == Eigen::Dynamic))
     auto Segment(int i) const -> Estimate<N, C>;
+
+    /// @}
+    /// @name User-defined operations
+    /// @{
+
+    /// @brief In-place element-wise application of a differentiable function.
+    /// Uses ADScalar (aka Eigen::AutoDiffScalar) to compute the gradient and propagate covariance.
+    /// @param func A callable @f$f: \text{Scalar} \to \text{Scalar}@f$ compatible with ADScalar
+    /// @note Function must return an ADScalar object.
+    template<std::regular_invocable<const ADScalar<1>&> F>
+        requires std::same_as<std::invoke_result_t<F, const ADScalar<1>&>, ADScalar<1>>
+    auto ApplyInPlace(F&& func) & -> ADerived&;
+    /// @brief Return a copy with the function applied element-wise.
+    /// @note Function must return an ADScalar object.
+    template<std::regular_invocable<const ADScalar<1>&> F>
+        requires std::same_as<std::invoke_result_t<F, const ADScalar<1>&>, ADScalar<1>>
+    auto Apply(F&& func) const& -> ADerived;
+    /// @brief Return a copy with the function applied element-wise.
+    /// @note Function must return an ADScalar object.
+    template<std::regular_invocable<const ADScalar<1>&> F>
+        requires std::same_as<std::invoke_result_t<F, const ADScalar<1>&>, ADScalar<1>>
+    auto Apply(F&& func) && -> ADerived;
+
+    /// @brief Reduce the estimate via a differentiable vector-to-scalar function.
+    /// Uses ADScalar (aka Eigen::AutoDiffScalar) to compute the gradient and propagate covariance.
+    /// @param func A callable @f$f: \mathbb{R}^K \to \mathbb{R}@f$ compatible with ADScalar
+    /// @return A scalar Estimate<1, C> with value @f$f(x)@f$ and proper uncertainty
+    /// @note Function must return an ADScalar object.
+    template<std::regular_invocable<const ADVector<K, K>&> F>
+        requires std::same_as<std::invoke_result_t<F, const ADVector<K, K>&>, ADScalar<K>>
+    auto Reduce(F&& func) const -> Estimate<1, C>;
+
+    /// @brief Transform the estimate via a differentiable vector-to-vector function.
+    /// Uses ADScalar (aka Eigen::AutoDiffScalar) to compute the Jacobian matrix and propagate covariance.
+    /// @tparam N Output dimension (can be `Eigen::Dynamic` for runtime-determined output dimension)
+    /// @param func A callable @f$f: \mathbb{R}^K \to \mathbb{R}^N@f$ compatible with ADScalar
+    /// @return A new `Estimate<N, C>` with value @f$f(x)@f$ and properly propagated covariance
+    /// @note The function must accept and return an ADVector object. If @f$N@f$ is `Eigen::Dynamic`,
+    /// the output dimension is determined at runtime from the size of the returned vector.
+    template<int N, std::regular_invocable<const ADVector<K, K>&> F>
+        requires std::same_as<std::invoke_result_t<F, const ADVector<K, K>&>, ADVector<N, K>>
+    auto Transform(F&& func) const -> Estimate<N, C>;
 
     /// @}
 
@@ -1097,6 +1143,9 @@ private:
     template<typename AJac>
         requires(AJac::ColsAtCompileTime == 1)
     auto CovCwiseUnaryUpdate(const Eigen::DenseBase<AJac>& diagJacXpr) -> void;
+    template<typename AJac>
+    auto CovUnaryOpResult(const Eigen::MatrixBase<AJac>& jacXpr,
+                          typename Estimate<AJac::RowsAtCompileTime, C>::CovarianceType& newCov) const -> void;
     template<int L, CovarianceOption D, typename AJacX, typename AJacY>
         requires(AJacX::ColsAtCompileTime == 1 and AJacY::ColsAtCompileTime == 1)
     auto CovCwiseBinaryUpdate(const Estimate<L, D>& other,
@@ -1177,7 +1226,7 @@ public:
     using Base::operator/=;
     /// @}
 
-    /// @name Math functions
+    /// @name Math operations
     /// @{
     using Base::Abs;
     using Base::AbsInPlace;
@@ -1185,6 +1234,8 @@ public:
     using Base::Acosh;
     using Base::AcoshInPlace;
     using Base::AcosInPlace;
+    using Base::Apply;
+    using Base::ApplyInPlace;
     using Base::Asin;
     using Base::Asinh;
     using Base::AsinhInPlace;
@@ -1253,10 +1304,11 @@ public:
     using Base::TanInPlace;
     /// @}
 
-    /// @brief Inherit POD conversion from the base class.
-    using Base::ToPOD;
-    /// @brief Inherit POD restoration from the base class.
+    /// @name Other member functions
+    /// @{
     using Base::FromPOD;
+    using Base::ToPOD;
+    /// @}
 };
 
 /// @brief @f$K@f$-dimensional Estimate (general template for @f$K \neq 1@f$).

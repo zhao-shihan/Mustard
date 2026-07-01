@@ -1154,44 +1154,6 @@ auto EstimateBase<ADerived, K, C>::ProjFromInPlace(const Eigen::MatrixBase<AVec>
 }
 
 // -----------------------------------------------------------------------------
-// Matrix-vector product
-// -----------------------------------------------------------------------------
-
-template<typename ADerived, int K, CovarianceOption C>
-    requires GoodStatisticDimension<K>::value
-template<typename AMat>
-    requires(AMat::ColsAtCompileTime == K or
-             K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::LeftMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> Estimate<AMat::RowsAtCompileTime, C> {
-    CheckMatrixColDimensionMatch(aXpr);
-    const auto& a{aXpr.eval()};
-    const auto x{a * fX};
-    if constexpr (C == CovarianceOption::Full) {
-        // Direct: ~ 2 M K^2 + 2 M^2 K ops
-        // LDLT: ~ (1/3 K^3 + 7/2 K^2) +  (M K^2 + M K)  +   M^2 K   ops
-        //                 LDLT          A P^T L sqrt(D)  rank-update
-        // Direct < LDLT  <=>  K > 1/4 (-21 + 6 M + sqrt(441 + 12 M (-25 + 7 M)))
-        //   RHS = 3.79 M - 9.34 + 2.36/M + O(1/M^2) ~= 3.79 M - 9.34
-        // So when K > 3.79 M - 9.34 compute directly (keep the 9.34 is good for small K and M)
-        const auto dim{Dimension()};
-        if ((dim <= 8 and a.rows() <= 8) or dim > 3.79 * a.rows() - 9.34) {
-            return {x, a * fCov * a.transpose()};
-        } else {
-            using ResultCov = typename Estimate<AMat::RowsAtCompileTime, C>::CovarianceType;
-            ResultCov cov(a.rows(), a.rows());
-            cov.setZero();
-            const auto ldlt{fCov.template selfadjointView<Eigen::Lower>().ldlt()};
-            cov.template selfadjointView<Eigen::Lower>().rankUpdate(
-                a * ldlt.transpositionsP() * ldlt.matrixL() * ldlt.vectorD().cwiseSqrt().asDiagonal());
-            cov.template triangularView<Eigen::Upper>() = cov.transpose();
-            return {x, cov};
-        }
-    } else {
-        return {x, (a.cwiseSquare() * VarXpr()).asDiagonal()};
-    }
-}
-
-// -----------------------------------------------------------------------------
 // Normalization
 // -----------------------------------------------------------------------------
 
@@ -1227,6 +1189,24 @@ auto EstimateBase<ADerived, K, C>::Normalize() & -> ADerived& {
 }
 
 // -----------------------------------------------------------------------------
+// Matrix-vector product
+// -----------------------------------------------------------------------------
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<typename AMat>
+    requires(AMat::ColsAtCompileTime == K or
+             K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
+auto EstimateBase<ADerived, K, C>::LeftMultiply(const Eigen::MatrixBase<AMat>& aXpr) const -> Estimate<AMat::RowsAtCompileTime, C> {
+    CheckMatrixColDimensionMatch(aXpr);
+    const auto& a{aXpr.eval()};
+    Estimate<AMat::RowsAtCompileTime, C> result{std::monostate{}};
+    result.fX = a * fX;
+    CovUnaryOpResult(a, result.fCov);
+    return result;
+}
+
+// -----------------------------------------------------------------------------
 // Block operations
 // -----------------------------------------------------------------------------
 
@@ -1236,38 +1216,33 @@ template<int L, CovarianceOption D>
     requires GoodStatisticDimension<L>::value
 auto EstimateBase<ADerived, K, C>::Concat(const Estimate<L, D>& other) const -> EstimateConcatResult<K, C, L, D> {
     using ResultType = EstimateConcatResult<K, C, L, D>;
-    const auto setResult{[this, &other](ResultType& result) {
-        const auto dim1{Dimension()};
-        const auto dim2{other.Dimension()};
-        result.fX.head(dim1) = fX;
-        result.fX.tail(dim2) = other.fX;
-        if constexpr (typename ResultType::FullCovariance{}) {
-            if constexpr (C == CovarianceOption::Full) {
-                result.fCov.topLeftCorner(dim1, dim1) = fCov;
-            } else {
-                result.fCov.topLeftCorner(dim1, dim1).setZero();
-                result.fCov.topLeftCorner(dim1, dim1).diagonal() = VarXpr();
-            }
-            if constexpr (D == CovarianceOption::Full) {
-                result.fCov.bottomRightCorner(dim2, dim2) = other.fCov;
-            } else {
-                result.fCov.bottomRightCorner(dim2, dim2).setZero();
-                result.fCov.bottomRightCorner(dim2, dim2).diagonal() = other.VarXpr();
-            }
+    ResultType result{std::monostate{}};
+    const auto dim1{Dimension()};
+    const auto dim2{other.Dimension()};
+    const auto dim{dim1 + dim2};
+    result.fX.resize(dim);
+    result.fX.head(dim1) = fX;
+    result.fX.tail(dim2) = other.fX;
+    if constexpr (typename ResultType::FullCovariance{}) {
+        result.fCov.resize(dim, dim);
+        if constexpr (C == CovarianceOption::Full) {
+            result.fCov.topLeftCorner(dim1, dim1) = fCov;
         } else {
-            result.fCov.diagonal().head(dim1) = VarXpr();
-            result.fCov.diagonal().tail(dim2) = other.VarXpr();
+            result.fCov.topLeftCorner(dim1, dim1).setZero();
+            result.fCov.topLeftCorner(dim1, dim1).diagonal() = VarXpr();
         }
-    }};
-    if constexpr (typename ResultType::StaticDimension{}) {
-        ResultType result;
-        setResult(result);
-        return result;
+        if constexpr (D == CovarianceOption::Full) {
+            result.fCov.bottomRightCorner(dim2, dim2) = other.fCov;
+        } else {
+            result.fCov.bottomRightCorner(dim2, dim2).setZero();
+            result.fCov.bottomRightCorner(dim2, dim2).diagonal() = other.VarXpr();
+        }
     } else {
-        ResultType result{Dimension() + other.Dimension()};
-        setResult(result);
-        return result;
+        result.fCov.resize(dim);
+        result.fCov.diagonal().head(dim1) = VarXpr();
+        result.fCov.diagonal().tail(dim2) = other.VarXpr();
     }
+    return result;
 }
 
 template<typename ADerived, int K, CovarianceOption C>
@@ -1277,7 +1252,7 @@ auto EstimateBase<ADerived, K, C>::Head(int n) const -> Estimate<Eigen::Dynamic,
     if (n <= 0 or n > Dimension()) {
         Throw<std::out_of_range>(fmt::format("n={} out of range [1, {}]", n, Dimension()));
     }
-    Estimate<Eigen::Dynamic, C> result{n};
+    Estimate<Eigen::Dynamic, C> result{std::monostate{}};
     result.fX = fX.head(n);
     if constexpr (C == CovarianceOption::Full) {
         result.fCov = fCov.topLeftCorner(n, n);
@@ -1290,14 +1265,15 @@ auto EstimateBase<ADerived, K, C>::Head(int n) const -> Estimate<Eigen::Dynamic,
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<int N>
-    requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+    requires(K != 1 and N > 0 and N != Eigen::Dynamic and
+             (N <= K or K == Eigen::Dynamic))
 auto EstimateBase<ADerived, K, C>::Head() const -> Estimate<N, C> {
     if constexpr (K == Eigen::Dynamic) {
         if (N > Dimension()) {
             Throw<std::out_of_range>(fmt::format("N exceeds dimension {}", N, Dimension()));
         }
     }
-    Estimate<N, C> result;
+    Estimate<N, C> result{std::monostate{}};
     result.fX = fX.template head<N>();
     if constexpr (C == CovarianceOption::Full) {
         result.fCov = fCov.template topLeftCorner<N, N>();
@@ -1314,7 +1290,7 @@ auto EstimateBase<ADerived, K, C>::Tail(int n) const -> Estimate<Eigen::Dynamic,
     if (n <= 0 or n > Dimension()) {
         Throw<std::out_of_range>(fmt::format("n={} out of range [1, {}]", n, Dimension()));
     }
-    Estimate<Eigen::Dynamic, C> result{n};
+    Estimate<Eigen::Dynamic, C> result{std::monostate{}};
     result.fX = fX.tail(n);
     if constexpr (C == CovarianceOption::Full) {
         result.fCov = fCov.bottomRightCorner(n, n);
@@ -1327,14 +1303,15 @@ auto EstimateBase<ADerived, K, C>::Tail(int n) const -> Estimate<Eigen::Dynamic,
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<int N>
-    requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+    requires(K != 1 and N > 0 and N != Eigen::Dynamic and
+             (N <= K or K == Eigen::Dynamic))
 auto EstimateBase<ADerived, K, C>::Tail() const -> Estimate<N, C> {
     if constexpr (K == Eigen::Dynamic) {
         if (N > Dimension()) {
             Throw<std::out_of_range>(fmt::format("N exceeds dimension {}", N, Dimension()));
         }
     }
-    Estimate<N, C> result;
+    Estimate<N, C> result{std::monostate{}};
     result.fX = fX.template tail<N>();
     if constexpr (C == CovarianceOption::Full) {
         result.fCov = fCov.template bottomRightCorner<N, N>();
@@ -1351,7 +1328,7 @@ auto EstimateBase<ADerived, K, C>::Segment(int i, int n) const -> Estimate<Eigen
     if (i < 0 or n <= 0 or i + n > Dimension()) {
         Throw<std::out_of_range>(fmt::format("i={}, n={} out of range [0, {}]", i, n, Dimension() - n));
     }
-    Estimate<Eigen::Dynamic, C> result{n};
+    Estimate<Eigen::Dynamic, C> result{std::monostate{}};
     result.fX = fX.segment(i, n);
     if constexpr (C == CovarianceOption::Full) {
         result.fCov = fCov.block(i, i, n, n);
@@ -1364,18 +1341,108 @@ auto EstimateBase<ADerived, K, C>::Segment(int i, int n) const -> Estimate<Eigen
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
 template<int N>
-    requires(K != 1 and N > 0 and (N <= K or K == Eigen::Dynamic))
+    requires(K != 1 and N > 0 and N != Eigen::Dynamic and
+             (N <= K or K == Eigen::Dynamic))
 auto EstimateBase<ADerived, K, C>::Segment(int i) const -> Estimate<N, C> {
     if (i < 0 or i + N > Dimension()) {
         Throw<std::out_of_range>(fmt::format("i={} out of range [0, {}]", N, i, Dimension() - N));
     }
-    Estimate<N, C> result;
+    Estimate<N, C> result{std::monostate{}};
     result.fX = fX.template segment<N>(i);
     if constexpr (C == CovarianceOption::Full) {
         result.fCov = fCov.template block<N, N>(i, i);
     } else {
         result.fCov.diagonal() = VarXpr().segment(i, N);
     }
+    return result;
+}
+
+// -----------------------------------------------------------------------------
+// User-defined operations
+// -----------------------------------------------------------------------------
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<std::regular_invocable<const ADScalar<1>&> F>
+    requires std::same_as<std::invoke_result_t<F, const ADScalar<1>&>, ADScalar<1>>
+auto EstimateBase<ADerived, K, C>::ApplyInPlace(F&& func) & -> ADerived& {
+    const auto dim{Dimension()};
+    ValueType jac(dim);
+    for (int i{}; i < dim; ++i) {
+        const ADScalar<1> ax{fX[i], 1, 0};
+        const ADScalar<1> ad{std::invoke(std::forward<F>(func), ax)};
+        fX[i] = ad.value();
+        jac[i] = ad.derivatives()[0];
+    }
+    CovCwiseUnaryUpdate(jac);
+    return Self();
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<std::regular_invocable<const ADScalar<1>&> F>
+    requires std::same_as<std::invoke_result_t<F, const ADScalar<1>&>, ADScalar<1>>
+auto EstimateBase<ADerived, K, C>::Apply(F&& func) const& -> ADerived {
+    auto result{Self()};
+    result.ApplyInPlace(std::forward<F>(func));
+    return result; // NRVO
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<std::regular_invocable<const ADScalar<1>&> F>
+    requires std::same_as<std::invoke_result_t<F, const ADScalar<1>&>, ADScalar<1>>
+auto EstimateBase<ADerived, K, C>::Apply(F&& func) && -> ADerived {
+    return std::move(ApplyInPlace(std::forward<F>(func)));
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<std::regular_invocable<const ADVector<K, K>&> F>
+    requires std::same_as<std::invoke_result_t<F, const ADVector<K, K>&>, ADScalar<K>>
+auto EstimateBase<ADerived, K, C>::Reduce(F&& func) const -> Estimate<1, C> {
+    const auto dim{Dimension()};
+    ADVector<K, K> ax(dim);
+    for (int i{}; i < dim; ++i) {
+        ax[i].value() = fX[i];
+        ax[i].derivatives() = ValueType::Unit(dim, i);
+    }
+    ADScalar<K> ad{std::invoke(std::forward<F>(func), ax)};
+    if constexpr (K == Eigen::Dynamic) {
+        if (ad.derivatives().size() == 0) { // func is a constant function
+            return {ad.value(), 0};
+        }
+    }
+    return {ad.value(), CovBilinearForm(ad.derivatives())};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+template<int N, std::regular_invocable<const ADVector<K, K>&> F>
+    requires std::same_as<std::invoke_result_t<F, const ADVector<K, K>&>, ADVector<N, K>>
+auto EstimateBase<ADerived, K, C>::Transform(F&& func) const -> Estimate<N, C> {
+    const auto dim{Dimension()};
+    ADVector<K, K> ax(dim);
+    for (int i{}; i < dim; ++i) {
+        ax[i].value() = fX[i];
+        ax[i].derivatives() = ValueType::Unit(dim, i);
+    }
+    ADVector<N, K> ad{std::invoke(std::forward<F>(func), ax)};
+    Estimate<N, C> result{std::monostate{}};
+    result.fX.resize(ad.size());
+    Eigen::Matrix<double, N, K> jac(ad.size(), dim);
+    for (int i{}; i < ad.size(); ++i) {
+        result.fX[i] = ad[i].value();
+        auto& grad{ad[i].derivatives()};
+        if constexpr (K == Eigen::Dynamic) {
+            if (grad.size() == 0) { // func return a constant for this dim
+                jac.row(i).setZero();
+                continue;
+            }
+        }
+        jac.row(i) = grad;
+    }
+    CovUnaryOpResult(jac, result.fCov);
     return result;
 }
 
@@ -1567,6 +1634,36 @@ auto EstimateBase<ADerived, K, C>::CovCwiseUnaryUpdate(const Eigen::DenseBase<AJ
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
+template<typename AJac>
+auto EstimateBase<ADerived, K, C>::CovUnaryOpResult(const Eigen::MatrixBase<AJac>& jacXpr,
+                                                    typename Estimate<AJac::RowsAtCompileTime, C>::CovarianceType& newCov) const -> void {
+    if constexpr (C == CovarianceOption::Full) {
+        // Direct: ~ 2 n k^2 + 2 n^2 k ops
+        // LDLT: ~ (1/3 k^3 + 7/2 k^2) +  (n k^2 + n k)  +   n^2 k   ops
+        //                 LDLT          A P^T L sqrt(D)  rank-update
+        // Direct < LDLT  <=>  k > 1/4 (sqrt(12 n (7 n - 25) + 441) + 6 n - 21)
+        //   RHS = 3.79 n - 9.34 + 2.36/n + O(1/n^2) ~= 3.79 n - 9.34
+        // So when k > 3.79 n - 9.34 compute directly (keep the 9.34 is good for small k and n)
+        const auto dim{Dimension()};
+        newCov.resize(jacXpr.rows(), jacXpr.rows());
+        if ((dim <= 8 and jacXpr.rows() <= 8) or dim > 3.79 * jacXpr.rows() - 9.34) {
+            const auto& jac{jacXpr.eval()};
+            newCov.noalias() = jac * fCov * jac.transpose();
+        } else {
+            newCov.setZero();
+            const auto ldlt{fCov.template selfadjointView<Eigen::Lower>().ldlt()};
+            newCov.template selfadjointView<Eigen::Lower>().rankUpdate(
+                jacXpr * ldlt.transpositionsP() * ldlt.matrixL() * ldlt.vectorD().cwiseSqrt().asDiagonal());
+            newCov.template triangularView<Eigen::Upper>() = newCov.transpose();
+        }
+    } else {
+        newCov.resize(jacXpr.rows());
+        newCov.diagonal() = jacXpr.cwiseSquare() * VarXpr();
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
 template<int L, CovarianceOption D, typename AJacX, typename AJacY>
     requires(AJacX::ColsAtCompileTime == 1 and AJacY::ColsAtCompileTime == 1)
 auto EstimateBase<ADerived, K, C>::CovCwiseBinaryUpdate(const Estimate<L, D>& other,
@@ -1620,7 +1717,7 @@ Estimate<K, C>::Estimate(const Eigen::MatrixBase<AVec>& x, const Eigen::EigenBas
 #define MUSTARD_MATH_ESTIMATE_TWO_STEP_FORWARDING_FUNCTION_BODY(source, Op, operand) \
     result{source};                                                                  \
     result.Op(operand);                                                              \
-    return result; // NRVO should kick in to avoid unnecessary copy/move
+    return result; // NRVO
 
 namespace impl {
 
