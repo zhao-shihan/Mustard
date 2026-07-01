@@ -90,7 +90,8 @@ template<int K>
 struct GoodStatisticDimension
     : std::bool_constant<
           K == Eigen::Dynamic or
-          (K > 0 and sizeof(double) * K * K <= EIGEN_STACK_ALLOCATION_LIMIT)> {};
+          (K > 0 and (sizeof(double) * K * K <= EIGEN_STACK_ALLOCATION_LIMIT or
+                      EIGEN_STACK_ALLOCATION_LIMIT == 0))> {};
 
 /// @brief Helper type to select a fixed-size vector whenever possible.
 ///
