@@ -48,19 +48,22 @@ EstimateBase<ADerived, K, C>::EstimateBase(const EstimateBase& other) :
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
-EstimateBase<ADerived, K, C>::EstimateBase(int dim) // clang-format off
-    requires(K == Eigen::Dynamic) : // clang-format on
+EstimateBase<ADerived, K, C>::EstimateBase([[maybe_unused]] int dim) :
     EstimateBase{std::monostate{}} {
-    if (dim <= 0) {
-        Throw<std::invalid_argument>(fmt::format("Dimension must be positive, got {}.", dim));
-    }
-    fX.resize(dim);
-    fX.setZero();
-    if constexpr (C == CovarianceOption::Full) {
-        fCov.resize(dim, dim);
+    if constexpr (K == Eigen::Dynamic) {
+        if (dim <= 0) {
+            Throw<std::invalid_argument>(fmt::format("Dimension must be positive, got {}.", dim));
+        }
+        fX.resize(dim);
+        if constexpr (C == CovarianceOption::Full) {
+            fCov.resize(dim, dim);
+        } else {
+            fCov.resize(dim);
+        }
     } else {
-        fCov.resize(dim);
+        assert(dim == K);
     }
+    fX.setZero();
     fCov.setZero();
 }
 

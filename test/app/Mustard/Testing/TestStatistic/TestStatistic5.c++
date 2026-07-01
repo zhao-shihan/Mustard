@@ -53,7 +53,7 @@ constexpr auto sec5Smoke{[]<int K, CovarianceOption C>() {
 
     // Negative weight fill
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillSeq(s, 1.0, 5.0);
         fillSeq(s, 2.0, -2.0);
         [[maybe_unused]] auto n{s.SampleSize()};
@@ -61,7 +61,7 @@ constexpr auto sec5Smoke{[]<int K, CovarianceOption C>() {
 
     // Mixed positive/negative weights
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillSeq(s, 1.0, 2.0);
         fillSeq(s, 3.0, -1.0);
         fillSeq(s, 5.0, 1.0);
@@ -75,7 +75,7 @@ constexpr auto sec5Smoke{[]<int K, CovarianceOption C>() {
 
     // Weights summing to zero (cancellation)
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillSeq(s, 1.0, 1.0);
         fillSeq(s, 2.0, -1.0);
         [[maybe_unused]] auto ws{s.WeightSum()};
@@ -83,7 +83,7 @@ constexpr auto sec5Smoke{[]<int K, CovarianceOption C>() {
 
     // Negative weight alone on single sample
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillSeq(s, 5.0, -1.0);
         [[maybe_unused]] auto n{s.SampleSize()};
     }
@@ -109,7 +109,7 @@ constexpr auto sec5NegativeWeightVectors{[]<int K, CovarianceOption C>() {
 
     // Negative weight fill
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillSeq(s, 1.0, 5.0);
         fillSeq(s, 2.0, -2.0);
 
@@ -131,7 +131,7 @@ constexpr auto sec5NegativeWeightVectors{[]<int K, CovarianceOption C>() {
 
     // Mixed positive/negative weights
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillSeq(s, 1.0, 2.0);  // w=2
         fillSeq(s, 3.0, -1.0); // w=-1
         fillSeq(s, 5.0, 1.0);  // w=1
@@ -160,7 +160,7 @@ constexpr auto sec5NegativeWeightVectors{[]<int K, CovarianceOption C>() {
 
     // Weights summing to zero (cancellation)
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillSeq(s, 1.0, 1.0);
         fillSeq(s, 2.0, -1.0);
 
@@ -188,7 +188,7 @@ constexpr auto sec5NegativeWeightVectors{[]<int K, CovarianceOption C>() {
 
     // Negative weight alone on single sample
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillSeq(s, 5.0, -1.0);
         CheckEq(s.SampleSize(), 1LL, "5: SampleSize (single neg)");
         CheckClose(s.WeightSum(), -1.0, "5: WeightSum (single neg)");

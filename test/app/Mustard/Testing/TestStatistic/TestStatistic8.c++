@@ -45,7 +45,7 @@ constexpr auto sec8Smoke{[]<int K, CovarianceOption C>() {
     // Partition merge smoke
     {
         using Stat = Statistic<K, C>;
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         if constexpr (K == 1) {
             s.Fill(1.0);
             s.Fill(2.0);
@@ -53,7 +53,7 @@ constexpr auto sec8Smoke{[]<int K, CovarianceOption C>() {
             s.Fill(MakeSeqVector<K>(dim, 1.0));
             s.Fill(MakeSeqVector<K>(dim, 2.0));
         }
-        Stat s2{MakeStatistic<K, C>(dim)};
+        Stat s2(dim);
         if constexpr (K == 1) {
             s2.Fill(3.0);
         } else {
@@ -66,7 +66,7 @@ constexpr auto sec8Smoke{[]<int K, CovarianceOption C>() {
     // Correlation zero-variance smoke
     if constexpr (isFull and K != 1) {
         using Stat = Statistic<K, C>;
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         auto v{MakeSeqVector<K>(dim, 1.0)};
         s.Fill(v);
         s.Fill(v);
@@ -95,12 +95,12 @@ constexpr auto sec8PartitionConsistency{[]<int K, CovarianceOption C>() {
         }
     }};
 
-    Stat sFull{MakeStatistic<K, C>(dim)};
+    Stat sFull(dim);
     fillStat(sFull, 1, 6);
 
-    Stat sPart{MakeStatistic<K, C>(dim)};
+    Stat sPart(dim);
     fillStat(sPart, 1, 3);
-    Stat sOther{MakeStatistic<K, C>(dim)};
+    Stat sOther(dim);
     fillStat(sOther, 4, 6);
 
     sPart += sOther;
@@ -125,7 +125,7 @@ constexpr auto sec8CorrZeroVar{[]<int K, CovarianceOption C>() {
 
     if constexpr (isFull and K != 1) {
         using Stat = Statistic<K, C>;
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         // Feed the same observation twice → zero variance for all components
         auto v{MakeSeqVector<K>(dim, 1.0)};
         s.Fill(v);

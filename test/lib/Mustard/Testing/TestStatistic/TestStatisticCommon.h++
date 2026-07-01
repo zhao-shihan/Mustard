@@ -78,18 +78,6 @@ auto MakeConstVector(int dim, double val) -> auto {
 }
 
 // =========================================================================
-// Helper: construct Statistic with correct dynamic/static behavior
-// =========================================================================
-template<int K, CovarianceOption C = CovarianceOption::Full>
-auto MakeStatistic(int dim = 0) -> Statistic<K, C> {
-    if constexpr (K == Eigen::Dynamic) {
-        return Statistic<K, C>(dim);
-    } else {
-        return Statistic<K, C>{};
-    }
-}
-
-// =========================================================================
 // Iteration helpers
 // =========================================================================
 

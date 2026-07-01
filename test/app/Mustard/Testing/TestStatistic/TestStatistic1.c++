@@ -42,7 +42,7 @@ constexpr auto sec1Smoke{[]<int K, CovarianceOption C>() {
     using Stat = Statistic<K, C>;
     constexpr auto dim{(K == Eigen::Dynamic) ? 3 : K};
 
-    Stat s{MakeStatistic<K, C>(dim)};
+    Stat s(dim);
 
     // Fill
     if constexpr (K == 1) {
@@ -123,7 +123,7 @@ constexpr auto sec1FillAndStatistics{[]<int K, CovarianceOption C>() {
     constexpr bool isDynamic{K == Eigen::Dynamic};
     constexpr auto dim{isDynamic ? 2 : K};
 
-    Stat s{MakeStatistic<K, C>(dim)};
+    Stat s(dim);
 
     // Fill 5 observations: component i = (i+1)*v for v in {1,2,3,4,5}
     if constexpr (K == 1) {
@@ -271,7 +271,7 @@ constexpr auto sec1WeightedStatistics{[]<int K, CovarianceOption C>() {
     constexpr bool isDynamic{K == Eigen::Dynamic};
     constexpr auto dim{isDynamic ? 2 : K};
 
-    Stat s{MakeStatistic<K, C>(dim)};
+    Stat s(dim);
     if constexpr (K == 1) {
         s.Fill(1.0, 2.0);
         s.Fill(2.0, 3.0);

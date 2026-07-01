@@ -53,7 +53,7 @@ constexpr auto sec6Smoke{[]<int K, CovarianceOption C>() {
 
     // Very large values
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0e15);
         fillConst(s, 1.0e15 + 1.0);
         fillConst(s, 1.0e15 + 2.0);
@@ -66,7 +66,7 @@ constexpr auto sec6Smoke{[]<int K, CovarianceOption C>() {
 
     // Very small values
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0e-15);
         fillConst(s, 2.0e-15);
         fillConst(s, 3.0e-15);
@@ -79,7 +79,7 @@ constexpr auto sec6Smoke{[]<int K, CovarianceOption C>() {
 
     // Alternating large positive/negative
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0e10);
         fillConst(s, -1.0e10);
         fillConst(s, 1.0e10);
@@ -93,7 +93,7 @@ constexpr auto sec6Smoke{[]<int K, CovarianceOption C>() {
 
     // Large mean offset
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0e9 + 1.0);
         fillConst(s, 1.0e9 + 2.0);
         fillConst(s, 1.0e9 + 3.0);
@@ -106,14 +106,14 @@ constexpr auto sec6Smoke{[]<int K, CovarianceOption C>() {
 
     // Very small weights
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 5.0, 1.0e-300);
         [[maybe_unused]] auto n{s.SampleSize()};
     }
 
     // Large negative weight
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0, -1.0e15);
         [[maybe_unused]] auto ws{s.WeightSum()};
     }
@@ -153,7 +153,7 @@ constexpr auto sec6NumericalStressVectors{[]<int K, CovarianceOption C>() {
 
     // Very large values (~1e15)
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0e15);
         fillConst(s, 1.0e15 + 1.0);
         fillConst(s, 1.0e15 + 2.0);
@@ -164,7 +164,7 @@ constexpr auto sec6NumericalStressVectors{[]<int K, CovarianceOption C>() {
 
     // Very small values (~1e-15)
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0e-15);
         fillConst(s, 2.0e-15);
         fillConst(s, 3.0e-15);
@@ -175,7 +175,7 @@ constexpr auto sec6NumericalStressVectors{[]<int K, CovarianceOption C>() {
 
     // Alternating large positive/negative values
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0e10);
         fillConst(s, -1.0e10);
         fillConst(s, 1.0e10);
@@ -187,7 +187,7 @@ constexpr auto sec6NumericalStressVectors{[]<int K, CovarianceOption C>() {
 
     // Values with large mean offset
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0e9 + 1.0);
         fillConst(s, 1.0e9 + 2.0);
         fillConst(s, 1.0e9 + 3.0);
@@ -198,7 +198,7 @@ constexpr auto sec6NumericalStressVectors{[]<int K, CovarianceOption C>() {
 
     // Very small weights
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 5.0, 1.0e-300);
 
         CheckEq(s.SampleSize(), 1LL, "6: SampleSize (tiny weight)");
@@ -208,7 +208,7 @@ constexpr auto sec6NumericalStressVectors{[]<int K, CovarianceOption C>() {
 
     // Single large negative weight
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         fillConst(s, 1.0, -1.0e15);
         CheckEq(s.SampleSize(), 1LL, "6: SampleSize (large neg)");
         CheckClose(s.WeightSum(), -1.0e15, "6: WeightSum (large neg)");

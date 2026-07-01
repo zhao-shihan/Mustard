@@ -29,6 +29,7 @@
 
 #include "fmt/format.h"
 
+#include <cassert>
 #include <cmath>
 #include <concepts>
 #include <cstring>
@@ -167,8 +168,7 @@ public:
     /// @brief Construct with a given dimension.
     /// @param dim Number of components (must be positive)
     /// @throws std::invalid_argument if `dim <= 0`
-    explicit StatisticBase(int dim)
-        requires(K == Eigen::Dynamic);
+    explicit StatisticBase([[maybe_unused]] int dim);
     /// @brief Construct by copying state from another StatisticBase with possibly different CovarianceOption.
     /// @tparam L Dimension of the source
     /// @tparam D Covariance option of the source

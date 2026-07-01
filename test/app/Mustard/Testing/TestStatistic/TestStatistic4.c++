@@ -43,14 +43,6 @@ constexpr auto sec4Smoke{[]<int K, CovarianceOption C>() {
     constexpr bool isDynamic{K == Eigen::Dynamic};
     constexpr auto dim{isDynamic ? 2 : K};
 
-    auto makeStat{[&] {
-        if constexpr (isDynamic) {
-            return Stat(dim);
-        } else {
-            return Stat{};
-        }
-    }};
-
     auto fillConst{[&](Stat& s, double val, double w = 1.0) {
         if constexpr (K == 1) {
             s.Fill(val, w);
@@ -68,21 +60,21 @@ constexpr auto sec4Smoke{[]<int K, CovarianceOption C>() {
 
     // Zero-weight fill
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         fillConst(s, 1.0, 0.0);
         [[maybe_unused]] auto n{s.SampleSize()};
     }
 
     // Single sample
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         fillSeq(s);
         [[maybe_unused]] auto n{s.SampleSize()};
     }
 
     // Identical values
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         for (auto j{0}; j < 10; ++j) {
             fillSeq(s);
         }
@@ -95,7 +87,7 @@ constexpr auto sec4Smoke{[]<int K, CovarianceOption C>() {
 
     // Large sample count
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         for (auto j{0}; j < 1000; ++j) {
             fillConst(s, 1.0);
         }
@@ -104,7 +96,7 @@ constexpr auto sec4Smoke{[]<int K, CovarianceOption C>() {
 
     // Empty statistic
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         if constexpr (K == 1) {
             [[maybe_unused]] auto m{s.Mean()};
         } else {
@@ -121,15 +113,6 @@ constexpr auto sec4EdgeCases{[]<int K, CovarianceOption C>() {
     using Stat = Statistic<K, C>;
     constexpr bool isDynamic{K == Eigen::Dynamic};
     constexpr auto dim{isDynamic ? 2 : K};
-
-    // Construction helper
-    auto makeStat{[&] {
-        if constexpr (isDynamic) {
-            return Stat(dim);
-        } else {
-            return Stat{};
-        }
-    }};
 
     // Fill helpers
     auto fillConst{[&](Stat& s, double val, double w = 1.0) {
@@ -163,7 +146,7 @@ constexpr auto sec4EdgeCases{[]<int K, CovarianceOption C>() {
 
     // Zero-weight fill is a no-op
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         fillConst(s, 1.0, 0.0);
         CheckEq(s.SampleSize(), 0LL, "4: SampleSize (zero weight)");
         CheckClose(s.WeightSum(), 0.0, "4: WeightSum (zero weight)");
@@ -180,7 +163,7 @@ constexpr auto sec4EdgeCases{[]<int K, CovarianceOption C>() {
 
     // Single sample (variance is NaN)
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         fillSeq(s);
         CheckEq(s.SampleSize(), 1LL, "4: SampleSize");
 
@@ -198,7 +181,7 @@ constexpr auto sec4EdgeCases{[]<int K, CovarianceOption C>() {
 
     // Identical values (zero variance)
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         for (auto j{0}; j < 10; ++j) {
             fillSeq(s);
         }
@@ -207,7 +190,7 @@ constexpr auto sec4EdgeCases{[]<int K, CovarianceOption C>() {
 
     // Large sample count
     {
-        Stat s{makeStat()};
+        Stat s(dim);
         constexpr long long kN{10'000};
         for (auto j{0}; j < kN; ++j) {
             fillConst(s, 1.0);
@@ -219,7 +202,7 @@ constexpr auto sec4EdgeCases{[]<int K, CovarianceOption C>() {
 
     // Empty statistic accessors
     if constexpr (std::numeric_limits<double>::is_iec559) {
-        Stat s{makeStat()};
+        Stat s(dim);
         if constexpr (K == 1) {
             if (not std::isnan(s.Mean())) {
                 Throw<std::runtime_error>("4: Mean() of empty statistic should be NaN under IEEE 754");

@@ -42,8 +42,8 @@ constexpr auto sec2Smoke{[]<int K, CovarianceOption C>() {
     using Stat = Statistic<K, C>;
     constexpr auto dim{(K == Eigen::Dynamic) ? 3 : K};
 
-    Stat s1{MakeStatistic<K, C>(dim)};
-    Stat s2{MakeStatistic<K, C>(dim)};
+    Stat s1(dim);
+    Stat s2(dim);
 
     if constexpr (K == 1) {
         s1.Fill(1.0);
@@ -105,7 +105,7 @@ constexpr auto sec2MergeOperations{[]<int K, CovarianceOption C>() {
     constexpr auto dim{isDynamic ? 2 : K};
 
     auto makeFullStat{[&](int startVal, int endVal) {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         if constexpr (K == 1) {
             for (auto v{startVal}; v <= endVal; ++v) {
                 s.Fill(static_cast<double>(v));
@@ -180,7 +180,7 @@ constexpr auto sec2SelfMerge{[]<int K, CovarianceOption C>() {
     constexpr bool isDynamic{K == Eigen::Dynamic};
     constexpr auto dim{isDynamic ? 2 : K};
 
-    Stat s{MakeStatistic<K, C>(dim)};
+    Stat s(dim);
     if constexpr (K == 1) {
         s.Fill(1.0);
         s.Fill(2.0);

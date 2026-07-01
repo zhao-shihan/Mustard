@@ -74,16 +74,12 @@ constexpr auto sec0Smoke{[]<int K, CovarianceOption C>() {
 
     // ---- constructors ----
     {
+        Est e0{dim};
+        vec = e0.Value();
         if constexpr (not isDynamic) {
-            Est e0;
-            vec = e0.Value();
             typename Est::PODType pod{};
             Est e5{pod};
             vec = e5.Value();
-        }
-        if constexpr (isDynamic) {
-            Est e0d{dim};
-            vec = e0d.Value();
         }
         Est e1 = newEst();
         if constexpr (K == 1) {
@@ -257,50 +253,43 @@ constexpr auto sec0Construction{[]<int K, CovarianceOption C>() {
     constexpr bool isDynamic{K == Eigen::Dynamic};
     constexpr bool isFull{C == CovarianceOption::Full};
 
-    // Default construction (static only)
-    if constexpr (not isDynamic) {
-        Est e;
-        CheckEq(e.Dimension(), K, "0: Dimension");
-        if constexpr (K == 1) {
-            CheckClose(e.Value(), 0.0, "0: Value()");
-            CheckClose(e.Variance(), 0.0, "0: Variance()");
-            CheckClose(e.StdDev(), 0.0, "0: StdDev()");
-            CheckClose(e.Uncertainty(), 0.0, "0: Uncertainty()");
-        } else {
-            for (auto i{0}; i < K; ++i) {
-                CheckClose(e.Value(i), 0.0, fmt::format("0: Value({})", i));
-                CheckClose(e.Variance(i), 0.0, fmt::format("0: Variance({})", i));
-                CheckClose(e.StdDev(i), 0.0, fmt::format("0: StdDev({})", i));
-                CheckClose(e.Uncertainty(i), 0.0, fmt::format("0: Uncertainty({})", i));
-            }
-        }
+    // Default/dimension construction
+    Est e(dim);
+    CheckEq(e.Dimension(), dim, "0: Dimension");
+    if constexpr (K == 1) {
+        CheckClose(e.Value(), 0.0, "0: Value()");
+        CheckClose(e.Variance(), 0.0, "0: Variance()");
+        CheckClose(e.StdDev(), 0.0, "0: StdDev()");
+        CheckClose(e.Uncertainty(), 0.0, "0: Uncertainty()");
     } else {
-        {
-            Est e{2};
-            CheckEq(e.Dimension(), 2, "0: Dimension");
-            CheckClose(e.Value(0), 0.0, "0: Value(0)");
-            CheckClose(e.Value(1), 0.0, "0: Value(1)");
+        for (auto i{0}; i < dim; ++i) {
+            CheckClose(e.Value(i), 0.0, fmt::format("0: Value({})", i));
+            CheckClose(e.Variance(i), 0.0, fmt::format("0: Variance({})", i));
+            CheckClose(e.StdDev(i), 0.0, fmt::format("0: StdDev({})", i));
+            CheckClose(e.Uncertainty(i), 0.0, fmt::format("0: Uncertainty({})", i));
         }
-        {
-            auto threwZero{false};
-            try {
-                Est e{0};
-            } catch (const std::invalid_argument&) {
-                threwZero = true;
-            }
-            if (not threwZero) {
-                Throw<std::runtime_error>("0: dim=0 should throw");
-            }
+    }
 
-            auto threwNeg{false};
-            try {
-                Est e{-1};
-            } catch (const std::invalid_argument&) {
-                threwNeg = true;
-            }
-            if (not threwNeg) {
-                Throw<std::runtime_error>("0: dim=-1 should throw");
-            }
+    // Invalid dimension throws (dynamic only; fixed K uses assert)
+    if constexpr (isDynamic) {
+        auto threwZero{false};
+        try {
+            Est e(0);
+        } catch (const std::invalid_argument&) {
+            threwZero = true;
+        }
+        if (not threwZero) {
+            Throw<std::runtime_error>("0: dim=0 should throw");
+        }
+
+        auto threwNeg{false};
+        try {
+            Est e(-1);
+        } catch (const std::invalid_argument&) {
+            threwNeg = true;
+        }
+        if (not threwNeg) {
+            Throw<std::runtime_error>("0: dim=-1 should throw");
         }
     }
 

@@ -65,9 +65,9 @@ constexpr auto secSmoke{[] {
     auto estF{MakeEstimate<1, full>(x, covF)};
     auto estD{MakeEstimate<1, diag>(x, covD)};
 
-    auto statF{TestStatistic::MakeStatistic<1, full>(1)};
+    Statistic<1, full> statF(1);
     FillStatWithTwoValues(statF, 4.0, 6.0, 100);
-    auto statD{TestStatistic::MakeStatistic<1, diag>(1)};
+    Statistic<1, diag> statD(1);
     FillStatWithTwoValues(statD, 4.0, 6.0, 100);
 
     // ---- Two-sample from Statistic ----
@@ -206,9 +206,9 @@ constexpr auto sec4Props{[] {
 constexpr auto sec5Delegation{[] {
     constexpr auto full{CovarianceOption::Full};
 
-    auto stat1{TestStatistic::MakeStatistic<1, full>(1)};
+    Statistic<1, full> stat1(1);
     FillStatWithTwoValues(stat1, 4.0, 6.0, 50);
-    auto stat2{TestStatistic::MakeStatistic<1, full>(1)};
+    Statistic<1, full> stat2(1);
     FillStatWithTwoValues(stat2, 4.5, 5.5, 50);
 
     StatisticalZTest zs{stat1, stat2};

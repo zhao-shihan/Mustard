@@ -44,27 +44,21 @@ constexpr auto sec0Smoke{[]<int K, CovarianceOption C>() {
     constexpr auto dim{(K == Eigen::Dynamic) ? 3 : K};
     constexpr bool isDynamic{K == Eigen::Dynamic};
 
-    // Default construction (static only)
+    // Default and dimension-based construction
+    Stat s1(dim);
+    [[maybe_unused]] auto d1{s1.Dimension()};
     if constexpr (not isDynamic) {
-        Stat s1;
-        [[maybe_unused]] auto d{s1.Dimension()};
         POD pod{};
         Stat s4{pod};
         [[maybe_unused]] auto d4{s4.Dimension()};
     }
 
-    // Dimension-based construction (dynamic only)
-    if constexpr (isDynamic) {
-        Stat s1(dim);
-        [[maybe_unused]] auto d{s1.Dimension()};
-    }
-
     // Copy and move construction
-    Stat s1{MakeStatistic<K, C>(dim)};
-    Stat s2{s1};
-    Stat s3{std::move(s2)};
-    [[maybe_unused]] auto d2{s2.Dimension()};
-    [[maybe_unused]] auto d3{s3.Dimension()};
+    Stat s5(dim);
+    Stat s6{s5};
+    Stat s7{std::move(s6)};
+    [[maybe_unused]] auto d6{s6.Dimension()};
+    [[maybe_unused]] auto d7{s7.Dimension()};
 }};
 
 // =========================================================================
@@ -118,34 +112,22 @@ constexpr auto sec0SmokeCrossType{[] {
 constexpr auto sec0Construction{[]<int K, CovarianceOption C>() {
     using Stat = Statistic<K, C>;
     constexpr bool isDynamic{K == Eigen::Dynamic};
+    constexpr auto dim{isDynamic ? 3 : K};
 
-    // Static/default construction
-    if constexpr (not isDynamic) {
-        Stat s;
-        CheckEq(s.Dimension(), K, "0: Dimension");
-        CheckEq(s.SampleSize(), 0LL, "0: SampleSize");
-        CheckClose(s.WeightSum(), 0.0, "0: WeightSum");
-        CheckClose(s.WeightSquareSum(), 0.0, "0: WeightSquareSum");
-        if constexpr (K == 1) {
-            CheckClose(s.Sum(), 0.0, "0: Sum");
-        } else {
-            CheckClose(s.Sum(0), 0.0, "0: Sum(0)");
-        }
+    // Default/dimension construction
+    Stat s(dim);
+    CheckEq(s.Dimension(), dim, "0: Dimension");
+    CheckEq(s.SampleSize(), 0LL, "0: SampleSize");
+    CheckClose(s.WeightSum(), 0.0, "0: WeightSum");
+    CheckClose(s.WeightSquareSum(), 0.0, "0: WeightSquareSum");
+    if constexpr (K == 1) {
+        CheckClose(s.Sum(), 0.0, "0: Sum");
+    } else {
+        CheckClose(s.Sum(0), 0.0, "0: Sum(0)");
     }
 
-    // Dynamic construction with valid dimension
+    // Invalid dimension throws (dynamic only; fixed K uses assert)
     if constexpr (isDynamic) {
-        constexpr auto dim{3};
-        {
-            Stat s(dim);
-            CheckEq(s.Dimension(), dim, "0: Dimension");
-            CheckEq(s.SampleSize(), 0LL, "0: SampleSize");
-            CheckClose(s.WeightSum(), 0.0, "0: WeightSum");
-            CheckClose(s.WeightSquareSum(), 0.0, "0: WeightSquareSum");
-            CheckClose(s.Sum(0), 0.0, "0: Sum(0)");
-        }
-
-        // dim <= 0 throws
         auto threwZero{false};
         try {
             Stat bad(0);

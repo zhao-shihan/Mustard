@@ -301,13 +301,13 @@ constexpr auto sec7Delegation{[] {
     auto x2{MakeTestValue<2, full>(dim)};
     x2[0] = 3.0;
 
-    auto stat1{TestStatistic::MakeStatistic<2, full>(dim)};
+    Statistic<2, full> stat1(dim);
     for (auto i{0}; i < 30; ++i) {
         auto v1{x1};
         v1[0] += (i % 2) ? 1.0 : -1.0;
         stat1.Fill(v1);
     }
-    auto stat2{TestStatistic::MakeStatistic<2, full>(dim)};
+    Statistic<2, full> stat2(dim);
     for (auto i{0}; i < 30; ++i) {
         auto v2{x2};
         v2[1] += (i % 2) ? 1.0 : -1.0;

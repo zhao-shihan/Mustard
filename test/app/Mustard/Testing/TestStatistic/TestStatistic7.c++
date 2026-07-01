@@ -45,7 +45,7 @@ constexpr auto sec7Smoke{[]<int K, CovarianceOption C>() {
 
     // Self copy-assign and move-assign
     {
-        Stat s{MakeStatistic<K, C>(dim)};
+        Stat s(dim);
         if constexpr (K == 1) {
             s.Fill(1.0);
         } else {
@@ -59,7 +59,7 @@ constexpr auto sec7Smoke{[]<int K, CovarianceOption C>() {
 
     // Post-move construction and assignment
     {
-        Stat s1{MakeStatistic<K, C>(dim)};
+        Stat s1(dim);
         if constexpr (K == 1) {
             s1.Fill(5.0);
         } else {
@@ -67,7 +67,7 @@ constexpr auto sec7Smoke{[]<int K, CovarianceOption C>() {
         }
         Stat s2{std::move(s1)};
         [[maybe_unused]] auto n{s2.SampleSize()};
-        Stat s3{MakeStatistic<K, C>(dim)};
+        Stat s3(dim);
         s3 = std::move(s2);
         [[maybe_unused]] auto n3{s3.SampleSize()};
     }
@@ -120,7 +120,7 @@ constexpr auto sec7SmokeCrossType{[] {
         sDyn.Fill(Eigen::VectorXd::Ones(5));
         auto threw{false};
         try {
-            Statistic<3> sStat(sDyn);
+            Statistic<3> s(sDyn);
         } catch (const std::invalid_argument&) { threw = true; }
         if (not threw) {
             Throw<std::runtime_error>("7e: static-from-dynamic mismatch should throw");
@@ -196,7 +196,7 @@ constexpr auto sec7DimMismatch{[] {
         sDyn.Fill(Eigen::VectorXd::Ones(5));
         auto threw{false};
         try {
-            Statistic<3> sStat(sDyn);
+            Statistic<3> s(sDyn);
         } catch (const std::invalid_argument&) {
             threw = true;
         }
@@ -215,7 +215,7 @@ constexpr auto sec7SelfAssignment{[]<int K, CovarianceOption C>() {
     constexpr bool isDynamic{K == Eigen::Dynamic};
     constexpr auto dim{isDynamic ? 2 : K};
 
-    Stat s{MakeStatistic<K, C>(dim)};
+    Stat s(dim);
     if constexpr (K == 1) {
         s.Fill(1.0);
         s.Fill(2.0);
@@ -248,7 +248,7 @@ constexpr auto sec7PostMove{[]<int K, CovarianceOption C>() {
     constexpr bool isDynamic{K == Eigen::Dynamic};
     constexpr auto dim{isDynamic ? 2 : K};
 
-    Stat s1{MakeStatistic<K, C>(dim)};
+    Stat s1(dim);
     if constexpr (K == 1) {
         s1.Fill(5.0);
     } else {
@@ -264,7 +264,7 @@ constexpr auto sec7PostMove{[]<int K, CovarianceOption C>() {
     CheckClose(s2.WeightSum(), w, "7: WeightSum after move");
 
     // Move assignment
-    Stat s3{MakeStatistic<K, C>(dim)};
+    Stat s3(dim);
     s3 = std::move(s2);
     CheckEq(s3.SampleSize(), n, "7: SampleSize after move assign");
     CheckClose(s3.WeightSum(), w, "7: WeightSum after move assign");

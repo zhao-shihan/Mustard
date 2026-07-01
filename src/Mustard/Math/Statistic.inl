@@ -51,19 +51,22 @@ StatisticBase<ADerived, K, C>::StatisticBase(const StatisticBase& other) :
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
-StatisticBase<ADerived, K, C>::StatisticBase(int dim) // clang-format off
-    requires(K == Eigen::Dynamic) : // clang-format on
+StatisticBase<ADerived, K, C>::StatisticBase([[maybe_unused]] int dim) :
     StatisticBase{std::monostate{}} {
-    if (dim <= 0) {
-        Throw<std::invalid_argument>(fmt::format("Dimension must be positive, got {}.", dim));
-    }
-    fM.resize(dim);
-    fM.setZero();
-    if constexpr (C == CovarianceOption::Full) {
-        fM2.resize(dim, dim);
+    if constexpr (K == Eigen::Dynamic) {
+        if (dim <= 0) {
+            Throw<std::invalid_argument>(fmt::format("Dimension must be positive, got {}.", dim));
+        }
+        fM.resize(dim);
+        if constexpr (C == CovarianceOption::Full) {
+            fM2.resize(dim, dim);
+        } else {
+            fM2.resize(dim);
+        }
     } else {
-        fM2.resize(dim);
+        assert(dim == K);
     }
+    fM.setZero();
     fM2.setZero();
 }
 
