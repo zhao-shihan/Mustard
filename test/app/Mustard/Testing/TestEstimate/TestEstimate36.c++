@@ -171,6 +171,15 @@ constexpr auto sec36Smoke{[]<int K, CovarianceOption C>() {
                 [[maybe_unused]] auto pc2{Project(Est{v, cov}, EstF{v, covF})};
             }
         }
+
+        // --- Free function Project with plain vector ---
+        {
+            auto vec{MakeTestValue<K, C>(dim)};
+            [[maybe_unused]] auto pv1{Project(e, vec)};                     // Estimate × Vector
+            [[maybe_unused]] auto pv2{Project(vec, e)};                     // Vector × Estimate
+            [[maybe_unused]] auto pv3{Project(Est{v, cov}, vec)};           // rval × Vector
+            [[maybe_unused]] auto pv4{Project(vec, Est{v, cov})};           // Vector × rval
+        }
     }
 }};
 
@@ -451,6 +460,84 @@ constexpr auto sec36eProject{[]<int K, CovarianceOption C>() {
             const auto t{Project(e, e2)};
             for (auto i{0}; i < dim; ++i) {
                 CheckClose(p.Value(i), t.Value(i), "36e-d: Project(rval,rval) value");
+            }
+        }
+    }
+}};
+
+// =========================================================================
+// Section 36e2: Free function Project with plain vector
+// =========================================================================
+
+constexpr auto sec36e2ProjectVector{[]<int K, CovarianceOption C>() {
+    if constexpr (K != 1) {
+        constexpr int dim{(K == Eigen::Dynamic) ? 3 : K};
+        using Est = Estimate<K, C>;
+
+        const auto v{MakeTestValue<K, C>(dim)};
+        const auto cov{MakeTestCov<K, C>(dim)};
+        Est e{MakeEstimate<K, C>(v, cov)};
+
+        auto v2{MakeTestValue<K, C>(dim)};
+        for (auto i{0}; i < dim; ++i) {
+            const_cast<double&>(v2(i)) = dim - i;
+        }
+
+        // 36e2-a: Project(est, vec) == est.ProjTo(vec)
+        {
+            const auto p{Project(e, v2)};
+            const auto t{e.ProjTo(v2)};
+            for (auto i{0}; i < dim; ++i) {
+                CheckClose(p.Value(i), t.Value(i), "36e2-a: Project(est,vec) value == ProjTo");
+            }
+            for (auto i{0}; i < dim; ++i) {
+                for (auto j{0}; j < dim; ++j) {
+                    if constexpr (C == CovarianceOption::Diagonal) {
+                        if (i != j) {
+                            continue;
+                        }
+                    }
+                    CheckClose(p.Covariance(i, j), t.Covariance(i, j),
+                               fmt::format("36e2-a: Project(est,vec) cov({},{}) == ProjTo", i, j));
+                }
+            }
+        }
+
+        // 36e2-b: Project(vec, est) == est.ProjFrom(vec)
+        {
+            const auto p{Project(v2, e)};
+            const auto t{e.ProjFrom(v2)};
+            for (auto i{0}; i < dim; ++i) {
+                CheckClose(p.Value(i), t.Value(i), "36e2-b: Project(vec,est) value == ProjFrom");
+            }
+            for (auto i{0}; i < dim; ++i) {
+                for (auto j{0}; j < dim; ++j) {
+                    if constexpr (C == CovarianceOption::Diagonal) {
+                        if (i != j) {
+                            continue;
+                        }
+                    }
+                    CheckClose(p.Covariance(i, j), t.Covariance(i, j),
+                               fmt::format("36e2-b: Project(vec,est) cov({},{}) == ProjFrom", i, j));
+                }
+            }
+        }
+
+        // 36e2-c: Project(rval, vec) also matches
+        {
+            const auto p{Project(Est{v, cov}, v2)};
+            const auto t{Project(e, v2)};
+            for (auto i{0}; i < dim; ++i) {
+                CheckClose(p.Value(i), t.Value(i), "36e2-c: Project(rval,vec) value");
+            }
+        }
+
+        // 36e2-d: Project(vec, rval) also matches
+        {
+            const auto p{Project(v2, Est{v, cov})};
+            const auto t{Project(v2, e)};
+            for (auto i{0}; i < dim; ++i) {
+                CheckClose(p.Value(i), t.Value(i), "36e2-d: Project(vec,rval) value");
             }
         }
     }
@@ -783,6 +870,10 @@ auto TestEstimate36::Main(int argc, char* argv[]) const -> int {
     PrintLn("--- Section 36e: Free function Project ---");
     RunOverAllDims<AllStaticDims>(sec36eProject);
     PrintLn("  36e passed: Project free function (K=2,3,5,10 Full/Diag + dynamic)");
+
+    PrintLn("--- Section 36e2: Free function Project with plain vector ---");
+    RunOverAllDims<AllStaticDims>(sec36e2ProjectVector);
+    PrintLn("  36e2 passed: Project(Vector) free function (K=2,3,5,10 Full/Diag + dynamic)");
 
     PrintLn("--- Section 36f: Zero norm guard ---");
     RunOverAllDims<AllStaticDims>(sec36fZeroGuard);

@@ -52,7 +52,7 @@ constexpr auto sec30Combine{[]<int K, CovarianceOption C>() {
         // 32a. Two identical estimates → value unchanged, variance halved
         {
             Est e2{v1(0), cov1.diagonal()(0)};
-            const auto result{Combine(e1, e2)};
+            const auto result{e1.Combine(e2)};
             CheckClose(result.Value(), v1(0), "33a: Combine identical scalars — value unchanged");
             CheckClose(result.Variance(), cov1.diagonal()(0) / 2.0, "33a: Combine identical scalars — variance halved");
         }
@@ -60,7 +60,7 @@ constexpr auto sec30Combine{[]<int K, CovarianceOption C>() {
         // 32b. Two different estimates
         {
             Est e2{v1(0) + 1.0, 0.9};
-            const auto result{Combine(e1, e2)};
+            const auto result{e1.Combine(e2)};
             const double invVar1{1.0 / cov1.diagonal()(0)};
             const double invVar2{1.0 / 0.9};
             const double expectedVar{1.0 / (invVar1 + invVar2)};
@@ -72,7 +72,7 @@ constexpr auto sec30Combine{[]<int K, CovarianceOption C>() {
         // 32c. Self-combine via move (must run before CombineInPlace which mutates e1)
         {
             Est e2{v1(0), cov1.diagonal()(0)};
-            const auto result{Combine(std::move(e1), e2)};
+            const auto result{std::move(e1).Combine(e2)};
             CheckClose(result.Variance(), cov1.diagonal()(0) / 2.0, "33c: Combine(move, const&) — variance halved");
         }
 
@@ -92,7 +92,7 @@ constexpr auto sec30Combine{[]<int K, CovarianceOption C>() {
         // 32a. Two identical Full/Diagonal estimates → value unchanged, variance halved
         {
             Est e2{MakeEstimate<K, C>(v1, cov1)};
-            const auto result{Combine(e1, e2)};
+            const auto result{e1.Combine(e2)};
             for (auto i{0}; i < dim; ++i) {
                 CheckClose(result.Value(i), v1(i), "33a: Combine identical — value unchanged");
                 CheckClose(result.Variance(i), e1.Variance(i) / 2.0, "33a: Combine identical — variance halved");
@@ -115,7 +115,7 @@ constexpr auto sec30Combine{[]<int K, CovarianceOption C>() {
             }
             const auto cov2{MakeTestCov<K, C>(dim)};
             Est e2{MakeEstimate<K, C>(v2, cov2)};
-            const auto result{Combine(e1, e2)};
+            const auto result{e1.Combine(e2)};
 
             if constexpr (C == CovarianceOption::Full) {
                 // Compute expected via full matrix BLUE formula
@@ -162,16 +162,16 @@ constexpr auto sec30Combine{[]<int K, CovarianceOption C>() {
             Est e2{MakeEstimate<K, C>(v2, cov2)};
             Est eCopy{e1};
             eCopy.CombineInPlace(e2);
-            const auto expected{Combine(e1, e2)};
+            const auto expected{e1.Combine(e2)};
             for (auto i{0}; i < dim; ++i) {
-                CheckClose(eCopy.Value(i), expected.Value(i), "33c: CombineInPlace — value matches free function");
+                CheckClose(eCopy.Value(i), expected.Value(i), "33c: CombineInPlace — value matches member function");
             }
         }
 
         // 32d. Self-combine via move
         {
             Est e2{MakeEstimate<K, C>(v1, cov1)};
-            const auto result{Combine(std::move(e1), e2)};
+            const auto result{std::move(e1).Combine(e2)};
             for (auto i{0}; i < dim; ++i) {
                 CheckClose(result.Variance(i), e2.Variance(i) / 2.0, "33d: Combine(move, const&) — variance halved");
             }
@@ -198,7 +198,7 @@ auto sec32bCombineCrossType() -> void {
     {
         EstFF eF{v, covFull};
         EstFD eD{v, covDiag};
-        const auto result{Combine(eF, eD)};
+        const auto result{eF.Combine(eD)};
         static_assert(std::same_as<decltype(result), const Estimate<dim, CovarianceOption::Full>>);
         // Verify against the BLUE formula: Σ = (Σ_F⁻¹ + diag(1/σ_D²))⁻¹
         Eigen::Matrix3d invFull;
@@ -220,11 +220,11 @@ auto sec32bCombineCrossType() -> void {
         }
     }
 
-    // 32b-b. Combine(Diagonal, Full) → result is Full (via free function)
+    // 32b-b. Combine(Diagonal, Full) → result is Full (via member function)
     {
         EstDF eD{v, covDiag};
         EstFF eF{v, covFull};
-        const auto result{Combine(eD, eF)};
+        const auto result{eD.Combine(eF)};
         static_assert(std::same_as<decltype(result), const Estimate<dim, CovarianceOption::Full>>);
         // Verify against BLUE: Σ = (diag(1/σ_D²) + Σ_F⁻¹)⁻¹
         Eigen::Matrix3d invFull;
@@ -251,7 +251,7 @@ auto sec32bCombineCrossType() -> void {
     {
         EstDD eD1{v, covDiag};
         EstDD eD2{v, covDiag};
-        const auto result{Combine(eD1, eD2)};
+        const auto result{eD1.Combine(eD2)};
         static_assert(std::same_as<decltype(result), const Estimate<dim, CovarianceOption::Diagonal>>);
         for (auto i{0}; i < dim; ++i) {
             CheckClose(result.Variance(i), eD1.Variance(i) / 2.0, "33b-c: Combine(Diag,Diag) variance halved");

@@ -121,6 +121,51 @@ using MatType = std::conditional_t<
     Eigen::Matrix<double, K, K>,
     Eigen::Matrix<double, L, L>>;
 
+/// @brief Determines the result type of a binary operation between two `Estimate` objects.
+/// This is for binary operations whose result dimension is the same as the operands.
+///
+/// The result dimension is the compile-time K of the left operand when it is static,
+/// otherwise the compile-time L of the right operand when it is static,
+/// otherwise `Eigen::Dynamic` (runtime-determined).
+///
+/// The result covariance option is `Full` if either operand stores the full covariance
+/// matrix, and `Diagonal` only if both are diagonal.
+///
+/// @note A `Diagonal` operand is treated as having zero off-diagonal covariance
+///       elements in the computation. When the result type is `Diagonal`,
+///       off-diagonal elements are discarded from the computed result.
+///
+/// @tparam K Left-hand dimension
+/// @tparam C Left-hand covariance option
+/// @tparam L Right-hand dimension
+/// @tparam D Right-hand covariance option
+template<int K, CovarianceOption C, int L, CovarianceOption D>
+using EstEstBinOpRet = Estimate<
+    K != Eigen::Dynamic ?
+        K :
+        (L != Eigen::Dynamic ?
+             L :
+             Eigen::Dynamic),
+    C == CovarianceOption::Full or
+            D == CovarianceOption::Full ?
+        CovarianceOption::Full :
+        CovarianceOption::Diagonal>;
+
+/// @brief Determines the result type of a binary operation between an `Estimate` and a vector.
+/// This is for binary operations whose result dimension is the same as the operands.
+///
+/// The result dimension is the compile-time K of the estimate when it is static,
+/// otherwise the compile-time size of the vector when it is static,
+/// otherwise `Eigen::Dynamic` (runtime-determined).
+///
+/// The result covariance option is the same as the estimate.
+///
+/// @tparam K Estimate dimension
+/// @tparam C Estimate covariance option
+/// @tparam AVec Vector type
+template<int K, CovarianceOption C, typename AVec>
+using EstVecBinOpRet = EstEstBinOpRet<K, C, AVec::SizeAtCompileTime, C>;
+
 /// @brief Determines the result type of `Concat` between two `Estimate` objects.
 ///
 /// The result dimension is @f$K+L@f$ when both @f$K@f$ and @f$L@f$ are compile-time
@@ -167,7 +212,7 @@ using EstimateConcatResult = Estimate<
 ///       a `Diagonal` operand is treated as a covariance matrix whose off-diagonal
 ///       elements are zero. The full covariance propagation formula is applied
 ///       using this representation, and off-diagonal elements are discarded from
-///       the result when the result type is `Diagonal` (see `EstimateBinaryOpResult`).
+///       the result when the result type is `Diagonal` (see `EstEstBinOpRet`).
 ///
 /// @note All binary operations between two `Estimate` objects (including
 ///       `operator+=`, `operator-=`, `operator*=`, `operator/=`, `Dot`,
@@ -199,7 +244,7 @@ public:
     /// @brief The Eigen matrix type for the covariance.
     ///        Full @f$K\times K@f$ matrix when covariance is enabled, diagonal-only otherwise.
     using CovarianceType = std::conditional_t<FullCovariance{}, Eigen::Matrix<double, K, K>, Eigen::DiagonalMatrix<double, K>>;
-    /// @brief The POD type used for MPI operation and Base64.
+    /// @brief The POD type used for MPI operations.
     using PODType = EstimatePOD<K, C>;
 
 private:
@@ -252,7 +297,7 @@ public:
     template<int L, CovarianceOption D>
         requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     explicit EstimateBase(const Estimate<L, D>& other);
-    /// @brief Construct from POD data (e.g., from a Base64 string).
+    /// @brief Construct from POD data.
     /// @param data Previous estimate state as a plain-old-data struct
     explicit EstimateBase(const PODType& data)
         requires(K != Eigen::Dynamic);
@@ -323,8 +368,11 @@ public:
     /// @return Reference to @c *this
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto CombineInPlace(const Estimate<L, D>& other) & -> ADerived&;
+    template<int L, CovarianceOption D>
+    auto Combine(const Estimate<L, D>& other) const& -> EstEstBinOpRet<K, C, L, D>;
+    template<int L, CovarianceOption D>
+    auto Combine(const Estimate<L, D>& other) && -> EstEstBinOpRet<K, C, L, D>;
 
     /// @}
     /// @name `operator+=`
@@ -335,7 +383,6 @@ public:
     /// @return Reference to `*this`
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator+=(const Estimate<L, D>& other) -> ADerived&;
     /// @brief Element-wise addition of a scalar estimate to the value.
     /// @note The operands are assumed independent.
@@ -357,7 +404,6 @@ public:
     /// @return Reference to `*this`
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator-=(const Estimate<L, D>& other) -> ADerived&;
     /// @brief Element-wise subtraction of a scalar estimate from the value.
     /// @note The operands are assumed independent.
@@ -377,7 +423,6 @@ public:
     /// @brief Element-wise multiplication by another estimate.
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator*=(const Estimate<L, D>& other) -> ADerived&;
     /// @brief Element-wise multiplication by a scalar estimate.
     /// @note The operands are assumed independent.
@@ -398,10 +443,8 @@ public:
     /// @brief Element-wise division by another estimate.
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator/=(const Estimate<L, D>& other) -> ADerived&;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto operator/=(Estimate<L, D>&& other) -> ADerived&;
     /// @brief Element-wise division by a scalar estimate.
     /// @note The operands are assumed independent.
@@ -430,14 +473,11 @@ public:
     /// @brief In-place negate-and-add from another estimate: @f$x \to \mathit{other}.x - x@f$.
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto NegateAddInPlace(const Estimate<L, D>& other) & -> ADerived&;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto NegateAdd(const Estimate<L, D>& other) const& -> ADerived;
+    auto NegateAdd(const Estimate<L, D>& other) const& -> EstEstBinOpRet<K, C, L, D>;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto NegateAdd(const Estimate<L, D>& other) && -> ADerived;
+    auto NegateAdd(const Estimate<L, D>& other) && -> EstEstBinOpRet<K, C, L, D>;
 
     /// @brief In-place negate-and-add from a scalar estimate: @f$x \to \mathit{c}.x - x@f$.
     /// @note The operands are assumed independent.
@@ -454,10 +494,10 @@ public:
     auto NegateAddInPlace(const Eigen::MatrixBase<AVec>& yXpr) & -> ADerived&;
     template<typename AVec>
         requires(K != 1)
-    auto NegateAdd(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived;
+    auto NegateAdd(const Eigen::MatrixBase<AVec>& yXpr) const& -> EstVecBinOpRet<K, C, AVec>;
     template<typename AVec>
         requires(K != 1)
-    auto NegateAdd(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
+    auto NegateAdd(const Eigen::MatrixBase<AVec>& yXpr) && -> EstVecBinOpRet<K, C, AVec>;
 
     /// @brief In-place negate-and-add: @f$x \to c - x@f$ (covariance unchanged).
     auto NegateAddInPlace(double c) & -> ADerived&;
@@ -471,14 +511,11 @@ public:
     /// @brief In-place divide from another estimate: @f$x_i \to \mathit{other}.x_i / x_i@f$.
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto DivideInPlace(const Estimate<L, D>& other) & -> ADerived&;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Divide(const Estimate<L, D>& other) const& -> ADerived;
+    auto Divide(const Estimate<L, D>& other) const& -> EstEstBinOpRet<K, C, L, D>;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Divide(const Estimate<L, D>& other) && -> ADerived;
+    auto Divide(const Estimate<L, D>& other) && -> EstEstBinOpRet<K, C, L, D>;
 
     /// @brief In-place divide from a scalar estimate: @f$x_i \to \mathit{c}.x / x_i@f$.
     /// @note The operands are assumed independent.
@@ -496,10 +533,10 @@ public:
     auto DivideInPlace(const Eigen::MatrixBase<AVec>& yXpr) & -> ADerived&;
     template<typename AVec>
         requires(K != 1)
-    auto Divide(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived;
+    auto Divide(const Eigen::MatrixBase<AVec>& yXpr) const& -> EstVecBinOpRet<K, C, AVec>;
     template<typename AVec>
         requires(K != 1)
-    auto Divide(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
+    auto Divide(const Eigen::MatrixBase<AVec>& yXpr) && -> EstVecBinOpRet<K, C, AVec>;
 
     /// @brief In-place divide: @f$x \to c / x@f$.
     auto DivideInPlace(double c) & -> ADerived&;
@@ -704,14 +741,11 @@ public:
     /// @brief In-place element-wise power: @f$x_i \to x_i^{\mathit{expo}_i}@f$.
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto PowInPlace(const Estimate<L, D>& other) & -> ADerived&;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Pow(const Estimate<L, D>& other) const& -> ADerived;
+    auto Pow(const Estimate<L, D>& other) const& -> EstEstBinOpRet<K, C, L, D>;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Pow(const Estimate<L, D>& other) && -> ADerived;
+    auto Pow(const Estimate<L, D>& other) && -> EstEstBinOpRet<K, C, L, D>;
 
     /// @brief In-place element-wise power with a scalar estimate exponent: @f$x_i \to x_i^{\mathit{c}}@f$.
     /// @note The operands are assumed independent.
@@ -728,10 +762,10 @@ public:
     auto PowInPlace(const Eigen::MatrixBase<AVec>& yXpr) & -> ADerived&;
     template<typename AVec>
         requires(K != 1)
-    auto Pow(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived;
+    auto Pow(const Eigen::MatrixBase<AVec>& yXpr) const& -> EstVecBinOpRet<K, C, AVec>;
     template<typename AVec>
         requires(K != 1)
-    auto Pow(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
+    auto Pow(const Eigen::MatrixBase<AVec>& yXpr) && -> EstVecBinOpRet<K, C, AVec>;
 
     /// @brief In-place element-wise power: @f$x_i \to x_i^{\mathit{expo}}@f$.
     auto PowInPlace(double c) & -> ADerived&;
@@ -741,14 +775,11 @@ public:
     /// @brief In-place element-wise power from a base estimate: @f$x_i \to \mathit{base}_i^{x_i}@f$.
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto ExpInPlace(const Estimate<L, D>& other) & -> ADerived&;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Exp(const Estimate<L, D>& other) const& -> ADerived;
+    auto Exp(const Estimate<L, D>& other) const& -> EstEstBinOpRet<K, C, L, D>;
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto Exp(const Estimate<L, D>& other) && -> ADerived;
+    auto Exp(const Estimate<L, D>& other) && -> EstEstBinOpRet<K, C, L, D>;
 
     /// @brief In-place element-wise power from a scalar estimate base: @f$x_i \to \mathit{c}^{x_i}@f$.
     /// @note The operands are assumed independent.
@@ -765,10 +796,10 @@ public:
     auto ExpInPlace(const Eigen::MatrixBase<AVec>& yXpr) & -> ADerived&;
     template<typename AVec>
         requires(K != 1)
-    auto Exp(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived;
+    auto Exp(const Eigen::MatrixBase<AVec>& yXpr) const& -> EstVecBinOpRet<K, C, AVec>;
     template<typename AVec>
         requires(K != 1)
-    auto Exp(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
+    auto Exp(const Eigen::MatrixBase<AVec>& yXpr) && -> EstVecBinOpRet<K, C, AVec>;
 
     /// @brief In-place element-wise power from a scalar base: @f$x_i \to \mathit{base}^{x_i}@f$.
     auto ExpInPlace(double c) & -> ADerived&;
@@ -835,7 +866,6 @@ public:
     /// @return A scalar estimate with value = self·other and properly propagated uncertainty.
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto Dot(const Estimate<L, D>& other) const -> Estimate1D;
     /// @brief Inner product with a plain vector.
     /// @return A scalar estimate with value = self·v and properly propagated uncertainty.
@@ -845,7 +875,6 @@ public:
 
     /// @brief Cosine of the angle between two vectors, @f$\frac{x \cdot y}{|x|\,|y|}@f$.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto Cosine(const Estimate<L, D>& other) const -> Estimate1D;
     /// @brief Cosine with a plain vector (no uncertainty on @p yXpr).
     template<typename AVec>
@@ -854,7 +883,6 @@ public:
 
     /// @brief Angle between two vectors, @f$\arccos(\frac{x \cdot y}{|x|\,|y|})@f$, in radians.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto Angle(const Estimate<L, D>& other) const -> auto { return Cosine(other).Acos(); }
     /// @brief Angle with a plain vector, in radians.
     template<typename AVec>
@@ -863,7 +891,6 @@ public:
 
     /// @brief Scalar projection of @c *this onto @p other, @f$\frac{x \cdot y}{|y|}@f$.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto ScalarProjTo(const Estimate<L, D>& other) const -> Estimate1D;
     /// @brief Scalar projection of @c *this onto a plain vector (no uncertainty on @p yXpr).
     template<typename AVec>
@@ -872,7 +899,6 @@ public:
 
     /// @brief Scalar projection of @p other onto @c *this, @f$\frac{y \cdot x}{|x|}@f$.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto ScalarProjFrom(const Estimate<L, D>& other) const -> auto { return other.ScalarProjTo(Self()); }
     /// @brief Scalar projection of @p yXpr onto @c *this, @f$\frac{y \cdot x}{|x|}@f$.
     template<typename AVec>
@@ -893,7 +919,6 @@ public:
     /// @return Reference to @c *this
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto ProjToInPlace(const Estimate<L, D>& other) & -> ADerived&;
     /// @brief In-place projection of @c *this onto a plain vector @p yXpr.
     template<typename AVec>
@@ -902,20 +927,18 @@ public:
 
     /// @brief Projection of @c *this onto @p other, returning a new estimate.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto ProjTo(const Estimate<L, D>& other) const& -> ADerived;
+    auto ProjTo(const Estimate<L, D>& other) const& -> EstEstBinOpRet<K, C, L, D>;
     /// @brief Moving projection of @c *this onto @p other.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto ProjTo(const Estimate<L, D>& other) && -> ADerived;
+    auto ProjTo(const Estimate<L, D>& other) && -> EstEstBinOpRet<K, C, L, D>;
     /// @brief Projection onto a plain vector @p yXpr, returning a new estimate.
     template<typename AVec>
         requires(K != 1)
-    auto ProjTo(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived;
+    auto ProjTo(const Eigen::MatrixBase<AVec>& yXpr) const& -> EstVecBinOpRet<K, C, AVec>;
     /// @brief Moving projection onto a plain vector @p yXpr.
     template<typename AVec>
         requires(K != 1)
-    auto ProjTo(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
+    auto ProjTo(const Eigen::MatrixBase<AVec>& yXpr) && -> EstVecBinOpRet<K, C, AVec>;
 
     /// @brief In-place projection of @p other onto @c *this.
     ///
@@ -925,7 +948,6 @@ public:
     /// @return Reference to @c *this
     /// @note The operands are assumed independent.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto ProjFromInPlace(const Estimate<L, D>& other) & -> ADerived&;
     /// @brief In-place projection of a plain vector @p yXpr onto @c *this.
     template<typename AVec>
@@ -934,20 +956,18 @@ public:
 
     /// @brief Projection of @p other onto @c *this, returning a new estimate.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto ProjFrom(const Estimate<L, D>& other) const& -> ADerived;
+    auto ProjFrom(const Estimate<L, D>& other) const& -> EstEstBinOpRet<K, C, L, D>;
     /// @brief Moving projection of @p other onto @c *this.
     template<int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
-    auto ProjFrom(const Estimate<L, D>& other) && -> ADerived;
+    auto ProjFrom(const Estimate<L, D>& other) && -> EstEstBinOpRet<K, C, L, D>;
     /// @brief Projection of a plain vector @p yXpr onto @c *this, returning a new estimate.
     template<typename AVec>
         requires(K != 1)
-    auto ProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const& -> ADerived;
+    auto ProjFrom(const Eigen::MatrixBase<AVec>& yXpr) const& -> EstVecBinOpRet<K, C, AVec>;
     /// @brief Moving projection of a plain vector @p yXpr onto @c *this.
     template<typename AVec>
         requires(K != 1)
-    auto ProjFrom(const Eigen::MatrixBase<AVec>& yXpr) && -> ADerived;
+    auto ProjFrom(const Eigen::MatrixBase<AVec>& yXpr) && -> EstVecBinOpRet<K, C, AVec>;
 
     /// @}
     /// @name Normalization
@@ -1068,14 +1088,14 @@ public:
 
     /// @}
 
-    /// @brief Convert the current state to a plain-old-data struct for MPI reduction and Base64 encoding.
+    /// @brief Convert the current state to a plain-old-data struct.
     /// @return A `EstimatePOD<K, C>` containing copies of value and covariance.
     /// @note Only available when the dimension is known at compile time.
     ///       The `EstimatePOD` type is introspected by `MPLR_REFLECTION_TEMPLATE`
     ///       for use with MPI collective operations.
     auto ToPOD() const -> PODType
         requires(K != Eigen::Dynamic);
-    /// @brief Restore state from a previously saved POD snapshot (e.g., from MPI reduction or Base64 decoding).
+    /// @brief Restore state from a previously saved POD snapshot.
     /// @param data The POD data to restore from
     /// @note Only available when the dimension is known at compile time.
     auto FromPOD(const PODType& data) -> void
@@ -1100,14 +1120,12 @@ private:
                   K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) and
                  AVec::ColsAtCompileTime == 1)
     auto CheckVectorDimensionMatch(const Eigen::MatrixBase<AVec>& yXpr) const -> void;
-
     /// @brief Check that a plain matrix has compatible row dimension (number of rows == @f$K@f$).
     /// @throws std::invalid_argument if dimensions differ (only checked for dynamic dimension)
     template<typename AMat>
         requires(AMat::RowsAtCompileTime == K or
                  K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
     auto CheckMatrixRowDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void;
-
     /// @brief Check that a plain matrix has compatible column dimension (number of columns == @f$K@f$).
     /// @throws std::invalid_argument if dimensions differ (only checked for dynamic dimension)
     template<typename AMat>
@@ -1128,7 +1146,6 @@ private:
     /// @tparam D Covariance option of the source
     /// @param other Source estimate to copy from
     template<typename AOther, int L, CovarianceOption D>
-        requires(L == K or K == Eigen::Dynamic or L == Eigen::Dynamic)
     auto CopyFrom(const EstimateBase<AOther, L, D>& other) & -> ADerived&;
 
     template<typename AVec>
@@ -1251,6 +1268,7 @@ public:
     using Base::AtanInPlace;
     using Base::Cbrt;
     using Base::CbrtInPlace;
+    using Base::Combine;
     using Base::CombineInPlace;
     using Base::Concat;
     using Base::Cos;
@@ -1359,39 +1377,6 @@ public:
 // TODO: Estimate<3, C> specialization with extra RThetaPhi(), RThetaPhiInPlace(), Cross(), ...
 // TODO: Estimate<4, C> specialization with extra Boost(), BoostInPlace(), ...
 
-namespace impl {
-
-/// @brief Determines the result type of a binary operation between two `Estimate` objects.
-///
-/// The result dimension is the compile-time K of the left operand when it is static,
-/// otherwise the compile-time L of the right operand when it is static,
-/// otherwise `Eigen::Dynamic` (runtime-determined).
-///
-/// The result covariance option is `Full` if either operand stores the full covariance
-/// matrix, and `Diagonal` only if both are diagonal.
-///
-/// @note A `Diagonal` operand is treated as having zero off-diagonal covariance
-///       elements in the computation. When the result type is `Diagonal`,
-///       off-diagonal elements are discarded from the computed result.
-///
-/// @tparam K Left-hand dimension
-/// @tparam C Left-hand covariance option
-/// @tparam L Right-hand dimension
-/// @tparam D Right-hand covariance option
-template<int K, CovarianceOption C, int L, CovarianceOption D>
-using EstimateBinaryOpResult = Estimate<
-    K != Eigen::Dynamic ?
-        K :
-        (L != Eigen::Dynamic ?
-             L :
-             Eigen::Dynamic),
-    C == CovarianceOption::Full or
-            D == CovarianceOption::Full ?
-        CovarianceOption::Full :
-        CovarianceOption::Diagonal>;
-
-} // namespace impl
-
 /// @name Estimate operators
 /// @{
 
@@ -1416,35 +1401,35 @@ auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est.NegateInPlac
 /// @note The operands are assumed independent.
 /// @{
 
-#define MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(Op)                                              \
-    template<int K, CovarianceOption C, int L, CovarianceOption D>                                             \
-    auto Op(const Estimate<K, C>& lhs, const Estimate<L, D>& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>; \
-                                                                                                               \
-    template<int K, CovarianceOption C, int L, CovarianceOption D>                                             \
-    auto Op(const Estimate<K, C>& lhs, Estimate<L, D>&& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>;      \
-                                                                                                               \
-    template<int K, CovarianceOption C, int L, CovarianceOption D>                                             \
-    auto Op(Estimate<K, C>&& lhs, const Estimate<L, D>& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>;      \
-                                                                                                               \
-    template<int K, CovarianceOption C, int L, CovarianceOption D>                                             \
-    auto Op(Estimate<K, C>&& lhs, Estimate<L, D>&& rhs) -> impl::EstimateBinaryOpResult<K, C, L, D>;
+#define MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(Op)                                      \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                     \
+    auto Op(const Estimate<K, C>& lhs, const Estimate<L, D>& rhs) -> impl::EstEstBinOpRet<K, C, L, D>; \
+                                                                                                       \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                     \
+    auto Op(const Estimate<K, C>& lhs, Estimate<L, D>&& rhs) -> impl::EstEstBinOpRet<K, C, L, D>;      \
+                                                                                                       \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                     \
+    auto Op(Estimate<K, C>&& lhs, const Estimate<L, D>& rhs) -> impl::EstEstBinOpRet<K, C, L, D>;      \
+                                                                                                       \
+    template<int K, CovarianceOption C, int L, CovarianceOption D>                                     \
+    auto Op(Estimate<K, C>&& lhs, Estimate<L, D>&& rhs) -> impl::EstEstBinOpRet<K, C, L, D>;
 
-#define MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(Op)                               \
-    template<int K, CovarianceOption C, typename AVec>                                        \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
-    auto Op(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C>; \
-                                                                                              \
-    template<int K, CovarianceOption C, typename AVec>                                        \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
-    auto Op(Estimate<K, C>&& lhs, const Eigen::MatrixBase<AVec>& rhs) -> Estimate<K, C>;      \
-                                                                                              \
-    template<typename AVec, int K, CovarianceOption C>                                        \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
-    auto Op(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> Estimate<K, C>; \
-                                                                                              \
-    template<typename AVec, int K, CovarianceOption C>                                        \
-        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                     \
-    auto Op(const Eigen::MatrixBase<AVec>& lhs, Estimate<K, C>&& rhs) -> Estimate<K, C>;
+#define MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(Op)                                                 \
+    template<int K, CovarianceOption C, typename AVec>                                                          \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                       \
+    auto Op(const Estimate<K, C>& lhs, const Eigen::MatrixBase<AVec>& rhs) -> impl::EstVecBinOpRet<K, C, AVec>; \
+                                                                                                                \
+    template<int K, CovarianceOption C, typename AVec>                                                          \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                       \
+    auto Op(Estimate<K, C>&& lhs, const Eigen::MatrixBase<AVec>& rhs) -> impl::EstVecBinOpRet<K, C, AVec>;      \
+                                                                                                                \
+    template<typename AVec, int K, CovarianceOption C>                                                          \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                       \
+    auto Op(const Eigen::MatrixBase<AVec>& lhs, const Estimate<K, C>& rhs) -> impl::EstVecBinOpRet<K, C, AVec>; \
+                                                                                                                \
+    template<typename AVec, int K, CovarianceOption C>                                                          \
+        requires(K != 1 and AVec::ColsAtCompileTime == 1)                                                       \
+    auto Op(const Eigen::MatrixBase<AVec>& lhs, Estimate<K, C>&& rhs) -> impl::EstVecBinOpRet<K, C, AVec>;
 
 #define MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(Op)       \
     template<int K, CovarianceOption C>                               \
@@ -1458,8 +1443,6 @@ auto operator-(Estimate<K, C>&& est) -> auto { return std::move(est.NegateInPlac
                                                                       \
     template<int K, CovarianceOption C>                               \
     auto Op(double lhs, Estimate<K, C>&& rhs) -> Estimate<K, C>;
-
-MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(Combine)
 
 MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(operator+)
 MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(operator+)
@@ -1482,6 +1465,7 @@ MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(pow)
 MUSTARD_MATH_ESTIMATE_SCALAR_BINARY_OP_DECLARATIONS(pow)
 
 MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS(Project)
+MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS(Project)
 
 #undef MUSTARD_MATH_ESTIMATE_ESTIMATE_BINARY_OP_DECLARATIONS
 #undef MUSTARD_MATH_ESTIMATE_VECTOR_BINARY_OP_DECLARATIONS
@@ -1578,9 +1562,7 @@ auto operator*(const Estimate<K, C>& est, const Eigen::MatrixBase<AMat>& aXpr) -
 /// @brief POD (plain-old-data) struct holding a snapshot of `Estimate` state.
 ///
 /// The primary purpose of this struct is MPI operation (enabled by the
-/// `MPLR_REFLECTION_TEMPLATE` introspection at the bottom of this header)
-/// and Base64 encoding for storage or network transfer. The contiguous
-/// memory layout allows direct `memcpy` and use with MPI collective operations.
+/// `MPLR_REFLECTION_TEMPLATE` introspection at the bottom of this header).
 ///
 /// @tparam K Dimension (must be a compile-time constant, not `Eigen::Dynamic`)
 /// @tparam C Covariance option
