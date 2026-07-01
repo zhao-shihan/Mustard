@@ -32,11 +32,12 @@ EstimateBase<ADerived, K, C>::EstimateBase(std::monostate) :
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
-EstimateBase<ADerived, K, C>::EstimateBase() // clang-format off
-    requires(K != Eigen::Dynamic) : // clang-format on
+EstimateBase<ADerived, K, C>::EstimateBase() :
     EstimateBase{std::monostate{}} {
-    fX.setZero();
-    fCov.setZero();
+    if constexpr (K != Eigen::Dynamic) {
+        fX.setZero();
+        fCov.setZero();
+    }
 }
 
 template<typename ADerived, int K, CovarianceOption C>

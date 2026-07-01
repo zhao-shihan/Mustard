@@ -35,11 +35,12 @@ StatisticBase<ADerived, K, C>::StatisticBase(std::monostate) :
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
-StatisticBase<ADerived, K, C>::StatisticBase() // clang-format off
-    requires(K != Eigen::Dynamic) : // clang-format on
+StatisticBase<ADerived, K, C>::StatisticBase() :
     StatisticBase{std::monostate{}} {
-    fM.setZero();
-    fM2.setZero();
+    if constexpr (K != Eigen::Dynamic) {
+        fM.setZero();
+        fM2.setZero();
+    }
 }
 
 template<typename ADerived, int K, CovarianceOption C>

@@ -262,9 +262,15 @@ protected:
     EstimateBase(const Eigen::MatrixBase<AVec>& x, const Eigen::EigenBase<ACov>& cov);
 
 public:
-    /// @brief Default constructor. Zero-initializes value and covariance.
-    EstimateBase()
-        requires(K != Eigen::Dynamic);
+    /// @brief Default constructor.
+    ///
+    /// When @f$K@f$ is known at compile time, zero-initializes the value vector
+    /// and covariance matrix.
+    ///
+    /// When @f$K = \mathrm{Eigen::Dynamic}@f$, constructs an empty object (size 0).
+    /// The only allowed operation on an empty object is assignment. Calling any
+    /// other member function on an empty object results in undefined behavior.
+    EstimateBase();
     /// @brief Move constructor.
     ///
     /// The source object is left in an undefined state.

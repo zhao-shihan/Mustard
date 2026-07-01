@@ -141,9 +141,14 @@ private:
     StatisticBase(std::monostate);
 
 public:
-    /// @brief Default constructor. Zero-initializes all accumulators.
-    StatisticBase()
-        requires(K != Eigen::Dynamic);
+    /// @brief Default constructor.
+    ///
+    /// When @f$K@f$ is known at compile time, zero-initializes all accumulators.
+    ///
+    /// When @f$K = \mathrm{Eigen::Dynamic}@f$, constructs an empty object (size 0).
+    /// The only allowed operation on an empty object is assignment. Calling any
+    /// other member function on an empty object results in undefined behavior.
+    StatisticBase();
     /// @brief Move constructor.
     ///
     /// The source object is left in an undefined state.
