@@ -20,159 +20,36 @@
 
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro512StarStar.h++"
+#include "Mustard/Utility/VectorValueType.h++"
 
 #include "muc/concepts"
+#include "muc/random"
 
 #include <concepts>
 #include <istream>
 #include <ostream>
 #include <type_traits>
 
+class TRandom;
+namespace CLHEP {
+class HepRandomEngine;
+} // namespace CLHEP
+
 namespace Mustard::inline Math::Random {
-
-/// @brief Sub-requirements on D::param_type of RandomNumberDistribution (a C++
-/// named requirements).
-/// See also: https://en.cppreference.com/w/cpp/named_req/RandomNumberDistribution
-template<typename P>
-concept STDDistributionParameter = requires {
-    // 1. They said: "D::param_type (aka P) satisfies CopyConstructible."
-    // 2. They said: "D::param_type (aka P) satisfies CopyAssignable."
-    requires std::copyable<P>;
-    // 3. They said: "D::param_type (aka P) satisfies EqualityComparable."
-    requires std::equality_comparable<P>;
-    // 4. They said: "D::param_type (aka P) has a constructor taking identical
-    // arguments as each of the constructors of D that take arguments
-    // corresponding to the distribution parameters."
-    // -- Semantic only
-    // 5. They said: "D::param_type (aka P) has a member function with the
-    // identical name, type, and semantics, as every member function of D that
-    // returns a parameter of the distribution."
-    // -- Semantic only
-    // 6. They said: "D::param_type (aka P) declares a member typedef:
-    // using distribution_type = D;"
-    typename P::distribution_type;
-};
-
-/// @brief Sub-requirements on D::param_type of RandomNumberDistribution (a C++
-/// named requirements).
-/// See also: https://en.cppreference.com/w/cpp/named_req/RandomNumberDistribution
-template<typename P, typename D>
-concept STDDistributionParameterOf = requires {
-    // 1. Previous requirements.
-    requires STDDistributionParameter<P>;
-    // 2. The member typedef distribution_type is same as D.
-    requires std::same_as<typename P::distribution_type, D>;
-    // 3. D satisfies RandomNumberDistribution, where they said: "D::param_type
-    // must be valid.". It's clear that D::param_type should be the same as P.
-    typename D::param_type;
-    requires std::same_as<P, typename D::param_type>;
-};
-
-/// @brief C++ named requirements: RandomNumberDistribution.
-/// See also: https://en.cppreference.com/w/cpp/named_req/RandomNumberDistribution
-template<typename D>
-concept STDRandomNumberDistribution = requires(D d, const D x) {
-    // 1. They said: "D satisfies CopyConstructible."
-    // 2. They said: "D satisfies CopyAssignable."
-    requires std::copyable<D>;
-    // 3. They said: "D::result_type must be valid, it is an arithmetic type."
-    // -- Weakened, allow D::result_type to be a numeric vector.
-    typename D::result_type;
-    requires(std::is_arithmetic_v<typename D::result_type> or
-             Concept::NumericVectorAny<typename D::result_type>);
-    // 4. They said: "D::param_type must be valid, it satisfies 'some
-    // requirements'."
-    typename D::param_type;
-    requires STDDistributionParameterOf<typename D::param_type, D>;
-    // 5. They said: "D() must be valid and creates a distribution
-    // indistinguishable from any other default-constructed D."
-    requires std::default_initializable<D>;
-    // 6. They said: "Given p, a (possibly const) value of type D::param_type,
-    // D(p) must be valid and creates a distribution indistinguishable from D
-    // constructed directly from the values used to construct p."
-    requires std::constructible_from<const typename D::param_type>;
-    // 7. They said: "Given d, a value of D, expression d.reset() must be
-    // valid and its value type is void. Expression d.reset() resets the
-    // internal state of the distribution. The next call to operator() on
-    // d will not depend on values produced by any engine prior to reset()."
-    { d.reset() } -> std::same_as<void>;
-    // 8. They said: "Given x, a (possibly const) value of D, expression
-    // x.param() must be valid and its value type is D::param_type. Expression
-    // x.param() returns p such that D(p).param() == p.
-    { x.param() } -> std::same_as<typename D::param_type>;
-    // 9. They said: "Given d, a value of D, and given p, a (possibly const)
-    // value of type D::param_type, expression d.param(p) must be
-    // valid and its value type is void. The postcondition of d.param(p) is
-    // d.param() == p.
-    requires requires(const typename D::param_type p) {
-        { d.param(p) } -> std::same_as<void>;
-    };
-    // 10. They said: "Given g, lvalues of a type satisfying
-    // UniformRandomBitGenerator, expression d(g) must be valid. The result of
-    // expression d(g) has type of D::result_type. The sequence of numbers
-    // returned by successive invocations of expression d(g) with the same g
-    // are randomly distributed according to the distribution parametrized by
-    // d.param().
-    requires requires(Xoshiro512StarStar g) {
-        { d(g) } -> std::same_as<typename D::result_type>;
-    };
-    // 11. They said: "Given g, lvalues of a type satisfying
-    // UniformRandomBitGenerator, and given p, a (possibly const) value of type
-    // D::param_type, expression d(g, p) must be valid. The sequence of numbers
-    // returned by successive invocations of d(g, p) with the same g are
-    // randomly distributed according to the distribution parametrized by p.
-    requires requires(Xoshiro512StarStar g, const typename D::param_type p) {
-        { d(g, p) } -> std::same_as<typename D::result_type>;
-    };
-    // 12. They said: "Given x, a (possibly const) value of D, expression
-    // x.min() must be valid. It returns the greatest lower bound on the values
-    // potentially returned by x’s operator(), as determined by the current
-    // values of x’s parameters.
-    { x.min() } -> std::same_as<typename D::result_type>;
-    // 13. They said: "Given x, a (possibly const) value of D, expression
-    // x.max() must be valid. It returns the least upper bound on the values
-    // potentially returned by x’s operator(), as determined by the current
-    // values of x’s parameters.
-    { x.max() } -> std::same_as<typename D::result_type>;
-    // 14. They said: "Given x and y, (possibly const) values of type D, given
-    // g1 and g2, lvalues of a type satisfying UniformRandomBitGenerator,
-    // expression x == y must be valid. It Establishes an equivalence relation.
-    // It returns true if x.param() == y.param() and future infinite sequences
-    // of values that would be generated by repeated invocations of x(g1) and
-    // y(g2) would be equal as long as g1 == g2. Futhermore, they said: "Given
-    // x and y, (possibly const) values of type D, expression x != y must be
-    // valid. It returns a bool such that (x == y) == !(x != y)."
-    requires std::equality_comparable<D>;
-    // 15. They said: "Given x, a (possibly const) value of D, given os, a
-    // lvalue of a specialization of std::basic_ostream, expression os << x
-    // must be valid. Expression os << x returns a reference to the type of
-    // os. Expression os << x writes a textual representation of the
-    // distribution parameters and internal state to os. The formatting flags
-    // and fill character of os are unchanged."
-    // 16. They said: "Given d, a value of type D, given is, a lvalue of a
-    // specialization of std::basic_istream, expression is >> d must be valid.
-    // Expression is >> d returns a reference to the type of is. Expression
-    // is >> d restores the distribution parameters and internal state with
-    // data read from is. The formatting flags of is are unchanged. The data
-    // must have been written using a stream with the same locale, CharT and
-    // Traits stream template parameters, otherwise the behavior is undefined.
-    // If bad input is encountered, is.setstate(std::ios::failbit) is called,
-    // which may throw std::ios_base::failure. d is unchanged in that case."
-    requires muc::stream_ioable<D>;
-};
 
 template<typename P>
 concept DistributionParameter = requires {
     // 1. Same as the sub-requirements on D::param_type of
     // RandomNumberDistribution (a C++ named requirements).
-    requires STDDistributionParameter<P>;
+    requires muc::random_number_distribution_parameter<P>;
     // 2. Same as the C++ requirements but in our convention:
     // They said: "D::param_type (aka P) declares a member typedef:
     // using distribution_type = D;"
     typename P::DistributionType;
-    // 3. It is TriviallyCopyable (a C++ named requirements).
+    // 3. Extra requirements.
+    // 3.1 It is TriviallyCopyable (a C++ named requirements).
     requires std::is_trivially_copyable_v<P>;
-    // 4. It can be input and output.
+    // 3.2 It can be input and output.
     requires muc::stream_ioable<P>;
 };
 
@@ -180,7 +57,7 @@ template<typename P, typename D>
 concept DistributionParameterOf = requires {
     // 1. Same as the sub-requirements on D::param_type of
     // RandomNumberDistribution (a C++ named requirements).
-    requires STDDistributionParameterOf<P, D>;
+    requires muc::random_number_distribution_parameter_of<P, D>;
     // 2. Previous requirements.
     requires DistributionParameter<P>;
     // 3. Same as the C++ requirements but in our convention.
@@ -197,7 +74,7 @@ concept DistributionParameterOf = requires {
 template<typename D>
 concept RandomNumberDistribution = requires(D d, const D x) {
     // 1. C++ named requirements: RandomNumberDistribution.
-    requires STDRandomNumberDistribution<D>;
+    requires muc::random_number_distribution<D>;
     // 2. Same as the C++ named requirements but in our convention.
     // 2.1. D satisfies CopyConstructible. -- OK
     // 2.2. D satisfies CopyAssignable. -- OK
@@ -274,18 +151,28 @@ concept RandomNumberDistribution = requires(D d, const D x) {
     // If bad input is encountered, is.setstate(std::ios::failbit) is called,
     // which may throw std::ios_base::failure. d is unchanged in that case.
     // -- OK
-    // 3. It has static member function Stateless(), indicates whether the
-    // distribution implementation is stateless. Stateless() is constexpr.
+    // 3. Extra requirements.
+    // 3.1 It has a static constexpr member function Stateless(), indicates
+    // whether the distribution implementation is stateless.
     // If D::Stateless() returns true, a call of D::Reset() has no observable
-    // effect on the distribution object. Otherwise, D::Stateless() returns
-    // false, i.e. a call of D::Reset() has observable effects on the
-    // distribution object.
+    // effect. Otherwise, a call of D::Reset() has observable effects.
     { D::Stateless() } -> std::same_as<bool>;
-    requires std::integral<std::conditional_t<D::Stateless(), int, long>>;
-    // 4. It is TriviallyCopyable (a C++ named requirements).
+    // 3.2 It is TriviallyCopyable (a C++ named requirements).
     requires std::is_trivially_copyable_v<D>;
-    // 5. D::ParameterType cannot be implicitly convertible to D.
+    // 3.3 D::ParameterType cannot be implicitly convertible to D.
     requires not std::convertible_to<typename D::ParameterType, D>;
+    // 3.4 A continous distribution can be used with a CLHEP::HepRandomEngine.
+    requires(requires(CLHEP::HepRandomEngine& g, const typename D::param_type p) {
+        { d(g) } -> std::same_as<typename D::result_type>;
+        { d(g, p) } -> std::same_as<typename D::result_type>;
+    } or (not std::floating_point<typename D::result_type> and
+          not Concept::NumericVectorFloatingPoint<typename D::result_type>));
+    // 3.5 A continous distribution can be used with a ROOT TRandom engine.
+    requires(requires(TRandom& g, const typename D::param_type p) {
+        { d(g) } -> std::same_as<typename D::result_type>;
+        { d(g, p) } -> std::same_as<typename D::result_type>;
+    } or (not std::floating_point<typename D::result_type> and
+          not Concept::NumericVectorFloatingPoint<typename D::result_type>));
 };
 
 } // namespace Mustard::inline Math::Random

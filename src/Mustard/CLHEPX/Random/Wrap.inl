@@ -18,58 +18,58 @@
 
 namespace Mustard::CLHEPX::Random {
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-Wrap<PRBG>::Wrap(long seed) :
+template<muc::random_number_engine PRNG>
+Wrap<PRNG>::Wrap(long seed) :
     HepRandomEngine{},
-    fPRBG{static_cast<typename PRBG::SeedType>(seed)} {
+    fPRNG{static_cast<typename PRNG::SeedType>(seed)} {
     theSeed = seed;
     theSeeds = &theSeed;
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::flatArray(const int size, double* vect) -> void {
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::flatArray(const int size, double* vect) -> void {
     for (int i = 0; i < size; ++i) {
         vect[i] = Wrap::flat();
     }
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::setSeed(long seed, int) -> void {
-    fPRBG.Seed(seed);
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::setSeed(long seed, int) -> void {
+    fPRNG.seed(seed);
     theSeed = seed;
     theSeeds = &theSeed;
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::setSeeds(const long* seeds, int) -> void {
-    fPRBG.Seed(*seeds);
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::setSeeds(const long* seeds, int) -> void {
+    fPRNG.seed(*seeds);
     theSeed = *seeds;
     theSeeds = seeds;
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::saveStatus(gsl::czstring filename) const -> void {
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::saveStatus(gsl::czstring filename) const -> void {
     ProcessSpecificFile<std::ofstream> os{filename};
     if (not os.Opened()) [[unlikely]] {
-        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {}).",
+        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRNG>::name(): {}).",
                                os.Path(), name()));
     }
     put(os);
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::restoreStatus(gsl::czstring filename) -> void {
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::restoreStatus(gsl::czstring filename) -> void {
     ProcessSpecificFile<std::ifstream> is{filename};
     if (not is.Opened()) [[unlikely]] {
-        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRBG>::name(): {}).",
+        PrintError(fmt::format("Cannot open '{}', nothing was done (Wrap<PRNG>::name(): {}).",
                                is.Path(), name()));
     }
     get(is);
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::showStatus() const -> void {
-    constexpr std::string_view split = "----------------------------------------------------------------";
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::showStatus() const -> void {
+    constexpr std::string_view split{"----------------------------------------------------------------"};
     const auto engineName{name()};
     const auto firstSplit{static_cast<gsl::index>(split.length()) -          // length(split) -
                           static_cast<gsl::index>(engineName.length() + 9)}; // length(" " + engineName + " status ")
@@ -77,41 +77,41 @@ auto Wrap<PRBG>::showStatus() const -> void {
     const auto firstSplitR{std::max<gsl::index>(3, muc::even(firstSplit) ? firstSplitL : (firstSplitL + 1))};
     std::cout << std::string(firstSplitL, '-') << ' ' << engineName << " status " << std::string(firstSplitR, '-') << '\n'
               << "Initial seed: " << theSeed << '\n'
-              << "Current state: " << fPRBG << '\n'
+              << "Current state: " << fPRNG << '\n'
               << split << std::endl;
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::put(std::ostream& os) const -> decltype(os) {
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::put(std::ostream& os) const -> decltype(os) {
     const auto engineName = name();
     os << engineName << "-begin\n"
-       << fPRBG << '\n'
+       << fPRNG << '\n'
        << engineName << "-end\n";
     return os;
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::get(std::istream& is) -> decltype(is) {
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::get(std::istream& is) -> decltype(is) {
     const auto engineName = name();
     std::string tag;
     is >> tag;
     if (tag != std::string(engineName).append("-begin")) {
-        std::cerr << "Wrap<PRBG>::get (with PRBG = " << muc::try_demangle(typeid(PRBG).name()) << "): No " << engineName << " found at current position, engine state unchanged. Input stream has been consumed\n";
+        std::cerr << "Wrap<PRNG>::get (with PRNG = " << muc::try_demangle(typeid(PRNG).name()) << "): No " << engineName << " found at current position, engine state unchanged. Input stream has been consumed\n";
         return is;
     }
-    PRBG volunteer;
+    PRNG volunteer;
     is >> volunteer >> tag;
     if (tag != std::string(engineName).append("-end")) {
-        std::cerr << "Wrap<PRBG>::get (with PRBG = " << muc::try_demangle(typeid(PRBG).name()) << "): " << engineName << " read from the input stream is incomplete, engine state unchanged. Input stream has been consumed\n";
+        std::cerr << "Wrap<PRNG>::get (with PRNG = " << muc::try_demangle(typeid(PRNG).name()) << "): " << engineName << " read from the input stream is incomplete, engine state unchanged. Input stream has been consumed\n";
         return is;
     }
-    fPRBG = volunteer;
+    fPRNG = volunteer;
     return is;
 }
 
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
-auto Wrap<PRBG>::getState(std::istream& is) -> decltype(is) {
-    PrintError("Wrap<PRBG>::getState has no effect. Do not use.");
+template<muc::random_number_engine PRNG>
+auto Wrap<PRNG>::getState(std::istream& is) -> decltype(is) {
+    PrintError("Wrap<PRNG>::getState has no effect. Do not use.");
     return is;
 }
 

@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Mustard/Math/Random/Generator/Xoshiro512Base.h++"
-#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include <bit>
 
@@ -30,7 +29,7 @@ public:
     constexpr Xoshiro512StarStar() = default;
     constexpr explicit Xoshiro512StarStar(SeedType seed);
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()() -> ResultType;
+    constexpr auto operator()() -> ResultType;
 };
 
 } // namespace Mustard::inline Math::Random::inline Generator

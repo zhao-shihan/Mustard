@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Math/Random/UniformPseudoRandomBitGeneratorBase.h++"
+#include "Mustard/Math/Random/RandomNumberEngineBase.h++"
 
 #include "muc/concepts"
 
@@ -26,15 +26,16 @@
 
 namespace Mustard::inline Math::Random::inline Generator {
 
-class MT1993764 final : public UniformPseudoRandomBitGeneratorBase<MT1993764,
-                                                                   std::mt19937_64::result_type,
-                                                                   std::mt19937_64::result_type> {
+class MT1993764 final : public RandomNumberEngineBase<MT1993764, std::mt19937_64::result_type, std::mt19937_64::result_type> {
 public:
     MT1993764() = default;
     explicit MT1993764(SeedType seed);
 
     auto operator()() -> auto { return fMT(); }
+
+    auto Seed() -> void { fMT.seed(); }
     auto Seed(SeedType seed) -> void { fMT.seed(seed); }
+    auto Discard(unsigned long long z) -> void { fMT.discard(z); }
 
     static constexpr auto Min() -> auto { return std::mt19937_64::min(); }
     static constexpr auto Max() -> auto { return std::mt19937_64::max(); }

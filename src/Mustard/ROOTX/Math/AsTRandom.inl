@@ -18,24 +18,24 @@
 
 namespace Mustard::ROOTX::Math {
 
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
-AsTRandom<PRBG>::AsTRandom(typename PRBG::SeedType seed) :
-    fPRBG{seed},
-    fGaussian{} {}
+template<muc::random_number_engine PRNG>
+AsTRandom<PRNG>::AsTRandom(typename PRNG::SeedType seed) :
+    fPRNG{seed},
+    fGaus{} {}
 
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
-auto AsTRandom<PRBG>::RndmArray(Int_t n, Float_t* array) -> void {
-    std::ranges::generate_n(array, n, [this] { return Mustard::Random::Uniform<Float_t>{}(fPRBG); });
+template<muc::random_number_engine PRNG>
+auto AsTRandom<PRNG>::RndmArray(int n, float* array) -> void {
+    std::ranges::generate_n(array, n, [this] { return Random::Uniform<float>{}(fPRNG); });
 }
 
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
-auto AsTRandom<PRBG>::RndmArray(Int_t n, Double_t* array) -> void {
-    std::ranges::generate_n(array, n, [this] { return Rndm(); });
+template<muc::random_number_engine PRNG>
+auto AsTRandom<PRNG>::RndmArray(int n, double* array) -> void {
+    std::ranges::generate_n(array, n, [this] { return Random::Uniform<double>{}(fPRNG); });
 }
 
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
-auto AsTRandom<PRBG>::GetSeed() const -> UInt_t {
-    PrintError("AsTRandom<PRBG>::GetSeed has no effect. Do not use.");
+template<muc::random_number_engine PRNG>
+auto AsTRandom<PRNG>::GetSeed() const -> unsigned {
+    PrintError("AsTRandom<PRNG>::GetSeed has no effect. Do not use.");
     return 0;
 }
 

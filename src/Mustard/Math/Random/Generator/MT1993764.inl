@@ -19,7 +19,7 @@
 namespace Mustard::inline Math::Random::inline Generator {
 
 inline MT1993764::MT1993764(MT1993764::SeedType seed) :
-    UniformPseudoRandomBitGeneratorBase{},
+    RandomNumberEngineBase{},
     fMT{seed} {}
 
 } // namespace Mustard::inline Math::Random::inline Generator

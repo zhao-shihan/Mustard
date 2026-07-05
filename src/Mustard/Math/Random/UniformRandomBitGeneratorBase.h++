@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Math/Random/UniformRandomBitGenerator.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <concepts>
 
@@ -37,7 +38,7 @@ public:
 
 protected:
     constexpr UniformRandomBitGeneratorBase();
-    constexpr ~UniformRandomBitGeneratorBase() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(UniformRandomBitGeneratorBase)
 
 public:
     static constexpr auto min() { return ADerived::Min(); }

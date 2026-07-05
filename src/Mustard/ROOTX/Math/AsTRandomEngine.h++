@@ -19,10 +19,10 @@
 #pragma once
 
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
-#include "Mustard/Math/Random/UniformPseudoRandomBitGenerator.h++"
 
 #include "Math/TRandomEngine.h"
 
+#include "muc/random"
 #include "muc/utility"
 
 #include <typeinfo>
@@ -31,50 +31,45 @@ namespace Mustard::ROOTX::Math {
 
 /// @brief Adapter that wraps Mustard RNGs as ROOT-compatible random engines
 ///
-/// Implements the ROOT::Math::TRandomEngine interface for any Mustard library
-/// UniformPseudoRandomBitGenerator type. Allows using modern Mustard RNGs
-/// with ROOT's statistical functions and classes.
+/// Implements the ROOT::Math::TRandomEngine interface for any standard-compliant
+/// random number engine.
 ///
-/// @tparam PRBG Mustard UniformPseudoRandomBitGenerator type to adapt
-///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator concept
-///   - Must provide SeedType, Seed(), Min(), Max(), and operator()
+/// @tparam PRNG A standard-compliant random number engine type satisfying
+/// C++ named requirements RandomNumberEngine (muc::random_number_engine).
 ///
 /// @note Inherits from ROOT::Math::TRandomEngine to integrate with ROOT framework.
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
+template<muc::random_number_engine PRNG>
 class AsTRandomEngine : public ROOT::Math::TRandomEngine {
 public:
-    /// @brief Default constructor (uses PRBG's default seed)
+    /// @brief Default constructor (uses PRNG's default seed)
     AsTRandomEngine() = default;
     /// @brief Construct with specific seed value
-    /// @param seed Initialization seed for underlying PRBG
-    explicit AsTRandomEngine(typename PRBG::SeedType seed);
-
-    /// @brief Virtual destructor (default implementation)
-    virtual ~AsTRandomEngine() override = default;
+    /// @param seed Initialization seed for underlying PRNG
+    explicit AsTRandomEngine(typename PRNG::SeedType seed);
 
     /// @brief Generate uniform double in [0,1) (ROOT interface requirement)
     /// @return Random double value in unit interval
-    auto Rndm() -> double override { return Mustard::Random::Uniform<double>{}(fPRBG); }
+    auto Rndm() -> double override { return Mustard::Random::Uniform<double>{}(fPRNG); }
 
     /// @brief Functor interface equivalent to Rndm()
     auto operator()() -> auto { return Rndm(); }
-    /// @brief Generate native integer from underlying PRBG
-    /// @return Raw random integer from PRBG's output range
-    auto IntRndm() -> auto { return fPRBG(); }
+    /// @brief Generate native integer from underlying PRNG
+    /// @return Raw random integer from PRNG's output range
+    auto IntRndm() -> auto { return fPRNG(); }
     /// @brief Re-seed the underlying random engine
-    /// @param seed New seed value for PRBG
-    auto SetSeed(typename PRBG::SeedType seed) -> void { fPRBG.Seed(seed); }
+    /// @param seed New seed value for PRNG
+    auto SetSeed(typename PRNG::SeedType seed) -> void { fPRNG.seed(seed); }
 
-    /// @brief Maximum integer value from underlying PRBG
-    static auto MaxInt() -> auto { return PRBG::Max(); }
-    /// @brief Minimum integer value from underlying PRBG
-    static auto MinInt() -> auto { return PRBG::Min(); }
-    /// @brief Human-readable name of the adapted PRBG type
-    /// @return Demangled type name of the PRBG template parameter
-    static auto Name() -> std::string { return muc::try_demangle(typeid(PRBG).name()); }
+    /// @brief Maximum integer value from underlying PRNG
+    static auto MaxInt() -> auto { return PRNG::Max(); }
+    /// @brief Minimum integer value from underlying PRNG
+    static auto MinInt() -> auto { return PRNG::Min(); }
+    /// @brief Human-readable name of the adapted PRNG type
+    /// @return Demangled type name of the PRNG template parameter
+    static auto Name() -> std::string { return muc::try_demangle(typeid(PRNG).name()); }
 
 private:
-    PRBG fPRBG;
+    PRNG fPRNG;
 };
 
 } // namespace Mustard::ROOTX::Math

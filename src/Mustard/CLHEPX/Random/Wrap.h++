@@ -21,11 +21,11 @@
 #include "Mustard/IO/File.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
-#include "Mustard/Math/Random/UniformPseudoRandomBitGenerator.h++"
 
 #include "CLHEP/Random/RandomEngine.h"
 
 #include "muc/math"
+#include "muc/random"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -43,26 +43,24 @@ namespace Mustard::CLHEPX::Random {
 /// @brief Adapter for Mustard RNGs to CLHEP random engine interface
 ///
 /// Provides full compatibility with CLHEP's HepRandomEngine API for any
-/// UniformPseudoRandomBitGenerator.
+/// standard-compliant random number engine.
 ///
-/// @tparam PRBG Mustard UniformPseudoRandomBitGenerator type to wrap
-///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator
+/// @tparam PRNG A standard-compliant random number engine type satisfying
+/// C++ named requirements RandomNumberEngine (muc::random_number_engine).
 ///
 /// @note Implements all CLHEP engine virtual methods except getState().
 /// @warning getState() is intentionally non-functional.
-template<Math::Random::UniformPseudoRandomBitGenerator PRBG>
+template<muc::random_number_engine PRNG>
 class Wrap : public CLHEP::HepRandomEngine {
 public:
     /// @brief Construct with default seed.
     Wrap() = default;
     /// @brief Construct with specific seed.
-    /// @param seed Initialization value (converted to PRBG::SeedType)
+    /// @param seed Initialization value (converted to PRNG::SeedType)
     explicit Wrap(long seed);
 
-    ~Wrap() = default;
-
     /// @brief Generate uniform double in 0--1.
-    virtual auto flat() -> double override { return Math::Random::Uniform<double>{}(fPRBG); }
+    virtual auto flat() -> double override { return Math::Random::Uniform<double>{}(fPRNG); }
     /// @brief Fill array with uniform doubles.
     /// @param size Number of values to generate
     /// @param vect Pre-allocated output buffer
@@ -87,7 +85,7 @@ public:
     virtual auto showStatus() const -> void override;
 
     /// @brief Get engine type name.
-    /// @return Demangled type name of the wrapped PRBG
+    /// @return Demangled type name of the wrapped PRNG
     virtual auto name() const -> std::string override { return muc::try_demangle(typeid(Wrap).name()); }
 
     /// @brief Serialize engine state to output stream.
@@ -97,17 +95,17 @@ public:
 
     /// @name Random-number-generating conversion operators
     /// @{
-    virtual operator double() override { return Math::Random::Uniform<double>()(fPRBG); }
-    virtual operator float() override { return Math::Random::Uniform<float>()(fPRBG); }
-    virtual operator unsigned int() override { return fPRBG(); }
+    virtual operator double() override { return Math::Random::Uniform<double>{}(fPRNG); }
+    virtual operator float() override { return Math::Random::Uniform<float>{}(fPRNG); }
+    virtual operator unsigned int() override { return fPRNG(); }
     /// @}
 
-    /// @brief Access underlying PRBG.
-    /// @return Reference to the adapted Mustard PRBG
-    auto UnderlyingPRBG() -> PRBG& { return fPRBG; }
-    /// @brief Access underlying PRBG.
-    /// @return Reference to the adapted Mustard PRBG
-    auto UnderlyingPRBG() const -> const PRBG& { return fPRBG; }
+    /// @brief Access underlying PRNG.
+    /// @return Reference to the adapted Mustard PRNG
+    auto UnderlyingPRNG() -> PRNG& { return fPRNG; }
+    /// @brief Access underlying PRNG.
+    /// @return Reference to the adapted Mustard PRNG
+    auto UnderlyingPRNG() const -> const PRNG& { return fPRNG; }
 
 private:
     /// @brief [Disabled] CLHEP state restoration method
@@ -116,7 +114,7 @@ private:
     virtual auto getState(std::istream& is) -> decltype(is) override;
 
 private:
-    PRBG fPRBG;
+    PRNG fPRNG;
 };
 
 } // namespace Mustard::CLHEPX::Random

@@ -71,9 +71,9 @@ public:
     /// @brief Clean up and reset global engine pointers.
     ~UseXoshiro();
 
-    /// @brief Returns the underlying pseudo‑random bit generator (PRBG).
-    /// @return Reference to the Xoshiro PRBG (Xoshiro256PlusPlus or Xoshiro512PlusPlus)
-    auto RandomEngine() const -> auto& { return fRandom->clhep.UnderlyingPRBG(); }
+    /// @brief Returns the underlying pseudo‑random bit generator (PRNG).
+    /// @return Reference to the Xoshiro PRNG (Xoshiro256PlusPlus or Xoshiro512PlusPlus)
+    auto RandomEngine() const -> auto& { return fRandom->clhep.UnderlyingPRNG(); }
     /// @brief Returns the CLHEP random engine wrapper.
     /// @return Reference to the CLHEP Xoshiro** engine (Xoshiro256StarStar or Xoshiro512StarStar)
     auto CLHEPRandomEngine() const -> auto& { return fRandom->clhep; }

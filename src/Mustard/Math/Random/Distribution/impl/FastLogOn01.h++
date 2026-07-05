@@ -21,45 +21,42 @@
 #include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/bit"
+#include "muc/utility"
 
 #include <bit>
 #include <cassert>
 #include <climits>
 #include <cmath>
 #include <concepts>
-#include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <limits>
 #include <numbers>
 
-namespace Mustard::inline Math::impl {
+namespace Mustard::inline Math::Random::inline Distribution::impl {
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto FastLogOn01(T x) -> auto {
+MUSTARD_STRONG_INLINE auto FastLogOn01(T x) -> T {
     assert(0 < x and x <= 1);
     muc::assume(0 < x and x <= 1);
-    if constexpr (std::numeric_limits<T>::is_iec559) {
-        using B =
-            std::conditional_t<
-                std::same_as<T, float>, std::uint32_t,
-                std::conditional_t<
-                    std::same_as<T, double>, std::uint64_t,
-                    void>>;
+    constexpr auto iec559{std::numeric_limits<T>::is_iec559};
+    constexpr auto isF32{std::same_as<T, float>};
+    constexpr auto isF64{std::same_as<T, double>};
+    if constexpr (iec559 and (isF32 or isF64)) {
+        using B = std::conditional_t<isF32, std::uint32_t, std::uint64_t>;
         constexpr int n{std::numeric_limits<T>::digits - 1};
         constexpr int k{muc::bit_size<T> - 1 - n};
-        const auto xBits{std::bit_cast<B>(x)};
-        muc::assume(xBits > 0);
-        muc::assume(xBits < ~(~static_cast<B>(0) >> 1));
-        x = std::bit_cast<T>((xBits | ~static_cast<B>(0) << n) << 2 >> 2);
-        const auto r{(x - 1) * (static_cast<T>(1.71413692416283632961056338086598083L) + x) /
-                     (static_cast<T>(0.655878840759533266466456480292495690L) +
-                      x * (static_cast<T>(1.76659530614295075834353296149169646L) +
-                           x * static_cast<T>(0.292324367156719289353136917971432996L)))};
-        return r + (static_cast<int>(xBits >> n) - ((1 << (k - 1)) - 1)) * std::numbers::ln2_v<T>;
+        constexpr T c[]{9.2651671377046504, 2.73948787606301709,
+                        18.5305156812078555, 10.1158584065498774};
+        const auto xBit{std::bit_cast<B>(x)};
+        muc::assume(xBit > 0);
+        muc::assume(xBit < ~(~static_cast<B>(0) >> 1));
+        const auto e{static_cast<int>(xBit >> n) - (1 << (k - 1)) + 2};       // = e+1
+        x = std::bit_cast<T>((xBit | ~static_cast<B>(0) << n) << 2 >> 2) - 2; // = m-2
+        const auto r{x * (c[0] + c[1] * x) / (c[2] + x * (c[3] + x))};        // = log((x+2)/2) = log(m/2)
+        return r + e * std::numbers::ln2_v<T>;                                // = log(m/2) + (e+1)*log(2)
     } else {
         return std::log(x);
     }
 }
 
-} // namespace Mustard::inline Math::impl
+} // namespace Mustard::inline Math::Random::inline Distribution::impl

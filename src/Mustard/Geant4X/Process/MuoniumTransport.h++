@@ -23,7 +23,7 @@
 #include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
 #include "Mustard/Geant4X/Physics/TargetForMuoniumPhysics.h++"
 #include "Mustard/Math/Random/Distribution/Exponential.h++"
-#include "Mustard/Math/Random/Distribution/Gaussian3DDiagnoal.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian3D.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
@@ -75,7 +75,7 @@ private:
     G4bool fIsExitingTargetVolume;
 
     Random::Xoshiro256Plus fXoshiro256Plus;
-    Random::Gaussian3DDiagnoalFast<G4ThreeVector> fStandardGaussian3D;
+    Random::Gaussian3D<G4ThreeVector> fStandardGaussian3D;
 
     typename MuoniumPhysicsMessenger<ATarget>::template Register<MuoniumTransport<ATarget>> fMessengerRegister;
 };

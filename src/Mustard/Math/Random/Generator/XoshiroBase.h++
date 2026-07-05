@@ -19,7 +19,8 @@
 #pragma once
 
 #include "Mustard/Math/Random/Generator/SplitMix64.h++"
-#include "Mustard/Math/Random/UniformPseudoRandomBitGeneratorBase.h++"
+#include "Mustard/Math/Random/RandomNumberEngineBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <algorithm>
 #include <array>
@@ -32,15 +33,17 @@ namespace Mustard::inline Math::Random::inline Generator {
 
 template<typename ADerived, std::size_t NBit>
     requires(NBit % 64 == 0)
-class XoshiroBase : public UniformPseudoRandomBitGeneratorBase<ADerived,
-                                                               std::uint64_t,
-                                                               std::uint64_t> {
+class XoshiroBase : public RandomNumberEngineBase<ADerived, std::uint64_t, std::uint64_t> {
+private:
+    using Base = RandomNumberEngineBase<ADerived, std::uint64_t, std::uint64_t>;
+
 protected:
     constexpr XoshiroBase(std::array<std::uint64_t, NBit / 64> defaultState);
     constexpr explicit XoshiroBase(std::uint64_t seed);
-    constexpr ~XoshiroBase() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(XoshiroBase)
 
 public:
+    using Base::Seed;
     constexpr auto Seed(std::uint64_t seed) -> void;
 
     static constexpr auto Min() -> auto { return std::numeric_limits<std::uint64_t>::min(); }

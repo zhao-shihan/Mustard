@@ -25,15 +25,17 @@
 namespace Mustard::inline Math::Random {
 
 /// @brief Concept of uniform random bit generator.
+/// @note This is more constrained than C++ named requirement UniformRandomBitGenerator.
+/// Use std::uniform_random_bit_generator for a fully standard-compliant interface.
 template<typename G>
 concept UniformRandomBitGenerator = requires(G g) {
     // 1. C++ named requirements: UniformRandomBitGenerator.
     // See also: https://en.cppreference.com/w/cpp/named_req/UniformRandomBitGenerator
     requires std::uniform_random_bit_generator<G>;
     // 2. Same as the C++ named requirements but in our convention.
-    // 2.1 Has ResultType. It is an unsigned integral type.
+    // 2.1 Has ResultType. It is same as result_type.
     typename G::ResultType;
-    requires std::unsigned_integral<typename G::ResultType>;
+    requires std::same_as<typename G::ResultType, typename G::result_type>;
     // 2.2 Has static member functions Min() and Max(), and Min() < Max().
     // They are constexpr.
     { G::Min() } -> std::same_as<typename G::ResultType>;

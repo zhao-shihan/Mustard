@@ -18,8 +18,8 @@
 
 namespace Mustard::ROOTX::Math {
 
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
-AsTRandomEngine<PRBG>::AsTRandomEngine(typename PRBG::SeedType seed) :
-    fPRBG{seed} {}
+template<muc::random_number_engine PRNG>
+AsTRandomEngine<PRNG>::AsTRandomEngine(typename PRNG::SeedType seed) :
+    fPRNG{seed} {}
 
 } // namespace Mustard::ROOTX::Math

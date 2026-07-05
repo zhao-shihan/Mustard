@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Math/Random/Generator/XoshiroBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/concepts"
@@ -36,7 +37,7 @@ class Xoshiro256Base : public XoshiroBase<ADerived, 256> {
 protected:
     constexpr Xoshiro256Base();
     constexpr explicit Xoshiro256Base(std::uint64_t seed);
-    constexpr ~Xoshiro256Base() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(Xoshiro256Base)
 
 public:
     MUSTARD_ALWAYS_INLINE constexpr auto Step() -> void;

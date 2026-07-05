@@ -18,8 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Math/Random/UniformPseudoRandomBitGeneratorBase.h++"
-#include "Mustard/Utility/FunctionAttribute.h++"
+#include "Mustard/Math/Random/RandomNumberEngineBase.h++"
 
 #include "muc/concepts"
 
@@ -30,14 +29,14 @@
 
 namespace Mustard::inline Math::Random::inline Generator {
 
-class SplitMix64 final : public UniformPseudoRandomBitGeneratorBase<SplitMix64,
-                                                                    std::uint64_t,
-                                                                    std::uint64_t> {
+class SplitMix64 final : public RandomNumberEngineBase<SplitMix64, std::uint64_t, std::uint64_t> {
 public:
     constexpr SplitMix64();
     constexpr explicit SplitMix64(SeedType seed);
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()() -> SplitMix64::ResultType;
+    constexpr auto operator()() -> SplitMix64::ResultType;
+
+    using RandomNumberEngineBase::Seed;
     constexpr auto Seed(SeedType seed) -> void;
 
     static constexpr auto Min() -> auto { return std::numeric_limits<ResultType>::min(); }

@@ -18,8 +18,11 @@
 
 #pragma once
 
-#include "Mustard/Math/Random/Distribution/Gaussian2DDiagnoal.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian2D.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
+
+#include "TRandom.h"
 
 #include "muc/concepts"
 #include "muc/utility"
@@ -28,21 +31,22 @@
 #include <cmath>
 #include <concepts>
 #include <limits>
+#include <random>
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
 namespace impl {
 
 template<std::floating_point T, template<typename> typename AGaussian>
-class BasicGaussianParameter final : public DistributionParameterBase<BasicGaussianParameter<T, AGaussian>,
-                                                                      AGaussian<T>> {
+class BasicGaussianSParameter final : public DistributionParameterBase<BasicGaussianSParameter<T, AGaussian>,
+                                                                       AGaussian<T>> {
 private:
-    using Base = DistributionParameterBase<BasicGaussianParameter<T, AGaussian>,
+    using Base = DistributionParameterBase<BasicGaussianSParameter<T, AGaussian>,
                                            AGaussian<T>>;
 
 public:
-    constexpr BasicGaussianParameter() = default;
-    constexpr BasicGaussianParameter(T mu, T sigma);
+    constexpr BasicGaussianSParameter() = default;
+    constexpr BasicGaussianSParameter(T mu, T sigma);
 
     constexpr auto Mu() const -> auto { return fMu; }
     constexpr auto Sigma() const -> auto { return fSigma; }
@@ -51,9 +55,9 @@ public:
     constexpr auto Sigma(T sigma) -> void { fSigma = sigma; }
 
     template<muc::character AChar>
-    friend auto operator<<(std::basic_ostream<AChar>& os, const BasicGaussianParameter& self) -> decltype(os) { return self.StreamOutput(os); }
+    friend auto operator<<(std::basic_ostream<AChar>& os, const BasicGaussianSParameter& self) -> decltype(os) { return self.StreamOutput(os); }
     template<muc::character AChar>
-    friend auto operator>>(std::basic_istream<AChar>& is, BasicGaussianParameter& self) -> decltype(is) { return self.StreamInput(is); }
+    friend auto operator>>(std::basic_istream<AChar>& is, BasicGaussianSParameter& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
     template<muc::character AChar>
@@ -68,11 +72,11 @@ private:
 
 template<std::floating_point T, template<typename> typename AGaussian>
 class GaussianBase : public RandomNumberDistributionBase<AGaussian<T>,
-                                                         BasicGaussianParameter<T, AGaussian>,
+                                                         BasicGaussianSParameter<T, AGaussian>,
                                                          T> {
 private:
     using Base = RandomNumberDistributionBase<AGaussian<T>,
-                                              BasicGaussianParameter<T, AGaussian>,
+                                              BasicGaussianSParameter<T, AGaussian>,
                                               T>;
 
 public:
@@ -81,7 +85,7 @@ public:
     constexpr explicit GaussianBase(const typename Base::ParameterType& p);
 
 protected:
-    constexpr ~GaussianBase() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(GaussianBase)
 
 public:
     constexpr auto Parameter() const -> auto { return fParameter; }
@@ -109,87 +113,87 @@ protected:
 
 } // namespace impl
 
-/// @brief Reference: Luc Devroye, Non-Uniform Random Variates Generation,
-/// Chapter V, Section 4.4 (See http://luc.devroye.org/rnbookindex.html).
+/// @brief Generates normal random numbers.
+/// Delegates to Gaussian2D and caches the second value for the next call.
 /// @tparam T The result type.
 template<std::floating_point T = double>
 class Gaussian;
 
 template<std::floating_point T>
-using GaussianParameter = impl::BasicGaussianParameter<T, Gaussian>;
+using GaussianParameter = impl::BasicGaussianSParameter<T, Gaussian>;
 
 template<std::floating_point T>
 class Gaussian final : public impl::GaussianBase<T, Gaussian> {
 public:
     using impl::GaussianBase<T, Gaussian>::GaussianBase;
 
-    constexpr auto Reset() -> void { fSaved = false; }
+    constexpr auto Reset() -> void { fCached = false; }
 
-    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianParameter<T>& p) -> auto { return Impl(g, p); }
+    template<std::uniform_random_bit_generator G>
+    auto operator()(G& g) -> auto { return Impl(g, this->fParameter); }
+    template<std::uniform_random_bit_generator G>
+    auto operator()(G& g, const GaussianParameter<T>& p) -> auto { return Impl(g, p); }
 
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const GaussianParameter<T>& p) -> auto { return Impl(g, p); }
+    auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    auto operator()(CLHEP::HepRandomEngine& g, const GaussianParameter<T>& p) -> auto { return Impl(g, p); }
+
+    auto operator()(TRandom& g) -> auto { return Impl(g, this->fParameter); }
+    auto operator()(TRandom& g, const GaussianParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> auto { return std::numeric_limits<T>::lowest(); }
     constexpr auto Max() const -> auto { return std::numeric_limits<T>::max(); }
 
-    static constexpr auto Stateless() -> bool { return false; }
+private:
+    auto Impl(auto& g, const GaussianParameter<T>& p) -> T;
 
 private:
-    MUSTARD_ALWAYS_INLINE auto Impl(auto& g, const GaussianParameter<T>& p) -> T;
-
-private:
-    bool fSaved{};
-    T fSavedValue{};
+    bool fCached{};
+    T fCachedValue{};
 };
 
 template<typename T, typename U>
 Gaussian(T, U) -> Gaussian<std::common_type_t<T, U>>;
 
-/// @brief Reference: Luc Devroye, Non-Uniform Random Variates Generation,
-/// Chapter V, Section 4.4 (See http://luc.devroye.org/rnbookindex.html).
-/// This version is faster than Gaussian and less accurate for a tiny bit. See
-/// note.
-/// @note This version uses RA2Log (P2/Q2 rational) instead of full-precision
-/// Log. The average truncation error of RA2Log is O(10^-6), and the max
-/// truncation error is less than 10^-5. This error will propagate to the
-/// generated random numbers.
+/// @brief Generates normal random numbers.
+/// Delegates to Gaussian2DS and caches the second value for the next call.
 /// @tparam T The result type.
 template<std::floating_point T = double>
-class GaussianFast;
+class GaussianS;
 
 template<std::floating_point T>
-using GaussianFastParameter = impl::BasicGaussianParameter<T, GaussianFast>;
+using GaussianSParameter = impl::BasicGaussianSParameter<T, GaussianS>;
 
 template<std::floating_point T>
-class GaussianFast final : public impl::GaussianBase<T, GaussianFast> {
+class GaussianS final : public impl::GaussianBase<T, GaussianS> {
 public:
-    using impl::GaussianBase<T, GaussianFast>::GaussianBase;
+    using impl::GaussianBase<T, GaussianS>::GaussianBase;
 
-    constexpr auto Reset() -> void { fSaved = false; }
+    constexpr auto Reset() -> void { fCached = false; }
 
-    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE auto operator()(UniformRandomBitGenerator auto& g, const GaussianFastParameter<T>& p) -> auto { return Impl(g, p); }
+    template<std::uniform_random_bit_generator G>
+    auto operator()(G& g) -> auto { return Impl(g, this->fParameter); }
+    template<std::uniform_random_bit_generator G>
+    auto operator()(G& g, const GaussianSParameter<T>& p) -> auto { return Impl(g, p); }
 
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const GaussianFastParameter<T>& p) -> auto { return Impl(g, p); }
+    auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
+    auto operator()(CLHEP::HepRandomEngine& g, const GaussianSParameter<T>& p) -> auto { return Impl(g, p); }
+
+    auto operator()(TRandom& g) -> auto { return Impl(g, this->fParameter); }
+    auto operator()(TRandom& g, const GaussianSParameter<T>& p) -> auto { return Impl(g, p); }
 
     constexpr auto Min() const -> auto { return std::numeric_limits<T>::lowest(); }
     constexpr auto Max() const -> auto { return std::numeric_limits<T>::max(); }
 
-    static constexpr auto Stateless() -> bool { return false; }
+private:
+    auto Impl(auto& g, const GaussianSParameter<T>& p) -> T;
 
 private:
-    MUSTARD_ALWAYS_INLINE auto Impl(auto& g, const GaussianFastParameter<T>& p) -> T;
-
-private:
-    bool fSaved{};
-    T fSavedValue{};
+    bool fCached{};
+    T fCachedValue{};
 };
 
 template<typename T, typename U>
-GaussianFast(T, U) -> GaussianFast<std::common_type_t<T, U>>;
+GaussianS(T, U) -> GaussianS<std::common_type_t<T, U>>;
 
 } // namespace Mustard::inline Math::Random::inline Distribution
 

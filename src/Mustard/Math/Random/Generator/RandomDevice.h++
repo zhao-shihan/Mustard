@@ -24,11 +24,8 @@
 
 namespace Mustard::inline Math::Random::inline Generator {
 
-class RandomDevice final : public UniformRandomBitGeneratorBase<RandomDevice,
-                                                                std::random_device::result_type> {
+class RandomDevice final : public UniformRandomBitGeneratorBase<RandomDevice, std::random_device::result_type> {
 public:
-    RandomDevice() = default;
-
     auto operator()() -> auto { return fRD(); }
 
     auto Entropy() const -> auto { return fRD.entropy(); }

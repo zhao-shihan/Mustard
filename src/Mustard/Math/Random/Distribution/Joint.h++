@@ -20,10 +20,13 @@
 
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "CLHEP/Random/RandomEngine.h"
+
+#include "TRandom.h"
 
 #include "muc/concepts"
 
@@ -31,6 +34,7 @@
 
 #include <array>
 #include <concepts>
+#include <random>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -76,7 +80,7 @@ public:
     constexpr JointParameterInterface(const typename Ds::ParameterType&... p);
 
 protected:
-    constexpr ~JointParameterInterface() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(JointParameterInterface)
 
 public:
     template<gsl::index I>
@@ -107,14 +111,23 @@ public:
     constexpr explicit JointInterface(const AParameter& p);
 
 protected:
-    constexpr ~JointInterface() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(JointInterface)
 
 public:
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> auto { return Impl(g, p); }
+    template<std::uniform_random_bit_generator G>
+    constexpr auto operator()(G& g) -> auto { return Impl(g); }
+    template<std::uniform_random_bit_generator G>
+    constexpr auto operator()(G& g, const AParameter& p) -> auto { return Impl(g, p); }
 
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g); }
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const AParameter& p) -> auto { return Impl(g, p); }
+    auto operator()(CLHEP::HepRandomEngine& g) -> auto
+        requires Concept::NumericVectorFloatingPoint<T, sizeof...(Ds)> { return Impl(g); }
+    auto operator()(CLHEP::HepRandomEngine& g, const AParameter& p) -> auto
+        requires Concept::NumericVectorFloatingPoint<T, sizeof...(Ds)> { return Impl(g, p); }
+
+    auto operator()(TRandom& g) -> auto
+        requires Concept::NumericVectorFloatingPoint<T, sizeof...(Ds)> { return Impl(g); }
+    auto operator()(TRandom& g, const AParameter& p) -> auto
+        requires Concept::NumericVectorFloatingPoint<T, sizeof...(Ds)> { return Impl(g, p); }
 
     constexpr auto Reset() -> void;
 
@@ -129,7 +142,7 @@ public:
     constexpr auto Min() const -> T;
     constexpr auto Max() const -> T;
 
-    static constexpr auto Stateless() -> bool { return (... and Ds::Stateless()); }
+    static constexpr auto Stateless() -> auto { return (... and Ds::Stateless()); }
 
     template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const JointInterface& self) -> decltype(os) { return self.StreamOutput(os); }
@@ -137,8 +150,8 @@ public:
     friend auto operator>>(std::basic_istream<AChar>& is, JointInterface& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    MUSTARD_ALWAYS_INLINE constexpr auto Impl(auto& g) -> T;
-    MUSTARD_ALWAYS_INLINE constexpr auto Impl(auto& g, const AParameter& p) -> T;
+    constexpr auto Impl(auto& g) -> T;
+    constexpr auto Impl(auto& g, const AParameter& p) -> T;
 
     template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);

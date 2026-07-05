@@ -54,11 +54,9 @@ auto TestUniform::Main(int argc, char* argv[]) const -> int {
     const auto a2{cli->get<double>("--a2")};
     const auto b2{cli->get<double>("--b2")};
 
-    Random::UniformCompact<double> uniformCompact1D{a1, b1};
     Random::Uniform<double> uniform1D{a1, b1};
     Random::Uniform<int> uniformInt1D{int(a1), int(b1)};
 
-    Random::UniformCompactRectangle<muc::array2d> uniformCompactRectangle({a1, b1}, {a2, b2});
     Random::UniformRectangle<muc::array2d> uniformRectangle({a1, b1}, {a2, b2});
     Random::UniformRectangle<muc::array2i> uniformIntRectangle({int(a1), int(b1)}, {int(a2), int(b2)});
 
@@ -75,10 +73,8 @@ auto TestUniform::Main(int argc, char* argv[]) const -> int {
     Data::Writer<Result> writer{"Uniform"};
     Mustard::Executor<unsigned long long>{}.Run(n, [&](unsigned long long) {
         Data::Tuple<Result> entry;
-        F<"uc">(entry) = uniformCompact1D(env.RandomEngine());
         F<"ur">(entry) = uniform1D(env.RandomEngine());
         F<"ui">(entry) = uniformInt1D(env.RandomEngine());
-        F<"ucr">(entry) = uniformCompactRectangle(env.RandomEngine());
         F<"urr">(entry) = uniformRectangle(env.RandomEngine());
         F<"uir">(entry) = uniformIntRectangle(env.RandomEngine());
         writer.Fill(entry);

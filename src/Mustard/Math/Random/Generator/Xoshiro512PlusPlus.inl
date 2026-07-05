@@ -21,7 +21,7 @@ namespace Mustard::inline Math::Random::inline Generator {
 constexpr Xoshiro512PlusPlus::Xoshiro512PlusPlus(Xoshiro512PlusPlus::SeedType seed) :
     Xoshiro512Base{seed} {}
 
-MUSTARD_ALWAYS_INLINE constexpr auto Xoshiro512PlusPlus::operator()() -> Xoshiro512PlusPlus::ResultType {
+constexpr auto Xoshiro512PlusPlus::operator()() -> Xoshiro512PlusPlus::ResultType {
     const auto result{std::rotl(fState[0] + fState[2], 17) + fState[2]};
     Step();
     return result;

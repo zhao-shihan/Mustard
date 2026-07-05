@@ -68,24 +68,3 @@ auto TestRandomNumberDistribution::Main(int argc, char* argv[]) const -> int {
 }
 
 } // namespace Mustard::Testing
-
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::uniform_int_distribution<int>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::uniform_real_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::bernoulli_distribution>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::binomial_distribution<int>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::negative_binomial_distribution<int>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::geometric_distribution<int>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::poisson_distribution<int>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::exponential_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::gamma_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::weibull_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::extreme_value_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::normal_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::lognormal_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::chi_squared_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::cauchy_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::fisher_f_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::student_t_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::discrete_distribution<int>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::piecewise_constant_distribution<double>>);
-static_assert(Mustard::Random::STDRandomNumberDistribution<std::piecewise_linear_distribution<double>>);

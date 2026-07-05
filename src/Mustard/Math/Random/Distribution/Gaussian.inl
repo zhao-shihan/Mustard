@@ -21,14 +21,14 @@ namespace Mustard::inline Math::Random::inline Distribution {
 namespace impl {
 
 template<std::floating_point T, template<typename> typename AGaussian>
-constexpr BasicGaussianParameter<T, AGaussian>::BasicGaussianParameter(T mu, T sigma) :
+constexpr BasicGaussianSParameter<T, AGaussian>::BasicGaussianSParameter(T mu, T sigma) :
     Base{},
     fMu{mu},
     fSigma{sigma} {}
 
 template<std::floating_point T, template<typename> typename AGaussian>
 template<muc::character AChar>
-auto BasicGaussianParameter<T, AGaussian>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
+auto BasicGaussianSParameter<T, AGaussian>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
     const auto oldPrecision{os.precision(std::numeric_limits<T>::max_digits10)};
     return os << fMu << ' ' << fSigma
               << std::setprecision(oldPrecision);
@@ -36,7 +36,7 @@ auto BasicGaussianParameter<T, AGaussian>::StreamOutput(std::basic_ostream<AChar
 
 template<std::floating_point T, template<typename> typename AGaussian>
 template<muc::character AChar>
-auto BasicGaussianParameter<T, AGaussian>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
+auto BasicGaussianSParameter<T, AGaussian>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
     return is >> fMu >> fSigma;
 }
 
@@ -52,26 +52,26 @@ constexpr GaussianBase<T, AGaussian>::GaussianBase(const typename Base::Paramete
 
 } // namespace impl
 
-#define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET(Suffix)       \
-    if ((fSaved = not fSaved)) {                                                  \
-        static_assert(Gaussian2DDiagnoal##Suffix<std::array<T, 2>>::Stateless()); \
-        auto&& [u, v]{Gaussian2DDiagnoal##Suffix<std::array<T, 2>>{}(g)};         \
-        fSavedValue = v;                                                          \
-        return p.Sigma() * u + p.Mu();                                            \
-    } else {                                                                      \
-        return p.Sigma() * fSavedValue + p.Mu();                                  \
+#define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_IMPL_SNIPPET(Suffix)    \
+    if ((fCached = not fCached)) {                                        \
+        static_assert(Gaussian2D##Suffix<std::array<T, 2>>::Stateless()); \
+        auto&& [u, v]{Gaussian2D##Suffix<std::array<T, 2>>{}(g)};         \
+        fCachedValue = std::move(v);                                      \
+        return p.Sigma() * u + p.Mu();                                    \
+    } else {                                                              \
+        return p.Sigma() * fCachedValue + p.Mu();                         \
     }
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE auto Gaussian<T>::Impl(auto& g, const GaussianParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET()
+auto Gaussian<T>::Impl(auto& g, const GaussianParameter<T>& p) -> T {
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_IMPL_SNIPPET()
 }
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE auto GaussianFast<T>::Impl(auto& g, const GaussianFastParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET(Fast)
+auto GaussianS<T>::Impl(auto& g, const GaussianSParameter<T>& p) -> T {
+    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_IMPL_SNIPPET(S)
 }
 
-#undef MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_GENERATOR_SNIPPET
+#undef MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_IMPL_SNIPPET
 
 } // namespace Mustard::inline Math::Random::inline Distribution

@@ -113,7 +113,7 @@ private:
     auto NextEventImpl(CLHEP::HepRandomEngine& rng, double burnInStepSize = 0) -> bool;
 
 private:
-    Random::GaussianFast<double> fGaussian;                                        ///< Gaussian distribution
+    Random::Gaussian<> fGaussian;                                                  ///< Gaussian distribution
     unsigned long long fIteration;                                                 ///< Current iteration count
     double fLearningRate;                                                          ///< Learning rate for adaptation
     Eigen::Vector<double, MarkovChain::dim> fRunningMean;                          ///< Running mean of states

@@ -64,38 +64,41 @@ constexpr UniformBase<ADerived, T>::UniformBase(const typename Base::ParameterTy
 } // namespace impl
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto UniformCompact<T>::operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T {
-    T u;
-    if constexpr (std::numeric_limits<T>::is_iec559 and std::same_as<T, double> and
-                  std::same_as<decltype(g()), std::uint64_t>) {
-        u = (g() >> 11) * 0x1.0p-53;
-    } else {
-        u = static_cast<T>(g() - g.Min()) / (g.Max() - g.Min());
+template<std::uniform_random_bit_generator G>
+MUSTARD_ALWAYS_INLINE constexpr auto UniformReal<T>::operator()(G& g, const UniformParameter<T>& p) -> T {
+    constexpr auto fromU64{sizeof(typename G::result_type) == sizeof(std::uint64_t)};
+    constexpr auto fromU32{sizeof(typename G::result_type) == sizeof(std::uint32_t)};
+    constexpr auto toIEEE754Double{std::numeric_limits<T>::is_iec559 and std::same_as<T, double>};
+    constexpr auto toIEEE754Float{std::numeric_limits<T>::is_iec559 and std::same_as<T, float>};
+    T u; // uniform on [0,1)
+    if constexpr (fromU64 and toIEEE754Double) {
+        u = (g() >> 11) * 0x1.p-53;
+    } else if constexpr (fromU32 and toIEEE754Float) {
+        u = (g() >> 8) * 0x1.p-24f;
+    } else if constexpr (fromU64 and toIEEE754Float) {
+        u = (g() >> 40) * 0x1.p-24f;
+    } else if constexpr (fromU32 and toIEEE754Double) {
+        u = g() * 0x1.p-32;
+    } else { // the above should cover all the common cases
+        u = std::uniform_real_distribution<T>{0, 1}(g);
     }
-    muc::assume(0 <= u and u <= 1);
-    return p.Infimum() + u * (p.Supremum() - p.Infimum());
+    muc::assume(0 <= u and u < 1);
+    return muc::lerp(p.Infimum(), p.Supremum(), u);
 }
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE auto UniformCompact<T>::operator()(CLHEP::HepRandomEngine& g, const UniformCompactParameter<T>& p) -> T {
-    return p.Infimum() + g.flat() * (p.Supremum() - p.Infimum());
+MUSTARD_ALWAYS_INLINE auto UniformReal<T>::operator()(CLHEP::HepRandomEngine& g, const UniformParameter<T>& p) -> T {
+    return muc::lerp(p.Infimum(), p.Supremum(), g.flat());
 }
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto UniformReal<T>::Impl(auto& g, const UniformParameter<T>& p) -> T {
-    static_assert(UniformCompact<T>::Stateless());
-    auto Uni{UniformCompact<T>{}};
-    auto u{Uni(g)};
-    muc::assume(0 <= u and u <= 1);
-    while (u == 0 or u == 1) [[unlikely]] {
-        u = Uni(g);
-        muc::assume(0 <= u and u <= 1);
-    }
-    return p.Infimum() + u * (p.Supremum() - p.Infimum());
+MUSTARD_ALWAYS_INLINE auto UniformReal<T>::operator()(TRandom& g, const UniformParameter<T>& p) -> T {
+    return muc::lerp(p.Infimum(), p.Supremum(), g.Rndm());
 }
 
 template<std::integral T>
-MUSTARD_ALWAYS_INLINE constexpr auto UniformInteger<T>::operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T {
+template<std::uniform_random_bit_generator G>
+MUSTARD_ALWAYS_INLINE constexpr auto UniformInteger<T>::operator()(G& g, const UniformParameter<T>& p) -> T {
     // Do we need an independent implementation?
     return std::uniform_int_distribution<T>{p.Infimum(), p.Supremum()}(g);
 }

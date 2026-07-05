@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Mustard/Math/Random/Generator/Xoshiro256Base.h++"
-#include "Mustard/Utility/FunctionAttribute.h++"
 
 namespace Mustard::inline Math::Random::inline Generator {
 
@@ -28,7 +27,7 @@ public:
     constexpr Xoshiro256Plus() = default;
     constexpr explicit Xoshiro256Plus(SeedType seed);
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()() -> ResultType;
+    constexpr auto operator()() -> ResultType;
 };
 
 } // namespace Mustard::inline Math::Random::inline Generator
