@@ -20,6 +20,7 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Estimate.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "Eigen/Core"
 
@@ -357,7 +358,7 @@ protected:
         requires((AVec::RowsAtCompileTime == K or
                   K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) and
                  AVec::ColsAtCompileTime == 1)
-    auto CheckDimensionMatch(const Eigen::MatrixBase<AVec>& y) const -> void;
+    MUSTARD_ALWAYS_INLINE auto CheckDimensionMatch(const Eigen::MatrixBase<AVec>& y) const -> void;
 
 private:
     /// @brief Copy statistic state from another statistic.

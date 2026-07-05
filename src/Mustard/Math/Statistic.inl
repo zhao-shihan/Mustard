@@ -236,7 +236,7 @@ template<typename AVec>
     requires((AVec::RowsAtCompileTime == K or
               K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) and
              AVec::ColsAtCompileTime == 1)
-auto StatisticBase<ADerived, K, C>::CheckDimensionMatch(const Eigen::MatrixBase<AVec>& y) const -> void {
+MUSTARD_ALWAYS_INLINE auto StatisticBase<ADerived, K, C>::CheckDimensionMatch(const Eigen::MatrixBase<AVec>& y) const -> void {
     if constexpr (K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) {
         if (Dimension() != y.size()) {
             Throw<std::invalid_argument>(fmt::format("Dimension mismatch: dim(self)={}, dim(other)={}",

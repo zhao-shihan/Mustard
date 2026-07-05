@@ -763,15 +763,16 @@ auto EstimateBase<ADerived, K, C>::ErfInPlace() & -> ADerived& {
     return Self();
 }
 
-template<typename ADerived, int K, CovarianceOption C>
-    requires GoodStatisticDimension<K>::value
-auto EstimateBase<ADerived, K, C>::ErfcInPlace() & -> ADerived& {
-    // Cov = diag(-2/√π·exp(-x_i²))·Cov·diag(-2/√π·exp(-x_i²))
-    constexpr auto twoInvSqrtPi{2 * std::numbers::inv_sqrtpi};
-    CovCwiseUnaryUpdate(-twoInvSqrtPi * exp(-ArrX().square()));
-    ArrX() = erfc(ArrX());
-    return Self();
-}
+// -- Eigen seems to have bug with erfc expression with avx512 ... so disabled for now
+// template<typename ADerived, int K, CovarianceOption C>
+//     requires GoodStatisticDimension<K>::value
+// auto EstimateBase<ADerived, K, C>::ErfcInPlace() & -> ADerived& {
+//     // Cov = diag(-2/√π·exp(-x_i²))·Cov·diag(-2/√π·exp(-x_i²))
+//     constexpr auto twoInvSqrtPi{2 * std::numbers::inv_sqrtpi};
+//     CovCwiseUnaryUpdate(-twoInvSqrtPi * exp(-ArrX().square()));
+//     ArrX() = erfc(ArrX());
+//     return Self();
+// }
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
@@ -1470,7 +1471,7 @@ template<typename AVec>
     requires((AVec::RowsAtCompileTime == K or
               K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) and
              AVec::ColsAtCompileTime == 1)
-auto EstimateBase<ADerived, K, C>::CheckVectorDimensionMatch(const Eigen::MatrixBase<AVec>& yXpr) const -> void {
+MUSTARD_ALWAYS_INLINE auto EstimateBase<ADerived, K, C>::CheckVectorDimensionMatch(const Eigen::MatrixBase<AVec>& yXpr) const -> void {
     if constexpr (K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) {
         if (Dimension() != yXpr.size()) {
             Throw<std::invalid_argument>(fmt::format("Dimension mismatch: dim(self)={}, dim(other)={}",
@@ -1484,7 +1485,7 @@ template<typename ADerived, int K, CovarianceOption C>
 template<typename AMat>
     requires(AMat::RowsAtCompileTime == K or
              K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::CheckMatrixRowDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void {
+MUSTARD_ALWAYS_INLINE auto EstimateBase<ADerived, K, C>::CheckMatrixRowDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void {
     if constexpr (K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic) {
         if (Dimension() != aXpr.rows()) {
             Throw<std::invalid_argument>(fmt::format("Row dimension mismatch: dim(self)={}, matrix rows={}",
@@ -1498,7 +1499,7 @@ template<typename ADerived, int K, CovarianceOption C>
 template<typename AMat>
     requires(AMat::ColsAtCompileTime == K or
              K == Eigen::Dynamic or AMat::ColsAtCompileTime == Eigen::Dynamic)
-auto EstimateBase<ADerived, K, C>::CheckMatrixColDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void {
+MUSTARD_ALWAYS_INLINE auto EstimateBase<ADerived, K, C>::CheckMatrixColDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void {
     if constexpr (K == Eigen::Dynamic or AMat::ColsAtCompileTime == Eigen::Dynamic) {
         if (Dimension() != aXpr.cols()) {
             Throw<std::invalid_argument>(fmt::format("Col dimension mismatch: dim(self)={}, matrix cols={}",
@@ -1733,7 +1734,7 @@ MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Cos, CosInPlace)
 MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Cosh, CoshInPlace)
 MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Cube, CubeInPlace)
 MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Erf, ErfInPlace)
-MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Erfc, ErfcInPlace)
+// MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Erfc, ErfcInPlace) -- Eigen seems to have bug with erfc expression with avx512 ... so disabled for now
 MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Exp, ExpInPlace)
 MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Exp2, Exp2InPlace)
 MUSTARD_MATH_ESTIMATE_UNARY_MATH_FUNC_DEFINITIONS(Expm1, Expm1InPlace)

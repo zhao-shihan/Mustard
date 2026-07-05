@@ -20,6 +20,7 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/AutomaticDifferentiation.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "Eigen/Cholesky"
 #include "Eigen/Core"
@@ -726,10 +727,11 @@ public:
     auto Erf() const& -> ADerived;
     auto Erf() && -> ADerived;
 
-    /// @brief In-place complementary error function: @f$x \to \operatorname{erfc}(x)@f$.
-    auto ErfcInPlace() & -> ADerived&;
-    auto Erfc() const& -> ADerived;
-    auto Erfc() && -> ADerived;
+    // -- Eigen seems to have bug with erfc expression with avx512 ... so disabled for now
+    // /// @brief In-place complementary error function: @f$x \to \operatorname{erfc}(x)@f$.
+    // auto ErfcInPlace() & -> ADerived&;
+    // auto Erfc() const -> ADerived;
+    // auto Erfc() && -> ADerived;
 
     /// @brief In-place log-gamma: @f$x \to \ln|\Gamma(x)|@f$.
     auto LgammaInPlace() & -> ADerived&;
@@ -1126,19 +1128,19 @@ private:
         requires((AVec::RowsAtCompileTime == K or
                   K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) and
                  AVec::ColsAtCompileTime == 1)
-    auto CheckVectorDimensionMatch(const Eigen::MatrixBase<AVec>& yXpr) const -> void;
+    MUSTARD_ALWAYS_INLINE auto CheckVectorDimensionMatch(const Eigen::MatrixBase<AVec>& yXpr) const -> void;
     /// @brief Check that a plain matrix has compatible row dimension (number of rows == @f$K@f$).
     /// @throws std::invalid_argument if dimensions differ (only checked for dynamic dimension)
     template<typename AMat>
         requires(AMat::RowsAtCompileTime == K or
                  K == Eigen::Dynamic or AMat::RowsAtCompileTime == Eigen::Dynamic)
-    auto CheckMatrixRowDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void;
+    MUSTARD_ALWAYS_INLINE auto CheckMatrixRowDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void;
     /// @brief Check that a plain matrix has compatible column dimension (number of columns == @f$K@f$).
     /// @throws std::invalid_argument if dimensions differ (only checked for dynamic dimension)
     template<typename AMat>
         requires(AMat::ColsAtCompileTime == K or
                  K == Eigen::Dynamic or AMat::ColsAtCompileTime == Eigen::Dynamic)
-    auto CheckMatrixColDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void;
+    MUSTARD_ALWAYS_INLINE auto CheckMatrixColDimensionMatch(const Eigen::MatrixBase<AMat>& aXpr) const -> void;
 
     /// @brief Copy estimate state from another estimate with possibly different CovarianceOption.
     ///
@@ -1287,8 +1289,8 @@ public:
     using Base::Divide;
     using Base::DivideInPlace;
     using Base::Erf;
-    using Base::Erfc;
-    using Base::ErfcInPlace;
+    // using Base::Erfc; -- Eigen seems to have bug with erfc expression with avx512 ... so disabled for now
+    // using Base::ErfcInPlace; -- Eigen seems to have bug with erfc expression with avx512 ... so disabled for now
     using Base::ErfInPlace;
     using Base::Exp;
     using Base::Exp2;
@@ -1519,7 +1521,7 @@ MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(acosh, Acosh, AcoshInPlace
 MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(atanh, Atanh, AtanhInPlace)
 MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(logistic, Logistic, LogisticInPlace)
 MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(erf, Erf, ErfInPlace)
-MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(erfc, Erfc, ErfcInPlace)
+// MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(erfc, Erfc, ErfcInPlace) -- Eigen seems to have bug with erfc expression with avx512 ... so disabled for now
 MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(lgamma, Lgamma, LgammaInPlace)
 MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS(ndtri, Ndtri, NdtriInPlace)
 #undef MUSTARD_MATH_ESTIMATE_CWISE_MATH_FUNCTION_DEFINITIONS
