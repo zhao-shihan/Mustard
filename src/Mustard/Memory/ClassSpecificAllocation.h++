@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Memory/Alloc.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 namespace Mustard::inline Memory {
 
@@ -33,7 +34,7 @@ protected:
     /// @brief Protected default constructor for mixin-style inheritance.
     constexpr ClassSpecificAllocation() = default;
     /// @brief Protected default destructor for mixin-style inheritance.
-    constexpr ~ClassSpecificAllocation() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(ClassSpecificAllocation)
 
 public:
     /// @name Scalar Allocation

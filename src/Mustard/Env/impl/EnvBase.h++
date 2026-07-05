@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <memory>
 
@@ -38,7 +38,7 @@ namespace impl {
 /// instances that back the ObjectRegistry subsystem. Constructed first in
 /// the virtual inheritance hierarchy, ensuring the pools are available
 /// before any derived environment logic executes.
-class EnvBase : public NonCopyableBase {
+class EnvBase : public NoncopyableBase {
 protected:
     /// @brief Constructs the base, instantiating the singleton and weak-singleton pools.
     EnvBase();

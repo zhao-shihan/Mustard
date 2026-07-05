@@ -21,7 +21,7 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "G4UImessenger.hh"
 
@@ -64,7 +64,7 @@ public:
     template<typename ARecipient>
     friend class Register;
     template<typename ARecipient>
-    class Register : public NonCopyableBase {
+    class Register : public NoncopyableBase {
     public:
         /// @brief Register a recipient with the singleton messenger
         /// @param recipient Recipient's `this`

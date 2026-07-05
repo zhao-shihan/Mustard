@@ -33,7 +33,7 @@ template<typename AReadAs>
 auto DescriptionBase<>::ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& importAction, std::convertible_to<std::string> auto&&... names) -> void {
     if (const auto leaf{UnpackToLeafNodeForImporting(node, std::forward<decltype(names)>(names)...)};
         leaf.has_value()) {
-      std::invoke(importAction, leaf->template as<AReadAs>());
+        std::invoke(importAction, leaf->template as<AReadAs>());
     } else {
         PrintNodeNotFoundNotice(std::forward<decltype(names)>(names)...);
     }
@@ -64,10 +64,10 @@ auto DescriptionBase<>::UnpackToLeafNodeForImporting(const YAML::Node& node, std
         std::array<YAML::Node, sizeof...(names)> leafNodes;
         gsl::index i{};
         impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
-                               [&node, &leafNodes, &i](auto&& name) {
-                                   leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
-                                   ++i;
-                               });
+                           [&node, &leafNodes, &i](auto&& name) {
+                               leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
+                               ++i;
+                           });
         return leafNodes.back();
     } catch (const YAML::InvalidNode&) {
         return std::nullopt;
@@ -78,19 +78,19 @@ auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, std::conv
     std::array<YAML::Node, sizeof...(names)> leafNodes;
     gsl::index i{};
     impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
-                           [&node, &leafNodes, &i](auto&& name) {
-                               leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
-                               ++i;
-                           });
+                       [&node, &leafNodes, &i](auto&& name) {
+                           leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
+                           ++i;
+                       });
     return leafNodes.back();
 }
 
 auto DescriptionBase<>::PrintNodeNotFoundNotice(std::convertible_to<std::string> auto&&... names) const -> void {
     auto info{fmt::format("Notice: YAML node '{}", fName)};
     impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
-                           [&info](auto&& name) {
-                               info.append(fmt::format(".{}", name));
-                           });
+                       [&info](auto&& name) {
+                           info.append(fmt::format(".{}", name));
+                       });
     info.append("' not defined, skipping");
     PrintInfo(info);
 }

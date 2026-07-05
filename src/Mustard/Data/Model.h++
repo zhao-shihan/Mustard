@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Data/Object/Field.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "muc/ceta_string"
@@ -39,7 +39,7 @@ namespace Mustard::Data {
 namespace impl {
 
 /// @brief Marker base type used to identify tuple model types.
-struct ModelSignature : NonConstructibleBase {};
+struct ModelSignature : NonconstructibleBase {};
 
 namespace impl {
 

@@ -23,7 +23,7 @@
 #include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Allocator.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "gtl/phmap.hpp"
 
@@ -101,7 +101,7 @@ private:
 /// @brief Internal type-erased construction/disposal helper for singletons.
 /// @note Singletons should declare SingletonFactory as a friend
 /// to allow SingletonFactory to construct and destruct them.
-class SingletonFactory : public NonConstructibleBase {
+class SingletonFactory : public NonconstructibleBase {
     friend class impl::SingletonPool;
 
     /// @brief Allocates and constructs one singleton instance.

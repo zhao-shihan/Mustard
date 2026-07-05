@@ -22,7 +22,7 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "yaml-cpp/yaml.h"
 
@@ -44,7 +44,7 @@ template<typename... Ts>
 class DescriptionBase;
 
 template<>
-class DescriptionBase<> : public NonCopyableBase {
+class DescriptionBase<> : public NoncopyableBase {
 protected:
     DescriptionBase(std::string name);
     ~DescriptionBase() = default;

@@ -21,6 +21,7 @@
 namespace Mustard::CLI::inline Module {
 
 ModuleBase::ModuleBase(gsl::not_null<CLI<>*> cli) :
+    MoveOnlyBase{},
     fTheCLI{cli} {}
 
 } // namespace Mustard::CLI::inline Module

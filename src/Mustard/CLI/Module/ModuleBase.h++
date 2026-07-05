@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "Mustard/Utility/ClassSemanticHelper.h++"
+
 #include "muc/type_traits"
 
 #include "gsl/gsl"
@@ -45,7 +47,7 @@ inline namespace Module {
 ///
 /// @note Constructors of derived module classes should forward the CLI
 ///       pointer and register their command-line arguments.
-class ModuleBase {
+class ModuleBase : public MoveOnlyBase {
 protected:
     /// @brief Construct the module and store a reference to its CLI.
     /// @param cli  Non-null pointer to the owning CLI<> instance.
@@ -57,7 +59,7 @@ protected:
     auto TheCLI() -> auto& { return *fTheCLI; }
 
 private:
-    CLI<>* fTheCLI;  ///< Non-owning pointer to the parent CLI.
+    CLI<>* fTheCLI; ///< Non-owning pointer to the parent CLI.
 };
 
 } // namespace Module

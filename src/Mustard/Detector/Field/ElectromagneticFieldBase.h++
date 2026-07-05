@@ -20,6 +20,7 @@
 
 #include "Mustard/Detector/Field/ElectromagneticField.h++"
 #include "Mustard/Math/Vector.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <concepts>
 
@@ -50,7 +51,7 @@ protected:
     /// @brief Default constructor. Enforces CRTP and concept constraints at compile time.
     constexpr ElectromagneticFieldBase();
     /// @brief Defaulted destructor.
-    constexpr ~ElectromagneticFieldBase() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEONLY(ElectromagneticFieldBase)
 };
 
 } // namespace Mustard::Detector::Field

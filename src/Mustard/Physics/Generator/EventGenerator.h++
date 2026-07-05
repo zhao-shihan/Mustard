@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Math/Vector.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "CLHEP/Random/Random.h"
 #include "CLHEP/Random/RandomEngine.h"
@@ -58,7 +59,7 @@ class EventGenerator;
 /// @tparam M Number of initial-state particles (M ≥ 1)
 /// @tparam N Number of final-state particles (N ≥ 1)
 template<int M, int N>
-class EventGenerator<M, N> {
+class EventGenerator<M, N> : public VirtualMoveOnlyBase {
 public:
     /// @brief Initial-state 4-momentum (or container type when M>1)
     using InitialStateMomenta = std::conditional_t<M == 1, VectorLor,
@@ -73,9 +74,6 @@ public:
     };
 
 public:
-    // Virtual destructor
-    constexpr virtual ~EventGenerator() = default;
-
     /// @brief Generate event according to initial state
     /// @param rng Reference to CLHEP random engine
     /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)

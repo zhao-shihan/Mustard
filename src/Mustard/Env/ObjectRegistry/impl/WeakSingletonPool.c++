@@ -31,7 +31,7 @@ bool WeakSingletonPool::fgExpired{};
 std::recursive_mutex WeakSingletonPool::fgRecursiveMutex{};
 
 WeakSingletonPool::WeakSingletonPool() :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fInstanceMap{} {
     if (fgInstantiated) {
         Throw<std::runtime_error>("Trying to instantiate the pool twice.");

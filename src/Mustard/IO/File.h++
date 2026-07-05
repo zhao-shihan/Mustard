@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "Mustard/Utility/ClassSemanticHelper.h++"
+
 #include "Compression.h"
 
 #include "muc/concepts"
@@ -56,7 +58,7 @@ enum struct FilePathOption {
 /// @warning Open file with FilePathOption::ProcessSpecific is
 /// an MPI collective operation (must be called by all processes)
 template<typename F = void>
-class File {
+class File : public VirtualMoveOnlyBase {
 protected:
     /// @brief Construct base class
     /// @param pathOption Direct/ProcessSpecific
@@ -64,9 +66,6 @@ protected:
     File(FilePathOption pathOption, std::filesystem::path filePath);
 
 public:
-    /// @brief Default d'tor
-    virtual ~File() = default;
-
     /// @brief Get the file path
     auto Path() const -> const auto& { return fPath; }
 

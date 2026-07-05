@@ -21,7 +21,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Allocator.h++"
 #include "Mustard/Memory/Arc.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "ROOT/RDataFrame.hxx"
 #include "TROOT.h"
@@ -63,9 +63,9 @@ namespace Mustard::Data::inline Processing {
 ///
 /// @note ROOT's implicit multi-threading (IMT) must be disabled. The reader will reject
 ///       construction if IMT is enabled.
-/// @note Not copy-assignable or copy-constructible (inherits from NonCopyableBase).
+/// @note Not copy-assignable or copy-constructible (inherits from NoncopyableBase).
 template<std::signed_integral T, typename D, std::size_t N>
-class RDFReader : public NonCopyableBase {
+class RDFReader : public NoncopyableBase {
 public:
     using Entry = gsl::index;
     using Index = T;

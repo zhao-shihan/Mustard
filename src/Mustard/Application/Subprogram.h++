@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "Mustard/Utility/ClassSemanticHelper.h++"
+
 #include <string>
 
 namespace Mustard::Application {
@@ -31,14 +33,12 @@ namespace Mustard::Application {
 /// Typical usage: derive from Subprogram, pass name and description to the
 /// base constructor, implement Main(), then register via
 /// SubprogramLauncher::AddSubprogram().
-class Subprogram {
+class Subprogram : public VirtualMoveOnlyBase {
 public:
     /// @brief Construct a subprogram with a name and description.
     /// @param name        Short name used as the command-line subcommand.
     /// @param description Description shown in help text.
     Subprogram(std::string name, std::string description);
-    /// @brief Virtual destructor.
-    virtual ~Subprogram() = default;
 
     /// @brief Return the subprogram's name.
     auto Name() const -> const auto& { return fName; }

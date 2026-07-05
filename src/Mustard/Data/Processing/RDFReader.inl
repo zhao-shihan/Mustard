@@ -20,7 +20,7 @@ namespace Mustard::Data::inline Processing {
 
 template<std::signed_integral T, typename D, std::size_t N>
 RDFReader<T, D, N>::RDFReader(Index size, DataFrameType rdf) :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fRDF{std::move(rdf)},
     fNext{},
     fData{MakeArc<Data>()},

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Memory/ClassSpecificAllocation.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 namespace Mustard::Env::inline ObjectRegistry::impl {
 
@@ -32,7 +32,7 @@ namespace Mustard::Env::inline ObjectRegistry::impl {
 /// any allocation/deallocation function in derived classes, otherwise
 /// memory could corrupt.
 class SingletonBase : public ClassSpecificAllocation,
-                      public NonCopyableBase {
+                      public NoncopyableBase {
 protected:
     /// @brief Protected default constructor for mixin inheritance.
     SingletonBase() = default;

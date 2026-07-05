@@ -21,7 +21,7 @@
 #include "Mustard/Env/ObjectRegistry/WeakSingletonified.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Allocator.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "gtl/phmap.hpp"
 
@@ -44,7 +44,7 @@ namespace Mustard::Env::inline ObjectRegistry::impl {
 /// @details Not API. Stores weak singleton indirection nodes keyed by dynamic type.
 /// @note This shared indirection makes weak singleton lookups converge across
 /// dynamic library boundaries when all modules use the same environment.
-class WeakSingletonPool final : public NonCopyableBase {
+class WeakSingletonPool final : public NoncopyableBase {
 public:
     /// @brief Constructs an empty weak singleton pool.
     WeakSingletonPool();

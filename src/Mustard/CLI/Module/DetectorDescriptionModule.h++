@@ -22,6 +22,7 @@
 #include "Mustard/CLI/Module/ModuleBase.h++"
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Detector/Description/DescriptionIO.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "G4VUserDetectorConstruction.hh"
 
@@ -52,14 +53,12 @@ class DetectorDescriptionModule;
 /// Registers the --import-dd, --export-dd, and --emport-dd arguments.
 /// Derived classes must override DetectorDescriptionIOIfFlagged().
 template<>
-class DetectorDescriptionModule<> : public ModuleBase {
+class DetectorDescriptionModule<> : public VirtualMoveOnlyBase,
+                                    public ModuleBase {
 public:
     /// @brief Construct and register detector description I/O arguments.
     /// @param cli  Owning CLI instance.
     DetectorDescriptionModule(gsl::not_null<CLI<>*> cli);
-
-    /// @brief Virtual destructor.
-    virtual ~DetectorDescriptionModule() = default;
 
     /// @brief Execute detector description I/O if a relevant flag was used.
     ///

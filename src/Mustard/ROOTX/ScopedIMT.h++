@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 namespace Mustard::ROOTX {
 
@@ -47,7 +47,7 @@ namespace Mustard::ROOTX {
 /// not the original non-default one.
 ///
 /// @note This class is non-copyable and non-movable.
-class ScopedIMT : public NonCopyableBase {
+class ScopedIMT : public NoncopyableBase {
 public:
     /// @brief Constructs the guard. If IMT is not currently enabled, enables it with
     ///        the default configuration and records that it should be disabled later.

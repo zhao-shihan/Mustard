@@ -31,7 +31,7 @@ SingletonMessenger<ADerived, ARecipients...>::SingletonMessenger() :
 template<typename ADerived, typename... ARecipients>
 template<typename ARecipient>
 SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::Register(gsl::not_null<ARecipient*> recipient) :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fRecipient{recipient} {
     static_assert(muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>);
     get<gtl::flat_hash_set<ARecipient*>>(SingletonMessenger::Instance().fRecipientSetTuple).emplace(fRecipient);

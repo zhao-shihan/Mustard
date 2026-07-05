@@ -69,7 +69,7 @@ template<muc::tuple_like T>
 auto DescriptionIO::Import(const std::filesystem::path& yamlPath) -> void {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
     impl::StaticForEach<0, descriptions.size(),
-                            impl::FillDescriptionArray, T>(descriptions);
+                        impl::FillDescriptionArray, T>(descriptions);
     ImportImpl(yamlPath, descriptions);
 }
 
@@ -77,7 +77,7 @@ template<muc::tuple_like T>
 auto DescriptionIO::Export(const std::filesystem::path& yamlPath, const std::string& fileComment) -> std::filesystem::path {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
     impl::StaticForEach<0, descriptions.size(),
-                            impl::FillDescriptionArray, T>(descriptions);
+                        impl::FillDescriptionArray, T>(descriptions);
     return ExportImpl(yamlPath, fileComment, descriptions);
 }
 
@@ -85,7 +85,7 @@ template<muc::tuple_like T>
 auto DescriptionIO::Emport(const std::filesystem::path& yamlPath, const std::string& fileComment) -> std::pair<std::filesystem::path, std::filesystem::path> {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
     impl::StaticForEach<0, descriptions.size(),
-                            impl::FillDescriptionArray, T>(descriptions);
+                        impl::FillDescriptionArray, T>(descriptions);
     return EmportImpl(yamlPath, fileComment, descriptions);
 }
 
@@ -93,7 +93,7 @@ template<muc::tuple_like T>
 auto DescriptionIO::ToString() -> std::string {
     std::array<DescriptionBase<>*, std::tuple_size_v<T>> descriptions;
     impl::StaticForEach<0, descriptions.size(),
-                            impl::FillDescriptionArray, T>(descriptions);
+                        impl::FillDescriptionArray, T>(descriptions);
     return ToStringImpl(descriptions);
 }
 

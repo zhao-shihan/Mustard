@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Parallel/MPIPredefined.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <concepts>
 #include <utility>
@@ -28,7 +28,7 @@ namespace Mustard::inline Execution {
 
 template<std::integral T>
     requires(Parallel::MPIPredefined<T> and sizeof(T) >= sizeof(short))
-class Dispatcher : public NonCopyableBase {
+class Dispatcher : public NoncopyableBase {
 public:
     struct Task {
         T first;

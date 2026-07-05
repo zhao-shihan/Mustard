@@ -22,7 +22,7 @@
 #include "Mustard/Data/Object/FieldTypeName.h++"
 #include "Mustard/Data/Object/Tuple.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "TDirectory.h"
 

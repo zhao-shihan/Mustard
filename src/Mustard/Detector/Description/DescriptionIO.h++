@@ -23,7 +23,7 @@
 #include "Mustard/IO/CreateTemporaryFile.h++"
 #include "Mustard/IO/File.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "yaml-cpp/yaml.h"
 
@@ -51,7 +51,7 @@
 
 namespace Mustard::Detector::Description {
 
-class DescriptionIO final : public NonConstructibleBase {
+class DescriptionIO final : public NonconstructibleBase {
 public:
     template<Description... Ds>
     static auto Import(const std::filesystem::path& yamlPath) -> void;

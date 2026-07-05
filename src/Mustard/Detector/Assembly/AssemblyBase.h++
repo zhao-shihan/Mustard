@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "gtl/phmap.hpp"
 
@@ -45,10 +46,8 @@ namespace Assembly {
 /// have the same mother, but requires to have a type `ProminentDescription`
 /// including all affective Detector::Description type (see concept `Assembly`).
 /// This provides a *pimpl* tool for complex geometries.
-class AssemblyBase {
+class AssemblyBase : public VirtualMoveOnlyBase {
 public:
-    virtual ~AssemblyBase() = default;
-
     auto Top(std::type_index definition) const -> const auto& { return *fTop.at(definition); }
     auto Top(std::type_index definition) -> auto& { return *fTop.at(definition); }
 

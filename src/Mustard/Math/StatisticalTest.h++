@@ -21,7 +21,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Estimate.h++"
 #include "Mustard/Math/Statistic.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "Eigen/Cholesky"
 #include "Eigen/Core"
@@ -39,7 +39,7 @@ namespace Mustard::inline Math {
 /// Provides the interface for computing test statistics.
 ///
 /// @see UnivariateStatisticalTest, MultivariateStatisticalTest
-class StatisticalTest : public MovableVirtualBase {
+class StatisticalTest : public VirtualMovableBase {
 public:
     /// @brief Return the test statistic value.
     virtual auto Value() const -> double = 0;

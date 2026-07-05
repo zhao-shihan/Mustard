@@ -18,14 +18,14 @@
 
 #pragma once
 
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 namespace Mustard::Env::inline ObjectRegistry::impl {
 
 /// @brief Implementation detail of Mustard::Env::PassiveSingleton.
 /// @details Not API. Used as a lightweight tag and non-copyable base for
 /// passive singletons.
-class PassiveSingletonBase : public NonCopyableBase {
+class PassiveSingletonBase : public NoncopyableBase {
 protected:
     /// @brief Protected default constructor for mixin inheritance.
     PassiveSingletonBase() = default;

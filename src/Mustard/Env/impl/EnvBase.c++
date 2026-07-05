@@ -47,7 +47,7 @@ namespace Mustard::Env::impl {
 [[noreturn]] auto TerminateHandler() -> void;
 
 EnvBase::EnvBase() :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fWeakSingletonPool{},
     fSingletonPool{} {
 

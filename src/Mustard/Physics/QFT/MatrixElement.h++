@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Mustard/Math/Vector.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <array>
 #include <type_traits>
@@ -34,7 +35,7 @@ namespace Mustard::inline Physics::QFT {
 /// @tparam N Number of final-state particles (N ≥ 1)
 template<int M, int N>
     requires(M >= 1 and N >= 1)
-class MatrixElement {
+class MatrixElement : public VirtualMovableBase {
 public:
     /// @brief Initial state momentum(a) type
     using InitialStateMomenta = std::conditional_t<M == 1, VectorLor, std::array<VectorLor, M>>;
@@ -44,8 +45,6 @@ public:
     using FinalStateMomenta = std::array<VectorLor, N>;
 
 public:
-    virtual ~MatrixElement() = default;
-
     /// @brief Calculate squared matrix element |M|²
     /// @param pI Initial-state 4-momenta
     /// @param pF Final-state 4-momenta

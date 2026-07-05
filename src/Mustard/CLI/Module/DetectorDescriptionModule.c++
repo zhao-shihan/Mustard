@@ -21,6 +21,7 @@
 namespace Mustard::CLI::inline Module {
 
 DetectorDescriptionModule<>::DetectorDescriptionModule(gsl::not_null<CLI<>*> cli) :
+    VirtualMoveOnlyBase{},
     ModuleBase{cli} {
     auto& detectorDescriptionCLI{TheCLI()->add_mutually_exclusive_group()};
     detectorDescriptionCLI

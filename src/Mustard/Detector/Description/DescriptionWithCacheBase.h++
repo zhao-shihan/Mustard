@@ -20,7 +20,7 @@
 
 #include "Mustard/Detector/Description/DescriptionBase.h++"
 #include "Mustard/Env/ObjectRegistry/Singleton.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <concepts>
 #include <functional>
@@ -38,13 +38,13 @@ template<>
 class DescriptionWithCacheBase<> : public DescriptionBase<> {
 protected:
     using DescriptionBase::DescriptionBase;
-    virtual ~DescriptionWithCacheBase() = default; // not necessarily virtual, but I need to mute a warning...
+    ~DescriptionWithCacheBase() = default;
 
 protected:
     template<typename T>
     friend class Simple;
     template<typename T>
-    class Simple : public NonCopyableBase {
+    class Simple : public NoncopyableBase {
     public:
         Simple(const DescriptionWithCacheBase<>* description, const T& value);
         Simple(const DescriptionWithCacheBase<>* description, T&& value);
@@ -67,7 +67,7 @@ protected:
 
 private:
     friend class CacheBase;
-    class CacheBase : public NonCopyableBase {
+    class CacheBase : public NoncopyableBase {
     public:
         CacheBase(DescriptionWithCacheBase<>* description);
 

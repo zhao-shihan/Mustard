@@ -23,6 +23,7 @@
 namespace Mustard::Application {
 
 Subprogram::Subprogram(std::string name, std::string description) :
+    VirtualMoveOnlyBase{},
     fName{std::move(name)},
     fDescription{std::move(description)} {}
 

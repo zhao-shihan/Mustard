@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Memory/ClassSpecificAllocation.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 namespace Mustard::Env::inline ObjectRegistry::impl {
 
@@ -27,7 +27,7 @@ namespace Mustard::Env::inline ObjectRegistry::impl {
 /// @details Not API. Provides a common marker and allocation behavior for
 /// weak singleton objects tracked by ObjectRegistry.
 class WeakSingletonBase : public ClassSpecificAllocation,
-                          public NonCopyableBase {
+                          public NoncopyableBase {
 protected:
     /// @brief Protected default constructor for mixin inheritance.
     WeakSingletonBase() = default;

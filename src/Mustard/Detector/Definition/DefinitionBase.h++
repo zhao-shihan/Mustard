@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/SemanticBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "G4FieldManager.hh"
 #include "G4LogicalVolume.hh"
@@ -52,7 +52,7 @@ class G4VSensitiveDetector;
 
 namespace Mustard::Detector::Definition {
 
-class DefinitionBase : public NonCopyableBase {
+class DefinitionBase : public NoncopyableBase {
 public:
     virtual ~DefinitionBase() = default;
 
