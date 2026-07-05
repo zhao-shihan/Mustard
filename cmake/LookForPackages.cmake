@@ -21,7 +21,7 @@
 # ROOT
 find_package(
     ROOT 6.36.00 REQUIRED
-    Core Imt MathCore Hist Tree ROOTDataFrame ROOTNTuple RIO)
+    COMPONENTS Core Imt MathCore Hist Tree ROOTDataFrame ROOTNTuple RIO)
 
 # Geant4
 set(MUSTARD_REQUIRED_G4_COMPONENTS ui_all gdml)
@@ -33,7 +33,7 @@ if(MUSTARD_USE_STATIC_G4)
 endif()
 find_package(
     Geant4 11.0.0 REQUIRED
-    ${MUSTARD_REQUIRED_G4_COMPONENTS})
+    COMPONENTS ${MUSTARD_REQUIRED_G4_COMPONENTS})
 
 # =============================================================================
 # CPM.cmake, for package management
@@ -54,7 +54,7 @@ include(CPM)
 CPMFindPackage(
     NAME mplr
     GITHUB_REPOSITORY zhao-shihan/mplr
-    VERSION 0.26.605
+    VERSION 0.26.705
     OPTIONS "MPLR_INSTALL ON")
 
 # FFTW
@@ -74,9 +74,10 @@ if(MUSTARD_USE_FFTW)
 endif()
 
 # Eigen
-set(MUSTARD_EIGEN_MINIMUM_REQUIRED 5.0.1)
+set(MUSTARD_EIGEN_MINIMUM_REQUIRED 5.0.0)
 CPMFindPackage(
-    NAME eigen
+    NAME Eigen3
+    COMPONENTS unsupported
     GITLAB_REPOSITORY libeigen/eigen
     VERSION ${MUSTARD_EIGEN_MINIMUM_REQUIRED}
     GIT_TAG ${MUSTARD_EIGEN_MINIMUM_REQUIRED} # Eigen doesn't use standard tagging...
@@ -141,7 +142,7 @@ CPMFindPackage(
 CPMFindPackage(
     NAME muc
     GITHUB_REPOSITORY zhao-shihan/muc
-    VERSION 0.26.619
+    VERSION 0.26.702
     OPTIONS "MUC_INSTALL ON")
 
 # =============================================================================

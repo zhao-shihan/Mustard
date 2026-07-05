@@ -52,7 +52,7 @@ if(MUSTARD_USE_FFTW)
     target_link_libraries(Mustard PRIVATE FFTW::Double)
 endif()
 # Eigen
-target_link_libraries(Mustard PUBLIC eigen)
+target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
 # yaml-cpp
 target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
 # fmt

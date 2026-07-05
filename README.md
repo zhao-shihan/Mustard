@@ -41,12 +41,12 @@ This section guides you through building Mustard from source.
 
 Mustard requires the following external libraries to be installed on your system:
 
-| Library                                   | Min version | Remarks                       |
-| :---------------------------------------- | :---------- | :---------------------------- |
-| [**Eigen**](https://eigen.tuxfamily.org/) | 5.0.1       |                               |
-| [**Geant4**](https://geant4.org/)         | 11.0.0      | Requires GDML support         |
-| [**ROOT**](https://root.cern/)            | 6.36.00     |                               |
-| [**MPI**](https://www.mpi-forum.org/)     | 3.1         | MPICH, OpenMPI, or equivalent |
+| Library                                    | Min version | Remarks                       |
+| :----------------------------------------- | :---------- | :---------------------------- |
+| [**Eigen3**](https://eigen.tuxfamily.org/) | 5.0.0       | Requires unsupported module   |
+| [**Geant4**](https://geant4.org/)          | 11.0.0      | Requires GDML module          |
+| [**ROOT**](https://root.cern/)             | 6.36.00     |                               |
+| [**MPI**](https://www.mpi-forum.org/)      | 3.1         | MPICH, OpenMPI, or equivalent |
 
 The following dependencies are required, but built-in if not found.
 
@@ -59,8 +59,8 @@ The following dependencies are required, but built-in if not found.
 | [**zhao-shihan/gtl**](https://github.com/zhao-shihan/gtl)                   | 1.2.2       | Greg's Template Library of useful classes                |
 | [**zhao-shihan/indicators**](https://github.com/zhao-shihan/indicators)     | 2.3.2       | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.2       | ISO C++ guidelines support library                       |
-| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.26.605    | A C++17 message passing library based on MPI             |
-| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.619    | A standard non-standard C++ library                      |
+| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.26.705    | A C++17 message passing library based on MPI             |
+| [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.702    | A standard non-standard C++ library                      |
 | [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
 
 #### Optional dependencies
