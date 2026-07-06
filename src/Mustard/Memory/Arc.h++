@@ -60,7 +60,7 @@ public:
 template<typename T>
 class Arc : public gtl::intrusive_ptr<impl::ArcObj<T>> {
 public:
-    /// @brief The original element type 
+    /// @brief The original element type
     using IntrudedType = T;
 
 public:
