@@ -56,15 +56,15 @@ constexpr ExponentialBase<ADerived, T>::ExponentialBase(const typename Base::Par
 } // namespace impl
 
 template<std::floating_point T>
-auto Exponential<T>::Impl(auto& g, const ExponentialParameter<T>& p) -> T {
+constexpr auto Exponential<T>::Impl(auto& g, const ExponentialParameter<T>& p) -> T {
     const auto u{1 - Uniform<T>{}(g)}; // u in [0,1) so 1-u in (0,1]
-    return -p.Expectation() * std::log(u);
+    return -p.Expectation() * impl::FastLogOn01(u);
 }
 
 template<std::floating_point T>
-constexpr auto ExponentialFast<T>::Impl(auto& g, const ExponentialFastParameter<T>& p) -> T {
+auto ExponentialS<T>::Impl(auto& g, const ExponentialSParameter<T>& p) -> T {
     const auto u{1 - Uniform<T>{}(g)}; // u in [0,1) so 1-u in (0,1]
-    return -p.Expectation() * impl::FastLogOn01(u);
+    return -p.Expectation() * std::log(u);
 }
 
 } // namespace Mustard::inline Math::Random::inline Distribution

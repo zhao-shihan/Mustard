@@ -54,7 +54,7 @@ public:
 
     /// @brief Generate exponential-distributed number
     /// @param tau Mean of the distribution
-    virtual auto Exp(double tau) -> double override { return Random::ExponentialFast{tau}(fPRNG); }
+    virtual auto Exp(double tau) -> double override { return Random::Exponential{tau}(fPRNG); }
     /// @brief Generate Gaussian-distributed number
     /// @param mu Mean of the distribution (default: 0)
     /// @param sigma Standard deviation (default: 1)

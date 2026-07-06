@@ -176,8 +176,7 @@ template<typename T, typename U>
 Gaussian2D(std::initializer_list<T>, std::initializer_list<U>) -> Gaussian2D<std::array<std::common_type_t<T, U>, 2>>;
 
 /// @brief Generates 2D normal random vectors with diagonal covariance using the Marsaglia method.
-/// This version is slower than Gaussian2D, but it has a better statistical quality
-/// when you need more than 10^12 random vectors and test them all at once.
+/// This version is slower than Gaussian2D and mainly for testing purpose.
 /// @tparam T The result vector type. It must be 2-dimensional and has floating-point type.
 template<Concept::NumericVector2FloatingPoint T = muc::array2d>
 class Gaussian2DS;

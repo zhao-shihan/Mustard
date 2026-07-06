@@ -110,6 +110,7 @@ protected:
 } // namespace impl
 
 /// @brief Generates random floating-points of exponential distribution.
+/// This version is faster than ExponentialS and they are practically the same.
 /// @tparam T The type of the result.
 template<std::floating_point T = double>
 class Exponential;
@@ -123,9 +124,9 @@ public:
     using impl::ExponentialBase<Exponential, T>::ExponentialBase;
 
     template<std::uniform_random_bit_generator G>
-    auto operator()(G& g) -> auto { return Impl(g, this->fParameter); }
+    constexpr auto operator()(G& g) -> auto { return Impl(g, this->fParameter); }
     template<std::uniform_random_bit_generator G>
-    auto operator()(G& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
+    constexpr auto operator()(G& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
 
     auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
     auto operator()(CLHEP::HepRandomEngine& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
@@ -134,48 +135,43 @@ public:
     auto operator()(TRandom& g, const ExponentialParameter<T>& p) -> auto { return Impl(g, p); }
 
 private:
-    static auto Impl(auto& g, const ExponentialParameter<T>& p) -> T;
+    static constexpr auto Impl(auto& g, const ExponentialParameter<T>& p) -> T;
 };
 
 template<typename T>
 Exponential(T) -> Exponential<T>;
 
-/// @brief Generates random floating-points of exponential distribution. This
-/// version is faster than Exponential and less accurate for a tiny bit. See
-/// note.
-/// @note This version uses RA2Log (P2/Q2 rational) instead of full-precision
-/// Log. The average truncation error of RA2Log is O(10^-6), and the max
-/// truncation error is less than 10^-5. This error will propagate to the
-/// generated random numbers.
+/// @brief Generates random floating-points of exponential distribution.
+/// This version is slower than Gaussian2D and mainly for testing purpose.
 /// @tparam T The type of the result.
 template<std::floating_point T = double>
-class ExponentialFast;
+class ExponentialS;
 
 template<std::floating_point T>
-using ExponentialFastParameter = impl::BasicExponentialParameter<T, ExponentialFast>;
+using ExponentialSParameter = impl::BasicExponentialParameter<T, ExponentialS>;
 
 template<std::floating_point T>
-class ExponentialFast final : public impl::ExponentialBase<ExponentialFast, T> {
+class ExponentialS final : public impl::ExponentialBase<ExponentialS, T> {
 public:
-    using impl::ExponentialBase<ExponentialFast, T>::ExponentialBase;
+    using impl::ExponentialBase<ExponentialS, T>::ExponentialBase;
 
     template<std::uniform_random_bit_generator G>
-    constexpr auto operator()(G& g) -> auto { return Impl(g, this->fParameter); }
+    auto operator()(G& g) -> auto { return Impl(g, this->fParameter); }
     template<std::uniform_random_bit_generator G>
-    constexpr auto operator()(G& g, const ExponentialFastParameter<T>& p) -> auto { return Impl(g, p); }
+    auto operator()(G& g, const ExponentialSParameter<T>& p) -> auto { return Impl(g, p); }
 
     auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
-    auto operator()(CLHEP::HepRandomEngine& g, const ExponentialFastParameter<T>& p) -> auto { return Impl(g, p); }
+    auto operator()(CLHEP::HepRandomEngine& g, const ExponentialSParameter<T>& p) -> auto { return Impl(g, p); }
 
     auto operator()(TRandom& g) -> auto { return Impl(g, this->fParameter); }
-    auto operator()(TRandom& g, const ExponentialFastParameter<T>& p) -> auto { return Impl(g, p); }
+    auto operator()(TRandom& g, const ExponentialSParameter<T>& p) -> auto { return Impl(g, p); }
 
 private:
-    static constexpr auto Impl(auto& g, const ExponentialFastParameter<T>& p) -> T;
+    static auto Impl(auto& g, const ExponentialSParameter<T>& p) -> T;
 };
 
 template<typename T>
-ExponentialFast(T) -> ExponentialFast<T>;
+ExponentialS(T) -> ExponentialS<T>;
 
 } // namespace Mustard::inline Math::Random::inline Distribution
 
