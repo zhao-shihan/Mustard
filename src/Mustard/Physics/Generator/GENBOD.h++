@@ -29,12 +29,11 @@
 #include "muc/math"
 #include "muc/numeric"
 
-#include "gsl/gsl"
-
 #include "fmt/format.h"
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cmath>
 #include <limits>
 #include <utility>

@@ -26,9 +26,9 @@ auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> E
     const auto beta{this->BoostToCMFrame(pI)};
 
     auto random{u.cbegin()};
-    std::array<double, N - 2> u0;
-    random = std::ranges::copy_n(random, u0.size(), u0.begin()).in;
-    for (auto i{1}; i < ssize(u0); ++i) {
+    std::array<double, N - 2> u0; // u0 = 1 - u in (0, 1] (u in [0, 1))
+    random = std::ranges::transform(random, random + u0.size(), u0.begin(), [](auto u) { return 1 - u; }).in;
+    for (auto i{1}; i < ssize(u0); ++i) { // selection sort is good for small N
         const auto key{u0[i]};
         auto j{i - 1};
         for (; j >= 0 and u0[j] > key; --j) {
@@ -47,13 +47,14 @@ auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> E
     invMass.back() = cmE;
 
     using Mustard::MathConstant::pi;
-    Event event{.weight = std::pow(cmEk, N - 2) / (2 * muc::pow(2 * pi, 2 * N + 1) * muc::factorial(N - 2) * cmE), .pdgID = this->fPDGID, .p = {}};
+    constexpr auto denomCoeff{2 * muc::pow(2 * pi, 2 * N + 1) * muc::factorial(N - 2)};
+    Event event{.weight = std::pow(cmEk, N - 2) / (denomCoeff * cmE), .pdgID = this->fPDGID, .p = {}};
     std::array<double, N> pRel;
     for (int i{}; i < N - 1; ++i) {
-        constexpr auto RelativeMomentum{[](double m12, double m1, double m2) {
+        constexpr auto relativeMomentum{[](double m12, double m1, double m2) {
             return std::sqrt((m12 - m1 - m2) * (m12 + m1 + m2) * (m12 - m1 + m2) * (m12 + m1 - m2)) / (2 * m12);
         }};
-        pRel[i] = RelativeMomentum(invMass[i + 1], invMass[i], this->fMass[i + 1]);
+        pRel[i] = relativeMomentum(invMass[i + 1], invMass[i], this->fMass[i + 1]);
         event.weight *= pRel[i];
     }
 
@@ -89,7 +90,7 @@ auto GENBOD<M, N>::operator()(const RandomState& u, InitialStateMomenta pI) -> E
     }
 
     // Ensure the random state is exactly exhausted
-    Ensures(random == u.cend());
+    assert(random == u.cend());
 
     this->BoostToLabFrame(beta, event.p);
     return event;
