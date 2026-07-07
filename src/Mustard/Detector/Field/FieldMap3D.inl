@@ -18,7 +18,7 @@
 
 namespace Mustard::Detector::Field {
 
-template<muc::general_arithmetic T,
+template<muc::linearly_combinable T,
          std::regular_invocable<Point3D> AProjection,
          std::regular_invocable<Point3D, T> ATransformation>
     requires std::convertible_to<std::invoke_result_t<AProjection, Point3D>, Point3D> and
@@ -141,7 +141,7 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
     fFieldGrid = Parallel::ShmArray<GridValueType>{Parallel::BcastTag{}, std::move(fieldGrid)};
 }
 
-template<muc::general_arithmetic T,
+template<muc::linearly_combinable T,
          std::regular_invocable<Point3D> AProjection,
          std::regular_invocable<Point3D, T> ATransformation>
     requires std::convertible_to<std::invoke_result_t<AProjection, Point3D>, Point3D> and
@@ -185,7 +185,7 @@ auto FieldMap3D<T, AProjection, ATransformation>::At(Point3D position) const -> 
     return std::invoke(fTransformation, position, fCachedInterpolatedValue);
 }
 
-template<muc::general_arithmetic T,
+template<muc::linearly_combinable T,
          std::regular_invocable<Point3D> AProjection,
          std::regular_invocable<Point3D, T> ATransformation>
     requires std::convertible_to<std::invoke_result_t<AProjection, Point3D>, Point3D> and

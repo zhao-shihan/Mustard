@@ -36,7 +36,7 @@ namespace Mustard::inline Utility {
 /// @tparam ACategory The unit category.
 /// @param x The value
 /// @return Converted value.
-template<muc::ceta_string ACategory, muc::general_arithmetic U>
+template<muc::ceta_string ACategory, muc::linearly_combinable U>
 constexpr auto ToG3(const U& x) -> U {
     constexpr auto L{TGeoUnit::mm};
     constexpr auto T{TGeoUnit::ns};
@@ -99,7 +99,7 @@ constexpr auto ToG3(const U& x) -> U {
 /// @tparam ACategory The unit category.
 /// @param x The value
 /// @return Converted value.
-template<muc::ceta_string ACategory, muc::general_arithmetic U>
+template<muc::ceta_string ACategory, muc::linearly_combinable U>
 constexpr auto ToG4(const U& x) -> U {
     constexpr auto L{CLHEP::cm};
     constexpr auto T{CLHEP::s};

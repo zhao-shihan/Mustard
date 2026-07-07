@@ -22,6 +22,7 @@
 
 #include "muc/concepts"
 
+#include <complex>
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -32,7 +33,7 @@ namespace Mustard::Concept {
 template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept InputVector = requires {
     requires(N >= 2);
-    requires muc::arithmetic<F>;
+    requires muc::numeric<F>;
     requires(std::is_class_v<T> and std::default_initializable<T>) or
                 (std::is_pointer_v<T> or std::is_array_v<T>);
     requires SubscriptableToMaybeConstReferenced<T, F>;
@@ -56,6 +57,30 @@ template<typename T>
 concept InputVector3D = InputVector3<T, double>;
 template<typename T>
 concept InputVector4D = InputVector4<T, double>;
+template<typename T>
+concept InputVector2LD = InputVector2<T, long double>;
+template<typename T>
+concept InputVector3LD = InputVector3<T, long double>;
+template<typename T>
+concept InputVector4LD = InputVector4<T, long double>;
+template<typename T>
+concept InputVector2CD = InputVector2<T, std::complex<double>>;
+template<typename T>
+concept InputVector3CD = InputVector3<T, std::complex<double>>;
+template<typename T>
+concept InputVector4CD = InputVector4<T, std::complex<double>>;
+template<typename T>
+concept InputVector2CF = InputVector2<T, std::complex<float>>;
+template<typename T>
+concept InputVector3CF = InputVector3<T, std::complex<float>>;
+template<typename T>
+concept InputVector4CF = InputVector4<T, std::complex<float>>;
+template<typename T>
+concept InputVector2CLD = InputVector2<T, std::complex<long double>>;
+template<typename T>
+concept InputVector3CLD = InputVector3<T, std::complex<long double>>;
+template<typename T>
+concept InputVector4CLD = InputVector4<T, std::complex<long double>>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept InputVectorIntegral =
@@ -97,9 +122,23 @@ template<typename T>
 concept InputVector4FloatingPoint = InputVectorFloatingPoint<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
+concept InputVectorComplex =
+    InputVector<T, std::complex<float>, N> or
+    InputVector<T, std::complex<double>, N> or
+    InputVector<T, std::complex<long double>, N>;
+
+template<typename T>
+concept InputVector2Complex = InputVectorComplex<T, 2>;
+template<typename T>
+concept InputVector3Complex = InputVectorComplex<T, 3>;
+template<typename T>
+concept InputVector4Complex = InputVectorComplex<T, 4>;
+
+template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept InputVectorAny =
     InputVectorIntegral<T, N> or
-    InputVectorFloatingPoint<T, N>;
+    InputVectorFloatingPoint<T, N> or
+    InputVectorComplex<T, N>;
 
 template<typename T>
 concept InputVector2Any = InputVectorAny<T, 2>;

@@ -160,11 +160,11 @@ private:
 };
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::numeric<typename Ds::ResultType>))
 class Joint;
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::numeric<typename Ds::ResultType>))
 class JointParameter final : public JointParameterInterface<JointParameter<T, Ds...>,
                                                             Joint<T, Ds...>,
                                                             Ds...> {
@@ -175,7 +175,7 @@ template<typename... Ps>
 JointParameter(Ps...) -> JointParameter<std::array<std::common_type_t<typename Ps::DistributionType::ResultType...>, sizeof...(Ps)>, typename Ps::DistributionType...>;
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::numeric<typename Ds::ResultType>))
 class Joint final : public JointInterface<Joint<T, Ds...>,
                                           JointParameter<T, Ds...>,
                                           T,

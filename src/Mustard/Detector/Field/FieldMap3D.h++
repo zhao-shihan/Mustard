@@ -95,7 +95,7 @@ struct Identity {
 /// @tparam ATransformation Callable `(Point3D, T) -> T` that
 /// transforms the interpolated field value. Default:
 /// `Identity` (no transformation).
-template<muc::general_arithmetic T,
+template<muc::linearly_combinable T,
          std::regular_invocable<Point3D> AProjection = std::identity,
          std::regular_invocable<Point3D, T> ATransformation = Identity>
     requires std::convertible_to<std::invoke_result_t<AProjection, Point3D>, Point3D> and

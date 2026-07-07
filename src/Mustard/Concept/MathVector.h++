@@ -24,6 +24,7 @@
 
 #include "muc/type_traits"
 
+#include <complex>
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -34,7 +35,7 @@ namespace Mustard::Concept {
 template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept MathVector = requires {
     requires NumericVector<T, F, N>;
-    requires muc::is_general_arithmetic_v<T>;
+    requires muc::linearly_combinable<T>;
 };
 
 template<typename T, typename F>
@@ -55,11 +56,35 @@ template<typename T>
 concept MathVector3D = MathVector3<T, double>;
 template<typename T>
 concept MathVector4D = MathVector4<T, double>;
+template<typename T>
+concept MathVector2LD = MathVector2<T, long double>;
+template<typename T>
+concept MathVector3LD = MathVector3<T, long double>;
+template<typename T>
+concept MathVector4LD = MathVector4<T, long double>;
+template<typename T>
+concept MathVector2CD = MathVector2<T, std::complex<double>>;
+template<typename T>
+concept MathVector3CD = MathVector3<T, std::complex<double>>;
+template<typename T>
+concept MathVector4CD = MathVector4<T, std::complex<double>>;
+template<typename T>
+concept MathVector2CF = MathVector2<T, std::complex<float>>;
+template<typename T>
+concept MathVector3CF = MathVector3<T, std::complex<float>>;
+template<typename T>
+concept MathVector4CF = MathVector4<T, std::complex<float>>;
+template<typename T>
+concept MathVector2CLD = MathVector2<T, std::complex<long double>>;
+template<typename T>
+concept MathVector3CLD = MathVector3<T, std::complex<long double>>;
+template<typename T>
+concept MathVector4CLD = MathVector4<T, std::complex<long double>>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept MathVectorIntegral = requires {
     requires NumericVectorIntegral<T, N>;
-    requires muc::is_general_arithmetic_v<T>;
+    requires muc::linearly_combinable<T>;
 };
 
 template<typename T>
@@ -72,7 +97,7 @@ concept MathVector4Integral = MathVectorIntegral<T, 4>;
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept MathVectorFloatingPoint = requires {
     requires NumericVectorFloatingPoint<T, N>;
-    requires muc::is_general_arithmetic_v<T>;
+    requires muc::linearly_combinable<T>;
 };
 
 template<typename T>
@@ -83,9 +108,22 @@ template<typename T>
 concept MathVector4FloatingPoint = MathVectorFloatingPoint<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
+concept MathVectorComplex = requires {
+    requires NumericVectorComplex<T, N>;
+    requires muc::linearly_combinable<T>;
+};
+
+template<typename T>
+concept MathVector2Complex = MathVectorComplex<T, 2>;
+template<typename T>
+concept MathVector3Complex = MathVectorComplex<T, 3>;
+template<typename T>
+concept MathVector4Complex = MathVectorComplex<T, 4>;
+
+template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
 concept MathVectorAny = requires {
     requires NumericVectorAny<T, N>;
-    requires muc::is_general_arithmetic_v<T>;
+    requires muc::linearly_combinable<T>;
 };
 
 template<typename T>

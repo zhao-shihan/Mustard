@@ -80,13 +80,13 @@ inline namespace Vector2ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator*(const Concept::NumericVector2<T> auto& u,                   \
-                   muc::arithmetic auto c)                                     \
+                   muc::numeric auto c)                                        \
         ->std::decay_t<decltype(u)> {                                          \
         return {u[0] * c,                                                      \
                 u[1] * c};                                                     \
     }                                                                          \
                                                                                \
-    auto operator*(muc::arithmetic auto c,                                     \
+    auto operator*(muc::numeric auto c,                                        \
                    const Concept::NumericVector2<T> auto& u)                   \
         ->std::decay_t<decltype(u)> {                                          \
         return {c * u[0],                                                      \
@@ -94,14 +94,14 @@ inline namespace Vector2ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator/(const Concept::NumericVector2<T> auto& u,                   \
-                   muc::arithmetic auto c)                                     \
+                   muc::numeric auto c)                                        \
         ->std::decay_t<decltype(u)> {                                          \
         return {u[0] / c,                                                      \
                 u[1] / c};                                                     \
     }                                                                          \
                                                                                \
     auto operator*=(Concept::NumericVector2<T> auto& u,                        \
-                    muc::arithmetic auto c)                                    \
+                    muc::numeric auto c)                                       \
         ->auto& {                                                              \
         u[0] *= c;                                                             \
         u[1] *= c;                                                             \
@@ -109,7 +109,7 @@ inline namespace Vector2ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator/=(Concept::NumericVector2<T> auto& u,                        \
-                    muc::arithmetic auto c)                                    \
+                    muc::numeric auto c)                                       \
         ->auto& {                                                              \
         u[0] /= c;                                                             \
         u[1] /= c;                                                             \
@@ -128,6 +128,18 @@ MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(long double,
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_SCALAR_OPERATORS(float)
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_SCALAR_OPERATORS(double)
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_SCALAR_OPERATORS(long double)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<float>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<float>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<float>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<double>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<double>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<double>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<long double>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<long double>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS(std::complex<long double>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_SCALAR_OPERATORS(std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_SCALAR_OPERATORS(std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_SCALAR_OPERATORS(std::complex<long double>)
 
 #undef MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_SCALAR_OPERATORS
 #undef MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR2_VECTOR_OPERATORS
@@ -194,14 +206,14 @@ inline namespace Vector3ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator*(const Concept::NumericVector3<T> auto& u,                   \
-                   muc::arithmetic auto c)                                     \
+                   muc::numeric auto c)                                        \
         ->std::decay_t<decltype(u)> {                                          \
         return {u[0] * c,                                                      \
                 u[1] * c,                                                      \
                 u[2] * c};                                                     \
     }                                                                          \
                                                                                \
-    auto operator*(muc::arithmetic auto c,                                     \
+    auto operator*(muc::numeric auto c,                                        \
                    const Concept::NumericVector3<T> auto& u)                   \
         ->std::decay_t<decltype(u)> {                                          \
         return {c * u[0],                                                      \
@@ -210,7 +222,7 @@ inline namespace Vector3ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator/(const Concept::NumericVector3<T> auto& u,                   \
-                   muc::arithmetic auto c)                                     \
+                   muc::numeric auto c)                                        \
         ->std::decay_t<decltype(u)> {                                          \
         return {u[0] / c,                                                      \
                 u[1] / c,                                                      \
@@ -218,7 +230,7 @@ inline namespace Vector3ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator*=(Concept::NumericVector3<T> auto& u,                        \
-                    muc::arithmetic auto c)                                    \
+                    muc::numeric auto c)                                       \
         ->auto& {                                                              \
         u[0] *= c;                                                             \
         u[1] *= c;                                                             \
@@ -227,7 +239,7 @@ inline namespace Vector3ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator/=(Concept::NumericVector3<T> auto& u,                        \
-                    muc::arithmetic auto c)                                    \
+                    muc::numeric auto c)                                       \
         ->auto& {                                                              \
         u[0] /= c;                                                             \
         u[1] /= c;                                                             \
@@ -247,6 +259,18 @@ MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(long double,
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_SCALAR_OPERATORS(float)
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_SCALAR_OPERATORS(double)
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_SCALAR_OPERATORS(long double)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<float>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<float>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<float>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<double>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<double>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<double>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<long double>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<long double>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS(std::complex<long double>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_SCALAR_OPERATORS(std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_SCALAR_OPERATORS(std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_SCALAR_OPERATORS(std::complex<long double>)
 
 #undef MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_SCALAR_OPERATORS
 #undef MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR3_VECTOR_OPERATORS
@@ -310,7 +334,7 @@ inline namespace Vector4ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator*(const Concept::NumericVector4<T> auto& u,                   \
-                   muc::arithmetic auto c)                                     \
+                   muc::numeric auto c)                                        \
         ->std::decay_t<decltype(u)> {                                          \
         return {u[0] * c,                                                      \
                 u[1] * c,                                                      \
@@ -318,7 +342,7 @@ inline namespace Vector4ArithmeticOperator {
                 u[3] * c};                                                     \
     }                                                                          \
                                                                                \
-    auto operator*(muc::arithmetic auto c,                                     \
+    auto operator*(muc::numeric auto c,                                        \
                    const Concept::NumericVector4<T> auto& u)                   \
         ->std::decay_t<decltype(u)> {                                          \
         return {c * u[0],                                                      \
@@ -328,7 +352,7 @@ inline namespace Vector4ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator/(const Concept::NumericVector4<T> auto& u,                   \
-                   muc::arithmetic auto c)                                     \
+                   muc::numeric auto c)                                        \
         ->std::decay_t<decltype(u)> {                                          \
         return {u[0] / c,                                                      \
                 u[1] / c,                                                      \
@@ -337,7 +361,7 @@ inline namespace Vector4ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator*=(Concept::NumericVector4<T> auto& u,                        \
-                    muc::arithmetic auto c)                                    \
+                    muc::numeric auto c)                                       \
         ->auto& {                                                              \
         u[0] *= c;                                                             \
         u[1] *= c;                                                             \
@@ -347,7 +371,7 @@ inline namespace Vector4ArithmeticOperator {
     }                                                                          \
                                                                                \
     auto operator/=(Concept::NumericVector4<T> auto& u,                        \
-                    muc::arithmetic auto c)                                    \
+                    muc::numeric auto c)                                       \
         ->auto& {                                                              \
         u[0] /= c;                                                             \
         u[1] /= c;                                                             \
@@ -368,6 +392,18 @@ MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(long double,
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_SCALAR_OPERATORS(float)
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_SCALAR_OPERATORS(double)
 MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_SCALAR_OPERATORS(long double)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<float>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<float>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<float>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<double>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<double>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<double>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<long double>, std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<long double>, std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS(std::complex<long double>, std::complex<long double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_SCALAR_OPERATORS(std::complex<float>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_SCALAR_OPERATORS(std::complex<double>)
+MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_SCALAR_OPERATORS(std::complex<long double>)
 
 #undef MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_SCALAR_OPERATORS
 #undef MUSTARD_UTILITY_VECTOR_ARITHMETIC_OPERATOR_VECTOR4_VECTOR_OPERATORS
