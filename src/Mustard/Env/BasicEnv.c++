@@ -113,14 +113,22 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     if (cwdError) {
         cwd = "<Error getting current working directory>";
     }
-    Print(fmt::emphasis::bold,
-          " ______  ___             _____              _________\n"
-          " ___   |/  /___  __________  /______ _____________  /\n"
-          " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
-          " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n" // clang-format off
-        R"( /_/  /_/  \_____\/____/ \__/ \_____\/_/    \_____\  {})""\n" // clang-format on
-          "\n",
-          versionString);
+    if (not VerboseLevelReach<'I'>()) {
+        Print(fmt::emphasis::bold,
+              "\n"
+              " Mustard v{}:",
+              versionString);
+    } else {
+        Print(fmt::emphasis::bold,
+              " ______  ___             _____              _________\n"
+              " ___   |/  /___  __________  /______ _____________  /\n"
+              " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
+              " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n" // clang-format off
+            R"( /_/  /_/  \_____\/____/ \__/ \_____\/_/    \_____\  {})""\n" // clang-format on
+              "\n"
+              " Mustard:",
+              versionString);
+    }
     Print(fmt::emphasis::bold | fmt::emphasis::italic,
           " An offline software framework for HEP experiments\n");
     Print(fmt::emphasis::bold,
