@@ -85,7 +85,7 @@ template<Concept::NumericVector2FloatingPoint T>
 auto UniformDisk<T>::Impl(auto& g, const UniformDiskFastParameter<T>& p) -> T {
     constexpr auto pi{std::numbers::pi_v<Scalar>};
     const auto r{p.Radius() * std::sqrt(1 - Uniform<Scalar>{}(g))}; // u in [0,1) so 1-u in (0,1], we don't like coordinate singularity at the center of the disk
-    const auto [sinx, cosx]{impl::FastSinCosOnPiPi(Uniform<Scalar>{-pi, pi}(g))};
+    const auto [cosx, sinx]{impl::FastCosSinOnPiPi(Uniform<Scalar>{-pi, pi}(g))};
     return {p.CenterX() + r * cosx,
             p.CenterY() + r * sinx};
 }

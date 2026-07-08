@@ -23,6 +23,8 @@
 #include "muc/bit"
 #include "muc/utility"
 
+#include <algorithm>
+#include <array>
 #include <bit>
 #include <cassert>
 #include <climits>
@@ -34,10 +36,13 @@
 
 namespace Mustard::inline Math::Random::inline Distribution::impl {
 
-template<std::floating_point T>
-MUSTARD_STRONG_INLINE auto FastLogOn01(T x) -> T {
-    assert(0 < x and x <= 1);
-    muc::assume(0 < x and x <= 1);
+// In auto-vectorization we trust
+// This function have been optimized to be easily vectorized by the compiler,
+// do not change the code unless you know what you are doing.
+template<int N, std::floating_point T>
+MUSTARD_ALWAYS_INLINE auto FastLogOn01(std::array<T, N> x) -> std::array<T, N> {
+    assert(std::ranges::all_of(x, [](auto xi) { return 0 < xi and xi <= 1; }));
+    muc::assume(std::ranges::all_of(x, [](auto xi) { return 0 < xi and xi <= 1; }));
     constexpr auto iec559{std::numeric_limits<T>::is_iec559};
     constexpr auto isF32{std::same_as<T, float>};
     constexpr auto isF64{std::same_as<T, double>};
@@ -47,16 +52,27 @@ MUSTARD_STRONG_INLINE auto FastLogOn01(T x) -> T {
         constexpr int k{muc::bit_size<T> - 1 - n};
         constexpr T c[]{9.2651671377046504, 2.73948787606301709,
                         18.5305156812078555, 10.1158584065498774};
-        const auto xBit{std::bit_cast<B>(x)};
-        muc::assume(xBit > 0);
-        muc::assume(xBit < ~(~static_cast<B>(0) >> 1));
-        const auto e{static_cast<int>(xBit >> n) - (1 << (k - 1)) + 2};       // = e+1
-        x = std::bit_cast<T>((xBit | ~static_cast<B>(0) << n) << 2 >> 2) - 2; // = m-2
-        const auto r{x * (c[0] + c[1] * x) / (c[2] + x * (c[3] + x))};        // = log((x+2)/2) = log(m/2)
-        return r + e * std::numbers::ln2_v<T>;                                // = log(m/2) + (e+1)*log(2)
+        for (int i{}; i < N; ++i) {
+            auto& xx{x[i]};
+            const auto b{std::bit_cast<B>(xx)};
+            muc::assume(b > 0);
+            muc::assume(b < ~(~static_cast<B>(0) >> 1));
+            const auto e{static_cast<int>(b >> n) - (1 << (k - 1)) + 2};        // = e+1
+            xx = std::bit_cast<T>((b | ~static_cast<B>(0) << n) << 2 >> 2) - 2; // = m-2
+            xx = xx * (c[0] + c[1] * xx) / (c[2] + xx * (c[3] + xx));           // = log((x+2)/2) = log(m/2)
+            xx += e * std::numbers::ln2_v<T>;                                   // = log(m/2) + (e+1)*log(2)
+        }
     } else {
-        return std::log(x);
+        for (int i{}; i < N; ++i) {
+            x[i] = std::log(x[i]);
+        }
     }
+    return x;
+}
+
+template<std::floating_point T>
+MUSTARD_ALWAYS_INLINE auto FastLogOn01(T x) -> T {
+    return FastLogOn01<1, T>({x})[0];
 }
 
 } // namespace Mustard::inline Math::Random::inline Distribution::impl

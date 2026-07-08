@@ -22,8 +22,7 @@ namespace impl {
 
 template<Concept::NumericVector2FloatingPoint T, template<typename> typename AGaussian2D>
 constexpr BasicGaussian2DSParameter<T, AGaussian2D>::BasicGaussian2DSParameter() : // clang-format off
-    BasicGaussian2DSParameter{{0, 1},
-                                     {0, 1}} {} // clang-format on
+    BasicGaussian2DSParameter{{0, 1}, {0, 1}} {} // clang-format on
 
 template<Concept::NumericVector2FloatingPoint T, template<typename> typename AGaussian2D>
 constexpr BasicGaussian2DSParameter<T, AGaussian2D>::BasicGaussian2DSParameter(std::pair<Scalar, Scalar> pX, std::pair<Scalar, Scalar> pY) :
@@ -63,7 +62,7 @@ template<Concept::NumericVector2FloatingPoint T>
 auto Gaussian2D<T>::Impl(auto& g, const Gaussian2DParameter<T>& p) -> T {
     constexpr auto pi{std::numbers::pi_v<Scalar>};
     const auto r{std::sqrt(-2 * impl::FastLogOn01(1 - Uniform<Scalar>{}(g)))}; // u in [0,1) so 1-u in (0,1]
-    const auto [sinx, cosx]{impl::FastSinCosOnPiPi(Uniform<Scalar>{-pi, pi}(g))};
+    const auto [cosx, sinx]{impl::FastCosSinOnPiPi(Uniform<Scalar>{-pi, pi}(g))};
     return {p.SigmaX() * (r * cosx) + p.MuX(),
             p.SigmaY() * (r * sinx) + p.MuY()};
 }

@@ -21,8 +21,8 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Distribution/UniformRectangle.h++"
+#include "Mustard/Math/Random/Distribution/impl/FastCosSinOnPiPi.h++"
 #include "Mustard/Math/Random/Distribution/impl/FastLogOn01.h++"
-#include "Mustard/Math/Random/Distribution/impl/FastSinCosOnPiPi.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
 #include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/Utility/VectorValueType.h++"
@@ -130,7 +130,8 @@ protected:
 } // namespace impl
 
 /// @brief Generates 2D normal random vectors with diagonal covariance using the Box-Muller transform.
-/// This version is branchless and faster than Gaussian2DS by ~1.3x to 1.5x,
+/// This version uses optimized math functions to compute log or trigonometric values.
+/// It is branchless and faster than Gaussian2DS by ~1.4x on x86-64 with FMA and AVX2,
 /// and they are practically the same.
 ///
 /// See also: Luc Devroye, Non-Uniform Random Variates Generation,

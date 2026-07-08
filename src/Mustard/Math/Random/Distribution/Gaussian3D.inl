@@ -22,9 +22,7 @@ namespace impl {
 
 template<Concept::NumericVector3FloatingPoint T, template<typename> typename AGaussian3D>
 constexpr BasicGaussian3DSParameter<T, AGaussian3D>::BasicGaussian3DSParameter() : // clang-format off
-    BasicGaussian3DSParameter{{0, 1},
-                                     {0, 1},
-                                     {0, 1}} {} // clang-format on
+    BasicGaussian3DSParameter{{0, 1}, {0, 1}, {0, 1}} {} // clang-format on
 
 template<Concept::NumericVector3FloatingPoint T, template<typename> typename AGaussian3D>
 constexpr BasicGaussian3DSParameter<T, AGaussian3D>::BasicGaussian3DSParameter(std::pair<Scalar, Scalar> pX, std::pair<Scalar, Scalar> pY, std::pair<Scalar, Scalar> pZ) :
@@ -67,32 +65,36 @@ constexpr Gaussian3DBase<ADerived, T>::Gaussian3DBase(const typename Base::Param
 
 } // namespace impl
 
-#define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN3D_IMPL_SNIPPET(Suffix)   \
-    static_assert(Gaussian2D##Suffix<std::array<Scalar, 2>>::Stateless()); \
-    Gaussian2D##Suffix<std::array<Scalar, 2>> standardGaussian2D;          \
-    auto&& [u, v]{standardGaussian2D(g)};                                  \
-    if ((fCached = not fCached)) {                                         \
-        auto&& [w, x]{standardGaussian2D(g)};                              \
-        fCachedValue = std::move(x);                                       \
-        return {p.SigmaX() * u + p.MuX(),                                  \
-                p.SigmaY() * v + p.MuY(),                                  \
-                p.SigmaZ() * w + p.MuZ()};                                 \
-    } else {                                                               \
-        return {p.SigmaX() * u + p.MuX(),                                  \
-                p.SigmaY() * v + p.MuY(),                                  \
-                p.SigmaZ() * fCachedValue + p.MuZ()};                      \
-    }
-
 template<Concept::NumericVector3FloatingPoint T>
 auto Gaussian3D<T>::Impl(auto& g, const Gaussian3DParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN3D_IMPL_SNIPPET()
+    // Gaussian4D is vectorized and even faster than caching one value
+    static_assert(Gaussian4D<std::array<Scalar, 4>>::Stateless());
+    Gaussian4D<std::array<Scalar, 4>> gaussian4D{
+        {p.MuX(), p.SigmaX()},
+        {p.MuY(), p.SigmaY()},
+        {p.MuZ(), p.SigmaZ()},
+        {0,       1         }
+    };
+    const auto [x, y, z, _]{gaussian4D(g)};
+    return {x, y, z};
 }
 
 template<Concept::NumericVector3FloatingPoint T>
 auto Gaussian3DS<T>::Impl(auto& g, const Gaussian3DSParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN3D_IMPL_SNIPPET(S)
+    static_assert(Gaussian2DS<std::array<Scalar, 2>>::Stateless());
+    Gaussian2DS<std::array<Scalar, 2>> gaussian2D;
+    const auto [u, v]{gaussian2D(g)};
+    if ((fCached = not fCached)) {
+        const auto [w, x]{gaussian2D(g)};
+        fCachedValue = x;
+        return {p.SigmaX() * u + p.MuX(),
+                p.SigmaY() * v + p.MuY(),
+                p.SigmaZ() * w + p.MuZ()};
+    } else {
+        return {p.SigmaX() * u + p.MuX(),
+                p.SigmaY() * v + p.MuY(),
+                p.SigmaZ() * fCachedValue + p.MuZ()};
+    }
 }
-
-#undef MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN3D_IMPL_SNIPPET
 
 } // namespace Mustard::inline Math::Random::inline Distribution

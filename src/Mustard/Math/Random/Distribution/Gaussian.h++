@@ -115,6 +115,7 @@ protected:
 
 /// @brief Generates normal random numbers.
 /// Delegates to Gaussian2D and caches the second value for the next call.
+/// It is faster than GaussianS by ~1.2x on x86-64 with FMA and AVX2 and they are practically the same.
 /// @tparam T The result type.
 template<std::floating_point T = double>
 class Gaussian;
@@ -155,7 +156,7 @@ template<typename T, typename U>
 Gaussian(T, U) -> Gaussian<std::common_type_t<T, U>>;
 
 /// @brief Generates normal random numbers.
-/// Delegates to Gaussian2DS and caches the second value for the next call.
+/// Delegates to Gaussian2DS and caches the second value for the next call. This version is mainly for testing purpose.
 /// @tparam T The result type.
 template<std::floating_point T = double>
 class GaussianS;

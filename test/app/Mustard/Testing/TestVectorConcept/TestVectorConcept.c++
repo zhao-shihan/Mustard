@@ -188,16 +188,15 @@ static_assert(Concept::NumericVector3Any<muc::array3cd>);
 static_assert(Concept::MathVectorAny<Eigen::Vector3cf, 3>);
 static_assert(Concept::MathVector4Any<Eigen::Vector4cd>);
 
-// Eigen don't vectorize long double vector so Eigen::AlignedVector3<long double>'s align is 16;
-// (and that's why you shouldn't use long double with Eigen)
-// NumericVector doesn't allow a alignof(T) == alignof(F) type to be sizeof(T) / sizeof(F) > N
 namespace EigenX = Mustard::EigenX;
 static_assert(Concept::MathVector3F<EigenX::AlignedVector3f>);
 static_assert(Concept::MathVector3D<EigenX::AlignedVector3d>);
 static_assert(Concept::MathVector3CF<EigenX::AlignedVector3cf>);
 static_assert(Concept::MathVector3CD<EigenX::AlignedVector3cd>);
-static_assert(not Concept::NumericVectorAny<Eigen::AlignedVector3<long double>>);
-static_assert(not Concept::NumericVectorAny<Eigen::AlignedVector3<std::complex<long double>>>);
+// The following can be true or not depending on compiler options.
+// (and that's why you should not use long double with Eigen)
+// static_assert(not Concept::NumericVectorAny<Eigen::AlignedVector3<long double>>);
+// static_assert(not Concept::NumericVectorAny<Eigen::AlignedVector3<std::complex<long double>>>);
 
 #if __has_include("TEveVector.h")
 static_assert(not Concept::MathVectorAny<TEveVector2D>);

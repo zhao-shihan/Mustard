@@ -28,6 +28,7 @@
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian2D.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian3D.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian4D.h++"
 #include "Mustard/Math/Statistic.h++"
 #include "Mustard/Testing/TestGaussian/TestGaussian.h++"
 
@@ -53,6 +54,8 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("--sigma2").help("Sigma 2 of 2D normal distribution.").default_value(2.).nargs(1).scan<'g', double>();
     cli->add_argument("--mu3").help("Mean 3 of 3D normal distribution.").default_value(2.).nargs(1).scan<'g', double>();
     cli->add_argument("--sigma3").help("Sigma 3 of 3D normal distribution.").default_value(3.).nargs(1).scan<'g', double>();
+    cli->add_argument("--mu4").help("Mean 4 of 4D normal distribution.").default_value(3.).nargs(1).scan<'g', double>();
+    cli->add_argument("--sigma4").help("Sigma 4 of 4D normal distribution.").default_value(4.).nargs(1).scan<'g', double>();
     Mustard::Env::MPIMonteCarloEnv<256> env{argc, argv, cli};
 
     const auto n{cli->get<unsigned long long>("n")};
@@ -62,6 +65,8 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
     const auto sigma2{cli->get<double>("--sigma2")};
     const auto mu3{cli->get<double>("--mu3")};
     const auto sigma3{cli->get<double>("--sigma3")};
+    const auto mu4{cli->get<double>("--mu4")};
+    const auto sigma4{cli->get<double>("--sigma4")};
 
     Random::Gaussian normal1D{mu1, sigma1};
     Random::GaussianS normal1DS{mu1, sigma1};
@@ -69,15 +74,18 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
     Random::Gaussian2DS normal2DS({mu1, sigma1}, {mu2, sigma2});
     Random::Gaussian3D normal3D({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3});
     Random::Gaussian3DS normal3DS({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3});
+    Random::Gaussian4D normal4D({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3}, {mu4, sigma4});
+    Random::Gaussian4DS normal4DS({mu1, sigma1}, {mu2, sigma2}, {mu3, sigma3}, {mu4, sigma4});
 
     struct Result
         : Data::Model<
               Data::Field<double, "n1", float>,
               Data::Field<muc::array2d, "n2", muc::array2f>,
-              Data::Field<muc::array3d, "n3", muc::array3f>> {};
+              Data::Field<muc::array3d, "n3", muc::array3f>,
+              Data::Field<muc::array4d, "n4", muc::array4f>> {};
 
     muc::chrono::stopwatch sw;
-    std::array<Statistic1D, 6> timeStat;
+    std::array<Statistic1D, 8> timeStat;
 
     ProcessSpecificFile<TFile> file{"test_normal_distribution.root", "RECREATE"};
 
@@ -88,17 +96,19 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
 
         sw.reset();
         F<"n1">(entry) = normal1D(env.RandomEngine());
-        ts->Fill(sw.read().count());
-        ts += 2;
+        ts++->Fill(sw.read().count());
 
         sw.reset();
         F<"n2">(entry) = normal2D(env.RandomEngine());
-        ts->Fill(sw.read().count());
-        ts += 2;
+        ts++->Fill(sw.read().count());
 
         sw.reset();
         F<"n3">(entry) = normal3D(env.RandomEngine());
-        ts->Fill(sw.read().count());
+        ts++->Fill(sw.read().count());
+
+        sw.reset();
+        F<"n4">(entry) = normal4D(env.RandomEngine());
+        ts++->Fill(sw.read().count());
 
         writer.Fill(entry);
     });
@@ -106,32 +116,36 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
     Data::Writer<Result> writerS{"GaussianS"};
     Mustard::Executor<unsigned long long>{}.Run(n, [&](unsigned long long) {
         Data::Tuple<Result> entry;
-        auto ts{timeStat.begin() + 1};
+        auto ts{timeStat.begin() + 4};
 
         sw.reset();
         F<"n1">(entry) = normal1DS(env.RandomEngine());
-        ts->Fill(sw.read().count());
-        ts += 2;
+        ts++->Fill(sw.read().count());
 
         sw.reset();
         F<"n2">(entry) = normal2DS(env.RandomEngine());
-        ts->Fill(sw.read().count());
-        ts += 2;
+        ts++->Fill(sw.read().count());
 
         sw.reset();
         F<"n3">(entry) = normal3DS(env.RandomEngine());
-        ts->Fill(sw.read().count());
+        ts++->Fill(sw.read().count());
+
+        sw.reset();
+        F<"n4">(entry) = normal4DS(env.RandomEngine());
+        ts++->Fill(sw.read().count());
 
         writerS.Fill(entry);
     });
 
     PrintLn("CPU time per sample:");
     PrintLn("  Gaussian:     {:.2f} +/- {:.2f} ns", timeStat[0].Mean(), timeStat[0].StdDevOfMean());
-    PrintLn("  GaussianS:    {:.2f} +/- {:.2f} ns", timeStat[1].Mean(), timeStat[1].StdDevOfMean());
-    PrintLn("  Gaussian2D:   {:.2f} +/- {:.2f} ns", timeStat[2].Mean(), timeStat[2].StdDevOfMean());
-    PrintLn("  Gaussian2DS:  {:.2f} +/- {:.2f} ns", timeStat[3].Mean(), timeStat[3].StdDevOfMean());
-    PrintLn("  Gaussian3D:   {:.2f} +/- {:.2f} ns", timeStat[4].Mean(), timeStat[4].StdDevOfMean());
-    PrintLn("  Gaussian3DS:  {:.2f} +/- {:.2f} ns", timeStat[5].Mean(), timeStat[5].StdDevOfMean());
+    PrintLn("  Gaussian2D:   {:.2f} +/- {:.2f} ns", timeStat[1].Mean(), timeStat[1].StdDevOfMean());
+    PrintLn("  Gaussian3D:   {:.2f} +/- {:.2f} ns", timeStat[2].Mean(), timeStat[2].StdDevOfMean());
+    PrintLn("  Gaussian4D:   {:.2f} +/- {:.2f} ns", timeStat[3].Mean(), timeStat[3].StdDevOfMean());
+    PrintLn("  GaussianS:    {:.2f} +/- {:.2f} ns", timeStat[4].Mean(), timeStat[4].StdDevOfMean());
+    PrintLn("  Gaussian2DS:  {:.2f} +/- {:.2f} ns", timeStat[5].Mean(), timeStat[5].StdDevOfMean());
+    PrintLn("  Gaussian3DS:  {:.2f} +/- {:.2f} ns", timeStat[6].Mean(), timeStat[6].StdDevOfMean());
+    PrintLn("  Gaussian4DS:  {:.2f} +/- {:.2f} ns", timeStat[7].Mean(), timeStat[7].StdDevOfMean());
 
     return EXIT_SUCCESS;
 }

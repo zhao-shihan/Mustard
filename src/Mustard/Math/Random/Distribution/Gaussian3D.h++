@@ -19,7 +19,8 @@
 #pragma once
 
 #include "Mustard/Concept/NumericVector.h++"
-#include "Mustard/Math/Random/Distribution/Gaussian.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian2D.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian4D.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
 #include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/Utility/VectorValueType.h++"
@@ -135,7 +136,8 @@ protected:
 } // namespace impl
 
 /// @brief Generates 3D normal random vectors with diagonal covariance.
-/// Delegates to Gaussian2D and caches one extra random number for the next call.
+/// Delegates to Gaussian4D and drops the last component (not caching a value is faster).
+/// It is branchless and faster than Gaussian3DS by ~1.5x on x86-64 with FMA and AVX2 and they are practically the same.
 /// @tparam T The result vector type. It must be 3-dimensional and has floating-point type.
 template<Concept::NumericVector3FloatingPoint T = muc::array3d>
 class Gaussian3D;
@@ -152,7 +154,7 @@ private:
 public:
     using impl::Gaussian3DBase<Gaussian3D, T>::Gaussian3DBase;
 
-    constexpr auto Reset() -> void { fCached = false; }
+    constexpr auto Reset() -> void {}
 
     template<std::uniform_random_bit_generator G>
     auto operator()(G& g) -> auto { return Impl(g, this->fParameter); }
@@ -165,22 +167,18 @@ public:
     auto operator()(TRandom& g) -> auto { return Impl(g, this->fParameter); }
     auto operator()(TRandom& g, const Gaussian3DParameter<T>& p) -> auto { return Impl(g, p); }
 
-    constexpr auto Min() const -> T { return {std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::lowest()}; }
-    constexpr auto Max() const -> T { return {std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max()}; }
+    constexpr auto Min() const -> T { return {std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::lowest()}; }
+    constexpr auto Max() const -> T { return {std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max()}; }
 
 private:
     auto Impl(auto& g, const Gaussian3DParameter<T>& p) -> T;
-
-private:
-    bool fCached{};
-    Scalar fCachedValue{};
 };
 
 template<typename T, typename U, typename V>
 Gaussian3D(std::initializer_list<T>, std::initializer_list<U>, std::initializer_list<V>) -> Gaussian3D<std::array<std::common_type_t<T, U, V>, 3>>;
 
 /// @brief Generates 3D normal random vectors with diagonal covariance.
-/// Delegates to Gaussian2DS and caches one extra random number for the next call.
+/// Delegates to Gaussian2DS and caches one extra random number for the next call. This version is mainly for testing purpose.
 /// @tparam T The result vector type. It must be 3-dimensional and has floating-point type.
 template<Concept::NumericVector3FloatingPoint T = muc::array3d>
 class Gaussian3DS;
@@ -210,8 +208,8 @@ public:
     auto operator()(TRandom& g) -> auto { return Impl(g, this->fParameter); }
     auto operator()(TRandom& g, const Gaussian3DSParameter<T>& p) -> auto { return Impl(g, p); }
 
-    constexpr auto Min() const -> T { return {std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::lowest()}; }
-    constexpr auto Max() const -> T { return {std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max()}; }
+    constexpr auto Min() const -> T { return {std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::lowest()}; }
+    constexpr auto Max() const -> T { return {std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max()}; }
 
 private:
     auto Impl(auto& g, const Gaussian3DSParameter<T>& p) -> T;

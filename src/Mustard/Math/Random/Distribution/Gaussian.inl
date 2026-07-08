@@ -55,8 +55,8 @@ constexpr GaussianBase<T, AGaussian>::GaussianBase(const typename Base::Paramete
 #define MUSTARD_MATH_RANDOM_DISTRIBUTION_GAUSSIAN_IMPL_SNIPPET(Suffix)    \
     if ((fCached = not fCached)) {                                        \
         static_assert(Gaussian2D##Suffix<std::array<T, 2>>::Stateless()); \
-        auto&& [u, v]{Gaussian2D##Suffix<std::array<T, 2>>{}(g)};         \
-        fCachedValue = std::move(v);                                      \
+        const auto [u, v]{Gaussian2D##Suffix<std::array<T, 2>>{}(g)};     \
+        fCachedValue = v;                                                 \
         return p.Sigma() * u + p.Mu();                                    \
     } else {                                                              \
         return p.Sigma() * fCachedValue + p.Mu();                         \
