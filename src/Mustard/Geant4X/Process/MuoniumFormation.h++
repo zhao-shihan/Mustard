@@ -45,16 +45,20 @@ class MuoniumFormation : public G4VRestProcess {
 public:
     MuoniumFormation();
 
-    auto ConversionProbability(G4double p) -> void { fConversionProbability = muc::clamp<"[]">(p, 0., 1.); }
+    auto DefaultFormationProbability(double p) -> void;
+    auto ConversionProbability(double p) -> void { fConversionProbability = muc::clamp<"[]">(p, 0., 1.); }
 
-    virtual auto IsApplicable(const G4ParticleDefinition&) -> G4bool override;
-    virtual auto AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
-
-private:
-    virtual auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> G4double override;
+    auto IsApplicable(const G4ParticleDefinition&) -> G4bool override;
+    auto AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
 
 private:
-    G4double fConversionProbability;
+    auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double override;
+
+private:
+    const ATarget* fFineStructure;
+
+    double fDefaultFormationProbability;
+    double fConversionProbability;
 
     G4ParticleChange fParticleChange;
 

@@ -35,7 +35,7 @@ auto MuoniumPhysics<ATarget>::ConstructParticle() -> void {
 template<TargetForMuoniumPhysics ATarget>
 auto MuoniumPhysics<ATarget>::ConstructProcess() -> void {
     const auto muoniumFormation{new MuoniumFormation<ATarget>};
-    const auto muoniumTransport{new MuoniumTransport<ATarget>};
+    const auto muoniumTransport{new MuoniumThermalScattering<ATarget>};
 
     const auto muonPlus{G4MuonPlus::Definition()->GetProcessManager()};
     muonPlus->AddRestProcess(muoniumFormation);

@@ -21,10 +21,20 @@ namespace Mustard::Geant4X::inline Process {
 template<TargetForMuoniumPhysics ATarget>
 MuoniumFormation<ATarget>::MuoniumFormation() :
     G4VRestProcess{"MuoniumFormation", fUserDefined},
-    fConversionProbability{0},
+    fDefaultFormationProbability{0.5},
+    fConversionProbability{},
     fParticleChange{},
     fMessengerRegister{this} {
     pParticleChange = &fParticleChange;
+}
+
+template<TargetForMuoniumPhysics ATarget>
+auto MuoniumFormation<ATarget>::DefaultFormationProbability(double p) -> void {
+    if (p < 0 or p > 1) [[unlikely]] {
+        PrintError(fmt::format("Invalid probability (got {}), not setting it.", p));
+        return;
+    }
+    fDefaultFormationProbability = p;
 }
 
 template<TargetForMuoniumPhysics ATarget>
@@ -35,12 +45,12 @@ auto MuoniumFormation<ATarget>::IsApplicable(const G4ParticleDefinition& particl
 template<TargetForMuoniumPhysics ATarget>
 auto MuoniumFormation<ATarget>::AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* {
     using namespace PhysicalConstant;
-    auto& rng{*G4Random::getTheEngine()};
 
     fParticleChange.Initialize(track);
     // The dynamic particle
     const auto muoniumDynamicParticle{new G4DynamicParticle{*track.GetDynamicParticle()}};
     // Determine whether the transition can be observed
+    auto& rng{*G4Random::getTheEngine()};
     const auto conversion{rng.flat() < fConversionProbability};
     // Use antimuonium if it will be a conversion... not exactly true since it is not pure antimuonium but mix state. OK for now though.
     // FIXME: Try always using muonium but behave like mix state in each interaction.
@@ -48,7 +58,7 @@ auto MuoniumFormation<ATarget>::AtRestDoIt(const G4Track& track, const G4Step&) 
                                                        static_cast<G4ParticleDefinition*>(Geant4X::Muonium::Definition()));
     // Must pre-assign the decay time to ensure correct behaviour of transport and decay
     // (transport process use this to determine when to stop flight,
-    //  instead of relying on G4 tracking mechanism. See MuoniumTransport process for detail.)
+    //  instead of relying on G4 tracking mechanism. See MuoniumThermalScattering process for detail.)
     if (conversion) {
         // use the muonium conversion time spectrum (prop. to t^2*exp(-t/tau))
         const auto [tStar, converged]{muc::find_root::secant(
@@ -78,23 +88,21 @@ auto MuoniumFormation<ATarget>::AtRestDoIt(const G4Track& track, const G4Step&) 
     muoniumDynamicParticle->SetKineticEnergy(momentum.mag2() / (2 * muonium_mass_c2));
     // Kill the muon, form the (anti-)muonium
     fParticleChange.ProposeTrackStatus(fStopAndKill);
-    fParticleChange.AddSecondary(new G4Track{muoniumDynamicParticle, track.GetGlobalTime(), track.GetPosition()});
+    fParticleChange.SetNumberOfSecondaries(1);
+    fParticleChange.AddSecondary(muoniumDynamicParticle);
     // Clean
     ClearNumberOfInteractionLengthLeft();
     return &fParticleChange;
 }
 
 template<TargetForMuoniumPhysics ATarget>
-auto MuoniumFormation<ATarget>::GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> G4double {
-    const auto mpt{track.GetNextMaterial()->GetMaterialPropertiesTable()};
-    if (mpt == nullptr or not mpt->ConstPropertyExists("MUONIUM_FORM_PROB")) {
-        return std::numeric_limits<double>::max();
+auto MuoniumFormation<ATarget>::GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double override {
+    auto formationProb{fDefaultFormationProbability};
+    if (const auto mpt{track.GetMaterial()->GetMaterialPropertiesTable()};
+        mpt and mpt->ConstPropertyExists("MUONIUM_FORMATION_PROB")) {
+        formationProb = mpt->GetConstProperty("MUONIUM_FORMATION_PROB");
     }
-    if (G4Random::getTheEngine()->flat() < mpt->GetConstProperty("MUONIUM_FORM_PROB") and
-        ATarget::Instance().Contain(track.GetPosition())) {
-        return std::numeric_limits<double>::min();
-    }
-    return std::numeric_limits<double>::max();
+    return G4UniformRand() < formationProb ? 0 : std::numeric_limits<double>::max();
 }
 
 } // namespace Mustard::Geant4X::inline Process

@@ -22,7 +22,7 @@
 #include "Mustard/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Geant4X/Physics/TargetForMuoniumPhysics.h++"
 #include "Mustard/Geant4X/Process/MuoniumFormation.h++"
-#include "Mustard/Geant4X/Process/MuoniumTransport.h++"
+#include "Mustard/Geant4X/Process/MuoniumThermalScattering.h++"
 
 #include "G4EmBuilder.hh"
 #include "G4MuonPlus.hh"

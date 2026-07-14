@@ -37,14 +37,14 @@ template<TargetForMuoniumPhysics ATarget>
 class MuoniumFormation;
 
 template<TargetForMuoniumPhysics ATarget>
-class MuoniumTransport;
+class MuoniumThermalScattering;
 
 } // namespace Process
 
 template<TargetForMuoniumPhysics ATarget>
 class MuoniumPhysicsMessenger final : public SingletonMessenger<MuoniumPhysicsMessenger<ATarget>,
                                                                 MuoniumFormation<ATarget>,
-                                                                MuoniumTransport<ATarget>> {
+                                                                MuoniumThermalScattering<ATarget>> {
     friend Env::SingletonFactory;
 
 private:

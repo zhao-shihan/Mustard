@@ -22,7 +22,7 @@ template<TargetForMuoniumPhysics ATarget>
 MuoniumPhysicsMessenger<ATarget>::MuoniumPhysicsMessenger() :
     Geant4X::SingletonMessenger<MuoniumPhysicsMessenger<ATarget>,
                                 MuoniumFormation<ATarget>,
-                                MuoniumTransport<ATarget>>{},
+                                MuoniumThermalScattering<ATarget>>{},
     fMuoniumPhysicsDirectory{},
     fFormationProcessDirectory{},
     fConversionProbability{},
@@ -41,11 +41,11 @@ MuoniumPhysicsMessenger<ATarget>::MuoniumPhysicsMessenger() :
     fConversionProbability->AvailableForStates(G4State_Idle);
 
     fTransportProcessDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumPhysics/Transport/");
-    fTransportProcessDirectory->SetGuidance("The transport process of thermal muonium in the target.");
+    fTransportProcessDirectory->SetGuidance("The thermal scattering process of atoms.");
 
-    fManipulateAllSteps = std::make_unique<G4UIcmdWithABool>("/Mustard/Physics/MuoniumPhysics/Transport/ManipulateAllSteps", this),
-    fManipulateAllSteps->SetGuidance("Set whether show each step of thermal random flight of muonium in the target or not.\n"
-                                     "Warning: can be time consuming if set to true.");
+    fManipulateAllSteps = std::make_unique<G4UIcmdWithABool>("/Mustard/Physics/MuoniumPhysics/Transport/DisableCoarseGraining", this),
+    fManipulateAllSteps->SetGuidance("If set, disable coarse graining in atom thermal scattering process.\n"
+                                     "Warning: just for test purposes and can be time consuming if set.");
     fManipulateAllSteps->SetParameterName("bool", false);
     fManipulateAllSteps->AvailableForStates(G4State_Idle);
 }
@@ -57,8 +57,8 @@ auto MuoniumPhysicsMessenger<ATarget>::SetNewValue(G4UIcommand* command, G4Strin
             r.ConversionProbability(fConversionProbability->GetNewDoubleValue(value));
         });
     } else if (command == fManipulateAllSteps.get()) {
-        this->template Deliver<MuoniumTransport<ATarget>>([&](auto&& r) {
-            r.ManipulateAllSteps(fManipulateAllSteps->GetNewBoolValue(value));
+        this->template Deliver<MuoniumThermalScattering<ATarget>>([&](auto&& r) {
+            r.DisableCoarseGraining(fManipulateAllSteps->GetNewBoolValue(value));
         });
     }
 }
