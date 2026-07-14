@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Process/FineStructureForAtomThermalScattering.h++"
+#include "Mustard/Geant4X/Process/FineStructureForThermalScattering.h++"
 
 #include "G4VPhysicsConstructor.hh"
 
@@ -30,13 +30,13 @@ class MuoniumPhysics : public G4VPhysicsConstructor {
 public:
     explicit MuoniumPhysics(int verbose);
 
-    auto AddFineStructure(const FineStructureForAtomThermalScattering* fineStructure) -> void;
+    auto AddFineStructure(const FineStructureForThermalScattering* fineStructure) -> void;
 
     auto ConstructParticle() -> void override;
     auto ConstructProcess() -> void override;
 
 private:
-    std::vector<const FineStructureForAtomThermalScattering*> fFineStructure;
+    std::vector<const FineStructureForThermalScattering*> fFineStructure;
 };
 
 } // namespace Mustard::Geant4X::inline Physics

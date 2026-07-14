@@ -20,9 +20,7 @@
 
 #include "Mustard/Geant4X/Interface/SingletonMessenger.h++"
 
-#include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithADouble.hh"
-#include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIdirectory.hh"
 #include "G4UImessenger.hh"
 
@@ -32,14 +30,12 @@ namespace Mustard::Geant4X {
 
 inline namespace Process {
 class MuoniumFormation;
-class MuoniumThermalScattering;
 } // namespace Process
 
 inline namespace Physics {
 
 class MuoniumPhysicsMessenger final : public SingletonMessenger<MuoniumPhysicsMessenger,
-                                                                MuoniumFormation,
-                                                                MuoniumThermalScattering> {
+                                                                MuoniumFormation> {
     friend Env::SingletonFactory;
 
 private:
@@ -53,9 +49,6 @@ private:
 
     std::unique_ptr<G4UIdirectory> fFormationProcessDirectory;
     std::unique_ptr<G4UIcmdWithADouble> fConversionProbability;
-
-    std::unique_ptr<G4UIdirectory> fTransportProcessDirectory;
-    std::unique_ptr<G4UIcmdWithABool> fManipulateAllSteps;
 };
 
 } // namespace Physics

@@ -35,7 +35,7 @@ MuoniumPhysics::MuoniumPhysics(int verbose) :
     verboseLevel = verbose;
 }
 
-auto MuoniumPhysics::AddFineStructure(const FineStructureForAtomThermalScattering* fineStructure) -> void {
+auto MuoniumPhysics::AddFineStructure(const FineStructureForThermalScattering* fineStructure) -> void {
     if (fineStructure) {
         fFineStructure.push_back(fineStructure);
     }

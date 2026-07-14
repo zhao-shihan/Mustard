@@ -23,13 +23,13 @@
 namespace Mustard::Geant4X::inline Process {
 
 /// @brief Abstract interface describing a target's fine structure (tiny sub-Geant4-geometry detail)
-///        for atom thermal scattering process.
+///        for thermal scattering process.
 /// @note  Positions/directions are transformed between the global frame and a fine-structure-local
 ///        frame; the containment predicates are queried in the local frame. A concrete target derives
 ///        from this interface and, typically, keeps it consistent with its Geant4 geometry.
-class FineStructureForAtomThermalScattering {
+class FineStructureForThermalScattering {
 public:
-    virtual ~FineStructureForAtomThermalScattering() = default;
+    virtual ~FineStructureForThermalScattering() = default;
 
     /// @brief In-place transform of a position from the global frame to the fine-structure-local frame.
     /// @param x Position to transform in place.

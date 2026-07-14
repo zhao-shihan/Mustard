@@ -18,19 +18,15 @@
 
 #include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
 #include "Mustard/Geant4X/Process/MuoniumFormation.h++"
-#include "Mustard/Geant4X/Process/MuoniumThermalScattering.h++"
 
 namespace Mustard::Geant4X::inline Physics {
 
 MuoniumPhysicsMessenger::MuoniumPhysicsMessenger() :
     SingletonMessenger<MuoniumPhysicsMessenger,
-                       MuoniumFormation,
-                       MuoniumThermalScattering>{},
+                       MuoniumFormation>{},
     fMuoniumPhysicsDirectory{},
     fFormationProcessDirectory{},
-    fConversionProbability{},
-    fTransportProcessDirectory{},
-    fManipulateAllSteps{} {
+    fConversionProbability{} {
     fMuoniumPhysicsDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumPhysics/");
     fMuoniumPhysicsDirectory->SetGuidance("Physics of muonium and anti-muonium.");
 
@@ -42,25 +38,12 @@ MuoniumPhysicsMessenger::MuoniumPhysicsMessenger() :
     fConversionProbability->SetParameterName("P", false);
     fConversionProbability->SetRange("0 <= P && P <= 1");
     fConversionProbability->AvailableForStates(G4State_Idle);
-
-    fTransportProcessDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumPhysics/Transport/");
-    fTransportProcessDirectory->SetGuidance("The thermal scattering process of atoms.");
-
-    fManipulateAllSteps = std::make_unique<G4UIcmdWithABool>("/Mustard/Physics/MuoniumPhysics/Transport/DisableCoarseGraining", this),
-    fManipulateAllSteps->SetGuidance("If set, disable coarse graining in atom thermal scattering process.\n"
-                                     "Warning: just for test purposes and can be time consuming if set.");
-    fManipulateAllSteps->SetParameterName("bool", false);
-    fManipulateAllSteps->AvailableForStates(G4State_Idle);
 }
 
 auto MuoniumPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
     if (command == fConversionProbability.get()) {
         Deliver<MuoniumFormation>([&](auto&& r) {
             r.ConversionProbability(fConversionProbability->GetNewDoubleValue(value));
-        });
-    } else if (command == fManipulateAllSteps.get()) {
-        Deliver<MuoniumThermalScattering>([&](auto&& r) {
-            r.DisableCoarseGraining(fManipulateAllSteps->GetNewBoolValue(value));
         });
     }
 }
