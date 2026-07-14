@@ -16,10 +16,21 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Geant4X/Process/MuoniumFormation.h++"
+
+#include "G4DynamicParticle.hh"
+#include "G4LogicalVolume.hh"
+#include "G4Material.hh"
+#include "G4MaterialPropertiesTable.hh"
+#include "G4Step.hh"
+#include "G4Track.hh"
+#include "G4VPhysicalVolume.hh"
+
+#include "fmt/format.h"
+
 namespace Mustard::Geant4X::inline Process {
 
-template<TargetForMuoniumPhysics ATarget>
-MuoniumFormation<ATarget>::MuoniumFormation() :
+MuoniumFormation::MuoniumFormation() :
     G4VRestProcess{"MuoniumFormation", fUserDefined},
     fDefaultFormationProbability{0.5},
     fConversionProbability{},
@@ -28,8 +39,7 @@ MuoniumFormation<ATarget>::MuoniumFormation() :
     pParticleChange = &fParticleChange;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumFormation<ATarget>::DefaultFormationProbability(double p) -> void {
+auto MuoniumFormation::DefaultFormationProbability(double p) -> void {
     if (p < 0 or p > 1) [[unlikely]] {
         PrintError(fmt::format("Invalid probability (got {}), not setting it.", p));
         return;
@@ -37,13 +47,11 @@ auto MuoniumFormation<ATarget>::DefaultFormationProbability(double p) -> void {
     fDefaultFormationProbability = p;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumFormation<ATarget>::IsApplicable(const G4ParticleDefinition& particle) -> G4bool {
+auto MuoniumFormation::IsApplicable(const G4ParticleDefinition& particle) -> G4bool {
     return &particle == G4MuonPlus::Definition();
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumFormation<ATarget>::AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* {
+auto MuoniumFormation::AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* {
     using namespace PhysicalConstant;
 
     fParticleChange.Initialize(track);
@@ -95,8 +103,7 @@ auto MuoniumFormation<ATarget>::AtRestDoIt(const G4Track& track, const G4Step&) 
     return &fParticleChange;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumFormation<ATarget>::GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double override {
+auto MuoniumFormation::GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double {
     auto formationProb{fDefaultFormationProbability};
     if (const auto mpt{track.GetMaterial()->GetMaterialPropertiesTable()};
         mpt and mpt->ConstPropertyExists("MUONIUM_FORMATION_PROB")) {

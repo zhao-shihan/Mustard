@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Mustard/Geant4X/Interface/SingletonMessenger.h++"
-#include "Mustard/Geant4X/Physics/TargetForMuoniumPhysics.h++"
 
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithADouble.hh"
@@ -29,22 +28,18 @@
 
 #include <memory>
 
-namespace Mustard::Geant4X::inline Physics {
+namespace Mustard::Geant4X {
 
 inline namespace Process {
-
-template<TargetForMuoniumPhysics ATarget>
 class MuoniumFormation;
-
-template<TargetForMuoniumPhysics ATarget>
 class MuoniumThermalScattering;
-
 } // namespace Process
 
-template<TargetForMuoniumPhysics ATarget>
-class MuoniumPhysicsMessenger final : public SingletonMessenger<MuoniumPhysicsMessenger<ATarget>,
-                                                                MuoniumFormation<ATarget>,
-                                                                MuoniumThermalScattering<ATarget>> {
+inline namespace Physics {
+
+class MuoniumPhysicsMessenger final : public SingletonMessenger<MuoniumPhysicsMessenger,
+                                                                MuoniumFormation,
+                                                                MuoniumThermalScattering> {
     friend Env::SingletonFactory;
 
 private:
@@ -63,6 +58,6 @@ private:
     std::unique_ptr<G4UIcmdWithABool> fManipulateAllSteps;
 };
 
-} // namespace Mustard::Geant4X::inline Physics
+} // namespace Physics
 
-#include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.inl"
+} // namespace Mustard::Geant4X

@@ -18,57 +18,37 @@
 
 #pragma once
 
-#include "Mustard/EigenX/AlignedVector3.h++"
-#include "Mustard/Geant4X/Particle/Antimuonium.h++"
-#include "Mustard/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
-#include "Mustard/Geant4X/Physics/TargetForMuoniumPhysics.h++"
+#include "Mustard/Geant4X/Process/FineStructureForAtomThermalScattering.h++"
 #include "Mustard/Geant4X/Track/ParticleChangeForThermalScattering.h++"
-#include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Math/Random/Distribution/Exponential.h++"
-#include "Mustard/Math/Random/Distribution/Gaussian3D.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
 #include "Mustard/Math/Vector.h++"
-#include "Mustard/Utility/LiteralUnit.h++"
-#include "Mustard/Utility/MathConstant.h++"
-#include "Mustard/Utility/PhysicalConstant.h++"
-#include "Mustard/Utility/VectorCast.h++"
 
+#include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "G4LogicalVolume.hh"
-#include "G4Material.hh"
-#include "G4MaterialPropertiesTable.hh"
-#include "G4NistManager.hh"
-#include "G4Run.hh"
-#include "G4RunManager.hh"
-#include "G4SafetyHelper.hh"
-#include "G4Track.hh"
-#include "G4TransportationManager.hh"
 #include "G4VContinuousProcess.hh"
-#include "G4VPhysicalVolume.hh"
-#include "Randomize.hh"
 
 #include "gtl/phmap.hpp"
 
-#include "muc/numeric"
-#include "muc/random"
-#include "muc/utility"
+#include <utility>
+#include <vector>
 
-#include "fmt/format.h"
-
-#include <array>
-#include <bit>
-#include <cassert>
-#include <cstdint>
+class G4Material;
+class G4ParticleDefinition;
+class G4Run;
+class G4SafetyHelper;
+class G4Step;
+class G4Track;
+class G4VParticleChange;
 
 namespace Mustard::Geant4X::inline Process {
 
-template<TargetForMuoniumPhysics ATarget>
 class MuoniumThermalScattering : public G4VContinuousProcess {
 public:
     MuoniumThermalScattering();
 
+    auto AddFineStructure(const FineStructureForAtomThermalScattering* fineStructure) -> void;
     auto DisableCoarseGraining(bool val) -> void { fDisableCoarseGraining = val; }
     auto MinCoarseGrainingScale(double val) -> void;
 
@@ -84,11 +64,11 @@ private:
     auto CoarseGrainedThermalScattering(const G4Track& track) -> void;
     auto FullThermalScatteringInFineStructureVolume(const G4Track& track) -> void;
 
+    auto ThermalVelocity(double sigmaVelocity1D) -> std::pair<double, Vector3D>;
     auto MeanFreePathIn(const G4Material& material) const -> double;
     auto SimilarToAir(const G4Material& material) const -> bool;
 
-    static auto SigmaVelocity1D(double temperature, double mass) -> double;
-    static auto ThermalVelocity(double sigmaVelocity1D) -> std::pair<double, Vector3D>;
+    static auto SigmaVelocity1D(double temperature, const G4ParticleDefinition& particle) -> double;
 
 private:
     enum struct Status {
@@ -100,7 +80,8 @@ private:
     };
 
 private:
-    const ATarget* fFineStructure;
+    std::vector<const FineStructureForAtomThermalScattering*> fFineStructure;
+    const FineStructureForAtomThermalScattering* fActiveFineStructure;
 
     bool fDisableCoarseGraining;
     double fMinCoarseGrainingScale;
@@ -123,7 +104,7 @@ private:
     double fOuterSigmaVelocity1D;
     ParticleChangeForThermalScattering fParticleChange;
 
-    typename MuoniumPhysicsMessenger<ATarget>::template Register<MuoniumThermalScattering<ATarget>> fMessengerRegister;
+    MuoniumPhysicsMessenger::Register<MuoniumThermalScattering> fMessengerRegister;
 
     static constexpr auto fgSpatialTiny{CLHEP::Bohr_radius};     // a tiny space scale that is physically meaningless but large enough for double
     static constexpr auto fgSpatialHuge{1.4e10 * CLHEP::parsec}; // a huge space scale that is physically meaningless but small enough for double
@@ -132,5 +113,3 @@ private:
 };
 
 } // namespace Mustard::Geant4X::inline Process
-
-#include "Mustard/Geant4X/Process/MuoniumThermalScattering.inl"

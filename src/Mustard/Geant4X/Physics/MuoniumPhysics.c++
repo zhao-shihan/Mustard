@@ -16,35 +16,54 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Geant4X/Particle/Antimuonium.h++"
+#include "Mustard/Geant4X/Particle/Muonium.h++"
+#include "Mustard/Geant4X/Physics/MuoniumPhysics.h++"
+#include "Mustard/Geant4X/Process/MuoniumFormation.h++"
+#include "Mustard/Geant4X/Process/MuoniumThermalScattering.h++"
+
+#include "G4EmBuilder.hh"
+#include "G4MuonMinus.hh"
+#include "G4MuonPlus.hh"
+#include "G4ProcessManager.hh"
+
 namespace Mustard::Geant4X::inline Physics {
 
-template<TargetForMuoniumPhysics ATarget>
-MuoniumPhysics<ATarget>::MuoniumPhysics(G4int verbose) :
-    G4VPhysicsConstructor{"MuoniumPhysics"} {
+MuoniumPhysics::MuoniumPhysics(int verbose) :
+    G4VPhysicsConstructor{"MuoniumPhysics"},
+    fFineStructure{} {
     verboseLevel = verbose;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumPhysics<ATarget>::ConstructParticle() -> void {
+auto MuoniumPhysics::AddFineStructure(const FineStructureForAtomThermalScattering* fineStructure) -> void {
+    if (fineStructure) {
+        fFineStructure.push_back(fineStructure);
+    }
+}
+
+auto MuoniumPhysics::ConstructParticle() -> void {
     G4EmBuilder::ConstructMinimalEmSet();
+    G4MuonMinus::Definition();
     G4MuonPlus::Definition();
     Muonium::Definition();
     Antimuonium::Definition();
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumPhysics<ATarget>::ConstructProcess() -> void {
-    const auto muoniumFormation{new MuoniumFormation<ATarget>};
-    const auto muoniumTransport{new MuoniumThermalScattering<ATarget>};
+auto MuoniumPhysics::ConstructProcess() -> void {
+    const auto formation{new MuoniumFormation};
+    const auto thermalScattering{new MuoniumThermalScattering};
+    for (auto&& fs : std::as_const(fFineStructure)) {
+        thermalScattering->AddFineStructure(fs);
+    }
 
     const auto muonPlus{G4MuonPlus::Definition()->GetProcessManager()};
-    muonPlus->AddRestProcess(muoniumFormation);
+    muonPlus->AddRestProcess(formation);
 
     const auto muonium{Muonium::Definition()->GetProcessManager()};
-    muonium->AddContinuousProcess(muoniumTransport);
+    muonium->AddContinuousProcess(thermalScattering);
 
     const auto antiMuonium{Antimuonium::Definition()->GetProcessManager()};
-    antiMuonium->AddContinuousProcess(muoniumTransport);
+    antiMuonium->AddContinuousProcess(thermalScattering);
 }
 
 } // namespace Mustard::Geant4X::inline Physics

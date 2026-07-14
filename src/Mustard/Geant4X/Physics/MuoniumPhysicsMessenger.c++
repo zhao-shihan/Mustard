@@ -16,13 +16,16 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
+#include "Mustard/Geant4X/Process/MuoniumFormation.h++"
+#include "Mustard/Geant4X/Process/MuoniumThermalScattering.h++"
+
 namespace Mustard::Geant4X::inline Physics {
 
-template<TargetForMuoniumPhysics ATarget>
-MuoniumPhysicsMessenger<ATarget>::MuoniumPhysicsMessenger() :
-    Geant4X::SingletonMessenger<MuoniumPhysicsMessenger<ATarget>,
-                                MuoniumFormation<ATarget>,
-                                MuoniumThermalScattering<ATarget>>{},
+MuoniumPhysicsMessenger::MuoniumPhysicsMessenger() :
+    SingletonMessenger<MuoniumPhysicsMessenger,
+                       MuoniumFormation,
+                       MuoniumThermalScattering>{},
     fMuoniumPhysicsDirectory{},
     fFormationProcessDirectory{},
     fConversionProbability{},
@@ -50,14 +53,13 @@ MuoniumPhysicsMessenger<ATarget>::MuoniumPhysicsMessenger() :
     fManipulateAllSteps->AvailableForStates(G4State_Idle);
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumPhysicsMessenger<ATarget>::SetNewValue(G4UIcommand* command, G4String value) -> void {
+auto MuoniumPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
     if (command == fConversionProbability.get()) {
-        this->template Deliver<MuoniumFormation<ATarget>>([&](auto&& r) {
+        Deliver<MuoniumFormation>([&](auto&& r) {
             r.ConversionProbability(fConversionProbability->GetNewDoubleValue(value));
         });
     } else if (command == fManipulateAllSteps.get()) {
-        this->template Deliver<MuoniumThermalScattering<ATarget>>([&](auto&& r) {
+        Deliver<MuoniumThermalScattering>([&](auto&& r) {
             r.DisableCoarseGraining(fManipulateAllSteps->GetNewBoolValue(value));
         });
     }

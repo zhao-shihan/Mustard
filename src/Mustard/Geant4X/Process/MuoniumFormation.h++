@@ -21,7 +21,6 @@
 #include "Mustard/Geant4X/Particle/Antimuonium.h++"
 #include "Mustard/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
-#include "Mustard/Geant4X/Physics/TargetForMuoniumPhysics.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
@@ -40,7 +39,6 @@
 
 namespace Mustard::Geant4X::inline Process {
 
-template<TargetForMuoniumPhysics ATarget>
 class MuoniumFormation : public G4VRestProcess {
 public:
     MuoniumFormation();
@@ -55,16 +53,12 @@ private:
     auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double override;
 
 private:
-    const ATarget* fFineStructure;
-
     double fDefaultFormationProbability;
     double fConversionProbability;
 
     G4ParticleChange fParticleChange;
 
-    typename MuoniumPhysicsMessenger<ATarget>::template Register<MuoniumFormation<ATarget>> fMessengerRegister;
+    MuoniumPhysicsMessenger::Register<MuoniumFormation> fMessengerRegister;
 };
 
 } // namespace Mustard::Geant4X::inline Process
-
-#include "Mustard/Geant4X/Process/MuoniumFormation.inl"

@@ -16,16 +16,54 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/EigenX/AlignedVector3.h++"
+#include "Mustard/Geant4X/Particle/Antimuonium.h++"
+#include "Mustard/Geant4X/Particle/Muonium.h++"
+#include "Mustard/Geant4X/Process/MuoniumThermalScattering.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Random/Distribution/Exponential.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian3D.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian4D.h++"
+#include "Mustard/Math/Vector.h++"
+#include "Mustard/Utility/LiteralUnit.h++"
+#include "Mustard/Utility/MathConstant.h++"
+#include "Mustard/Utility/PhysicalConstant.h++"
+#include "Mustard/Utility/VectorCast.h++"
+
+#include "G4LogicalVolume.hh"
+#include "G4Material.hh"
+#include "G4MaterialPropertiesTable.hh"
+#include "G4NistManager.hh"
+#include "G4Run.hh"
+#include "G4RunManager.hh"
+#include "G4SafetyHelper.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4Track.hh"
+#include "G4TransportationManager.hh"
+#include "G4VPhysicalVolume.hh"
+#include "Randomize.hh"
+
+#include "muc/numeric"
+#include "muc/random"
+#include "muc/utility"
+
+#include "fmt/format.h"
+
+#include <array>
+#include <bit>
+#include <cassert>
+#include <cstdint>
+
 namespace Mustard::Geant4X::inline Process {
 
 using namespace LiteralUnit::Length;
 
-template<TargetForMuoniumPhysics ATarget>
-MuoniumThermalScattering<ATarget>::MuoniumThermalScattering() :
+MuoniumThermalScattering::MuoniumThermalScattering() :
     G4VContinuousProcess{"MuoniumThermalScattering", fUserDefined},
     fFineStructure{},
-    fMinCoarseGrainingScale{30},
+    fActiveFineStructure{},
     fDisableCoarseGraining{},
+    fMinCoarseGrainingScale{30},
     fCurrentRun{},
     fRNG{},
     fSafetyHelper{},
@@ -46,17 +84,13 @@ MuoniumThermalScattering<ATarget>::MuoniumThermalScattering() :
     pParticleChange = &fParticleChange;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::IsApplicable(const G4ParticleDefinition& particle) -> bool {
-    if (particle.GetPDGCharge() != 0) {
-        return false; // only neutral particles are applicable
+auto MuoniumThermalScattering::AddFineStructure(const FineStructureForAtomThermalScattering* fineStructure) -> void {
+    if (fineStructure) {
+        fFineStructure.push_back(fineStructure);
     }
-    return &particle == Geant4X::Muonium::Definition() or
-           &particle == Geant4X::Antimuonium::Definition();
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::MinCoarseGrainingScale(double val) -> void {
+auto MuoniumThermalScattering::MinCoarseGrainingScale(double val) -> void {
     if (constexpr double minScale{10};
         val < minScale) [[unlikely]] {
         PrintWarning(fmt::format(
@@ -67,8 +101,15 @@ auto MuoniumThermalScattering<ATarget>::MinCoarseGrainingScale(double val) -> vo
     fMinCoarseGrainingScale = val;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::StartTracking(G4Track* track) -> void {
+auto MuoniumThermalScattering::IsApplicable(const G4ParticleDefinition& particle) -> bool {
+    if (particle.GetPDGCharge() != 0) {
+        return false; // only neutral particles are applicable
+    }
+    return &particle == Geant4X::Muonium::Definition() or
+           &particle == Geant4X::Antimuonium::Definition();
+}
+
+auto MuoniumThermalScattering::StartTracking(G4Track* track) -> void {
     if (const auto run{G4RunManager::GetRunManager()->GetCurrentRun()};
         fCurrentRun != run) {
         fCurrentRun = run;
@@ -96,14 +137,15 @@ auto MuoniumThermalScattering<ATarget>::StartTracking(G4Track* track) -> void {
         // thermal-velocity sample per step (L/v_endpoint) while the step's proper-time advance uses the thermal-average
         // mean inverse velocity. Pre-assigned decay bypasses this by using proper time directly.
         if (track->GetDynamicParticle()->GetPreAssignedDecayProperTime() < 0) {
+            // Cast away constness is safe here because we are in StartTracking and track is not shared.
+            const auto dynamicParticle{const_cast<G4DynamicParticle*>(track->GetDynamicParticle())};
             const auto decayProperTime{Random::Exponential{fCurrentParticle->GetPDGLifeTime()}(fRNG)};
-            track->GetDynamicParticle()->SetPreAssignedDecayProperTime(decayProperTime);
+            dynamicParticle->SetPreAssignedDecayProperTime(decayProperTime);
         }
     }
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::AlongStepDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* {
+auto MuoniumThermalScattering::AlongStepDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* {
     assert(theNumberOfInteractionLengthLeft >= 0);
     assert(currentInteractionLength > fgSpatialTiny);
     assert(theInitialNumberOfInteractionLength >= 0);
@@ -134,8 +176,7 @@ auto MuoniumThermalScattering<ATarget>::AlongStepDoIt(const G4Track& track, cons
     return &fParticleChange;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::GetContinuousStepLimit(const G4Track& track, double previousStepSize, double currentMinimumStep, double&) -> double {
+auto MuoniumThermalScattering::GetContinuousStepLimit(const G4Track& track, double previousStepSize, double currentMinimumStep, double&) -> double {
     using namespace LiteralUnit::Length;
     using namespace MathConstant;
     using namespace PhysicalConstant;
@@ -170,7 +211,7 @@ auto MuoniumThermalScattering<ATarget>::GetContinuousStepLimit(const G4Track& tr
             fStatus = Status::StopButAlive;
             return 0;
         }
-        fSigmaVelocity1D = SigmaVelocity1D(temperature, fCurrentParticle->GetMass());
+        fSigmaVelocity1D = SigmaVelocity1D(temperature, *fCurrentParticle);
         fMeanInverseVelocity = sqrt2 * inv_sqrtpi / fSigmaVelocity1D; // <1/v> = √(2m/(πkT)) = √(2/π)/σv
     }
     const auto singleScatteringFreePath{currentInteractionLength * theNumberOfInteractionLengthLeft};
@@ -183,12 +224,13 @@ auto MuoniumThermalScattering<ATarget>::GetContinuousStepLimit(const G4Track& tr
     }
 
     // Track full thermal scattering in target fine structure volume if applicable
-    while (fFineStructure) {
-        auto position{VectorCast<Vec3>(track.GetPosition())};
-        fFineStructure->TransformPositionFromGlobalFrameToFineStructureLocalFrame(position);
-        if (not fFineStructure->FineStructureVolumeContains(position)) {
-            break;
+    for (auto&& fineStructure : std::as_const(fFineStructure)) {
+        auto position{VectorCast<EigenX::AlignedVector3d>(track.GetPosition())};
+        fineStructure->TransformPositionFromGlobalFrameToFineStructureLocalFrame(position);
+        if (not fineStructure->FineStructureVolumeContains(position)) {
+            continue;
         }
+        fActiveFineStructure = fineStructure;
         fStatus = Status::InFineStructureVolume;
         fMultipleScatteringTimeLimit = currentMinimumStep / track.GetVelocity(); // e.g. decay process gives path length limit as velocity*(decay time)
         fMultipleScatteringPathLength = currentMinimumStep;                      // true-path limit
@@ -203,7 +245,7 @@ auto MuoniumThermalScattering<ATarget>::GetContinuousStepLimit(const G4Track& tr
             if (fCurrentOuterMaterial) {
                 fOuterMeanFreePath = MeanFreePathIn(*fCurrentOuterMaterial);
                 outerTemperature = fCurrentOuterMaterial->GetTemperature();
-                fOuterSigmaVelocity1D = SigmaVelocity1D(outerTemperature, fCurrentParticle->GetMass());
+                fOuterSigmaVelocity1D = SigmaVelocity1D(outerTemperature, *fCurrentParticle);
             } else {
                 fOuterMeanFreePath = fgSpatialHuge;
                 // fOuterSigmaVelocity1D is not used when fCurrentOuterMaterial is null.
@@ -281,8 +323,7 @@ auto MuoniumThermalScattering<ATarget>::GetContinuousStepLimit(const G4Track& tr
     return singleScatteringFreePath;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::SingleThermalScattering(const G4Track& track) -> void {
+auto MuoniumThermalScattering::SingleThermalScattering(const G4Track&) -> void {
     assert(fStatus == Status::SingleThermalScattering);
     // This looks really like a PostStepDoIt action, and one may argue that we should use G4VContinuousDiscreteProcess.
     // However, since we need the interplay between multiple thermal scattering and single thermal scattering, the best choice
@@ -292,8 +333,7 @@ auto MuoniumThermalScattering<ATarget>::SingleThermalScattering(const G4Track& t
     fParticleChange.ProposeVelocity(velocity);
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::CoarseGrainedThermalScattering(const G4Track& track) -> void {
+auto MuoniumThermalScattering::CoarseGrainedThermalScattering(const G4Track& track) -> void {
     using namespace MathConstant;
     assert(fStatus == Status::CoarseGrainedThermalScattering);
     // Generate normal random vectors and truncate them to ensure that the displacement and elapsed time are within the safety and time limit.
@@ -302,12 +342,12 @@ auto MuoniumThermalScattering<ATarget>::CoarseGrainedThermalScattering(const G4T
            gausXYZT.t() >= fgCoarseGrainingTimeMaxZ) [[unlikely]] {
         gausXYZT = Random::Gaussian4D<VectorLor>{}(fRNG);
     }
+    const auto sqrt2LambdaL{std::sqrt(2 * currentInteractionLength * fMultipleScatteringPathLength)};
     // Coarse graining via CLT: path length fixed, elapsed time = Δt ~ N(L*<1/v>, σt), where σt = sqrt(2*λ*L*(1-2/π))/σv
     const auto meanElapsedTime{fMultipleScatteringPathLength * fMeanInverseVelocity};
     const auto sigmaElapsedTime{sqrt2LambdaL * std::sqrt(1 - 2 / pi) / fSigmaVelocity1D};
     auto elapsedTime{meanElapsedTime + sigmaElapsedTime * gausXYZT.t()};
     // Coarse graining via CLT: path length fixed, displacement = Δx ~ N^3(0, σx), where σx = sqrt(2/3*λ*L)
-    const auto sqrt2LambdaL{std::sqrt(2 * currentInteractionLength * fMultipleScatteringPathLength)};
     const auto displacement{sqrt2LambdaL * inv_sqrt3 * gausXYZT.vect()};
     // Sample final velocity and direction, and propose the new state of the particle.
     // The position is overridden here; we do NOT call G4SafetyHelper::ReLocateWithinVolume: G4Transportation's
@@ -321,22 +361,21 @@ auto MuoniumThermalScattering<ATarget>::CoarseGrainedThermalScattering(const G4T
     fParticleChange.ProposeVelocity(velocity);
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::FullThermalScatteringInFineStructureVolume(const G4Track& track) -> void {
+auto MuoniumThermalScattering::FullThermalScatteringInFineStructureVolume(const G4Track& track) -> void {
     using namespace LiteralUnit::Length;
     assert(fStatus == Status::InFineStructureVolume);
-    assert(fFineStructure);
+    assert(fActiveFineStructure);
 
     // Get initial position and direction in local frame of fine structure
     using Vec3 = EigenX::AlignedVector3d;                                  // A vertorizable 3-vector
     auto initialPosition{VectorCast<Vec3>(track.GetPosition())};           // initial position in local frame
     auto initialDirection{VectorCast<Vec3>(track.GetMomentumDirection())}; // initial momentum direction in local frame
-    fFineStructure->TransformPositionFromGlobalFrameToFineStructureLocalFrame(initialPosition);
-    fFineStructure->TransformDirectionFromGlobalFrameToFineStructureLocalFrame(initialDirection);
-    assert(fFineStructure->FineStructureVolumeContains(initialPosition));
+    fActiveFineStructure->TransformPositionFromGlobalFrameToFineStructureLocalFrame(initialPosition);
+    fActiveFineStructure->TransformDirectionFromGlobalFrameToFineStructureLocalFrame(initialDirection);
+    assert(fActiveFineStructure->FineStructureVolumeContains(initialPosition));
 
     // Random distributions
-    static_assert(Random::Exponential::Stateless());
+    static_assert(Random::Exponential<>::Stateless());
     static_assert(Random::Gaussian3D<Vec3>::Stateless());
     Random::Exponential expo;
     Random::Gaussian3D<Vec3> gaus3D;
@@ -347,8 +386,7 @@ auto MuoniumThermalScattering<ATarget>::FullThermalScatteringInFineStructureVolu
     auto freePath{currentInteractionLength * theNumberOfInteractionLengthLeft}; // the free path left for single scattering
     double pathLength{};                                                        // the total flight length in this G4Step
     double elapsedTime{};                                                       // elapsed time of this flight
-    Vec3 displacement;                                                          // displacement of this flight in local frame
-    displacement.setZero();                                                     // (tracking displacement instead of local position for better numeric accuracy)
+    Vec3 displacement{0, 0, 0};                                                 // displacement of this flight in local frame (tracking displacement instead of local position for better numeric accuracy)
     Vec3 position;                                                              // current position in local frame
     auto direction{initialDirection};                                           // velocity direction in local frame
     auto velocity{track.GetVelocity()};                                         // velocity magnitude
@@ -378,13 +416,13 @@ auto MuoniumThermalScattering<ATarget>::FullThermalScatteringInFineStructureVolu
             for (auto residual{freePath}; residual > fgSpatialTiny / 2; residual /= 2) {
                 auto binaryMid{((binaryOut + binaryIn) / 2).eval()};
                 position = initialPosition + binaryMid;
-                if (fFineStructure->FineStructureVolumeContains(position)) {
+                if (fActiveFineStructure->FineStructureVolumeContains(position)) {
                     binaryIn = binaryMid;
                 } else {
                     binaryOut = binaryMid;
                 }
             }
-            geomFSC = (displacement - binaryOut).mag();
+            geomFSC = (displacement - binaryOut).norm();
             // limited by geometry, use path length before correction to preserve residual free path for next step
             theNumberOfInteractionLengthLeft = pathLength / currentInteractionLength;
         }
@@ -399,14 +437,14 @@ auto MuoniumThermalScattering<ATarget>::FullThermalScatteringInFineStructureVolu
         stepForward(freePath);
         timeUp = (elapsedTime >= fMultipleScatteringTimeLimit);
         pathLengthLimitReached = (pathLength >= fMultipleScatteringPathLength);
-        outOfBound = not fFineStructure->FineStructureVolumeContains(position);
+        outOfBound = not fActiveFineStructure->FineStructureVolumeContains(position);
         if (timeUp or pathLengthLimitReached or outOfBound) {
             finalCorrection();
             break;
         }
         // Within limits, check whether the position is inside the fine structure, and handle the case that
         // the position is outside the fine structure but still inside the fine structure volume.
-        const auto insideFineStructure{fFineStructure->FineStructureSubterm(position)};
+        const auto insideFineStructure{fActiveFineStructure->FineStructureSubterm(position)};
         if (insideFineStructure) {
             freePath = expo(fRNG, currentInteractionLength);
         } else {
@@ -429,7 +467,7 @@ auto MuoniumThermalScattering<ATarget>::FullThermalScatteringInFineStructureVolu
         // Sample thermal velocity
         do {
             direction = gaus3D(fRNG);
-            velocity = direction.mag2();
+            velocity = direction.squaredNorm();
         } while (velocity == 0);
         velocity = std::sqrt(velocity);
         direction /= velocity;
@@ -437,8 +475,8 @@ auto MuoniumThermalScattering<ATarget>::FullThermalScatteringInFineStructureVolu
     } while (not fDisableCoarseGraining);
 
     // Transfrom back to global frame
-    fFineStructure->TransformPositionFromFineStructureLocalFrameToGlobalFrame(position);
-    fFineStructure->TransformDirectionFromFineStructureLocalFrameToGlobalFrame(direction);
+    fActiveFineStructure->TransformPositionFromFineStructureLocalFrameToGlobalFrame(position);
+    fActiveFineStructure->TransformDirectionFromFineStructureLocalFrameToGlobalFrame(direction);
 
     // Propose particle change. As in the coarse-grain case we do NOT call ReLocateWithinVolume: G4Transportation's
     // forced PostStepDoIt relocates the navigator to this overridden position every step. If the flight left the
@@ -452,8 +490,20 @@ auto MuoniumThermalScattering<ATarget>::FullThermalScatteringInFineStructureVolu
     fParticleChange.ProposeVelocity(velocity);
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::MeanFreePathIn(const G4Material& material) const -> double {
+auto MuoniumThermalScattering::ThermalVelocity(double sigmaVelocity1D) -> std::pair<double, Vector3D> {
+    double velocity;
+    Vector3D direction;
+    do {
+        direction = Random::Gaussian3D<Vector3D>{}(fRNG);
+        velocity = direction.mag2();
+    } while (velocity == 0);
+    velocity = std::sqrt(velocity);
+    direction *= 1 / velocity; // do not use CLHEP::Hep3Vector::operator/=(double).
+    velocity *= sigmaVelocity1D;
+    return {velocity, direction};
+}
+
+auto MuoniumThermalScattering::MeanFreePathIn(const G4Material& material) const -> double {
     if (const auto mpt{material.GetMaterialPropertiesTable()};
         mpt and mpt->ConstPropertyExists("MUONIUM_MFP")) {
         const auto mfp{mpt->GetConstProperty("MUONIUM_MFP")};
@@ -468,8 +518,7 @@ auto MuoniumThermalScattering<ATarget>::MeanFreePathIn(const G4Material& materia
     return 0;
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::SimilarToAir(const G4Material& material) const -> bool {
+auto MuoniumThermalScattering::SimilarToAir(const G4Material& material) const -> bool {
     if (&material == fAirMaterial) {
         return true;
     }
@@ -494,27 +543,14 @@ auto MuoniumThermalScattering<ATarget>::SimilarToAir(const G4Material& material)
     return nAirElementMatched == ssize(fAirComposition); // all air elements must be present
 }
 
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::SigmaVelocity1D(double temperature, double mass) -> double {
-    const auto sigma{std::sqrt(c_squared * k_Boltzmann * temperature / mass)}; // sqrt(kT/m) = sqrt(c^2kT/mc^2)
+auto MuoniumThermalScattering::SigmaVelocity1D(double temperature, const G4ParticleDefinition& particle) -> double {
+    using namespace LiteralUnit::Velocity;
+    using namespace PhysicalConstant;
+    const auto sigma{std::sqrt(c_squared * k_Boltzmann * temperature / particle.GetPDGMass())}; // sqrt(kT/m) = sqrt(c^2kT/mc^2)
     if (sigma <= muc::default_abs_tol<double>) [[unlikely]] {
         Throw<std::runtime_error>(fmt::format("Sigma of 1D velocity is too small ({} m/s)", sigma / 1_m_s));
     }
     return sigma;
-}
-
-template<TargetForMuoniumPhysics ATarget>
-auto MuoniumThermalScattering<ATarget>::ThermalVelocity(double sigmaVelocity1D) -> std::pair<double, Vector3D> {
-    double velocity;
-    Vector3D direction;
-    do {
-        direction = Random::Gaussian3D<Vector3D>{}(fRNG);
-        velocity = direction.mag2();
-    } while (velocity == 0);
-    velocity = std::sqrt(velocity);
-    direction *= 1 / velocity; // do not use CLHEP::Hep3Vector::operator/=(double).
-    velocity *= sigmaVelocity1D;
-    return {velocity, direction};
 }
 
 } // namespace Mustard::Geant4X::inline Process
