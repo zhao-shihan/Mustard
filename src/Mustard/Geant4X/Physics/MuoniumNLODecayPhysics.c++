@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/Decay/ExtendedDecayWithSpin.h++"
 #include "Mustard/Geant4X/DecayChannel/MuoniumDecayChannelWithSpin.h++"
 #include "Mustard/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
 #include "Mustard/Geant4X/Particle/Antimuonium.h++"
@@ -26,6 +25,7 @@
 
 #include "G4DecayTable.hh"
 #include "G4EmBuilder.hh"
+#include "G4DecayWithSpin.hh"
 #include "G4ProcessTable.hh"
 
 namespace Mustard::Geant4X::inline Physics {
@@ -65,7 +65,7 @@ auto MuoniumNLODecayPhysics::ConstructParticle() -> void {
 
 auto MuoniumNLODecayPhysics::ConstructProcess() -> void {
     const auto ReplaceDecayPhysics{
-        [decayWithSpin = new ExtendedDecayWithSpin,
+        [decayWithSpin = new G4DecayWithSpin,
          processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* muonium) {
             const auto manager{muonium->GetProcessManager()};
             if (manager == nullptr) {
