@@ -26,24 +26,24 @@ MuoniumPhysicsMessenger::MuoniumPhysicsMessenger() :
                        MuoniumFormation>{},
     fMuoniumPhysicsDirectory{},
     fFormationProcessDirectory{},
-    fConversionProbability{} {
+    fDefaultFormationProbability{} {
     fMuoniumPhysicsDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumPhysics/");
     fMuoniumPhysicsDirectory->SetGuidance("Physics of muonium and anti-muonium.");
 
     fFormationProcessDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumPhysics/Formation/");
-    fFormationProcessDirectory->SetGuidance("Muonium formation and transition process.");
+    fFormationProcessDirectory->SetGuidance("Muonium formation process.");
 
-    fConversionProbability = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuoniumPhysics/Formation/ConversionProbability", this);
-    fConversionProbability->SetGuidance("Set integrated probability of muonium to anti-muonium conversion.");
-    fConversionProbability->SetParameterName("P", false);
-    fConversionProbability->SetRange("0 <= P && P <= 1");
-    fConversionProbability->AvailableForStates(G4State_Idle);
+    fDefaultFormationProbability = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuoniumPhysics/Formation/DefaultProbability", this);
+    fDefaultFormationProbability->SetGuidance("Set default probability of muonium formation.");
+    fDefaultFormationProbability->SetParameterName("P", false);
+    fDefaultFormationProbability->SetRange("0 <= P && P <= 1");
+    fDefaultFormationProbability->AvailableForStates(G4State_Idle);
 }
 
 auto MuoniumPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
-    if (command == fConversionProbability.get()) {
+    if (command == fDefaultFormationProbability.get()) {
         Deliver<MuoniumFormation>([&](auto&& r) {
-            r.ConversionProbability(fConversionProbability->GetNewDoubleValue(value));
+            r.DefaultFormationProbability(fDefaultFormationProbability->GetNewDoubleValue(value));
         });
     }
 }

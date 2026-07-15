@@ -24,7 +24,7 @@
 
 namespace Mustard::Geant4X::inline Physics {
 
-MuoniumLFVDecayPhysics::MuoniumLFVDecayPhysics(G4int verbose) :
+MuoniumLFVDecayPhysics::MuoniumLFVDecayPhysics(int verbose) :
     MuoniumNLODecayPhysics{verbose},
     fDoubleRadiativeDecayBR{},
     fAnnihilativeDecayBR{},

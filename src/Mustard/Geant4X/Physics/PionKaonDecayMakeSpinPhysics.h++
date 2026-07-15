@@ -24,7 +24,7 @@ namespace Mustard::Geant4X::inline Physics {
 
 class PionKaonDecayMakeSpinPhysics : public G4VPhysicsConstructor {
 public:
-    PionKaonDecayMakeSpinPhysics(G4int verbose);
+    PionKaonDecayMakeSpinPhysics(int verbose);
 
     virtual auto ConstructParticle() -> void override;
     virtual auto ConstructProcess() -> void override;

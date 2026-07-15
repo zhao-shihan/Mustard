@@ -33,7 +33,7 @@
 
 namespace Mustard::Geant4X::inline Physics {
 
-PionKaonDecayMakeSpinPhysics::PionKaonDecayMakeSpinPhysics(G4int verbose) :
+PionKaonDecayMakeSpinPhysics::PionKaonDecayMakeSpinPhysics(int verbose) :
     G4VPhysicsConstructor{"PionKaonDecayMakeSpinPhysics"} {
     verboseLevel = verbose;
 }

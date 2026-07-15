@@ -19,7 +19,7 @@
 namespace Mustard::Detector::Field {
 
 template<ElectromagneticField AField, bool AEMFieldChangeEnergy>
-auto AsG4Field<AField, AEMFieldChangeEnergy>::GetFieldValue(const G4double* x, G4double* f) const -> void {
+auto AsG4Field<AField, AEMFieldChangeEnergy>::GetFieldValue(const double* x, double* f) const -> void {
     const auto field{this->BE({x[0], x[1], x[2]})};
     f[0] = field.B[0];
     f[1] = field.B[1];

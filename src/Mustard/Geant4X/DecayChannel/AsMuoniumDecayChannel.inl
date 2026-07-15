@@ -19,7 +19,7 @@
 namespace Mustard::Geant4X::inline DecayChannel {
 
 template<std::derived_from<G4VDecayChannel> AMuonDecayChannel, muc::ceta_string AName>
-AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4String& parentName, G4double br, G4int verbose) :
+AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4String& parentName, double br, int verbose) :
     AMuonDecayChannel{parentName == "muonium" ? "mu+" : "mu-", br},
     fAtomicShellProductIndex{this->numberOfDaughters} {
     this->SetVerboseLevel(verbose);
@@ -47,7 +47,7 @@ AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4S
 }
 
 template<std::derived_from<G4VDecayChannel> AMuonDecayChannel, muc::ceta_string AName>
-auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4DecayProducts* {
+auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(double) -> G4DecayProducts* {
     using namespace LiteralUnit::MathConstantSuffix;
     using namespace PhysicalConstant;
 

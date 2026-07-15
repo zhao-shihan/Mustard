@@ -31,7 +31,7 @@ namespace Mustard::Geant4X::inline Physics {
 
 class MuoniumLFVDecayPhysics : public MuoniumNLODecayPhysics {
 public:
-    MuoniumLFVDecayPhysics(G4int verbose);
+    MuoniumLFVDecayPhysics(int verbose);
 
     auto DoubleRadiativeDecayBR(double b) -> void { fDoubleRadiativeDecayBR = b; }
     auto AnnihilativeDecayBR(double b) -> void { fAnnihilativeDecayBR = b; }

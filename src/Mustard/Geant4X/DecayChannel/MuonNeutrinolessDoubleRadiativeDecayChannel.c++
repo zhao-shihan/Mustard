@@ -25,7 +25,7 @@
 
 namespace Mustard::Geant4X::inline DecayChannel {
 
-MuonNeutrinolessDoubleRadiativeDecayChannel::MuonNeutrinolessDoubleRadiativeDecayChannel(const G4String& parentName, G4double br, G4int verbose) :
+MuonNeutrinolessDoubleRadiativeDecayChannel::MuonNeutrinolessDoubleRadiativeDecayChannel(const G4String& parentName, double br, int verbose) :
     G4PhaseSpaceDecayChannel{parentName, br, 3, DaughterLeptonName(parentName), "gamma", "gamma"} {
     SetVerboseLevel(verbose);
 }

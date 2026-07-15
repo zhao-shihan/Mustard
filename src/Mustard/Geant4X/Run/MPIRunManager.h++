@@ -51,16 +51,16 @@ public:
 
     static auto GetRunManager() -> auto { return static_cast<MPIRunManager*>(G4RunManager::GetRunManager()); }
 
-    auto PrintProgress(G4bool print) -> void;
+    auto PrintProgress(bool print) -> void;
     auto PrintProgressInterval(muc::chrono::seconds<double> t) -> void;
 
-    virtual auto BeamOn(G4int nEvent, gsl::czstring macroFile = nullptr, G4int nSelect = -1) -> void override;
-    virtual auto DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void override;
+    virtual auto BeamOn(int nEvent, gsl::czstring macroFile = nullptr, int nSelect = -1) -> void override;
+    virtual auto DoEventLoop(int nEvent, gsl::czstring macroFile, int nSelect) -> void override;
 
     auto PrintRunSummary() const -> void { fExecutor.PrintExecutionSummary(); }
 
 private:
-    Executor<G4int> fExecutor;
+    Executor<int> fExecutor;
 
     MPIRunMessenger::Register<MPIRunManager> fMessengerRegister;
 };

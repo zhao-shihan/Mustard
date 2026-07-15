@@ -48,7 +48,7 @@ private:
     std::unique_ptr<G4UIdirectory> fMuoniumPhysicsDirectory;
 
     std::unique_ptr<G4UIdirectory> fFormationProcessDirectory;
-    std::unique_ptr<G4UIcmdWithADouble> fConversionProbability;
+    std::unique_ptr<G4UIcmdWithADouble> fDefaultFormationProbability;
 };
 
 } // namespace Physics

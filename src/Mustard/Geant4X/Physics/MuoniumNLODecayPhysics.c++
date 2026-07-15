@@ -30,7 +30,7 @@
 
 namespace Mustard::Geant4X::inline Physics {
 
-MuoniumNLODecayPhysics::MuoniumNLODecayPhysics(G4int verbose) :
+MuoniumNLODecayPhysics::MuoniumNLODecayPhysics(int verbose) :
     DecayPhysicsBase{"MuoniumNLODecayPhysics"},
     fRadiativeDecayBR{0.014},
     fMessengerRegister{this} {

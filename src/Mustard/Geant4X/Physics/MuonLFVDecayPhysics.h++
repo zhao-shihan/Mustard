@@ -30,7 +30,7 @@ namespace Mustard::Geant4X::inline Physics {
 
 class MuonLFVDecayPhysics : public MuonNLODecayPhysics {
 public:
-    MuonLFVDecayPhysics(G4int verbose);
+    MuonLFVDecayPhysics(int verbose);
 
     auto DoubleRadiativeDecayBR(double b) -> void { fDoubleRadiativeDecayBR = b; }
 

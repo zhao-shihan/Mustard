@@ -56,7 +56,7 @@ MPIRunManager::MPIRunManager() :
     SetVerboseLevel(muc::to_underlying(Env::BasicEnv::Instance().VerboseLevel()));
 }
 
-auto MPIRunManager::PrintProgress(G4bool print) -> void {
+auto MPIRunManager::PrintProgress(bool print) -> void {
     fExecutor.PrintProgress(print);
     printModulo = -1;
 }
@@ -66,12 +66,12 @@ auto MPIRunManager::PrintProgressInterval(muc::chrono::seconds<double> t) -> voi
     printModulo = -1;
 }
 
-auto MPIRunManager::BeamOn(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void {
+auto MPIRunManager::BeamOn(int nEvent, gsl::czstring macroFile, int nSelect) -> void {
     Parallel::ReseedRandomEngine();
     G4RunManager::BeamOn(nEvent, macroFile, nSelect);
 }
 
-auto MPIRunManager::DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void {
+auto MPIRunManager::DoEventLoop(int nEvent, gsl::czstring macroFile, int nSelect) -> void {
     InitializeEventLoop(nEvent, macroFile, nSelect);
     // Set name for message
     if (currentRun) {

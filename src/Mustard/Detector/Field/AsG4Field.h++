@@ -42,7 +42,7 @@ namespace impl {
 template<bool AChangeEnergy>
 class G4EMFieldBase : public G4ElectroMagneticField {
 public:
-    auto DoesFieldChangeEnergy() const -> G4bool override final { return AChangeEnergy; }
+    auto DoesFieldChangeEnergy() const -> bool override final { return AChangeEnergy; }
 };
 
 } // namespace impl
@@ -87,7 +87,7 @@ public:
     /// @param x Geant4 3D position array (in CLHEP units).
     /// @param f Output array: @c f[0..2] = B field (tesla),
     /// @c f[3..5] = E field (volt/m).
-    auto GetFieldValue(const G4double* x, G4double* f) const -> void override final;
+    auto GetFieldValue(const double* x, double* f) const -> void override final;
 };
 
 } // namespace Mustard::Detector::Field

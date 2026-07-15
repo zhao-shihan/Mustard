@@ -50,9 +50,9 @@ namespace Mustard::Geant4X::inline DecayChannel {
 template<std::derived_from<G4VDecayChannel> AMuonDecayChannel, muc::ceta_string AName>
 class AsMuoniumDecayChannel : public AMuonDecayChannel {
 public:
-    AsMuoniumDecayChannel(const G4String& parentName, G4double br, G4int verbose = 1);
+    AsMuoniumDecayChannel(const G4String& parentName, double br, int verbose = 1);
 
-    auto DecayIt(G4double) -> G4DecayProducts* override;
+    auto DecayIt(double) -> G4DecayProducts* override;
 
 private:
     int fAtomicShellProductIndex;
