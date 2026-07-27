@@ -20,7 +20,7 @@ namespace Mustard::Geant4X::inline DecayChannel {
 
 template<std::derived_from<G4VDecayChannel> AMuonDecayChannel, muc::ceta_string AName>
 AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4String& parentName, double br, int verbose) :
-    AMuonDecayChannel{parentName == "muonium" ? "mu+" : "mu-", br},
+    AMuonDecayChannel{parentName.ends_with("anti_muonium") ? "mu-" : "mu+", br},
     fAtomicShellProductIndex{this->numberOfDaughters} {
     this->SetVerboseLevel(verbose);
     // save muon decay info
@@ -29,12 +29,12 @@ AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4S
     for (int i{}; i < this->numberOfDaughters; ++i) {
         daughter.emplace_back(this->GetDaughterName(i));
     }
-    if (parentName == "muonium") {
+    if (parentName == "para_muonium" or parentName == "ortho_muonium") {
         daughter.emplace_back("e-");
-    } else if (parentName == "anti_muonium") {
+    } else if (parentName == "para_anti_muonium" or parentName == "ortho_anti_muonium") {
         daughter.emplace_back("e+");
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent particle is not muonium or anti_muonium but {}.", parentName));
+        Throw<std::invalid_argument>(fmt::format("Parent should be a muonium-family particle, got '{}'.", parentName));
     }
     // set muonium decay info
     this->kinematics_name = AName.sv();
@@ -55,7 +55,7 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(double) -> G4Decay
 
     G4ThreeVector p{};
     for (auto i{0};; ++i) {
-        if (i == 100) {
+        if (i == 100) [[unlikely]] {
             PrintError("Atomic shell e+/e- momentum disconverged.");
             break;
         }

@@ -16,10 +16,10 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
 #include "Mustard/IO/CreateTemporaryFile.h++"
 #include "Mustard/IO/File.h++"
-#include "Mustard/IO/PrettyLog.h++"
 
 #include "TMacro.h"
 
@@ -82,7 +82,7 @@ auto {0}() -> void {{
     auto macro{std::make_unique<TMacro>(name.c_str(), "Generate GDML file")};
     const auto lines{macro->ReadFile(tempMacroPath.generic_string().c_str())};
     if (lines == 0) {
-        Throw<std::runtime_error>("Error opening temp macro file.");
+        Exception<FatalErrorInArgument>("Error opening temp macro file.");
     }
     return macro;
 }

@@ -39,6 +39,8 @@
 
 #pragma once
 
+#include "Mustard/Geant4X/Management/Exception.h++"
+
 #include "G4AssemblyVolume.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
@@ -1225,46 +1227,42 @@ namespace CADMesh {
 namespace Exceptions {
 
 inline void FileNotFound(G4String origin, G4String filepath) {
-    G4Exception(
-        ("CADMesh in " + origin).c_str(), "FileNotFound", FatalException,
-        ("\nThe file: \n\t" + filepath + "\ncould not be found.").c_str());
+    Geant4X::Exception<FatalException>(
+        G4String("\nThe file: \n\t") + filepath + "\ncould not be found.",
+        std::source_location::current(), "FileNotFound");
 }
 
 inline void LexerError(G4String origin, G4String message) {
-    G4Exception(
-        ("CADMesh in " + origin).c_str(), "LexerError", FatalException,
-        ("\nThe CAD file appears to contain incorrect syntax:\n\t" + message)
-            .c_str());
+    Geant4X::Exception<FatalException>(
+        G4String("\nThe CAD file appears to contain incorrect syntax:\n\t") + message,
+        std::source_location::current(), "LexerError");
 }
 
 inline void ParserError(G4String origin, G4String message) {
-    G4Exception(("CADMesh in " + origin).c_str(), "ParserError", FatalException,
-                ("\nThe CAD file appears to contain invalid data:\n\t" + message)
-                    .c_str());
+    Geant4X::Exception<FatalException>(
+        G4String("\nThe CAD file appears to contain invalid data:\n\t") + message,
+        std::source_location::current(), "ParserError");
 }
 
 inline void ReaderCantReadError(G4String origin, File::Type file_type,
                                 G4String filepath) {
-    G4Exception(
-        ("CADMesh in " + origin).c_str(), "ReaderCantReadError", FatalException,
-        (G4String("\nThe the reader can't read files of type '") +
-         File::TypeString[file_type] +
-         ".'\n\tSpecified the incorrect file type (?) for file:\n\t\t" + filepath)
-            .c_str());
+    Geant4X::Exception<FatalException>(
+        G4String("\nThe the reader can't read files of type '") + File::TypeString[file_type] +
+            ".'\n\tSpecified the incorrect file type (?) for file:\n\t\t" + filepath,
+        std::source_location::current(), "ReaderCantReadError");
 }
 
 inline void MeshNotFound(G4String origin, size_t index) {
     std::stringstream message;
     message << "\nThe mesh with index '" << index << "' could not be found.";
 
-    G4Exception(("CADMesh in " + origin).c_str(), "MeshNotFound", FatalException,
-                message.str().c_str());
+    Geant4X::Exception<FatalException>(message.str(), std::source_location::current(), "MeshNotFound");
 }
 
 inline void MeshNotFound(G4String origin, G4String name) {
-    G4Exception(
-        ("CADMesh in " + origin).c_str(), "MeshNotFound", FatalException,
-        ("\nThe mesh with name '" + name + "' could not be found.").c_str());
+    Geant4X::Exception<FatalException>(
+        G4String("\nThe mesh with name '") + name + "' could not be found.",
+        std::source_location::current(), "MeshNotFound");
 }
 } // namespace Exceptions
 } // namespace CADMesh
@@ -1348,9 +1346,8 @@ TessellatedMesh::GetTessellatedSolid(std::shared_ptr<Mesh> mesh) {
 
     volume_solid->SetSolidClosed(true);
     if (volume_solid->GetNumberOfFacets() == 0) {
-        G4Exception("TessellatedMesh::GetTessellatedSolid",
-                    "The loaded mesh has 0 faces.", FatalException,
-                    "The file may be empty.");
+        Geant4X::Exception<FatalException>("The file may be empty.",
+                                           std::source_location::current(), "The loaded mesh has 0 faces.");
         return nullptr;
     }
     return volume_solid;

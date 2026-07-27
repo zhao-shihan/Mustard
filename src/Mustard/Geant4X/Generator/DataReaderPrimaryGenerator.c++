@@ -17,6 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Generator/DataReaderPrimaryGenerator.h++"
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
@@ -61,7 +62,7 @@ DataReaderPrimaryGenerator::DataReaderPrimaryGenerator(const std::filesystem::pa
 DataReaderPrimaryGenerator::~DataReaderPrimaryGenerator() = default;
 
 auto DataReaderPrimaryGenerator::EventData(const std::filesystem::path& file, const std::string& data) -> void {
-    CheckG4Status();
+    CheckG4State();
     fChain = std::make_unique<TChain>(data.c_str());
     fChain->Add(file.generic_string().c_str());
     fEventData.reader.SetTree(fChain.get());
@@ -70,7 +71,7 @@ auto DataReaderPrimaryGenerator::EventData(const std::filesystem::path& file, co
 }
 
 auto DataReaderPrimaryGenerator::NVertex(int n) -> void {
-    CheckG4Status();
+    CheckG4State();
     fNVertex = n;
 }
 
@@ -135,7 +136,7 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
     }
 }
 
-auto DataReaderPrimaryGenerator::CheckG4Status() -> void {
+auto DataReaderPrimaryGenerator::CheckG4State() -> void {
     switch (G4StateManager::GetStateManager()->GetCurrentState()) {
     case G4State_PreInit:
     case G4State_Init:
@@ -146,7 +147,7 @@ auto DataReaderPrimaryGenerator::CheckG4Status() -> void {
     case G4State_Quit:
     case G4State_Abort:
     default:
-        Mustard::Throw<std::runtime_error>("Invalid G4 application state.");
+        Exception<FatalException>("Invalid G4 application state.");
     }
 }
 

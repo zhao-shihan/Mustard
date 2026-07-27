@@ -80,7 +80,7 @@ public:
 protected:
     /// @brief Verify Geant4 state allows configuration changes
     /// @throws std::runtime_error if in active run state
-    static auto CheckG4Status() -> void;
+    static auto CheckG4State() -> void;
 
 protected:
     /// @brief Event data reader structure

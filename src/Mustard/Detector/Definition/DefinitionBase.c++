@@ -18,9 +18,9 @@
 
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
 #include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
 
-#include "G4Exception.hh"
 #include "G4FieldManager.hh"
 #include "G4GDMLParser.hh"
 #include "G4Region.hh"
@@ -87,16 +87,14 @@ auto RegisterSD(gsl::not_null<G4LogicalVolume*> logic, gsl::not_null<G4VSensitiv
             sdManager->AddNewDetector(sd);
         }
     } else if (logic->GetSensitiveDetector() != sd) {
-        G4Exception("Detector::Definition::DefinitionBase::RegisterSD", "-1", JustWarning,
-                    fmt::format("Attempting to register SD multiple times for \"{}\" is currently not supported "
-                                "(G4MultiSensitiveDetector not supported currently), skipping.",
-                                logic->GetName())
-                        .c_str());
+        Geant4X::Exception<JustWarning>(fmt::format(
+            "Attempting to register SD multiple times for \"{}\" is currently not supported "
+            "(G4MultiSensitiveDetector not supported currently), skipping.",
+            logic->GetName()));
     } else {
-        G4Exception("Detector::Definition::DefinitionBase::RegisterSD", "-1", JustWarning,
-                    fmt::format("Attempting to register the same SD multiple times for \"{}\", skipping.",
-                                logic->GetName())
-                        .c_str());
+        Geant4X::Exception<JustWarning>(fmt::format(
+            "Attempting to register the same SD multiple times for \"{}\", skipping.",
+            logic->GetName()));
     }
 }
 

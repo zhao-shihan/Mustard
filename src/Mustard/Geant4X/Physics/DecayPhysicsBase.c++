@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/Geant4X/Physics/DecayPhysicsBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
@@ -36,11 +37,11 @@ auto DecayPhysicsBase::UpdateDecayBRFor(const G4ParticleDefinition* particle) ->
     for (auto i{1}; i < decay->entries(); ++i) {
         mainDecayBR -= decay->GetDecayChannel(i)->GetBR();
     }
-    if (mainDecayBR < -std::numeric_limits<double>::epsilon()) {
+    if (mainDecayBR < -std::numeric_limits<double>::epsilon()) [[unlikely]] {
         decay->DumpInfo();
-        PrintWarning("Try resetting all BRs.");
+        Exception<JustWarning>("Impossible to normalize decay branching ratio (sum of minor channel BR > 1), resetting all BRs.");
         ResetDecayBR();
-        Throw<std::runtime_error>("Impossible to normalize decay branching ratio (sum of rare channel BR > 1), all BRs have been reset.");
+        return;
     }
     decay->GetDecayChannel(0)->SetBR(std::max(0., mainDecayBR));
 }
@@ -55,9 +56,9 @@ auto DecayPhysicsBase::ResetDecayBRFor(const G4ParticleDefinition* particle) -> 
     for (auto i{1}; i < decay->entries(); ++i) {
         mainDecayBR -= decay->GetDecayChannel(i)->GetBR();
     }
-    if (mainDecayBR < -std::numeric_limits<double>::epsilon()) {
+    if (mainDecayBR < -std::numeric_limits<double>::epsilon()) [[unlikely]] {
         decay->DumpInfo();
-        Throw<std::logic_error>("Impossible to normalize decay branching ratio (sum of rare channel BR > 1).");
+        Exception<FatalException>("Impossible to normalize decay branching ratio (sum of minor channel BR > 1).");
     }
     decay->GetDecayChannel(0)->SetBR(std::max(0., mainDecayBR));
 }

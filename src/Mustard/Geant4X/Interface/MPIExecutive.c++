@@ -17,6 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Interface/MPIExecutive.h++"
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 
@@ -39,13 +40,7 @@ auto MPIExecutive::CheckSequential() const -> void {
     if (worldComm.size() == 1) {
         return;
     }
-    if (worldComm.rank() == 0) {
-        G4Exception(std::source_location::current().function_name(),
-                    "InteractiveSessionMustBeSequential",
-                    JustWarning,
-                    "Interactive session must be run with only 1 process.\nThrowing an instance of std::logic_error.");
-    }
-    Throw<std::logic_error>("Interactive session must be sequential.");
+    MasterException(FatalException, "Interactive session must be run with only 1 process.");
 }
 
 auto MPIExecutive::Execute(const std::string& macro) const -> void {
