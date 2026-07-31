@@ -19,10 +19,6 @@
 #include "Mustard/Geant4X/Generator/DataReaderPrimaryGenerator.h++"
 #include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/VectorCast.h++"
-
-#include "TChain.h"
-#include "TFile.h"
 
 #include "G4Event.hh"
 #include "G4PrimaryParticle.hh"
@@ -30,28 +26,25 @@
 #include "G4Run.hh"
 #include "G4RunManager.hh"
 #include "G4StateManager.hh"
-#include "G4ThreeVector.hh"
-
-#include "muc/array"
 
 #include "gsl/gsl"
 
-#include "fmt/format.h"
-
-#include <limits>
-#include <stdexcept>
-#include <tuple>
-#include <vector>
+#include <algorithm>
 
 namespace Mustard::Geant4X::inline Generator {
 
 DataReaderPrimaryGenerator::DataReaderPrimaryGenerator() :
-    fChain{},
-    fEventData{},
+    fReader{},
     fNVertex{},
     fCurrentRun{},
-    fEndEntryForCurrentRun{},
+    fAccumulatedEventToBeProcessed{},
     fDataReaderPrimaryGeneratorMessengerRegister{this} {}
+
+DataReaderPrimaryGenerator::DataReaderPrimaryGenerator(ROOT::RDF::RNode rdf, int nVertex) :
+    DataReaderPrimaryGenerator{} {
+    EventData(rdf);
+    NVertex(nVertex);
+}
 
 DataReaderPrimaryGenerator::DataReaderPrimaryGenerator(const std::filesystem::path& file, const std::string& data, int nVertex) :
     DataReaderPrimaryGenerator{} {
@@ -61,17 +54,28 @@ DataReaderPrimaryGenerator::DataReaderPrimaryGenerator(const std::filesystem::pa
 
 DataReaderPrimaryGenerator::~DataReaderPrimaryGenerator() = default;
 
+auto DataReaderPrimaryGenerator::EventData(ROOT::RDF::RNode rdf) -> void {
+    if (not CheckG4State()) {
+        Exception<JustWarning>("Invalid G4 application state. Not setting it.");
+        return;
+    }
+    fReader.emplace(rdf);
+}
+
 auto DataReaderPrimaryGenerator::EventData(const std::filesystem::path& file, const std::string& data) -> void {
-    CheckG4State();
-    fChain = std::make_unique<TChain>(data.c_str());
-    fChain->Add(file.generic_string().c_str());
-    fEventData.reader.SetTree(fChain.get());
-    // Reset entry index reference
-    fEndEntryForCurrentRun = 0;
+    EventData(ROOT::RDataFrame{data, file.generic_string()});
 }
 
 auto DataReaderPrimaryGenerator::NVertex(int n) -> void {
-    CheckG4State();
+    if (not CheckG4State()) {
+        Exception<JustWarning>("Invalid G4 application state. Not setting it.");
+        return;
+    }
+    if (n < 0) [[unlikely]] {
+        Exception<JustWarning>("Number of vertices per event is negative. Setting to 0.");
+        fNVertex = 0;
+        return;
+    }
     fNVertex = n;
 }
 
@@ -79,75 +83,90 @@ auto DataReaderPrimaryGenerator::GeneratePrimaryVertex(G4Event* event) -> void {
     const auto run{G4RunManager::GetRunManager()->GetCurrentRun()};
     if (fCurrentRun != std::pair{run, run->GetRunID()}) {
         fCurrentRun = {run, run->GetRunID()};
-        fEndEntryForCurrentRun += run->GetNumberOfEventToBeProcessed();
+        fAccumulatedEventToBeProcessed += run->GetNumberOfEventToBeProcessed();
     }
 
     if (fNVertex == 0) {
         return;
     }
-    if (fNVertex < 0) [[unlikely]] {
-        Mustard::PrintError("Number of vertices per event is negative.");
+    if (not fReader) [[unlikely]] {
+        Exception<RunMustBeAborted>("No event data reader configured.");
+        return;
+    }
+    const auto nEntry{fReader->NEntry()};
+    if (nEntry == 0) [[unlikely]] {
+        Exception<RunMustBeAborted>("No entries in data source.");
+        return;
+    }
+    if (nEntry < fNVertex) [[unlikely]] {
+        Exception<RunMustBeAborted>(fmt::format(
+            "Not enough entries in data source: expected at least {} (number of vertices) entries, got {} entries", fNVertex, nEntry));
         return;
     }
 
-    auto& [reader, weight, t, x, y, z, thePDGID, theE, thePX, thePY, thePZ]{fEventData};
-    if (reader.IsInvalid()) [[unlikely]] {
-        Mustard::PrintError("TTreeReader is invalid.");
-        return;
-    }
-    if (reader.GetEntries() == 0) [[unlikely]] {
-        Mustard::PrintError("TTreeReader has no entry to read.");
-        return;
-    }
-    if (reader.GetEntries() % fNVertex != 0) [[unlikely]] {
-        Mustard::PrintWarning("The number of entries cannot be exactly divided by the number of vertices.");
-    }
-    // use 'last entry' as reference index looks not perfect but G4Run may be destructed so I have to do so
-    const auto iBegin{fEndEntryForCurrentRun - run->GetNumberOfEventToBeProcessed() + event->GetEventID()};
-    reader.SetEntry((iBegin * fNVertex) % reader.GetEntries());
+    const auto numberOfEventRemaining{run->GetNumberOfEventToBeProcessed() - event->GetEventID()};
+    const auto iFirst{((fAccumulatedEventToBeProcessed - numberOfEventRemaining) * fNVertex) % nEntry};
+    const auto iLast{iFirst + fNVertex};
 
-    for (int iVertex{}; iVertex < fNVertex; ++iVertex) {
-        if (not reader.Next()) {
-            reader.Restart();
-            if (not reader.Next()) [[unlikely]] {
-                Mustard::PrintError("Failed to read event data.");
-                return;
-            }
-        }
-
-        const auto& [pdgID, e, pX, pY, pZ]{std::tie(*thePDGID, *theE, *thePX, *thePY, *thePZ)};
-        const auto nParticle{ssize(pdgID)};
-        if (ssize(e) != nParticle or
-            ssize(pX) != nParticle or
-            ssize(pY) != nParticle or
-            ssize(pZ) != nParticle) {
-            Mustard::PrintError(fmt::format("pdgID.size() ({}), E.size() ({}), px.size() ({}), py.size() ({}), pz.size() ({}) inconsistent, skipping.",
-                                            pdgID.size(), e.size(), pX.size(), pY.size(), pZ.size()));
+    int nGenerated{};
+    auto generateChunk{[&](const auto& chunk) {
+        if (chunk.empty()) [[unlikely]] {
+            Exception<FatalException>("Failed to read vertex data.");
             return;
         }
-
-        // clang-format off
-        const auto primaryVertex{new G4PrimaryVertex{*x, *y, *z, *t}}; // clang-format on
-        for (gsl::index i{}; i < nParticle; ++i) {
-            primaryVertex->SetPrimary(new G4PrimaryParticle{pdgID[i], pX[i], pY[i], pZ[i], e[i]});
+        for (auto&& vertex : chunk) {
+            const auto primaryVertex(new G4PrimaryVertex{
+                F<"x">(*vertex),
+                F<"y">(*vertex),
+                F<"z">(*vertex),
+                F<"t0">(*vertex)});
+            const auto nParticle{ssize(*F<"pdgID">(*vertex))};
+            Ensures(ssize(*F<"px">(*vertex)) == nParticle);
+            Ensures(ssize(*F<"py">(*vertex)) == nParticle);
+            Ensures(ssize(*F<"pz">(*vertex)) == nParticle);
+            Ensures(ssize(*F<"E">(*vertex)) == nParticle);
+            for (gsl::index i{}; i < nParticle; ++i) {
+                primaryVertex->SetPrimary(new G4PrimaryParticle{
+                    F<"pdgID">(*vertex)[i],
+                    F<"px">(*vertex)[i],
+                    F<"py">(*vertex)[i],
+                    F<"pz">(*vertex)[i],
+                    F<"E">(*vertex)[i]});
+            }
+            primaryVertex->SetWeight(F<"w">(*vertex));
+            event->AddPrimaryVertex(primaryVertex);
         }
-        primaryVertex->SetWeight(*weight);
-        event->AddPrimaryVertex(primaryVertex);
+        nGenerated += chunk.size();
+    }};
+    auto resetReader{[this] {
+        Exception<JustWarning>("Data source exhausted. Resetting reader.");
+        fReader->Reset();
+    }};
+    if (fReader->Exhausted()) {
+        resetReader();
     }
+    if (iLast <= nEntry) {
+        generateChunk(fReader->Read(iFirst, iLast));
+    } else {
+        generateChunk(fReader->Read(iFirst, nEntry));
+        resetReader();
+        generateChunk(fReader->Read(0, iLast - nEntry));
+    }
+    Ensures(nGenerated == fNVertex);
 }
 
-auto DataReaderPrimaryGenerator::CheckG4State() -> void {
+auto DataReaderPrimaryGenerator::CheckG4State() -> bool {
     switch (G4StateManager::GetStateManager()->GetCurrentState()) {
     case G4State_PreInit:
     case G4State_Init:
     case G4State_Idle:
-        return;
+        return true;
     case G4State_GeomClosed:
     case G4State_EventProc:
     case G4State_Quit:
     case G4State_Abort:
     default:
-        Exception<FatalException>("Invalid G4 application state.");
+        return false;
     }
 }
 
