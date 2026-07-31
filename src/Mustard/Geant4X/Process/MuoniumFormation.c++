@@ -16,100 +16,163 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+#include "Mustard/Geant4X/Management/Exception.h++"
+#include "Mustard/Geant4X/Particle/OrthoMuonium.h++"
+#include "Mustard/Geant4X/Particle/ParaMuonium.h++"
 #include "Mustard/Geant4X/Process/MuoniumFormation.h++"
+#include "Mustard/Math/Random/Distribution/Gaussian3D.h++"
+#include "Mustard/Math/Vector.h++"
 
 #include "G4DynamicParticle.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "G4Run.hh"
+#include "G4RunManager.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 
+#include "muc/math"
+#include "muc/numeric"
+
 #include "fmt/format.h"
+
+#include <algorithm>
+#include <limits>
 
 namespace Mustard::Geant4X::inline Process {
 
 MuoniumFormation::MuoniumFormation() :
-    G4VRestProcess{"MuoniumFormation", fUserDefined},
-    fDefaultFormationProbability{0.5},
-    fConversionProbability{},
+    G4VRestProcess{"MuoniumFormation", fGeneral},
+    fDefaultParaMuoniumFraction{0.25},
+    fCurrentRun{},
+    fFormationProbabilityCache{},
+    fParaMuoniumFractionCache{},
     fParticleChange{},
     fMessengerRegister{this} {
     pParticleChange = &fParticleChange;
 }
 
-auto MuoniumFormation::DefaultFormationProbability(double p) -> void {
-    if (p < 0 or p > 1) [[unlikely]] {
-        PrintError(fmt::format("Invalid probability (got {}), not setting it.", p));
+auto MuoniumFormation::DefaultParaMuoniumFraction(double val) -> void {
+    if (val < 0 or 1 < val) [[unlikely]] {
+        const auto clamped{std::clamp(val, 0., 1.)};
+        Exception<JustWarning>(fmt::format(
+            "Default para-muonium fraction is out of range [0, 1] (got {}), clamping to {}.", val, clamped));
+        fDefaultParaMuoniumFraction = clamped;
         return;
     }
-    fDefaultFormationProbability = p;
+    fDefaultParaMuoniumFraction = val;
 }
 
-auto MuoniumFormation::IsApplicable(const G4ParticleDefinition& particle) -> G4bool {
+auto MuoniumFormation::IsApplicable(const G4ParticleDefinition& particle) -> bool {
     return &particle == G4MuonPlus::Definition();
+}
+
+auto MuoniumFormation::StartTracking(G4Track* track) -> void {
+    if (const auto run{G4RunManager::GetRunManager()->GetCurrentRun()};
+        fCurrentRun != std::pair{run, run->GetRunID()}) {
+        fCurrentRun = {run, run->GetRunID()};
+        fFormationProbabilityCache.clear();
+        fParaMuoniumFractionCache.clear();
+    }
+    G4VRestProcess::StartTracking(track);
 }
 
 auto MuoniumFormation::AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* {
     using namespace PhysicalConstant;
-
     fParticleChange.Initialize(track);
+    // Sampling velocity according to local temperature
+    auto& rng{*G4Random::getTheEngine()};
+    Vector3D direction;
+    double kineticEnergy;
+    do {
+        direction = Random::Gaussian3D<Vector3D>{}(rng);
+        kineticEnergy = direction.mag2();
+    } while (kineticEnergy <= muc::pow(muc::default_abs_tol<double>, 2));
+    direction *= 1 / std::sqrt(kineticEnergy); // do not use CLHEP::Hep3Vector::operator/=(double).
+    kineticEnergy *= 0.5 * k_Boltzmann * track.GetMaterial()->GetTemperature();
     // The dynamic particle
     const auto muoniumDynamicParticle{new G4DynamicParticle{*track.GetDynamicParticle()}};
-    // Determine whether the transition can be observed
-    auto& rng{*G4Random::getTheEngine()};
-    const auto conversion{rng.flat() < fConversionProbability};
-    // Use antimuonium if it will be a conversion... not exactly true since it is not pure antimuonium but mix state. OK for now though.
-    // FIXME: Try always using muonium but behave like mix state in each interaction.
-    muoniumDynamicParticle->SetDefinition(conversion ? static_cast<G4ParticleDefinition*>(Geant4X::Antimuonium::Definition()) :
-                                                       static_cast<G4ParticleDefinition*>(Geant4X::Muonium::Definition()));
-    // Must pre-assign the decay time to ensure correct behaviour of transport and decay
-    // (transport process use this to determine when to stop flight,
-    //  instead of relying on G4 tracking mechanism. See MuoniumThermalScattering process for detail.)
-    if (conversion) {
-        // use the muonium conversion time spectrum (prop. to t^2*exp(-t/tau))
-        const auto [tStar, converged]{muc::find_root::secant(
-            // CDF - x
-            [x = rng.flat()](const auto t) {
-                const auto cdf{1 - std::exp(-t) * muc::polynomial({2, 2, 1}, t) / 2};
-                return cdf - x;
-            },
-            // most probable t*
-            2.)};
-        if (not converged) {
-            PrintError("Antimuonium decay time disconverged.");
-        }
-        muoniumDynamicParticle->SetPreAssignedDecayProperTime(tStar * muonium_lifetime);
+    if (rng.flat() < ParaMuoniumFractionIn(*track.GetMaterial())) {
+        muoniumDynamicParticle->SetDefinition(ParaMuonium::Definition());
+        muoniumDynamicParticle->SetPolarization({});
     } else {
-        // use standard exp decay
-        muoniumDynamicParticle->SetPreAssignedDecayProperTime(G4RandExponential::shoot(&rng, muonium_lifetime));
+        muoniumDynamicParticle->SetDefinition(OrthoMuonium::Definition());
     }
-    // Sampling momentum according to boltzmann distribution
-    const auto temperature{track.GetVolume()->GetLogicalVolume()->GetMaterial()->GetTemperature()}; // clang-format off
-    const auto momentum{std::sqrt(muonium_mass_c2 * k_Boltzmann * temperature) *
-                        G4ThreeVector{G4RandGauss::shoot(&rng),
-                                      G4RandGauss::shoot(&rng),
-                                      G4RandGauss::shoot(&rng)}}; // clang-format on
-    // Set momentum and energy
-    muoniumDynamicParticle->SetMomentum(momentum);
-    muoniumDynamicParticle->SetKineticEnergy(momentum.mag2() / (2 * muonium_mass_c2));
-    // Kill the muon, form the (anti-)muonium
+    muoniumDynamicParticle->SetMomentumDirection(direction);
+    muoniumDynamicParticle->SetKineticEnergy(kineticEnergy);
+    // Kill the muon, form the muonium
     fParticleChange.ProposeTrackStatus(fStopAndKill);
     fParticleChange.SetNumberOfSecondaries(1);
     fParticleChange.AddSecondary(muoniumDynamicParticle);
-    // Clean
     ClearNumberOfInteractionLengthLeft();
     return &fParticleChange;
 }
 
-auto MuoniumFormation::GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double {
-    auto formationProb{fDefaultFormationProbability};
-    if (const auto mpt{track.GetMaterial()->GetMaterialPropertiesTable()};
-        mpt and mpt->ConstPropertyExists("MUONIUM_FORMATION_PROB")) {
-        formationProb = mpt->GetConstProperty("MUONIUM_FORMATION_PROB");
+auto MuoniumFormation::FormationProbabilityIn(const G4Material& material) -> double {
+    const auto mpt{material.GetMaterialPropertiesTable()};
+    if (mpt == nullptr) {
+        return 0;
     }
-    return G4UniformRand() < formationProb ? 0 : std::numeric_limits<double>::max();
+    if (const auto it{fFormationProbabilityCache.find(mpt)};
+        it != fFormationProbabilityCache.end()) [[likely]] {
+        return it->second;
+    }
+    constexpr auto propertyName{"MUONIUM_FORMATION_PROBABILITY"};
+    if (not mpt->ConstPropertyExists(propertyName)) {
+        fFormationProbabilityCache.emplace(mpt, 0);
+        return 0;
+    }
+    const auto val{mpt->GetConstProperty(propertyName)};
+    if (val < 0 or 1 < val) [[unlikely]] {
+        const auto clamped{std::clamp(val, 0., 1.)};
+        Exception<JustWarning>(fmt::format(
+            "{} for material '{}' is out of range [0, 1] (got {}), clamping to {}.",
+            propertyName, material.GetName(), val, clamped));
+        fFormationProbabilityCache.emplace(mpt, clamped);
+        return clamped;
+    }
+    fFormationProbabilityCache.emplace(mpt, val);
+    return val;
+}
+
+auto MuoniumFormation::ParaMuoniumFractionIn(const G4Material& material) -> double {
+    const auto mpt{material.GetMaterialPropertiesTable()};
+    if (mpt == nullptr) {
+        return fDefaultParaMuoniumFraction;
+    }
+    if (const auto it{fParaMuoniumFractionCache.find(mpt)};
+        it != fParaMuoniumFractionCache.end()) [[likely]] {
+        return it->second;
+    }
+    constexpr auto propertyName{"PARA_MUONIUM_FORMATION_FRACTION"};
+    if (not mpt->ConstPropertyExists(propertyName)) {
+        fParaMuoniumFractionCache.emplace(mpt, fDefaultParaMuoniumFraction);
+        return fDefaultParaMuoniumFraction;
+    }
+    const auto val{mpt->GetConstProperty(propertyName)};
+    if (val < 0 or 1 < val) [[unlikely]] {
+        const auto clamped{std::clamp(val, 0., 1.)};
+        Exception<JustWarning>(fmt::format(
+            "{} for material '{}' is out of range [0, 1] (got {}), clamping to {}.",
+            propertyName, material.GetName(), val, clamped));
+        fParaMuoniumFractionCache.emplace(mpt, clamped);
+        return clamped;
+    }
+    fParaMuoniumFractionCache.emplace(mpt, val);
+    return val;
+}
+
+auto MuoniumFormation::GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double {
+    const auto prob{FormationProbabilityIn(*track.GetMaterial())};
+    if (prob <= 0) {
+        return std::numeric_limits<double>::max();
+    }
+    if (prob >= 1) {
+        return 0;
+    }
+    return (G4UniformRand() >= prob) * std::numeric_limits<double>::max();
 }
 
 } // namespace Mustard::Geant4X::inline Process

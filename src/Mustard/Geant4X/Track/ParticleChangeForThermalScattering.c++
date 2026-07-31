@@ -17,6 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Track/ParticleChangeForThermalScattering.h++"
+#include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
@@ -36,6 +37,7 @@ auto ParticleChangeForThermalScattering::Initialize(const G4Track& track) -> voi
 }
 
 auto ParticleChangeForThermalScattering::UpdateStepForAlongStep(G4Step* step) -> G4Step* {
+    using namespace PhysicalConstant;
     const auto post{step->GetPostStepPoint()};
     if (fTimeIncrement.has_value()) {
         const auto pre{step->GetPreStepPoint()};
@@ -46,7 +48,7 @@ auto ParticleChangeForThermalScattering::UpdateStepForAlongStep(G4Step* step) ->
     post->SetPosition(fPosition);
     post->SetMomentumDirection(fVelocityDirection);
     post->SetVelocity(fVelocity);
-    post->SetKineticEnergy(1. / 2 * fMass * muc::pow(fVelocity, 2));
+    post->SetKineticEnergy(0.5 / c_squared * fMass * muc::pow(fVelocity, 2));
     return G4VParticleChange::UpdateStepForAlongStep(step);
 }
 

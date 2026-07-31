@@ -19,31 +19,32 @@
 #include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
 #include "Mustard/Geant4X/Process/MuoniumFormation.h++"
 
+#include "G4UIcmdWithADouble.hh"
+#include "G4UIdirectory.hh"
+
 namespace Mustard::Geant4X::inline Physics {
 
 MuoniumPhysicsMessenger::MuoniumPhysicsMessenger() :
     SingletonMessenger<MuoniumPhysicsMessenger,
                        MuoniumFormation>{},
     fMuoniumPhysicsDirectory{},
-    fFormationProcessDirectory{},
-    fDefaultFormationProbability{} {
+    fDefaultParaMuoniumFraction{} {
     fMuoniumPhysicsDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumPhysics/");
     fMuoniumPhysicsDirectory->SetGuidance("Physics of muonium and anti-muonium.");
 
-    fFormationProcessDirectory = std::make_unique<G4UIdirectory>("/Mustard/Physics/MuoniumPhysics/Formation/");
-    fFormationProcessDirectory->SetGuidance("Muonium formation process.");
-
-    fDefaultFormationProbability = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuoniumPhysics/Formation/DefaultProbability", this);
-    fDefaultFormationProbability->SetGuidance("Set default probability of muonium formation.");
-    fDefaultFormationProbability->SetParameterName("P", false);
-    fDefaultFormationProbability->SetRange("0 <= P && P <= 1");
-    fDefaultFormationProbability->AvailableForStates(G4State_Idle);
+    fDefaultParaMuoniumFraction = std::make_unique<G4UIcmdWithADouble>("/Mustard/Physics/MuoniumPhysics/ParaFraction", this);
+    fDefaultParaMuoniumFraction->SetGuidance("Set the default para-muonium fraction in muonium formation. Default is 0.25 (spin-statistics).");
+    fDefaultParaMuoniumFraction->SetParameterName("frac", false);
+    fDefaultParaMuoniumFraction->SetRange("0 <= frac && frac <= 1");
+    fDefaultParaMuoniumFraction->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
+MuoniumPhysicsMessenger::~MuoniumPhysicsMessenger() = default;
+
 auto MuoniumPhysicsMessenger::SetNewValue(G4UIcommand* command, G4String value) -> void {
-    if (command == fDefaultFormationProbability.get()) {
+    if (command == fDefaultParaMuoniumFraction.get()) {
         Deliver<MuoniumFormation>([&](auto&& r) {
-            r.DefaultFormationProbability(fDefaultFormationProbability->GetNewDoubleValue(value));
+            r.DefaultParaMuoniumFraction(fDefaultParaMuoniumFraction->GetNewDoubleValue(value));
         });
     }
 }

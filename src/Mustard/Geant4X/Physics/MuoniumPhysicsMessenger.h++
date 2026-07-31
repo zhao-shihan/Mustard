@@ -20,11 +20,10 @@
 
 #include "Mustard/Geant4X/Interface/SingletonMessenger.h++"
 
-#include "G4UIcmdWithADouble.hh"
-#include "G4UIdirectory.hh"
-#include "G4UImessenger.hh"
-
 #include <memory>
+
+class G4UIdirectory;
+class G4UIcmdWithADouble;
 
 namespace Mustard::Geant4X {
 
@@ -40,15 +39,14 @@ class MuoniumPhysicsMessenger final : public SingletonMessenger<MuoniumPhysicsMe
 
 private:
     MuoniumPhysicsMessenger();
+    ~MuoniumPhysicsMessenger();
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
 
 private:
     std::unique_ptr<G4UIdirectory> fMuoniumPhysicsDirectory;
-
-    std::unique_ptr<G4UIdirectory> fFormationProcessDirectory;
-    std::unique_ptr<G4UIcmdWithADouble> fDefaultFormationProbability;
+    std::unique_ptr<G4UIcmdWithADouble> fDefaultParaMuoniumFraction;
 };
 
 } // namespace Physics

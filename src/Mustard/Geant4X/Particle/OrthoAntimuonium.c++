@@ -16,32 +16,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Mustard/Geant4X/Particle/OrthoAntimuonium.h++"
 
-#include "Mustard/Geant4X/Process/ThermalScattering.h++"
+namespace Mustard::Geant4X::inline Particle {
 
-#include "gtl/phmap.hpp"
+OrthoAntimuonium::OrthoAntimuonium() :
+    MuoniumBase{"ortho_anti_muonium", -9990213, 2, -1} {}
 
-class G4ParticleDefinition;
-
-namespace Mustard::Geant4X::inline Process {
-
-class MuoniumThermalScattering : public ThermalScattering {
-public:
-    MuoniumThermalScattering();
-
-    auto IsApplicable(const G4ParticleDefinition& particle) -> bool override;
-
-protected:
-    auto InitializeForNewRun() -> void override;
-    auto MeanFreePathIn(const G4Material& material) const -> double override;
-
-private:
-    auto SimilarToAir(const G4Material& material) const -> bool;
-
-private:
-    const G4Material* fAirMaterial;
-    gtl::flat_hash_map<int, double> fAirComposition;
-};
-
-} // namespace Mustard::Geant4X::inline Process
+} // namespace Mustard::Geant4X::inline Particle

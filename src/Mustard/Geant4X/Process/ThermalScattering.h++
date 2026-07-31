@@ -31,6 +31,7 @@
 
 #include "gtl/phmap.hpp"
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -54,21 +55,19 @@ public:
     auto AddFineStructure(const FineStructureForThermalScattering* fineStructure) -> void;
 
     auto IsApplicable(const G4ParticleDefinition& particle) -> bool override;
+    virtual auto InitializeForNewRun() -> void;
     auto StartTracking(G4Track* track) -> void override;
     auto AlongStepDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
 
 protected:
-    virtual auto InitializeForNewRun() -> void;
-    virtual auto MeanFreePathIn(const G4Material& material) const -> double;
-
+    virtual auto MeanFreePathIn(const G4Material& material) -> double;
     auto GetContinuousStepLimit(const G4Track& track, double previousStepSize, double currentMinimumStep, double&) -> double override;
 
-    auto ThermalVelocity(double sigmaVelocity1D) -> std::pair<double, Vector3D>;
+    auto ThermalVelocity(double sigmaVelocity1D) -> std::pair<Vector3D, double>;
     auto SingleThermalScattering(const G4Track& track) -> void;
     auto CoarseGrainedThermalScattering(const G4Track& track) -> void;
     auto FullThermalScatteringInFineStructureVolume(const G4Track& track) -> void;
 
-    static auto CheckMeanFreePath(double meanFreePath) -> void;
     static auto SigmaVelocity1D(double temperature, const G4ParticleDefinition& particle) -> double;
 
 protected:
@@ -87,12 +86,12 @@ protected:
     double fMinCoarseGrainingScale;
     std::vector<const FineStructureForThermalScattering*> fFineStructure;
 
-    const G4Run* fCurrentRun;
+    std::pair<const G4Run*, int> fCurrentRun;
     Random::Xoshiro256Plus fRNG;
     G4SafetyHelper* fSafetyHelper;
     const G4Material* fCurrentMaterial;
-    const G4ParticleDefinition* fCurrentParticle;
-    const G4Material* fCurrentOuterMaterial;
+    std::optional<const G4Material*> fCurrentOuterMaterial;
+    gtl::flat_hash_map<const G4MaterialPropertiesTable*, double> fMeanFreePathCache;
 
     Status fStatus;
     double fSigmaVelocity1D;

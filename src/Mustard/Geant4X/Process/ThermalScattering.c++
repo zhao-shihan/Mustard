@@ -17,8 +17,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/EigenX/AlignedVector3.h++"
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/Geant4X/Process/ThermalScattering.h++"
-#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Random/Distribution/Exponential.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian3D.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian4D.h++"
@@ -50,6 +50,7 @@
 #include <bit>
 #include <cassert>
 #include <cstdint>
+#include <source_location>
 
 namespace Mustard::Geant4X::inline Process {
 
@@ -60,21 +61,21 @@ ThermalScattering::ThermalScattering(G4String meanFreePathMaterialPropertyName,
     G4VContinuousProcess{processName, processType},
     fMeanFreePathMaterialPropertyName{std::move(meanFreePathMaterialPropertyName)},
     fDisableCoarseGraining{},
-    fMinCoarseGrainingScale{30},
+    fMinCoarseGrainingScale{100},
     fFineStructure{},
     fCurrentRun{},
     fRNG{},
     fSafetyHelper{},
     fCurrentMaterial{},
-    fCurrentParticle{},
     fCurrentOuterMaterial{},
+    fMeanFreePathCache{},
     fStatus{},
     fSigmaVelocity1D{},
     fMeanInverseVelocity{},
     fMultipleScatteringTimeLimit{},
     fMultipleScatteringPathLength{},
     fActiveFineStructure{},
-    fOuterMeanFreePath{fgSpatialHuge}, // outer mean free path needs a default value corresponding to null outer material
+    fOuterMeanFreePath{},
     fOuterSigmaVelocity1D{},
     fParticleChange{},
     fMessengerRegister{this} {
@@ -88,9 +89,9 @@ auto ThermalScattering::AddFineStructure(const FineStructureForThermalScattering
 }
 
 auto ThermalScattering::MinCoarseGrainingScale(double val) -> void {
-    if (constexpr double minScale{10};
+    if (constexpr double minScale{30};
         val < minScale) [[unlikely]] {
-        PrintWarning(fmt::format(
+        Exception<JustWarning>(fmt::format(
             "Minimum coarse-graining scale is too small (got {}, expect >= {}), setting it to {}.", val, minScale, minScale));
         fMinCoarseGrainingScale = minScale;
         return;
@@ -102,17 +103,26 @@ auto ThermalScattering::IsApplicable(const G4ParticleDefinition& particle) -> bo
     return particle.GetPDGCharge() == 0; // only neutral particles are applicable
 }
 
+auto ThermalScattering::InitializeForNewRun() -> void {
+    // Seed once per run to ensure different random number sequences in parallel computing
+    fRNG.Seed(std::bit_cast<std::uint64_t>(G4UniformRand()));
+    // Get safety helper.
+    fSafetyHelper = G4TransportationManager::GetTransportationManager()->GetSafetyHelper();
+    fSafetyHelper->InitialiseHelper();
+    // Clear cached mean free paths from the previous run
+    fMeanFreePathCache.clear();
+}
+
 auto ThermalScattering::StartTracking(G4Track* track) -> void {
     if (const auto run{G4RunManager::GetRunManager()->GetCurrentRun()};
-        fCurrentRun != run) {
-        fCurrentRun = run;
+        fCurrentRun != std::pair{run, run->GetRunID()}) {
+        fCurrentRun = {run, run->GetRunID()};
         InitializeForNewRun();
     }
     G4VContinuousProcess::StartTracking(track);
-    fCurrentMaterial = nullptr; // force trigger update of sigma velocity since particle mass may change
-    fCurrentParticle = track->GetParticleDefinition();
-    fCurrentOuterMaterial = nullptr;
-    if (not fCurrentParticle->GetPDGStable() and not fDisableCoarseGraining) {
+    fCurrentMaterial = nullptr;           // force trigger update of sigma velocity since particle mass may change
+    fCurrentOuterMaterial = std::nullopt; // force trigger update of outer material
+    if (not track->GetParticleDefinition()->GetPDGStable() and not fDisableCoarseGraining) {
         // If no other process has pre-assigned the decay proper time, assign one now.
         // Coarse-grained transport requires pre-assigned decay because G4Decay's normal NILL decrement uses a single
         // thermal-velocity sample per step (L/v_endpoint) while the step's proper-time advance uses the thermal-average
@@ -120,23 +130,18 @@ auto ThermalScattering::StartTracking(G4Track* track) -> void {
         if (track->GetDynamicParticle()->GetPreAssignedDecayProperTime() < 0) {
             // Cast away constness is safe here because we are in StartTracking and track is not shared.
             const auto dynamicParticle{const_cast<G4DynamicParticle*>(track->GetDynamicParticle())};
-            const auto decayProperTime{Random::Exponential{fCurrentParticle->GetPDGLifeTime()}(fRNG)};
+            const auto decayProperTime{Random::Exponential{track->GetParticleDefinition()->GetPDGLifeTime()}(fRNG)};
             dynamicParticle->SetPreAssignedDecayProperTime(decayProperTime);
         }
     }
 }
 
-auto ThermalScattering::AlongStepDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* {
-    assert(theNumberOfInteractionLengthLeft >= 0);
-    assert(currentInteractionLength > fgSpatialTiny);
-    assert(theInitialNumberOfInteractionLength >= 0);
-    assert(fSigmaVelocity1D > muc::default_abs_tol<double>);
-    assert(fMultipleScatteringTimeLimit >= 0);
-    assert(fMultipleScatteringPathLength >= 0);
-    if (track.GetVelocity() == 0) {
-        Throw<std::runtime_error>("Zero initial velocity is not allowed.");
-    }
+auto ThermalScattering::AlongStepDoIt(const G4Track& track, const G4Step& step) -> G4VParticleChange* {
     fParticleChange.Initialize(track);
+    if (const auto stepStatus{step.GetPostStepPoint()->GetStepStatus()};
+        stepStatus == fGeomBoundary or stepStatus == fWorldBoundary) {
+        fStatus = Status::WaitForOtherProcess; // waiting for transportation
+    }
     switch (fStatus) {
     case Status::CoarseGrainedThermalScattering:
         CoarseGrainedThermalScattering(track);
@@ -157,22 +162,27 @@ auto ThermalScattering::AlongStepDoIt(const G4Track& track, const G4Step&) -> G4
     return &fParticleChange;
 }
 
-auto ThermalScattering::InitializeForNewRun() -> void {
-    // Seed once per run to ensure different random number sequences in parallel computing
-    fRNG.Seed(std::bit_cast<std::uint64_t>(G4UniformRand()));
-    // Get safety helper.
-    fSafetyHelper = G4TransportationManager::GetTransportationManager()->GetSafetyHelper();
-    fSafetyHelper->InitialiseHelper();
-}
-
-auto ThermalScattering::MeanFreePathIn(const G4Material& material) const -> double {
-    if (const auto mpt{material.GetMaterialPropertiesTable()};
-        mpt and mpt->ConstPropertyExists(fMeanFreePathMaterialPropertyName)) {
-        const auto meanFreePath{mpt->GetConstProperty(fMeanFreePathMaterialPropertyName)};
-        CheckMeanFreePath(meanFreePath);
-        return meanFreePath;
+auto ThermalScattering::MeanFreePathIn(const G4Material& material) -> double {
+    const auto mpt{material.GetMaterialPropertiesTable()};
+    if (mpt == nullptr) {
+        return 0;
     }
-    return 0;
+    if (const auto it{fMeanFreePathCache.find(mpt)};
+        it != fMeanFreePathCache.end()) [[likely]] {
+        return it->second;
+    }
+    if (not mpt->ConstPropertyExists(fMeanFreePathMaterialPropertyName)) {
+        fMeanFreePathCache.emplace(mpt, 0);
+        return 0;
+    }
+    const auto meanFreePath{mpt->GetConstProperty(fMeanFreePathMaterialPropertyName)};
+    if (meanFreePath <= fgSpatialTiny) [[unlikely]] {
+        Exception<JustWarning>(fmt::format(
+            "Mean free path in material '{}' is too small ({} nm), particle will be stopped.",
+            material.GetName(), meanFreePath / nm));
+    }
+    fMeanFreePathCache.emplace(mpt, meanFreePath);
+    return meanFreePath;
 }
 
 auto ThermalScattering::GetContinuousStepLimit(const G4Track& track, double previousStepSize, double currentMinimumStep, double&) -> double {
@@ -180,20 +190,10 @@ auto ThermalScattering::GetContinuousStepLimit(const G4Track& track, double prev
     using namespace MathConstant;
     using namespace PhysicalConstant;
 
-    // NB: the framework `safety` out-argument is intentionally ignored. Transportation, which fills it, runs
+    // Note: the framework `safety` out-argument is intentionally ignored. Transportation, which fills it, runs
     // AFTER this process in the AlongStep GPIL vector, so on entry it is always DBL_MAX. Where a real safety
     // is needed (coarse-graining) we query the safety helper ourselves; we never write back to `safety` (like
     // G4VMultipleScattering, we let Transportation propose the framework safety).
-
-    const auto temperature{track.GetMaterial()->GetTemperature()};
-    if (const auto meanKineticEnergy{1.5 * k_Boltzmann * temperature};
-        track.GetKineticEnergy() > 50 * meanKineticEnergy) [[unlikely]] {
-        const auto kineticTemperature{track.GetKineticEnergy() / (1.5 * k_Boltzmann)};
-        PrintWarning(fmt::format(
-            "Kinetic energy {} eV (equivalent to {} K) is too high for thermal scattering in material at {} K. "
-            "It will be thermalized to the local temperature without recording energy deposition.",
-            track.GetKineticEnergy() / eV, kineticTemperature / kelvin, temperature / kelvin));
-    }
 
     if (theNumberOfInteractionLengthLeft > 0 and previousStepSize > 0) {
         theNumberOfInteractionLengthLeft -= previousStepSize / currentInteractionLength;
@@ -203,15 +203,30 @@ auto ThermalScattering::GetContinuousStepLimit(const G4Track& track, double prev
         theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
     }
 
+    if (track.GetVelocity() == 0) [[unlikely]] {
+        Exception<JustWarning>("Zero initial velocity is not allowed, stopping the track.");
+        fStatus = Status::StopButAlive;
+        return 0;
+    }
+
+    const auto temperature{track.GetMaterial()->GetTemperature()};
+    if (const auto meanKineticEnergy{1.5 * k_Boltzmann * temperature};
+        track.GetKineticEnergy() > 50 * meanKineticEnergy) [[unlikely]] {
+        const auto kineticTemperature{track.GetKineticEnergy() / (1.5 * k_Boltzmann)};
+        Exception<JustWarning>(fmt::format(
+            "Kinetic energy {} eV (equivalent to {} K) is too high for thermal scattering in material at {} K. "
+            "It will be thermalized to the local temperature without recording energy deposition.",
+            track.GetKineticEnergy() / eV, kineticTemperature / kelvin, temperature / kelvin));
+    }
+
     if (fCurrentMaterial != track.GetMaterial()) {
         fCurrentMaterial = track.GetMaterial();
         currentInteractionLength = MeanFreePathIn(*fCurrentMaterial);
-        CheckMeanFreePath(currentInteractionLength);
         if (currentInteractionLength <= fgSpatialTiny) {
             fStatus = Status::StopButAlive;
             return 0;
         }
-        fSigmaVelocity1D = SigmaVelocity1D(temperature, *fCurrentParticle);
+        fSigmaVelocity1D = SigmaVelocity1D(temperature, *track.GetParticleDefinition());
         fMeanInverseVelocity = sqrt2 * inv_sqrtpi / fSigmaVelocity1D; // <1/v> = √(2m/(πkT)) = √(2/π)/σv
     }
     const auto singleScatteringFreePath{currentInteractionLength * theNumberOfInteractionLengthLeft};
@@ -242,19 +257,18 @@ auto ThermalScattering::GetContinuousStepLimit(const G4Track& track, double prev
         auto outerTemperature{temperature};
         if (fCurrentOuterMaterial != outerMaterial) {
             fCurrentOuterMaterial = outerMaterial;
-            if (fCurrentOuterMaterial) {
-                fOuterMeanFreePath = MeanFreePathIn(*fCurrentOuterMaterial);
-                CheckMeanFreePath(fOuterMeanFreePath);
-                outerTemperature = fCurrentOuterMaterial->GetTemperature();
-                fOuterSigmaVelocity1D = SigmaVelocity1D(outerTemperature, *fCurrentParticle);
+            if (outerMaterial) {
+                fOuterMeanFreePath = MeanFreePathIn(*outerMaterial);
+                outerTemperature = outerMaterial->GetTemperature();
+                fOuterSigmaVelocity1D = SigmaVelocity1D(outerTemperature, *track.GetParticleDefinition());
             } else {
                 fOuterMeanFreePath = fgSpatialHuge;
-                // fOuterSigmaVelocity1D is not used when fCurrentOuterMaterial is null.
+                fOuterSigmaVelocity1D = fSigmaVelocity1D; // not used though
             }
         }
         // See comments in FullThermalScatteringInFineStructureVolume for details.
         if (currentInteractionLength > 10 * fOuterMeanFreePath) [[unlikely]] {
-            PrintWarning(fmt::format(
+            Exception<JustWarning>(fmt::format(
                 "Mean free path in outer material ({:.2f} nm) is much smaller than that in fine structure ({:.2f} nm). "
                 "The accuracy will be reduced.",
                 fOuterMeanFreePath / nm, currentInteractionLength / nm));
@@ -324,17 +338,17 @@ auto ThermalScattering::GetContinuousStepLimit(const G4Track& track, double prev
     return singleScatteringFreePath;
 }
 
-auto ThermalScattering::ThermalVelocity(double sigmaVelocity1D) -> std::pair<double, Vector3D> {
-    double velocity;
+auto ThermalScattering::ThermalVelocity(double sigmaVelocity1D) -> std::pair<Vector3D, double> {
     Vector3D direction;
+    double velocity;
     do {
         direction = Random::Gaussian3D<Vector3D>{}(fRNG);
         velocity = direction.mag2();
-    } while (velocity == 0);
+    } while (velocity <= muc::pow(muc::default_abs_tol<double>, 2));
     velocity = std::sqrt(velocity);
     direction *= 1 / velocity; // do not use CLHEP::Hep3Vector::operator/=(double).
     velocity *= sigmaVelocity1D;
-    return {velocity, direction};
+    return {direction, velocity};
 }
 
 auto ThermalScattering::SingleThermalScattering(const G4Track&) -> void {
@@ -342,32 +356,36 @@ auto ThermalScattering::SingleThermalScattering(const G4Track&) -> void {
     // This looks really like a PostStepDoIt action, and one may argue that we should use G4VContinuousDiscreteProcess.
     // However, since we need the interplay between multiple thermal scattering and single thermal scattering, the best choice
     // is to use G4VContinuousProcess and also do the single thermal scattering in AlongStepDoIt though this may looks funny.
-    const auto [velocity, direction]{ThermalVelocity(fSigmaVelocity1D)};
+    const auto [direction, velocity]{ThermalVelocity(fSigmaVelocity1D)};
     fParticleChange.ProposeVelocityDirection(direction);
     fParticleChange.ProposeVelocity(velocity);
 }
 
 auto ThermalScattering::CoarseGrainedThermalScattering(const G4Track& track) -> void {
     using namespace MathConstant;
+    using namespace PhysicalConstant;
     assert(fStatus == Status::CoarseGrainedThermalScattering);
-    // Generate normal random vectors and truncate them to ensure that the displacement and elapsed time are within the safety and time limit.
-    auto gausXYZT{Random::Gaussian4D<VectorLor>{}(fRNG)};
-    while (gausXYZT.vect().mag2() >= muc::pow(fgCoarseGrainingSafetyMaxZ, 2) or
-           gausXYZT.t() >= fgCoarseGrainingTimeMaxZ) [[unlikely]] {
-        gausXYZT = Random::Gaussian4D<VectorLor>{}(fRNG);
-    }
+    // Coarse graining via CLT: path length fixed, displacement = Δx ~ N^3(0, σx), where σx = sqrt(2/3*λ*L)
     const auto sqrt2LambdaL{std::sqrt(2 * currentInteractionLength * fMultipleScatteringPathLength)};
+    const auto sigmaDisplacement1D{sqrt2LambdaL * inv_sqrt3};
     // Coarse graining via CLT: path length fixed, elapsed time = Δt ~ N(L*<1/v>, σt), where σt = sqrt(2*λ*L*(1-2/π))/σv
     const auto meanElapsedTime{fMultipleScatteringPathLength * fMeanInverseVelocity};
-    const auto sigmaElapsedTime{sqrt2LambdaL * std::sqrt(1 - 2 / pi) / fSigmaVelocity1D};
-    auto elapsedTime{meanElapsedTime + sigmaElapsedTime * gausXYZT.t()};
-    // Coarse graining via CLT: path length fixed, displacement = Δx ~ N^3(0, σx), where σx = sqrt(2/3*λ*L)
-    const auto displacement{sqrt2LambdaL * inv_sqrt3 * gausXYZT.vect()};
+    const auto sigmaElapsedTime{std::sqrt(1 - 2 / pi) * sqrt2LambdaL / fSigmaVelocity1D};
+    const auto minElapsedTime{fMultipleScatteringPathLength / (0.5 * c_light)};
+    const auto elapsedTimeMinZ{(minElapsedTime - meanElapsedTime) / sigmaElapsedTime};
+    // Generate normal random vectors and truncate them to ensure that the displacement and elapsed time are within the safety and time limit.
+    VectorLor gausXYZT;
+    do {
+        gausXYZT = Random::Gaussian4D<VectorLor>{}(fRNG);
+    } while (gausXYZT.vect().mag2() >= muc::pow(fgCoarseGrainingSafetyMaxZ, 2) or
+             gausXYZT.t() <= elapsedTimeMinZ or gausXYZT.t() >= fgCoarseGrainingTimeMaxZ);
+    const auto displacement{sigmaDisplacement1D * gausXYZT.vect()};
+    const auto elapsedTime{meanElapsedTime + sigmaElapsedTime * gausXYZT.t()};
     // Sample final velocity and direction, and propose the new state of the particle.
     // The position is overridden here; we do NOT call G4SafetyHelper::ReLocateWithinVolume: G4Transportation's
     // forced PostStepDoIt runs every step and relocates the navigator to this overridden position (within-volume,
     // since the displacement is bounded by the real safety). The recorded step length is the true path length.
-    const auto [velocity, direction]{ThermalVelocity(fSigmaVelocity1D)};
+    const auto [direction, velocity]{ThermalVelocity(fSigmaVelocity1D)};
     fParticleChange.ProposeTrueStepLength(fMultipleScatteringPathLength);
     fParticleChange.ProposeTimeIncrement(elapsedTime);
     fParticleChange.ProposePosition(track.GetPosition() + displacement);
@@ -391,8 +409,6 @@ auto ThermalScattering::FullThermalScatteringInFineStructureVolume(const G4Track
     // Random distributions
     static_assert(Random::Exponential<>::Stateless());
     static_assert(Random::Gaussian3D<Vec3>::Stateless());
-    Random::Exponential expo;
-    Random::Gaussian3D<Vec3> gaus3D;
     const auto outerMeanFreePathTiny{fOuterMeanFreePath <= fgSpatialTiny};
     const auto outerMeanFreePathHuge{fOuterMeanFreePath >= fgSpatialHuge};
 
@@ -404,7 +420,7 @@ auto ThermalScattering::FullThermalScatteringInFineStructureVolume(const G4Track
     Vec3 position;                                                              // current position in local frame
     auto direction{initialDirection};                                           // velocity direction in local frame
     auto velocity{track.GetVelocity()};                                         // velocity magnitude
-    auto outerFreePathLeft{expo(fRNG, fOuterMeanFreePath)};                     // the free path left at outside of fine structure volume
+    auto outerFreePathLeft{Random::Exponential{fOuterMeanFreePath}(fRNG)};      // the free path left at outside of fine structure volume
     bool timeUp;                                                                // flag indicate that the flight was terminated by time limit
     bool pathLengthLimitReached;                                                // flag indicate that the flight was terminated by path length limit
     bool outOfBound;                                                            // flag indicate that the flight was terminated by geometry boundary
@@ -436,7 +452,7 @@ auto ThermalScattering::FullThermalScatteringInFineStructureVolume(const G4Track
                     binaryOut = binaryMid;
                 }
             }
-            geomFSC = (displacement - binaryOut).norm();
+            geomFSC = (displacement - binaryOut).norm(); // use binaryOut to ensure the final position is outside the volume
             // limited by geometry, use path length before correction to preserve residual free path for next step
             theNumberOfInteractionLengthLeft = pathLength / currentInteractionLength;
         }
@@ -456,18 +472,18 @@ auto ThermalScattering::FullThermalScatteringInFineStructureVolume(const G4Track
             finalCorrection();
             break;
         }
+        const auto consumedFreePath{freePath};
+        freePath = Random::Exponential{currentInteractionLength}(fRNG);
         // Within limits, check whether the position is inside the fine structure, and handle the case that
         // the position is outside the fine structure but still inside the fine structure volume.
         const auto insideFineStructure{fActiveFineStructure->FineStructureSubterm(position)};
-        if (insideFineStructure) {
-            freePath = expo(fRNG, currentInteractionLength);
-        } else {
+        if (not insideFineStructure) {
             // The strategy here is accurate for the case that mean free path in outer material (fOuterMeanFreePath) is much larger than
             // that of fine structure (currentInteractionLength). E.g. producing muonium in vacuum from laser-ablated silica aerogel.
             // If fOuterMeanFreePath is comparable to or smaller than currentInteractionLength this will work, and the result is
             // as if the denser outer material somewhat diffuse into the fine structure material and both reduces mean free path
             // and changes the temperature near the fine structure boundary.
-            outerFreePathLeft -= freePath;
+            outerFreePathLeft -= consumedFreePath;
             if (outerFreePathLeft > 0 or outerMeanFreePathHuge) {
                 continue; // no scattering outside the fine structure, just continue
             }
@@ -476,13 +492,13 @@ auto ThermalScattering::FullThermalScatteringInFineStructureVolume(const G4Track
                 fParticleChange.ProposeTrackStatus(fStopButAlive);
                 break; // outer mean free path is too small, stop the flight
             }
-            outerFreePathLeft = expo(fRNG, fOuterMeanFreePath);
+            outerFreePathLeft = Random::Exponential{fOuterMeanFreePath}(fRNG);
         }
         // Sample thermal velocity
         do {
-            direction = gaus3D(fRNG);
+            direction = Random::Gaussian3D<Vec3>{}(fRNG);
             velocity = direction.squaredNorm();
-        } while (velocity == 0);
+        } while (velocity <= muc::pow(muc::default_abs_tol<double>, 2));
         velocity = std::sqrt(velocity);
         direction /= velocity;
         velocity *= insideFineStructure ? fSigmaVelocity1D : fOuterSigmaVelocity1D;
@@ -504,18 +520,12 @@ auto ThermalScattering::FullThermalScatteringInFineStructureVolume(const G4Track
     fParticleChange.ProposeVelocity(velocity);
 }
 
-auto ThermalScattering::CheckMeanFreePath(double meanFreePath) -> void {
-    if (meanFreePath <= fgSpatialTiny) [[unlikely]] {
-        PrintWarning(fmt::format("Mean free path is too small ({} nm), particle will be stopped.", meanFreePath / nm));
-    }
-}
-
 auto ThermalScattering::SigmaVelocity1D(double temperature, const G4ParticleDefinition& particle) -> double {
     using namespace LiteralUnit::Velocity;
     using namespace PhysicalConstant;
     const auto sigma{std::sqrt(c_squared * k_Boltzmann * temperature / particle.GetPDGMass())}; // sqrt(kT/m) = sqrt(c^2kT/mc^2)
     if (sigma <= muc::default_abs_tol<double>) [[unlikely]] {
-        Throw<std::runtime_error>(fmt::format("Sigma of 1D velocity is too small ({} m/s)", sigma / 1_m_s));
+        Exception<JustWarning>(fmt::format("Sigma of 1D velocity is too small ({} m/s)", sigma / 1_m_s));
     }
     return sigma;
 }

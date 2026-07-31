@@ -21,18 +21,20 @@
 #include "Mustard/Env/ObjectRegistry/Singleton.h++"
 
 #include "G4ParticleDefinition.hh"
+#include "G4String.hh"
 
 namespace Mustard::Geant4X::inline Particle {
 
-class Muonium final : public Env::Singleton<Muonium>,
-                      public G4ParticleDefinition {
-    friend Env::SingletonFactory;
-
-private:
-    Muonium();
+template<typename ADerived>
+class MuoniumBase : public Env::Singleton<ADerived>,
+                    public G4ParticleDefinition {
+protected:
+    MuoniumBase(const G4String& name, int pdgEncoding, int iSpin, int magneticMomentSign);
 
 public:
-    static auto Definition() -> auto { return &Instance(); }
+    static auto Definition() -> auto { return &ADerived::Instance(); }
 };
 
 } // namespace Mustard::Geant4X::inline Particle
+
+#include "Mustard/Geant4X/Particle/MuoniumBase.inl"
