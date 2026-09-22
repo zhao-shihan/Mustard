@@ -46,7 +46,7 @@ public:
     auto AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
 
 private:
-    virtual auto FormationProbabilityIn(const G4Material& material) -> double;
+    virtual auto FormationFractionIn(const G4Material& material) -> double;
     virtual auto ParaMuoniumFractionIn(const G4Material& material) -> double;
     auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double override;
 
@@ -54,7 +54,7 @@ private:
     double fDefaultParaMuoniumFraction;
 
     std::pair<const G4Run*, int> fCurrentRun;
-    gtl::flat_hash_map<const G4MaterialPropertiesTable*, double> fFormationProbabilityCache;
+    gtl::flat_hash_map<const G4MaterialPropertiesTable*, double> fFormationFractionCache;
     gtl::flat_hash_map<const G4MaterialPropertiesTable*, double> fParaMuoniumFractionCache;
 
     G4ParticleChange fParticleChange;

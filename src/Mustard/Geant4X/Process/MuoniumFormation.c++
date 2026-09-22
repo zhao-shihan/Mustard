@@ -47,7 +47,7 @@ MuoniumFormation::MuoniumFormation() :
     G4VRestProcess{"MuoniumFormation", fGeneral},
     fDefaultParaMuoniumFraction{0.25},
     fCurrentRun{},
-    fFormationProbabilityCache{},
+    fFormationFractionCache{},
     fParaMuoniumFractionCache{},
     fParticleChange{},
     fMessengerRegister{this} {
@@ -73,7 +73,7 @@ auto MuoniumFormation::StartTracking(G4Track* track) -> void {
     if (const auto run{G4RunManager::GetRunManager()->GetCurrentRun()};
         fCurrentRun != std::pair{run, run->GetRunID()}) {
         fCurrentRun = {run, run->GetRunID()};
-        fFormationProbabilityCache.clear();
+        fFormationFractionCache.clear();
         fParaMuoniumFractionCache.clear();
     }
     G4VRestProcess::StartTracking(track);
@@ -110,18 +110,18 @@ auto MuoniumFormation::AtRestDoIt(const G4Track& track, const G4Step&) -> G4VPar
     return &fParticleChange;
 }
 
-auto MuoniumFormation::FormationProbabilityIn(const G4Material& material) -> double {
+auto MuoniumFormation::FormationFractionIn(const G4Material& material) -> double {
     const auto mpt{material.GetMaterialPropertiesTable()};
     if (mpt == nullptr) {
         return 0;
     }
-    if (const auto it{fFormationProbabilityCache.find(mpt)};
-        it != fFormationProbabilityCache.end()) [[likely]] {
+    if (const auto it{fFormationFractionCache.find(mpt)};
+        it != fFormationFractionCache.end()) [[likely]] {
         return it->second;
     }
-    constexpr auto propertyName{"MUONIUM_FORMATION_PROBABILITY"};
+    constexpr auto propertyName{"MUONIUM_FORMATION_FRACTION"};
     if (not mpt->ConstPropertyExists(propertyName)) {
-        fFormationProbabilityCache.emplace(mpt, 0);
+        fFormationFractionCache.emplace(mpt, 0);
         return 0;
     }
     const auto val{mpt->GetConstProperty(propertyName)};
@@ -130,10 +130,10 @@ auto MuoniumFormation::FormationProbabilityIn(const G4Material& material) -> dou
         Exception<JustWarning>(fmt::format(
             "{} for material '{}' is out of range [0, 1] (got {}), clamping to {}.",
             propertyName, material.GetName(), val, clamped));
-        fFormationProbabilityCache.emplace(mpt, clamped);
+        fFormationFractionCache.emplace(mpt, clamped);
         return clamped;
     }
-    fFormationProbabilityCache.emplace(mpt, val);
+    fFormationFractionCache.emplace(mpt, val);
     return val;
 }
 
@@ -165,7 +165,7 @@ auto MuoniumFormation::ParaMuoniumFractionIn(const G4Material& material) -> doub
 }
 
 auto MuoniumFormation::GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double {
-    const auto prob{FormationProbabilityIn(*track.GetMaterial())};
+    const auto prob{FormationFractionIn(*track.GetMaterial())};
     if (prob <= 0) {
         return std::numeric_limits<double>::max();
     }
