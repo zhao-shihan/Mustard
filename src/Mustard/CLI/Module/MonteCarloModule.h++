@@ -18,9 +18,14 @@
 
 #pragma once
 
+#include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/ModuleBase.h++"
 
+#include "muc/random"
+
 #include "gsl/gsl"
+
+#include <cstdint>
 
 namespace Mustard::CLI::inline Module {
 
@@ -29,7 +34,7 @@ namespace Mustard::CLI::inline Module {
 /// MonteCarloModule registers the --seed flag and provides
 /// SeedRandomIfFlagged() to apply the user-specified random seed.
 /// After seeding, the caller must propagate the seed to all parallel
-/// workers via Parallel::ReseedRandomEngine().
+/// workers via Parallel::ReseedRandomEngine(engine).
 class MonteCarloModule : public ModuleBase {
 public:
     /// @brief Construct Monte Carlo CLI module.
@@ -37,10 +42,22 @@ public:
     MonteCarloModule(gsl::not_null<CLI<>*> cli);
 
     /// @brief Apply seed configuration if --seed flag was provided.
+    /// @tparam E A random number engine satisfying muc::random_number_engine.
+    /// @param engine Engine to seed.
     /// @return true if seeding was performed, false if no --seed flag provided
-    /// @warning If this returns true, one MUST call Parallel::ReseedRandomEngine()
-    ///          to ensure proper seeding in parallel environments.
-    auto SeedRandomIfFlagged() const -> bool;
+    /// @note The engine is left at its default state if this returns false.
+    /// @warning If this returns true, one MUST call
+    ///          Parallel::ReseedRandomEngine(engine) to ensure proper seeding
+    ///          in parallel environments.
+    template<muc::random_number_engine E>
+    auto SeedRandomIfFlagged(E& engine) const -> bool;
+
+private:
+    /// @brief Draw a non-deterministic seed from the system random device.
+    /// @return A random seed, used when the --seed option is given as 0.
+    static auto NonDeterministicSeed() -> std::uint32_t;
 };
 
 } // namespace Mustard::CLI::inline Module
+
+#include "Mustard/CLI/Module/MonteCarloModule.inl"

@@ -18,8 +18,28 @@
 
 namespace Mustard::ROOTX::Math {
 
-template<muc::random_number_engine PRNG>
-AsTRandomEngine<PRNG>::AsTRandomEngine(typename PRNG::SeedType seed) :
-    fPRNG{seed} {}
+template<Mustard::Random::RandomNumberEngineOrReference R>
+AsTRandomEngine<R>::AsTRandomEngine(SeedType seed)
+    requires(not std::is_reference_v<R>)
+    :
+    Base{seed},
+    NoncopyableBase{} {}
+
+template<Mustard::Random::RandomNumberEngineOrReference R>
+AsTRandomEngine<R>::AsTRandomEngine(EngineType& engine)
+    requires(std::is_reference_v<R>)
+    :
+    Base{engine},
+    NoncopyableBase{} {}
+
+template<Mustard::Random::RandomNumberEngineOrReference R>
+template<std::floating_point T>
+auto AsTRandomEngine<R>::DrawOpen01() -> T {
+    T value;
+    do {
+        value = Mustard::Random::Uniform<T>{}(Engine());
+    } while (value == 0);
+    return value;
+}
 
 } // namespace Mustard::ROOTX::Math

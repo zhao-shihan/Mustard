@@ -41,7 +41,7 @@ auto TestCLHEPXXoshiro512StarStar::Main(int argc, char* argv[]) const -> int {
     Mustard::Env::BasicEnv env{argc, argv, cli};
 
     Random::Xoshiro512StarStar xoshiro512SS(0x123456);
-    CLHEPX::Random::Wrap<Random::Xoshiro512StarStar> xoshiro512SSX(0x123456);
+    CLHEPX::Random::AsHepRandomEngine<Random::Xoshiro512StarStar> xoshiro512SSX(0x123456);
 
     PrintLn("Simply generate 10 million integers:");
 

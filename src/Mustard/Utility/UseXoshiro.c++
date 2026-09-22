@@ -22,31 +22,33 @@
 
 #include "CLHEP/Random/Random.h"
 
-#include "muc/array"
-
-#include <bit>
+#include "TRandom.h"
 
 namespace Mustard::inline Utility {
 
 template<unsigned ABitWidth>
+    requires(ABitWidth == 256 or ABitWidth == 512)
 UseXoshiro<ABitWidth>::UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli) :
-    fRandom{std::make_unique<RandomEngineStorage>()} {
-    // Set random engines
-    CLHEP::HepRandom::setTheEngine(&fRandom->clhep);
-    delete gRandom, gRandom = &fRandom->root;
-    try {
-        // Seed random engines from CLI (if option set)
-        dynamic_cast<const CLI::MonteCarloModule&>(cli.value().get()).SeedRandomIfFlagged();
-    } catch (const std::bad_optional_access&) {
-        // Default seeding. Try to decorrelate Xoshiro++ from Xoshiro**
-        gRandom->SetSeed(std::mt19937_64{std::bit_cast<std::uint64_t>(
-            muc::array2u32{gRandom->Integer(-1) + 1, gRandom->Integer(-1) + 1})}());
+    NoncopyableBase{},
+    fEngine{},
+    fCLHEPEngine{fEngine},
+    fROOTEngine{fEngine} {
+    // Install the unified engine
+    CLHEP::HepRandom::setTheEngine(&fCLHEPEngine);
+    delete gRandom, gRandom = &fROOTEngine;
+    // Seed the unified engine from CLI (if the Monte Carlo module is present
+    // and the --seed option is set); otherwise keep its default state
+    if (cli.has_value()) {
+        if (const auto monteCarloModule{dynamic_cast<const CLI::MonteCarloModule*>(&cli.value().get())}) {
+            static_cast<void>(monteCarloModule->SeedRandomIfFlagged(fEngine));
+        }
     }
     // Reseed in parallel computing
-    Parallel::ReseedRandomEngine();
+    Parallel::ReseedRandomEngine(fEngine);
 }
 
 template<unsigned ABitWidth>
+    requires(ABitWidth == 256 or ABitWidth == 512)
 UseXoshiro<ABitWidth>::~UseXoshiro() {
     CLHEP::HepRandom::setTheEngine(nullptr);
     gRandom = nullptr;

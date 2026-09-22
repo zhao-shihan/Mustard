@@ -18,75 +18,77 @@
 
 #pragma once
 
-#include "Mustard/CLHEPX/Random/Xoshiro.h++"
+#include "Mustard/CLHEPX/Random/AsHepRandomEngine.h++"
 #include "Mustard/CLI/CLI.h++"
-#include "Mustard/ROOTX/Math/Xoshiro.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256StarStar.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro512StarStar.h++"
+#include "Mustard/ROOTX/Math/AsTRandom.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "muc/optional"
 
-#include <memory>
 #include <type_traits>
 
 namespace Mustard::inline Utility {
 
-/// @brief Configures Xoshiro random engines for CLHEP and ROOT frameworks.
+/// @brief Makes one single Mustard Xoshiro engine the random engine of both
+/// CLHEP and ROOT.
 ///
-/// RAII wrapper that sets Xoshiro** for CLHEP and Xoshiro++ for ROOT as their
-/// respective global random number engines. Manages engine lifetime and ensures
-/// proper initialization and cleanup.
+/// RAII wrapper that owns a Xoshiro** engine and installs it as CLHEP's global
+/// engine and ROOT's gRandom. Since both frameworks then work on the very same
+/// engine, there is exactly one random number stream in the process, whose
+/// state is reachable through three handles:
+///   - the owned engine itself, a muc::random_number_engine,
+///   - a CLHEPX::Random::AsHepRandomEngine referring to it, as CLHEP's global engine,
+///   - a ROOTX::Math::AsTRandom referring to it, as ROOT's gRandom.
 ///
-/// @tparam ABitWidth Xoshiro variant bit width (256 or 512)
+/// @tparam ABitWidth Xoshiro state width; only 256 and 512 are available.
 ///
-/// @note Features:
-///   - Sets CLHEP's global engine to Xoshiro**
-///   - Sets ROOT's global engine to Xoshiro++
-///   - Automatic engine lifetime management
-///   - Parallel computing reseeding support
-///   - CLI-based seeding option
-///
+/// @note The engine is seeded from the Monte Carlo CLI module's --seed option
+/// when that module is present and the option is given, and is left at its
+/// deterministic default state otherwise. Then it is reseeded so that MPI ranks
+/// continue with distinct streams.
+/// @note Seeding goes through the engine itself, so the CLHEP and ROOT handles
+/// keep reporting seed 0 (unknown) until a seed is set through them.
+/// @note The engine accessors below are not `const`: they hand out a mutable
+/// reference to the shared engine.
+/// @note Not copyable nor movable: the CLHEP and ROOT handles refer to the
+/// engine owned by this object.
 /// @warning This class should be instantiated once at application startup.
-/// @see CLHEPX::Random::Xoshiro256StarStar, CLHEPX::Random::Xoshiro512StarStar
-/// @see ROOTX::Math::Xoshiro256PlusPlus, ROOTX::Math::Xoshiro512PlusPlus
+/// @see CLHEPX::Random::AsHepRandomEngine, ROOTX::Math::AsTRandom, Parallel::ReseedRandomEngine
 template<unsigned ABitWidth>
-class UseXoshiro {
-private:
-    /// @brief Xoshiro 256 random engine storage
-    struct Random256 {
-        CLHEPX::Random::Xoshiro256StarStar clhep;
-        ROOTX::Math::Xoshiro256PlusPlus root;
-    };
-
-    /// @brief Xoshiro 512 random engine storage
-    struct Random512 {
-        CLHEPX::Random::Xoshiro512StarStar clhep;
-        ROOTX::Math::Xoshiro512PlusPlus root;
-    };
-
+    requires(ABitWidth == 256 or ABitWidth == 512)
+class UseXoshiro : public Utility::NoncopyableBase {
 public:
+    /// @brief Type of the owned Xoshiro engine.
+    using RandomEngineType = std::conditional_t<ABitWidth == 256,
+                                                Math::Random::Xoshiro256StarStar,
+                                                Math::Random::Xoshiro512StarStar>;
+    /// @brief Type of the CLHEP handle of the owned engine.
+    using CLHEPRandomEngineType = CLHEPX::Random::AsHepRandomEngine<RandomEngineType&>;
+    /// @brief Type of the ROOT handle of the owned engine.
+    using ROOTRandomEngineType = ROOTX::Math::AsTRandom<RandomEngineType&>;
+
     /// @brief Initialize with automatic seeding.
     /// @param cli MonteCarloModule CLI interface for seed configuration (optional)
-    /// @note Also performs decorrelation between CLHEP and ROOT engines
-    ///       and parallel computing reseeding.
     explicit UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli = {});
-    /// @brief Clean up and reset global engine pointers.
+    /// @brief Uninstall the engine from CLHEP and ROOT.
     ~UseXoshiro();
 
-    /// @brief Returns the underlying pseudo‑random bit generator (PRNG).
-    /// @return Reference to the Xoshiro PRNG (Xoshiro256PlusPlus or Xoshiro512PlusPlus)
-    auto RandomEngine() const -> auto& { return fRandom->clhep.UnderlyingPRNG(); }
-    /// @brief Returns the CLHEP random engine wrapper.
-    /// @return Reference to the CLHEP Xoshiro** engine (Xoshiro256StarStar or Xoshiro512StarStar)
-    auto CLHEPRandomEngine() const -> auto& { return fRandom->clhep; }
-    /// @brief Returns the ROOT random engine.
-    /// @return Reference to the ROOT Xoshiro++ engine (Xoshiro256PlusPlus or Xoshiro512PlusPlus)
-    auto ROOTRandomEngine() const -> auto& { return fRandom->root; }
+    /// @brief Returns the owned random engine.
+    /// @return Reference to the unified Xoshiro engine.
+    auto RandomEngine() -> auto& { return fEngine; }
+    /// @brief Returns the CLHEP handle of the owned random engine.
+    /// @return Reference to the CLHEP wrapper, which is CLHEP's global engine.
+    auto CLHEPRandomEngine() -> auto& { return fCLHEPEngine; }
+    /// @brief Returns the ROOT handle of the owned random engine.
+    /// @return Reference to the ROOT wrapper, which is ROOT's gRandom.
+    auto ROOTRandomEngine() -> auto& { return fROOTEngine; }
 
 private:
-    using RandomEngineStorage = std::conditional_t<
-        ABitWidth == 256, Random256,
-        std::conditional_t<
-            ABitWidth == 512, Random512, void>>;
-    std::unique_ptr<RandomEngineStorage> fRandom; ///< Conditionally‑typed storage for CLHEP Xoshiro** and ROOT Xoshiro++ engines (selected by ABitWidth)
+    RandomEngineType fEngine;           ///< The unified random engine.
+    CLHEPRandomEngineType fCLHEPEngine; ///< CLHEP handle of fEngine, installed as CLHEP's global engine.
+    ROOTRandomEngineType fROOTEngine;   ///< ROOT handle of fEngine, installed as ROOT's gRandom.
 };
 
 extern template class UseXoshiro<256>;

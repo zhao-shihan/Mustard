@@ -235,6 +235,12 @@ echo "  -> ./MustardTest TestStatisticalTSquaredTest"
 echo "  -> ./MustardTest TestStatisticalChiSquaredTest"
 ./MustardTest TestStatisticalChiSquaredTest
 
+echo "Running TestUnifiedRandomEngine/TestUnifiedRandomEngine..."
+echo "  -> ./MustardTest TestUnifiedRandomEngine"
+./MustardTest TestUnifiedRandomEngine
+echo "  -> parexec ./MustardTest TestUnifiedRandomEngine"
+parexec ./MustardTest TestUnifiedRandomEngine
+
 echo "Running TestVectorConcept..."
 echo "  -> ./MustardTest TestVectorConcept"
 ./MustardTest TestVectorConcept

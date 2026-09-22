@@ -32,6 +32,7 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
   - [Class Structure](#class-structure)
     - [General Rules](#general-rules-1)
     - [Typical Declaration Order](#typical-declaration-order)
+    - [Member Function Definitions](#member-function-definitions)
     - [Example Class Structure](#example-class-structure)
     - [Inheritance](#inheritance)
   - [Constant and Variable Declaration](#constant-and-variable-declaration)
@@ -480,6 +481,11 @@ class Class1 {
 8. Private type aliases nested types
 9.  Private member functions
 10. Private member variables
+
+### Member Function Definitions
+- Define a member function inside the class body only if its definition is a single line, e.g. a simple getter or setter
+- Define any longer member function in the corresponding `.inl` (for templates) or `.c++` (otherwise) file, unless the class is local or there is another special reason
+- Define member functions in the same order as they are declared in the class, and let that order follow the declaration order described above
 
 ### Example Class Structure
 ```cpp
@@ -1351,6 +1357,8 @@ public:
 ### Class Design
 - [ ] Place single base class on same line, multiple base classes on successive lines
 - [ ] Follow typical declaration order: types → constructors → destructor → functions → variables
+- [ ] Define only single-line member functions in the class body; put longer ones in the `.inl`/`.c++` file
+- [ ] Define member functions in the same order as they are declared
 - [ ] Declare member functions before member variables
 - [ ] Group related functions and variables together
 - [ ] Order members by logical relationship, not type

@@ -16,13 +16,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256PlusPlus.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/Random.h"
+#include "CLHEP/Random/RandomEngine.h"
 
 #include "TRandom.h"
 
@@ -32,126 +30,98 @@
 
 #include "gsl/gsl"
 
-#include <array>
-#include <bit>
 #include <concepts>
 #include <cstdint>
-#include <exception>
 #include <limits>
-#include <numeric>
-#include <tuple>
 #include <utility>
 #include <vector>
 
 namespace Mustard::Parallel {
 
+auto ReseedRandomEngine(CLHEP::HepRandomEngine& engine) -> void {
+    static_assert(std::same_as<unsigned, decltype(engine.operator unsigned int())>);         // CLHEP hands out 32-bit words
+    static_assert(sizeof(long) == sizeof(unsigned) or sizeof(long) == 2 * sizeof(unsigned)); // one or two words
+    if (not impl::ReseedNeeded()) {
+        return;
+    }
+    // CLHEP seeds are signed and its entropy comes in 32-bit words, so assemble
+    // the material of the seed type from one or two words
+    const auto material{impl::DrawSeedMaterial<long>([&engine] {
+        unsigned word;
+        do {
+            word = engine.operator unsigned int();
+        } while (word == 0 or word == std::numeric_limits<unsigned>::max()); // not 0x00...00 and not 0xff...ff
+        return word;
+    })};
+    const auto rankSeed{static_cast<long>(impl::RankSeed(material, std::numeric_limits<long>::max()))};
+    engine.setSeed(rankSeed, 3);
+}
+
+auto ReseedRandomEngine(TRandom& engine) -> void {
+    static_assert(std::same_as<unsigned, decltype(engine.GetSeed())>); // TRandom keeps a 32-bit seed
+    if (not impl::ReseedNeeded()) {
+        return;
+    }
+    // ROOT both hands out and takes 32-bit values, so material and seed are 32-bit
+    const auto material{impl::DrawSeedMaterial<unsigned>([&engine] {
+        return engine.Integer(-2) + 1; // not 0x00...00
+    })};
+    const auto rankSeed{static_cast<unsigned long>(impl::RankSeed(material, std::numeric_limits<unsigned>::max() - 1))};
+    engine.SetSeed(rankSeed);
+}
+
 namespace impl {
 namespace {
 
-/// @brief Generates a set of unique seeds for MPI ranks using a master RNG.
+/// @brief Generates a set of unique seeds for MPI ranks from @p material.
 ///
 /// Helper function called only by MPI rank 0 to generate a set of unique seeds
-/// for all MPI processes. Uses Xoshiro256++ RNG initialized with the provided seed.
+/// for all MPI processes. The master seed material is stretched through a
+/// Xoshiro256++ engine, whose state is fully determined by it.
 ///
-/// @tparam T Unsigned integral type for seeds (must be same width as seed components)
-/// @param xsr256Seed Seed value for Xoshiro256++ (bit-castable to uint64_t)
+/// @param material Seed material drawn from the engine to be reseeded.
+/// @param worldSize Number of MPI processes to generate seeds for.
+/// @param supremum Largest seed to generate; seeds lie in [1, supremum].
 ///
-/// @return Set of unique seeds in range [1, max-1] with size = MPI world size
+/// @return Unique seeds in [1, supremum], one for each MPI process.
 ///
 /// @note Called exclusively by MPI rank 0 during seed generation.
-/// @warning Must satisfy: worldComm.rank() == 0 (enforced by Expects)
-template<std::unsigned_integral T>
-auto MasterMakeUniqueSeedSeries(auto xsr256Seed) -> gtl::flat_hash_set<T> {
-    const auto worldComm{mplr::comm_world()};
-    Expects(worldComm.rank() == 0);
-
+/// @warning Seeds avoid 0, so that they never degenerate into a zero state.
+auto MakeUniqueSeedSeries(std::uint64_t material, int worldSize, std::uint64_t supremum) -> std::vector<std::uint64_t> {
     static_assert(std::same_as<Random::Xoshiro256PlusPlus::SeedType, std::uint64_t>);
-    Random::Xoshiro256PlusPlus xsr256{std::bit_cast<std::uint64_t>(xsr256Seed)};
-    Random::Uniform<T> uniform{1, std::numeric_limits<T>::max() - 1}; // not 0x00...00 and not 0xff...ff
+    Random::Xoshiro256PlusPlus master{material};
+    Random::Uniform<std::uint64_t> uniform{1, supremum}; // not 0x00...00
 
-    gtl::flat_hash_set<T> uniqueSeeds;
-    const auto worldSize{worldComm.size()};
-    uniqueSeeds.reserve(worldSize);
+    gtl::flat_hash_set<std::uint64_t> uniqueSeed;
+    uniqueSeed.reserve(worldSize);
     do {
-        uniqueSeeds.emplace(uniform(xsr256));
-    } while (ssize(uniqueSeeds) < worldSize);
-    return uniqueSeeds;
+        uniqueSeed.emplace(uniform(master));
+    } while (std::cmp_less(uniqueSeed.size(), worldSize));
+    return {uniqueSeed.begin(), uniqueSeed.end()};
 }
 
 } // namespace
-} // namespace impl
 
-auto ReseedRandomEngine(CLHEP::HepRandomEngine* clhepRng, TRandom* tRandom) -> void {
-    if (not mplr::available()) {
-        return;
-    }
-    const auto worldComm{mplr::comm_world()};
-    if (worldComm.size() == 1) {
-        return;
-    }
-
-    if (clhepRng == nullptr) {
-        clhepRng = CLHEP::HepRandom::getTheEngine();
-    }
-    if (tRandom == nullptr) {
-        tRandom = gRandom;
-    }
-
-    static_assert(std::same_as<long, decltype(clhepRng->getSeed())>);
-    static_assert(std::same_as<unsigned, decltype(tRandom->GetSeed())>);
-
-    using Seed = std::tuple<bool, long, bool, unsigned>; // (clhepNull, clhepSeed, rootNull, rootSeed)
-    Seed seedRecv;
-    if (worldComm.rank() == 0) {
-        std::vector<Seed> seedSend(worldComm.size(), {true, 0, true, 0});
-        if (clhepRng) {
-            std::array<unsigned, sizeof(std::uint64_t) / sizeof(unsigned)> xsr256Seed;
-            std::ranges::generate(xsr256Seed, [clhepRng] {
-                unsigned seed;
-                do {
-                    seed = clhepRng->operator unsigned int();
-                } while (seed == 0 or seed == std::numeric_limits<unsigned>::max());
-                return seed;
-            });
-            const auto uniqueSeed{impl::MasterMakeUniqueSeedSeries<unsigned long>(xsr256Seed)};
-            Ensures(uniqueSeed.size() == seedSend.size());
-            for (gsl::index i{}; const auto& s : uniqueSeed) {
-                get<0>(seedSend[i]) = false;
-                get<1>(seedSend[i++]) = std::bit_cast<long>(s);
-            }
-        }
-        if (tRandom) {
-            static_assert(std::same_as<decltype(tRandom->Integer(-2) + 1), unsigned>);
-            std::array<unsigned, sizeof(std::uint64_t) / sizeof(unsigned)> xsr256Seed;
-            std::ranges::generate(xsr256Seed, [tRandom] {
-                return tRandom->Integer(-2) + 1;
-            });
-            const auto uniqueSeed{impl::MasterMakeUniqueSeedSeries<unsigned>(xsr256Seed)};
-            Ensures(uniqueSeed.size() == seedSend.size());
-            for (gsl::index i{}; const auto& s : uniqueSeed) {
-                get<2>(seedSend[i]) = false;
-                get<3>(seedSend[i++]) = s;
-            }
-        }
-        worldComm.scatter(0, seedSend.data(), seedRecv);
-    } else {
-        worldComm.scatter(0, seedRecv);
-    }
-
-    if (get<0>(seedRecv) != (clhepRng == nullptr)) {
-        Throw<std::invalid_argument>("CLHEP random engine null/!null inconsistent.");
-    }
-    if (get<2>(seedRecv) != (tRandom == nullptr)) {
-        Throw<std::invalid_argument>("ROOT random engine null/!null inconsistent.");
-    }
-    if (clhepRng) {
-        Ensures(get<1>(seedRecv) != 0 and get<1>(seedRecv) != -1); // not 0x00...00 and not 0xff...ff
-        clhepRng->setSeed(get<1>(seedRecv), 3);
-    }
-    if (tRandom) {
-        Ensures(get<3>(seedRecv) != 0 and get<3>(seedRecv) != static_cast<unsigned>(-1)); // not 0x00...00 and not 0xff...ff
-        tRandom->SetSeed(get<3>(seedRecv));
-    }
+auto ReseedNeeded() -> bool {
+    return mplr::available() and mplr::comm_world().size() > 1;
 }
+
+auto RankSeed(std::uint64_t material, std::uint64_t supremum) -> std::uint64_t {
+    Expects(ReseedNeeded());
+    const auto worldComm{mplr::comm_world()};
+    Expects(std::cmp_less_equal(worldComm.size(), supremum)); // enough distinct seeds to go around
+    std::uint64_t seed;
+    if (worldComm.rank() == 0) {
+        const auto seedSend{MakeUniqueSeedSeries(material, worldComm.size(), supremum)};
+        Ensures(std::cmp_equal(seedSend.size(), worldComm.size()));
+        worldComm.scatter(0, seedSend.data(), seed);
+    } else {
+        worldComm.scatter(0, seed);
+    }
+    Ensures(1 <= seed and seed <= supremum); // not 0x00...00
+    return seed;
+}
+
+} // namespace impl
 
 } // namespace Mustard::Parallel

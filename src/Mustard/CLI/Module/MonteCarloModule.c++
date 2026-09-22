@@ -18,13 +18,7 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/MonteCarloModule.h++"
-
-#include "CLHEP/Random/Random.h"
-
-#include "TRandom.h"
-
-#include <bit>
-#include <random>
+#include "Mustard/Math/Random/Generator/RandomDevice.h++"
 
 namespace Mustard::CLI::inline Module {
 
@@ -33,27 +27,11 @@ MonteCarloModule::MonteCarloModule(gsl::not_null<CLI<>*> cli) :
     TheCLI()
         ->add_argument("--seed")
         .help("Set random seed. 0 means using random device (non deterministic random seed). Predefined deterministic seed is used by default.")
-        .scan<'i', long>();
+        .scan<'i', std::int64_t>();
 }
 
-auto MonteCarloModule::SeedRandomIfFlagged() const -> bool {
-    auto theSeed{TheCLI()->present<long>("--seed")};
-    if (not theSeed.has_value()) {
-        return false;
-    }
-    const auto seed{*theSeed != 0 ?
-                        *theSeed :
-                        std::bit_cast<int>(std::random_device{}())};
-    if (const auto clhepRandom{CLHEP::HepRandom::getTheEngine()};
-        clhepRandom) {
-        clhepRandom->setSeed(seed, 0);
-    }
-    if (gRandom) {
-        // Try to decorrelate with CLHEP
-        const auto rootSeed{std::mt19937_64{static_cast<unsigned long>(seed)}()};
-        gRandom->SetSeed(rootSeed);
-    }
-    return true;
+auto MonteCarloModule::NonDeterministicSeed() -> std::uint32_t {
+    return static_cast<std::uint32_t>(Random::RandomDevice{}());
 }
 
 } // namespace Mustard::CLI::inline Module

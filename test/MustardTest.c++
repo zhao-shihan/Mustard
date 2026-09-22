@@ -50,6 +50,7 @@
 #include "Mustard/Testing/TestSingleton/TestSingleton.h++"
 #include "Mustard/Testing/TestStatistic/TestStatistic.h++"
 #include "Mustard/Testing/TestStatisticalTest/TestStatisticalTest.h++"
+#include "Mustard/Testing/TestUnifiedRandomEngine/TestUnifiedRandomEngine.h++"
 #include "Mustard/Testing/TestUniform/TestUniform.h++"
 #include "Mustard/Testing/TestVectorConcept/TestVectorConcept.h++"
 #include "Mustard/Testing/TestXoshiro256Plus/TestXoshiro256Plus.h++"
@@ -151,6 +152,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestStatisticalTSquaredTest>();
     launcher.AddSubprogram<TestStatisticalTTest>();
     launcher.AddSubprogram<TestStatisticalZTest>();
+    launcher.AddSubprogram<TestUnifiedRandomEngine>();
     launcher.AddSubprogram<TestUniform>();
     launcher.AddSubprogram<TestVectorConcept>();
     launcher.AddSubprogram<TestXoshiro256Plus>();

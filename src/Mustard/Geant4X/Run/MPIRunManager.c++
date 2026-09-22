@@ -17,9 +17,12 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/Geant4X/Run/MPIRunManager.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
+
+#include "CLHEP/Random/Random.h"
 
 #include "G4Run.hh"
 
@@ -30,6 +33,7 @@
 #include "fmt/format.h"
 
 #include <exception>
+#include <stdexcept>
 #include <streambuf>
 
 namespace Mustard::Geant4X::inline Run {
@@ -67,7 +71,14 @@ auto MPIRunManager::PrintProgressInterval(muc::chrono::seconds<double> t) -> voi
 }
 
 auto MPIRunManager::BeamOn(int nEvent, gsl::czstring macroFile, int nSelect) -> void {
-    Parallel::ReseedRandomEngine();
+    // Reseed the process-wide unified engine through its CLHEP handle; ROOT's
+    // gRandom is a handle of that same engine, hence reseeded with it. A process
+    // without a unified engine (no UseXoshiro) only has its CLHEP engine reseeded.
+    if (auto randomEngine{CLHEP::HepRandom::getTheEngine()}) {
+        Parallel::ReseedRandomEngine(*randomEngine);
+    } else {
+        Exception<FatalException>("CLHEP global random engine has been uninstalled, cannot reseed it.");
+    }
     G4RunManager::BeamOn(nEvent, macroFile, nSelect);
 }
 

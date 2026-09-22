@@ -16,17 +16,16 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+namespace Mustard::CLI::inline Module {
 
-#include "Mustard/Math/Estimate.h++"
+template<muc::random_number_engine E>
+auto MonteCarloModule::SeedRandomIfFlagged(E& engine) const -> bool {
+    const auto theSeed{TheCLI()->present<std::int64_t>("--seed")};
+    if (not theSeed.has_value()) {
+        return false;
+    }
+    engine.seed(static_cast<typename E::result_type>(*theSeed != 0 ? *theSeed : NonDeterministicSeed()));
+    return true;
+}
 
-namespace Mustard::inline Math {
-
-/// @brief Monte Carlo integration internal state
-struct MCIntegrationState {
-    double sumF{};          ///< Sum of integrand
-    double sumF2{};         ///< Sum of squared integrand
-    unsigned long long n{}; ///< Sample size
-};
-
-} // namespace Mustard::inline Math
+} // namespace Mustard::CLI::inline Module

@@ -18,25 +18,68 @@
 
 namespace Mustard::ROOTX::Math {
 
-template<muc::random_number_engine PRNG>
-AsTRandom<PRNG>::AsTRandom(typename PRNG::SeedType seed) :
-    fPRNG{seed},
-    fGaus{} {}
-
-template<muc::random_number_engine PRNG>
-auto AsTRandom<PRNG>::RndmArray(int n, float* array) -> void {
-    std::ranges::generate_n(array, n, [this] { return Random::Uniform<float>{}(fPRNG); });
+template<Mustard::Random::RandomNumberEngineOrReference R>
+AsTRandom<R>::AsTRandom()
+    requires(not std::is_reference_v<R>)
+    :
+    TRandom{},
+    Base{},
+    NoncopyableBase{},
+    fGaus{} {
+    fSeed = 0; // The engine is at its default state, so its seed is unknown.
 }
 
-template<muc::random_number_engine PRNG>
-auto AsTRandom<PRNG>::RndmArray(int n, double* array) -> void {
-    std::ranges::generate_n(array, n, [this] { return Random::Uniform<double>{}(fPRNG); });
+template<Mustard::Random::RandomNumberEngineOrReference R>
+AsTRandom<R>::AsTRandom(SeedType seed)
+    requires(not std::is_reference_v<R>)
+    :
+    TRandom{},
+    Base{},
+    NoncopyableBase{},
+    fGaus{} {
+    SetSeed(static_cast<unsigned long>(seed)); // as TRandom(seed) does
 }
 
-template<muc::random_number_engine PRNG>
-auto AsTRandom<PRNG>::GetSeed() const -> unsigned {
-    PrintError("AsTRandom<PRNG>::GetSeed has no effect. Do not use.");
-    return 0;
+template<Mustard::Random::RandomNumberEngineOrReference R>
+AsTRandom<R>::AsTRandom(EngineType& engine)
+    requires(std::is_reference_v<R>)
+    :
+    TRandom{},
+    Base{engine},
+    NoncopyableBase{},
+    fGaus{} {
+    fSeed = 0; // The engine belongs to someone else, so its seed is unknown.
+}
+
+template<Mustard::Random::RandomNumberEngineOrReference R>
+auto AsTRandom<R>::SetSeed(unsigned long seed) -> void {
+    while (seed == 0) {
+        // ROOT's SetSeed(0) asks for a non-deterministic seed
+        seed = Random::RandomDevice{}();
+    }
+    Engine().seed(static_cast<SeedType>(seed));
+    fGaus.Reset(); // a cached Gaussian variate belongs to the previous stream
+    fSeed = static_cast<unsigned>(seed);
+}
+
+template<Mustard::Random::RandomNumberEngineOrReference R>
+auto AsTRandom<R>::RndmArray(int n, float* array) -> void {
+    std::ranges::generate_n(array, n, [this] { return DrawOpen01<float>(); });
+}
+
+template<Mustard::Random::RandomNumberEngineOrReference R>
+auto AsTRandom<R>::RndmArray(int n, double* array) -> void {
+    std::ranges::generate_n(array, n, [this] { return DrawOpen01<double>(); });
+}
+
+template<Mustard::Random::RandomNumberEngineOrReference R>
+template<std::floating_point T>
+auto AsTRandom<R>::DrawOpen01() -> T {
+    T value;
+    do {
+        value = Random::Uniform<T>{}(Engine());
+    } while (value == 0); // ROOT excludes 0 from ]0, 1]
+    return value;
 }
 
 } // namespace Mustard::ROOTX::Math
