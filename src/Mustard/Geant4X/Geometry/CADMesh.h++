@@ -30,7 +30,7 @@
 //
 //     #include "Mustard/Detector/CADMesh.h++" // This file.
 //     ...
-//     auto mesh{Mustard::Detector::CADMesh::TessellatedMesh::FromSTL("mesh.stl")};
+//     auto mesh{Mustard::Geant4X::CADMesh::TessellatedMesh::FromSTL("mesh.stl")};
 //     auto solid{mesh->GetSolid()};
 //     ...
 //
@@ -72,7 +72,7 @@
 #    include "assimp/scene.h"
 #endif
 
-namespace Mustard::Detector {
+namespace Mustard::Geant4X::inline Geometry {
 
 namespace CADMesh {
 
@@ -2688,4 +2688,4 @@ inline std::shared_ptr<BuiltInReader> BuiltIn() {
 }
 } // namespace File
 } // namespace CADMesh
-} // namespace Mustard::Detector
+} // namespace Mustard::Geant4X::inline Geometry
