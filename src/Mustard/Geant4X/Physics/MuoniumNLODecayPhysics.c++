@@ -18,10 +18,8 @@
 
 #include "Mustard/Geant4X/DecayChannel/MuoniumDecayChannelWithSpin.h++"
 #include "Mustard/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
-#include "Mustard/Geant4X/Particle/OrthoAntimuonium.h++"
-#include "Mustard/Geant4X/Particle/OrthoMuonium.h++"
-#include "Mustard/Geant4X/Particle/ParaAntimuonium.h++"
-#include "Mustard/Geant4X/Particle/ParaMuonium.h++"
+#include "Mustard/Geant4X/Particle/Antimuonium.h++"
+#include "Mustard/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Geant4X/Physics/MuonNLODecayPhysics.h++"
 #include "Mustard/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
 
@@ -40,17 +38,13 @@ MuoniumNLODecayPhysics::MuoniumNLODecayPhysics(int verbose) :
 }
 
 auto MuoniumNLODecayPhysics::UpdateDecayBR() -> void {
-    UpdateDecayBRFor(ParaMuonium::Definition());
-    UpdateDecayBRFor(OrthoMuonium::Definition());
-    UpdateDecayBRFor(ParaAntimuonium::Definition());
-    UpdateDecayBRFor(OrthoAntimuonium::Definition());
+    UpdateDecayBRFor(Muonium::Definition());
+    UpdateDecayBRFor(Antimuonium::Definition());
 }
 
 auto MuoniumNLODecayPhysics::ResetDecayBR() -> void {
-    ResetDecayBRFor(ParaMuonium::Definition());
-    ResetDecayBRFor(OrthoMuonium::Definition());
-    ResetDecayBRFor(ParaAntimuonium::Definition());
-    ResetDecayBRFor(OrthoAntimuonium::Definition());
+    ResetDecayBRFor(Muonium::Definition());
+    ResetDecayBRFor(Antimuonium::Definition());
 }
 
 auto MuoniumNLODecayPhysics::ConstructParticle() -> void {
@@ -63,10 +57,8 @@ auto MuoniumNLODecayPhysics::ConstructParticle() -> void {
             delete muonium->GetDecayTable();
             muonium->SetDecayTable(decay);
         }};
-    NewDecayTableFor(ParaMuonium::Definition());
-    NewDecayTableFor(OrthoMuonium::Definition());
-    NewDecayTableFor(ParaAntimuonium::Definition());
-    NewDecayTableFor(OrthoAntimuonium::Definition());
+    NewDecayTableFor(Muonium::Definition());
+    NewDecayTableFor(Antimuonium::Definition());
 
     UpdateDecayBR(); // set BR here
 }
@@ -88,15 +80,12 @@ auto MuoniumNLODecayPhysics::ConstructProcess() -> void {
             manager->SetProcessOrdering(decayWithSpin, idxPostStep);
             manager->SetProcessOrdering(decayWithSpin, idxAtRest);
         }};
-    ReplaceDecayPhysics(ParaMuonium::Definition());
-    ReplaceDecayPhysics(OrthoMuonium::Definition());
-    ReplaceDecayPhysics(ParaAntimuonium::Definition());
-    ReplaceDecayPhysics(OrthoAntimuonium::Definition());
+    ReplaceDecayPhysics(Muonium::Definition());
+    ReplaceDecayPhysics(Antimuonium::Definition());
 }
 
 auto MuoniumNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
-    if (parentName != "para_muonium" and parentName != "ortho_muonium" and
-        parentName != "para_anti_muonium" and parentName != "ortho_anti_muonium") {
+    if (parentName != "muonium" and parentName != "anti_muonium") {
         Throw<std::invalid_argument>(fmt::format("Parent should be a muonium-family particle, got '{}'.", parentName));
     }
     // sort by initial BR! we firstly write random BRs in decrease order...

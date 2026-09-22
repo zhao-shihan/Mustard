@@ -17,8 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Management/Exception.h++"
-#include "Mustard/Geant4X/Particle/OrthoMuonium.h++"
-#include "Mustard/Geant4X/Particle/ParaMuonium.h++"
+#include "Mustard/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Geant4X/Process/MuoniumFormation.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian3D.h++"
 #include "Mustard/Math/Vector.h++"
@@ -45,24 +44,10 @@ namespace Mustard::Geant4X::inline Process {
 
 MuoniumFormation::MuoniumFormation() :
     G4VRestProcess{"MuoniumFormation", fGeneral},
-    fDefaultParaMuoniumFraction{0.25},
     fCurrentRun{},
     fFormationFractionCache{},
-    fParaMuoniumFractionCache{},
-    fParticleChange{},
-    fMessengerRegister{this} {
+    fParticleChange{} {
     pParticleChange = &fParticleChange;
-}
-
-auto MuoniumFormation::DefaultParaMuoniumFraction(double val) -> void {
-    if (val < 0 or 1 < val) [[unlikely]] {
-        const auto clamped{std::clamp(val, 0., 1.)};
-        Exception<JustWarning>(fmt::format(
-            "Default para-muonium fraction is out of range [0, 1] (got {}), clamping to {}.", val, clamped));
-        fDefaultParaMuoniumFraction = clamped;
-        return;
-    }
-    fDefaultParaMuoniumFraction = val;
 }
 
 auto MuoniumFormation::IsApplicable(const G4ParticleDefinition& particle) -> bool {
@@ -74,7 +59,6 @@ auto MuoniumFormation::StartTracking(G4Track* track) -> void {
         fCurrentRun != std::pair{run, run->GetRunID()}) {
         fCurrentRun = {run, run->GetRunID()};
         fFormationFractionCache.clear();
-        fParaMuoniumFractionCache.clear();
     }
     G4VRestProcess::StartTracking(track);
 }
@@ -94,12 +78,14 @@ auto MuoniumFormation::AtRestDoIt(const G4Track& track, const G4Step&) -> G4VPar
     kineticEnergy *= 0.5 * k_Boltzmann * track.GetMaterial()->GetTemperature();
     // The dynamic particle
     const auto muoniumDynamicParticle{new G4DynamicParticle{*track.GetDynamicParticle()}};
-    if (rng.flat() < ParaMuoniumFractionIn(*track.GetMaterial())) {
-        muoniumDynamicParticle->SetDefinition(ParaMuonium::Definition());
-        muoniumDynamicParticle->SetPolarization({});
-    } else {
-        muoniumDynamicParticle->SetDefinition(OrthoMuonium::Definition());
-    }
+    muoniumDynamicParticle->SetDefinition(Muonium::Definition());
+    // A stopped muon captures an unpolarized electron, so the effective spin-1/2 muonium
+    // keeps only half of the parent muon polarization: the muon spin expectation value
+    // vanishes in the entangled singlet and m_F = 0 triplet components. See, e.g.,
+    // A. Amato, "Muon Spin Rotation" lecture notes, Sec. 8.3.
+    // Geant4's spin-dependent decay channels take the polarization as a unit rotation
+    // axis only, so a half-polarized muonium needs dedicated handling in the decay.
+    muoniumDynamicParticle->SetPolarization(0.5 * track.GetDynamicParticle()->GetPolarization());
     muoniumDynamicParticle->SetMomentumDirection(direction);
     muoniumDynamicParticle->SetKineticEnergy(kineticEnergy);
     // Kill the muon, form the muonium
@@ -134,33 +120,6 @@ auto MuoniumFormation::FormationFractionIn(const G4Material& material) -> double
         return clamped;
     }
     fFormationFractionCache.emplace(mpt, val);
-    return val;
-}
-
-auto MuoniumFormation::ParaMuoniumFractionIn(const G4Material& material) -> double {
-    const auto mpt{material.GetMaterialPropertiesTable()};
-    if (mpt == nullptr) {
-        return fDefaultParaMuoniumFraction;
-    }
-    if (const auto it{fParaMuoniumFractionCache.find(mpt)};
-        it != fParaMuoniumFractionCache.end()) [[likely]] {
-        return it->second;
-    }
-    constexpr auto propertyName{"PARA_MUONIUM_FORMATION_FRACTION"};
-    if (not mpt->ConstPropertyExists(propertyName)) {
-        fParaMuoniumFractionCache.emplace(mpt, fDefaultParaMuoniumFraction);
-        return fDefaultParaMuoniumFraction;
-    }
-    const auto val{mpt->GetConstProperty(propertyName)};
-    if (val < 0 or 1 < val) [[unlikely]] {
-        const auto clamped{std::clamp(val, 0., 1.)};
-        Exception<JustWarning>(fmt::format(
-            "{} for material '{}' is out of range [0, 1] (got {}), clamping to {}.",
-            propertyName, material.GetName(), val, clamped));
-        fParaMuoniumFractionCache.emplace(mpt, clamped);
-        return clamped;
-    }
-    fParaMuoniumFractionCache.emplace(mpt, val);
     return val;
 }
 

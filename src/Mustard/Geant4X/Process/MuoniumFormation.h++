@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
@@ -39,27 +38,19 @@ class MuoniumFormation : public G4VRestProcess {
 public:
     MuoniumFormation();
 
-    auto DefaultParaMuoniumFraction(double val) -> void;
-
     auto IsApplicable(const G4ParticleDefinition&) -> bool override;
     auto StartTracking(G4Track*) -> void override;
     auto AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
 
 private:
     virtual auto FormationFractionIn(const G4Material& material) -> double;
-    virtual auto ParaMuoniumFractionIn(const G4Material& material) -> double;
     auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double override;
 
 private:
-    double fDefaultParaMuoniumFraction;
-
     std::pair<const G4Run*, int> fCurrentRun;
     gtl::flat_hash_map<const G4MaterialPropertiesTable*, double> fFormationFractionCache;
-    gtl::flat_hash_map<const G4MaterialPropertiesTable*, double> fParaMuoniumFractionCache;
 
     G4ParticleChange fParticleChange;
-
-    MuoniumPhysicsMessenger::Register<MuoniumFormation> fMessengerRegister;
 };
 
 } // namespace Mustard::Geant4X::inline Process

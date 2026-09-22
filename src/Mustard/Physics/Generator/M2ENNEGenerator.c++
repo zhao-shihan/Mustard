@@ -44,10 +44,10 @@ M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, Vector3D momentum,
 auto M2ENNEGenerator::Parent(std::string_view parent) -> void {
     if (parent == "muonium") {
         PDGID({-11, 12, -14, 11});
-    } else if (parent == "antimuonium") {
+    } else if (parent == "anti_muonium") {
         PDGID({11, -12, 14, -11});
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent should be muonium or antimuonium, got '{}'.", parent));
+        Throw<std::invalid_argument>(fmt::format("Parent should be a muonium-family particle, got '{}'.", parent));
     }
 }
 

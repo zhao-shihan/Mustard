@@ -29,9 +29,9 @@ AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4S
     for (int i{}; i < this->numberOfDaughters; ++i) {
         daughter.emplace_back(this->GetDaughterName(i));
     }
-    if (parentName == "para_muonium" or parentName == "ortho_muonium") {
+    if (parentName == "muonium") {
         daughter.emplace_back("e-");
-    } else if (parentName == "para_anti_muonium" or parentName == "ortho_anti_muonium") {
+    } else if (parentName == "anti_muonium") {
         daughter.emplace_back("e+");
     } else {
         Throw<std::invalid_argument>(fmt::format("Parent should be a muonium-family particle, got '{}'.", parentName));

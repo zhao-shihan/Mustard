@@ -16,10 +16,8 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/Particle/OrthoAntimuonium.h++"
-#include "Mustard/Geant4X/Particle/OrthoMuonium.h++"
-#include "Mustard/Geant4X/Particle/ParaAntimuonium.h++"
-#include "Mustard/Geant4X/Particle/ParaMuonium.h++"
+#include "Mustard/Geant4X/Particle/Antimuonium.h++"
+#include "Mustard/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Geant4X/Physics/MuoniumPhysics.h++"
 #include "Mustard/Geant4X/Process/MuoniumFormation.h++"
 #include "Mustard/Geant4X/Process/ThermalScattering.h++"
@@ -47,10 +45,8 @@ auto MuoniumPhysics::ConstructParticle() -> void {
     G4EmBuilder::ConstructMinimalEmSet();
     G4MuonMinus::Definition();
     G4MuonPlus::Definition();
-    ParaMuonium::Definition();
-    OrthoMuonium::Definition();
-    ParaAntimuonium::Definition();
-    OrthoAntimuonium::Definition();
+    Muonium::Definition();
+    Antimuonium::Definition();
 }
 
 auto MuoniumPhysics::ConstructProcess() -> void {
@@ -61,10 +57,8 @@ auto MuoniumPhysics::ConstructProcess() -> void {
     for (auto&& fs : std::as_const(fFineStructure)) {
         thermalScattering->AddFineStructure(fs);
     }
-    ParaMuonium::Definition()->GetProcessManager()->AddContinuousProcess(thermalScattering);
-    OrthoMuonium::Definition()->GetProcessManager()->AddContinuousProcess(thermalScattering);
-    ParaAntimuonium::Definition()->GetProcessManager()->AddContinuousProcess(thermalScattering);
-    OrthoAntimuonium::Definition()->GetProcessManager()->AddContinuousProcess(thermalScattering);
+    Muonium::Definition()->GetProcessManager()->AddContinuousProcess(thermalScattering);
+    Antimuonium::Definition()->GetProcessManager()->AddContinuousProcess(thermalScattering);
 }
 
 } // namespace Mustard::Geant4X::inline Physics

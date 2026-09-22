@@ -22,9 +22,9 @@
 
 namespace Mustard::Geant4X::inline Particle {
 
-class ParaMuonium final : public MuoniumBase<ParaMuonium> {
+class Muonium final : public MuoniumBase<Muonium> {
     friend Env::SingletonFactory;
-    ParaMuonium();
+    Muonium();
 };
 
 } // namespace Mustard::Geant4X::inline Particle

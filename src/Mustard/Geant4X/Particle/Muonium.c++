@@ -16,11 +16,13 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/Particle/OrthoAntimuonium.h++"
+#include "Mustard/Geant4X/Particle/Muonium.h++"
 
 namespace Mustard::Geant4X::inline Particle {
 
-OrthoAntimuonium::OrthoAntimuonium() :
-    MuoniumBase{"ortho_anti_muonium", -9990213, 2, -1} {}
+// PDG encoding 9990212: n nr nL nq1 nq2 nq3 nJ = 9 9 9 0 2 1 2, i.e. a program-defined
+// particle (nnr = 99, nL = 9) with nJ = 2J + 1 = 2 for the effective spin-1/2 muonium.
+Muonium::Muonium() :
+    MuoniumBase{"muonium", 9990212, 1, +1} {}
 
 } // namespace Mustard::Geant4X::inline Particle

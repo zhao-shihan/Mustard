@@ -87,6 +87,17 @@ constexpr auto muonium_Bohr_radius{hbarc / (fine_structure_const * muonium_reduc
 constexpr auto muon_lifetime{2.1969811 * CLHEP::us};
 constexpr auto muonium_lifetime{muon_lifetime};
 
+// Gyromagnetic ratios. 1.0011659208 and 1.0011596521859 are g/2 = 1 + a of the muon
+// and of the electron respectively (a_mu = 1.1659208e-3, a_e = 1.1596521859e-3). The
+// electron gyromagnetic ratio is negative since the electron charge is negative.
+constexpr auto muon_gyromagnetic_ratio{1.0011659208 * eplus / (muon_mass_c2 / c_squared)};
+constexpr auto electron_gyromagnetic_ratio{-1.0011596521859 * eplus / (electron_mass_c2 / c_squared)};
+// Muonium is described as an effective spin-1/2 particle whose polarization is half
+// that of the parent muon and precesses at the average gyromagnetic ratio of its
+// constituents, i.e. the weak-field muonium precession frequency (~1.39 MHz/G).
+constexpr auto muonium_gyromagnetic_ratio{0.5 * (muon_gyromagnetic_ratio + electron_gyromagnetic_ratio)};
+constexpr auto muonium_magnetic_moment{0.5 * muonium_gyromagnetic_ratio * hbar_Planck}; // gamma_M * hbar/2
+
 constexpr auto reduced_Fermi_constant{1.1663788e-5 * muc::pow(CLHEP::GeV, -2)};
 constexpr auto Fermi_constant{reduced_Fermi_constant * muc::pow(hbarc, 3)};
 // --            Extra constants              -- //

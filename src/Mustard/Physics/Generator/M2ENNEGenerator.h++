@@ -33,7 +33,7 @@ namespace Mustard::inline Physics::inline Generator {
 class M2ENNEGenerator : public MultipleTryMetropolisGenerator<1, 4, QFT::MSqM2ENNE> {
 public:
     /// @brief Construct generator for specific parent
-    /// @param parent "muonium" or "antimuonium" (determines PDG IDs in generated event)
+    /// @param parent "muonium" or "anti_muonium" (determines PDG IDs in generated event)
     /// @param momentum Muonium momentum
     /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
@@ -43,7 +43,7 @@ public:
                     std::optional<double> stepSize = {});
 
     /// @brief Set parent particle
-    /// @param parent "muonium" or "antimuonium"
+    /// @param parent "muonium" or "anti_muonium"
     /// @exception std::invalid_argument for invalid parent names
     auto Parent(std::string_view parent) -> void;
     /// @brief Set parent momentum

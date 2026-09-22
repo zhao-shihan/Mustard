@@ -16,11 +16,15 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/Particle/OrthoMuonium.h++"
+#pragma once
+
+#include "Mustard/Geant4X/Particle/MuoniumBase.h++"
 
 namespace Mustard::Geant4X::inline Particle {
 
-OrthoMuonium::OrthoMuonium() :
-    MuoniumBase{"ortho_muonium", 9990213, 2, +1} {}
+class Antimuonium final : public MuoniumBase<Antimuonium> {
+    friend Env::SingletonFactory;
+    Antimuonium();
+};
 
 } // namespace Mustard::Geant4X::inline Particle

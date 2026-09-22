@@ -46,10 +46,13 @@ MuoniumBase<ADerived>::MuoniumBase(const G4String& name, int pdgEncoding, int iS
                          false,                                                              // shortlived
                          "muonium"} {                                                        // subtype
     using namespace PhysicalConstant;
-    constexpr auto muBohrMu{0.5 * eplus * hbar_Planck / (muon_mass_c2 / c_squared)};
-    constexpr auto muBohrE{-0.5 * eplus * hbar_Planck / (electron_mass_c2 / c_squared)};
-    constexpr auto muBohrM{1.0011659208 * muBohrMu + 1.0011596521859 * muBohrE};
-    SetPDGMagneticMoment(magneticMomentSign * muBohrM);
+    // Magnetic moment of the effective spin-1/2 muonium, mu = gamma_M*hbar/2, so that
+    // Geant4's BMT equation precesses the muonium polarization at gamma_M*B. Note that a
+    // neutral particle feels its magnetic moment in tracking only when
+    // G4Transportation::EnableMagneticMoment() is enabled and the field manager uses a
+    // spin equation of motion (G4Mag_SpinEqRhs); that equation takes |mu| and therefore
+    // can only precess in the positive sense, whereas gamma_M is negative here.
+    SetPDGMagneticMoment(magneticMomentSign * muonium_magnetic_moment);
 
     const auto table{new G4DecayTable};
     table->Insert(new MuoniumDecayChannel{name, 1});
