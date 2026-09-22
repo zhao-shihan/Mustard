@@ -28,30 +28,33 @@ namespace Mustard::Data {
 /// @brief Vertex data model for event generators.
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
 /// @see `GeneratedVertex`
-using GeneratedGeometryVertex = Model<
-    Field<double, "w", float, "Vertex weight">,
-    Field<double, "t0", double, "Vertex time">,
-    Field<double, "x", float, "Vertex X position">,
-    Field<double, "y", float, "Vertex Y position">,
-    Field<double, "z", float, "Vertex Z position">>;
+struct GeneratedGeometryVertex
+    : Model<
+          Field<double, "w", float, "Vertex weight">,
+          Field<double, "t0", double, "Vertex time">,
+          Field<double, "x", float, "Vertex X position">,
+          Field<double, "y", float, "Vertex Y position">,
+          Field<double, "z", float, "Vertex Z position">> {};
 
 /// @brief Kinematics data model for event generators.
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
 /// @see `GeneratedVertex`
-using GeneratedKinematics = Model<
-    Field<double, "w", float, "Vertex weight">,
-    Field<std::vector<int>, "pdgID", std::vector<std::int32_t>, "Particle PDG IDs">,
-    Field<std::vector<double>, "E", std::vector<float>, "Total energy">,
-    Field<std::vector<double>, "px", std::vector<float>, "Momentum X component">,
-    Field<std::vector<double>, "py", std::vector<float>, "Momentum Y component">,
-    Field<std::vector<double>, "pz", std::vector<float>, "Momentum Z component">>;
+struct GeneratedKinematics
+    : Model<
+          Field<double, "w", float, "Vertex weight">,
+          Field<std::vector<int>, "pdgID", std::vector<std::int32_t>, "Particle PDG IDs">,
+          Field<std::vector<double>, "E", std::vector<float>, "Total energy">,
+          Field<std::vector<double>, "px", std::vector<float>, "Momentum X component">,
+          Field<std::vector<double>, "py", std::vector<float>, "Momentum Y component">,
+          Field<std::vector<double>, "pz", std::vector<float>, "Momentum Z component">> {};
 
 /// @brief Event data model for event generators.
 /// GeneratedVertex = GeneratedGeometryVertex U GeneratedKinematics.
 /// This model is intended to be used with `Geant4X::DataReaderPrimaryGenerator`
 /// @see `Geant4X::DataReaderPrimaryGenerator` for a compatible G4 generator
-using GeneratedVertex = Model<
-    GeneratedGeometryVertex,
-    Drop<GeneratedKinematics, "w">>;
+struct GeneratedVertex
+    : Model<
+          GeneratedGeometryVertex,
+          Drop<GeneratedKinematics, "w">> {};
 
 } // namespace Mustard::Data

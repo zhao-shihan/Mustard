@@ -142,29 +142,98 @@ template<typename M>
 concept Modelized = std::derived_from<M, impl::ModelSignature> and
                     not muc::instantiated_from<M, Model>;
 
+namespace impl {
+
+/// @brief Compile-time test: Name is contained in the Names pack.
+/// @tparam Name Name to test.
+/// @tparam ...Names Names pack to search.
+template<muc::ceta_string Name, muc::ceta_string... Names>
+consteval auto NameInPack() -> bool {
+    return (... or (Name == Names));
+}
+
+/// @brief Compile-time count of occurrences of Name within the Names pack.
+/// @tparam Name Name to count.
+/// @tparam ...Names Names pack to search.
+template<muc::ceta_string Name, muc::ceta_string... Names>
+consteval auto CountInPack() -> gsl::index {
+    return (0 + ... + (Name == Names));
+}
+
+/// @brief Compile-time test: all names in the pack are pairwise distinct.
+/// @tparam ...Names Names pack to test.
+template<muc::ceta_string... Names>
+consteval auto UniqueNames() -> bool {
+    return (... and (CountInPack<Names, Names...>() == 1));
+}
+
+/// @brief Compile-time test: Name exists among the fields of M.
+/// @tparam M Source model type.
+/// @tparam Name Name to search for.
+template<Modelized M, muc::ceta_string Name>
+consteval auto NameInModel() -> bool {
+    return []<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
+        return (... or (std::tuple_element_t<Is, typename M::StdTuple>::Name() == Name));
+    }(gslx::make_index_sequence<M::Size()>{});
+}
+
+/// @brief Compile-time test: every name in the pack exists among the fields of M.
+/// @tparam M Source model type.
+/// @tparam ...Names Names pack to test.
+template<Modelized M, muc::ceta_string... Names>
+consteval auto NamesInModel() -> bool {
+    return (... and NameInModel<M, Names>());
+}
+
+/// @brief Filters the fields of a schema tuple by name, producing the corresponding Model.
+/// @details Each field whose name satisfies the selector is kept as-is, so the
+///          resulting model preserves the declaration order of the tuple. A model
+///          is Modelizable itself, so the kept fields are gathered by simply
+///          letting Model concatenate the selected sub-models.
+/// @tparam AStdTuple std::tuple<Field<...>...> to filter.
+/// @tparam AKeepMatching true to keep fields whose names are in ANames (Take),
+///                       false to keep fields whose names are not in ANames (Drop).
+/// @tparam ...ANames Field names.
+template<typename AStdTuple, bool AKeepMatching, muc::ceta_string... ANames>
+struct FilteredModel;
+
+template<typename... AFields, bool AKeepMatching, muc::ceta_string... ANames>
+struct FilteredModel<std::tuple<AFields...>, AKeepMatching, ANames...> {
+    /// @brief Model of the kept Field types.
+    using type = Model<std::conditional_t<AKeepMatching == NameInPack<AFields::Name(), ANames...>(),
+                                          Model<AFields>,
+                                          Model<>>...>;
+};
+
+} // namespace impl
+
 /// @brief Take fields from a model by field name, producing a new model.
+/// @details The resulting model consists of exactly the fields of M whose names
+///          appear in ANames, in the declaration order of M. Every name in ANames
+///          must be unique and must name a field of M; otherwise the type is
+///          ill-formed and the compiler reports the violated constraint. The
+///          result is itself a Modelized type and can be composed further with
+///          Model, Take, and Drop.
 /// @tparam M Source model type.
 /// @tparam ...ANames Compile-time field names to extract.
 template<Modelized M, muc::ceta_string... ANames>
+    requires (impl::UniqueNames<ANames...>()) and (impl::NamesInModel<M, ANames...>())
 struct Take
-    : decltype(std::apply(
-          []<typename... Vs>(std::type_identity<Vs>...) -> std::type_identity<Model<Vs...>> { return {}; },
-          muc::tuple_concat_t<std::conditional_t<
-              M::template FieldAt<ANames>::Name() == ANames,
-              std::tuple<std::type_identity<typename M::template FieldAt<ANames>>>,
-              std::tuple<>>...>{}))::type{};
+    : impl::FilteredModel<typename M::StdTuple, true, ANames...>::type {};
 
 /// @brief Drop fields from a model by field name, producing a new model.
+/// @details The resulting model consists of exactly the fields of M whose names
+///          do not appear in ANames, in the declaration order of M. Every name in
+///          ANames must name a field of M; otherwise the type is ill-formed and
+///          the compiler reports the violated constraint. Repeating a name is
+///          harmless. The result is itself a Modelized type and can be composed
+///          further with Model, Take, and Drop.
 /// @tparam M Source model type.
 /// @tparam ...ANames Compile-time field names to drop.
 template<Modelized M, muc::ceta_string... ANames>
+    requires (impl::NamesInModel<M, ANames...>())
 struct Drop
-    : decltype(std::apply(
-          []<typename... Vs>(std::type_identity<Vs>...) -> std::type_identity<Model<Vs...>> { return {}; },
-          muc::tuple_concat_t<std::conditional_t<
-              M::template FieldAt<ANames>::Name() == ANames,
-              std::tuple<>,
-              std::tuple<std::type_identity<typename M::template FieldAt<ANames>>>>...>{}))::type{};
+    : impl::FilteredModel<typename M::StdTuple, false, ANames...>::type {};
 
 /// @brief Concept requiring that model M1 is a sub-model of M2 by field-name inclusion.
 template<typename M1, typename M2>
