@@ -66,10 +66,12 @@ auto RDFEventReader<T, M>::ReaderKernel() -> void {
         return true;
     }};
     // Read function to read data into result vector of current event
+    // Columns are taken by const reference and copied: RDF hands out references to buffers it owns
+    // and reuses across entries, so their values must never be moved from.
     const auto read{[this]<gsl::index... Is>(gslx::index_sequence<Is...>) {
-        return [this](std::add_lvalue_reference_t<typename std::tuple_element_t<
-                          Is, typename M::StdTuple>::PersistentType>... args) {
-            this->fData->back().emplace_back(MakeArcTuple<M>(std::move(args)...)); // Append to current event
+        return [this](std::add_lvalue_reference_t<std::add_const_t<typename std::tuple_element_t<
+                          Is, typename M::StdTuple>::PersistentType>>... args) {
+            this->fData->back().emplace_back(MakeArcTuple<M>(args...)); // Append to current event
         };
     }(gslx::make_index_sequence<M::Size()>{})};
     // Apply fence and read functions to RDF
