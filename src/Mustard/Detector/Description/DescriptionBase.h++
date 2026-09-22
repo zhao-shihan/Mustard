@@ -47,7 +47,7 @@ template<>
 class DescriptionBase<> : public NoncopyableBase {
 protected:
     DescriptionBase(std::string name);
-    ~DescriptionBase() = default;
+    virtual ~DescriptionBase() = default;
 
 public:
     const auto& Name() const { return fName; }
@@ -82,7 +82,7 @@ class DescriptionBase<ADerived> : public Env::Singleton<ADerived>,
                                   public DescriptionBase<> {
 protected:
     DescriptionBase(std::string name);
-    ~DescriptionBase() = default;
+    ~DescriptionBase() override = default;
 };
 
 } // namespace Mustard::Detector::Description

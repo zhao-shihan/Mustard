@@ -38,7 +38,7 @@ template<>
 class DescriptionWithCacheBase<> : public DescriptionBase<> {
 protected:
     using DescriptionBase::DescriptionBase;
-    ~DescriptionWithCacheBase() = default;
+    ~DescriptionWithCacheBase() override = default;
 
 protected:
     template<typename T>
@@ -115,7 +115,7 @@ class DescriptionWithCacheBase<ADerived> : public Env::Singleton<ADerived>,
                                            public DescriptionWithCacheBase<> {
 protected:
     using DescriptionWithCacheBase<>::DescriptionWithCacheBase;
-    ~DescriptionWithCacheBase() = default;
+    ~DescriptionWithCacheBase() override = default;
 };
 
 } // namespace Mustard::Detector::Description
