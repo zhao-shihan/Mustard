@@ -68,6 +68,10 @@ public:
     auto HSphereRadius(double r) -> void;
     auto HSphereCenterPosition(G4ThreeVector x0) -> void;
 
+    auto UseTargetSphere() -> void;
+    auto TargetSphereRadius(double r) -> void;
+    auto TargetSphereCenterPosition(G4ThreeVector x0) -> void;
+
     auto MaxTheta(double thetaMax) -> void;
     auto MinMomentum(double pMin) -> void;
     auto MaxMomentum(double pMax) -> void;

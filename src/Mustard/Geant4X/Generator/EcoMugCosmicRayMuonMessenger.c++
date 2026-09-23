@@ -36,6 +36,7 @@ EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     fSkyCenterPosition{},
     fHSphereCenterPosition{},
     fCylinderCenterPosition{},
+    fTargetSphereCenterPosition{},
     fSizeDirectory{},
     fSkySizeXY{},
     fSizeHSphereDirectory{},
@@ -43,6 +44,8 @@ EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     fSizeCylinderDirectory{},
     fCylinderRadius{},
     fCylinderHeight{},
+    fSizeTargetSphereDirectory{},
+    fTargetSphereRadius{},
     fEnergyDirectory{},
     fMaxMomentum{},
     fMinMomentum{},
@@ -55,7 +58,7 @@ EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     // position and genetator shape
     fPositionDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Position/");
     fPositionDirectory->SetGuidance("Generator generation surface and position directory\n"
-                                    "Available shape: sky, half sphere, cylinder.");
+                                    "Available shape: sky, half sphere, cylinder, target sphere.");
 
     fSkyCenterPosition = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/Sky", this);
     fSkyCenterPosition->SetGuidance("Set sky center position.");
@@ -74,6 +77,13 @@ EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     fCylinderCenterPosition->SetParameterName("X", "Y", "Z", false);
     fCylinderCenterPosition->SetUnitCategory("Length");
     fCylinderCenterPosition->AvailableForStates(G4State_Idle);
+
+    fTargetSphereCenterPosition = std::make_unique<G4UIcmdWith3VectorAndUnit>("/Mustard/EcoMug/Position/TargetSphere", this);
+    fTargetSphereCenterPosition->SetGuidance("Set the center of the target sphere enclosing the detector.\n"
+                                             "Every muon is then generated on that sphere, already pointing through it.");
+    fTargetSphereCenterPosition->SetParameterName("X", "Y", "Z", false);
+    fTargetSphereCenterPosition->SetUnitCategory("Length");
+    fTargetSphereCenterPosition->AvailableForStates(G4State_Idle);
 
     // size
     fSizeDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Size/");
@@ -114,6 +124,16 @@ EcoMugCosmicRayMuonMessenger::EcoMugCosmicRayMuonMessenger() :
     fCylinderHeight->SetUnitCategory("Length");
     fCylinderHeight->SetRange("H > 0");
     fCylinderHeight->AvailableForStates(G4State_Idle);
+
+    fSizeTargetSphereDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Size/TargetSphere/");
+    fSizeTargetSphereDirectory->SetGuidance("target sphere generator size directory");
+
+    fTargetSphereRadius = std::make_unique<G4UIcmdWithADoubleAndUnit>("/Mustard/EcoMug/Size/TargetSphere/Radius", this);
+    fTargetSphereRadius->SetGuidance("Set the radius of the target sphere enclosing the detector if used.");
+    fTargetSphereRadius->SetParameterName("R", false);
+    fTargetSphereRadius->SetUnitCategory("Length");
+    fTargetSphereRadius->SetRange("R > 0");
+    fTargetSphereRadius->AvailableForStates(G4State_Idle);
 
     // energy
     fEnergyDirectory = std::make_unique<G4UIdirectory>("/Mustard/EcoMug/Energy/");
@@ -163,6 +183,11 @@ auto EcoMugCosmicRayMuonMessenger::SetNewValue(G4UIcommand* command, G4String va
             r.UseCylinder();
             r.CylinderCenterPosition(fCylinderCenterPosition->GetNew3VectorValue(value));
         });
+    } else if (command == fTargetSphereCenterPosition.get()) {
+        Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {
+            r.UseTargetSphere();
+            r.TargetSphereCenterPosition(fTargetSphereCenterPosition->GetNew3VectorValue(value));
+        });
     } else if (command == fSkySizeXY.get()) {
         Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {
             auto XYZ{fSkySizeXY->GetNew3VectorValue(value)};
@@ -179,6 +204,10 @@ auto EcoMugCosmicRayMuonMessenger::SetNewValue(G4UIcommand* command, G4String va
     } else if (command == fCylinderHeight.get()) {
         Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {
             r.CylinderHeight(fCylinderHeight->GetNewDoubleValue(value));
+        });
+    } else if (command == fTargetSphereRadius.get()) {
+        Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {
+            r.TargetSphereRadius(fTargetSphereRadius->GetNewDoubleValue(value));
         });
     } else if (command == fMaxMomentum.get()) {
         Deliver<EcoMugCosmicRayMuon>([&](auto&& r) {

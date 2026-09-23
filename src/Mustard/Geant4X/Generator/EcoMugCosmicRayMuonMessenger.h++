@@ -50,6 +50,7 @@ private:
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkyCenterPosition;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fHSphereCenterPosition;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fCylinderCenterPosition;
+    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fTargetSphereCenterPosition;
 
     std::unique_ptr<G4UIdirectory> fSizeDirectory;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkySizeXY;
@@ -58,6 +59,8 @@ private:
     std::unique_ptr<G4UIdirectory> fSizeCylinderDirectory;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fCylinderRadius;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fCylinderHeight;
+    std::unique_ptr<G4UIdirectory> fSizeTargetSphereDirectory;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fTargetSphereRadius;
 
     std::unique_ptr<G4UIdirectory> fEnergyDirectory;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMaxMomentum;
