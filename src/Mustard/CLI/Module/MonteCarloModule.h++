@@ -26,13 +26,15 @@
 #include "gsl/gsl"
 
 #include <cstdint>
+#include <optional>
 
 namespace Mustard::CLI::inline Module {
 
 /// @brief CLI module for Monte Carlo programs.
 ///
-/// MonteCarloModule registers the --seed flag and provides
-/// SeedRandomIfFlagged() to apply the user-specified random seed.
+/// MonteCarloModule registers the --rng option, which selects the random
+/// engine to install, and the --seed flag, together with the accessors
+/// RandomEngineIfFlagged() and SeedRandomIfFlagged() that apply them.
 /// After seeding, the caller must propagate the seed to all parallel
 /// workers via Parallel::ReseedRandomEngine(engine).
 class MonteCarloModule : public ModuleBase {
@@ -41,15 +43,24 @@ public:
     /// @param cli CLI instance to register commands with
     MonteCarloModule(gsl::not_null<CLI<>*> cli);
 
+    /// @brief Make the random engine named by the --rng option.
+    /// @return The selected random engine, or an empty optional if no --rng
+    /// option was provided.
+    /// @note The engine is left at its default state if this returns an empty
+    /// optional.
+    /// @see RandomEngineInstaller
+    auto RandomEngineIfFlagged() const -> std::optional<muc::any_rng>;
+
     /// @brief Apply seed configuration if --seed flag was provided.
-    /// @tparam E A random number engine satisfying muc::random_number_engine.
+    /// @tparam E A random number generator satisfying muc::random_number_generator,
+    /// that is, an engine or a reference to one such as muc::basic_rng_ref.
     /// @param engine Engine to seed.
     /// @return true if seeding was performed, false if no --seed flag provided
     /// @note The engine is left at its default state if this returns false.
     /// @warning If this returns true, one MUST call
     ///          Parallel::ReseedRandomEngine(engine) to ensure proper seeding
     ///          in parallel environments.
-    template<muc::random_number_engine E>
+    template<muc::random_number_generator E>
     auto SeedRandomIfFlagged(E& engine) const -> bool;
 
 private:

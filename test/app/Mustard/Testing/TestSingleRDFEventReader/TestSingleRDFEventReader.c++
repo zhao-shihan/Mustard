@@ -54,7 +54,7 @@ TestSingleRDFEventReader::TestSingleRDFEventReader() :
 auto TestSingleRDFEventReader::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::MonteCarloCLI<> cli;
     cli->add_argument("-n", "--n-event").help("Number of events to generate").default_value(1000000ull).required().nargs(1).scan<'i', unsigned long long>();
-    Mustard::Env::MonteCarloEnv<256> env{argc, argv, cli};
+    Mustard::Env::MonteCarloEnv env{argc, argv, cli};
     auto& rng{env.CLHEPRandomEngine()};
 
     const auto nEvent{gsl::narrow<gsl::index>(cli->get<unsigned long long>("--n-event"))};

@@ -22,20 +22,20 @@
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Env/MonteCarloEnv.h++"
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
-#include "Mustard/Utility/UseXoshiro.h++"
+
+#include "muc/random"
+
+#include <optional>
 
 namespace Mustard::Env {
 
 /// @brief Environment combining MPI distribution with Monte Carlo random engines.
-/// @tparam AXoshiroWidth  Xoshiro state width (256 or 512).
 /// @details Uses diamond virtual inheritance to combine MPI distributed computing
-/// (`MPIEnv`) with pseudo-random number generation (`MonteCarloEnv<AXoshiroWidth>`).
-/// Registered as a passive singleton keyed on the Xoshiro width, so
-/// `MPIMonteCarloEnv<256>` and `MPIMonteCarloEnv<512>` are distinct registry entries.
-template<unsigned AXoshiroWidth>
+/// (`MPIEnv`) with pseudo-random number generation (`MonteCarloEnv`), which
+/// registers this environment as a passive singleton.
 class MPIMonteCarloEnv : virtual public MPIEnv,
-                         virtual public MonteCarloEnv<AXoshiroWidth>,
-                         public PassiveSingleton<MPIMonteCarloEnv<AXoshiroWidth>> {
+                         virtual public MonteCarloEnv,
+                         public PassiveSingleton<MPIMonteCarloEnv> {
 protected:
     /// @brief Constructs the MPI Monte Carlo environment without printing the start banner.
     /// @param argc  Argument count passed to `main`.
@@ -43,9 +43,11 @@ protected:
     /// @param cli   CLI object for argument processing.
     /// @param verboseLevel  Logging verbosity threshold.
     /// @param showBannerHint  Whether banner hint should be tracked despite suppression.
+    /// @param engine  Random engine to install; overridden when --rng is given.
     MPIMonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
                      enum VerboseLevel verboseLevel,
-                     bool showBannerHint);
+                     bool showBannerHint,
+                     std::optional<muc::any_rng> engine);
 
 public:
     /// @brief Constructs the MPI Monte Carlo environment and optionally prints banners.
@@ -54,17 +56,16 @@ public:
     /// @param cli   CLI object for argument processing.
     /// @param verboseLevel  Logging verbosity threshold.
     /// @param showBannerHint  Whether start/exit banner behavior is enabled.
+    /// @param engine  Random engine to install; overridden when --rng is given.
     MPIMonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
                      enum VerboseLevel verboseLevel = {},
-                     bool showBannerHint = true);
+                     bool showBannerHint = true,
+                     std::optional<muc::any_rng> engine = {});
 
     using PassiveSingleton<MPIMonteCarloEnv>::Instance;
     using PassiveSingleton<MPIMonteCarloEnv>::Available;
     using PassiveSingleton<MPIMonteCarloEnv>::Expired;
     using PassiveSingleton<MPIMonteCarloEnv>::Instantiated;
 };
-
-extern template class MPIMonteCarloEnv<256>;
-extern template class MPIMonteCarloEnv<512>;
 
 } // namespace Mustard::Env

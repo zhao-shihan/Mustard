@@ -20,11 +20,11 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N>
 auto EventGenerator<M, N>::operator()(const InitialStateMomenta& pI) -> Event {
-    return (*this)(*CLHEP::HepRandom::getTheEngine(), pI);
+    return (*this)(Env::RandomEngine(), pI);
 }
 
 template<int M, int N>
-auto EventGenerator<M, N>::operator()(CLHEP::HepRandomEngine& rng) -> Event {
+auto EventGenerator<M, N>::operator()(muc::rng_ref rng) -> Event {
     return (*this)(rng, InitialStateMomenta{});
 }
 
@@ -70,9 +70,10 @@ auto EventGenerator<M, N, D>::operator()(const RandomState& u) -> Event {
 
 template<int M, int N, int D>
     requires(M >= 1 and N >= 1 and (D == -1 or D >= 3 * N - 4))
-auto EventGenerator<M, N, D>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event {
+auto EventGenerator<M, N, D>::operator()(muc::rng_ref rng, InitialStateMomenta pI) -> Event {
+    auto uniform{Random::Uniform<double>{}};
     RandomState u;
-    rng.flatArray(u.size(), u.data());
+    std::ranges::generate(u, [&] { return uniform(rng); });
     return (*this)(u, std::move(pI));
 }
 

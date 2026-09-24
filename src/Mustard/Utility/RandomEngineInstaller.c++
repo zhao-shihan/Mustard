@@ -17,29 +17,35 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/CLI/Module/MonteCarloModule.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256StarStar.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
-#include "Mustard/Utility/UseXoshiro.h++"
+#include "Mustard/Utility/RandomEngineInstaller.h++"
 
 #include "CLHEP/Random/Random.h"
 
 #include "TRandom.h"
 
+#include <utility>
+
 namespace Mustard::inline Utility {
 
-template<unsigned ABitWidth>
-    requires(ABitWidth == 256 or ABitWidth == 512)
-UseXoshiro<ABitWidth>::UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli) :
+RandomEngineInstaller::RandomEngineInstaller(muc::optional_ref<const CLI::CLI<>> cli) :
+    RandomEngineInstaller{{}, cli} {}
+
+RandomEngineInstaller::RandomEngineInstaller(std::optional<muc::any_rng> engine, muc::optional_ref<const CLI::CLI<>> cli) :
     NoncopyableBase{},
-    fEngine{},
+    fEngine{engine ? std::move(*engine) : muc::any_rng{Random::Xoshiro256StarStar{}}},
     fCLHEPEngine{fEngine},
     fROOTEngine{fEngine} {
     // Install the unified engine
     CLHEP::HepRandom::setTheEngine(&fCLHEPEngine);
     delete gRandom, gRandom = &fROOTEngine;
-    // Seed the unified engine from CLI (if the Monte Carlo module is present
-    // and the --seed option is set); otherwise keep its default state
     if (cli.has_value()) {
         if (const auto monteCarloModule{dynamic_cast<const CLI::MonteCarloModule*>(&cli.value().get())}) {
+            // Select the engine through --rng, if given, then seed it through --seed, if given
+            if (auto selectedEngine{monteCarloModule->RandomEngineIfFlagged()}) {
+                fEngine = std::move(*selectedEngine);
+            }
             static_cast<void>(monteCarloModule->SeedRandomIfFlagged(fEngine));
         }
     }
@@ -47,14 +53,9 @@ UseXoshiro<ABitWidth>::UseXoshiro(muc::optional_ref<const CLI::CLI<>> cli) :
     Parallel::ReseedRandomEngine(fEngine);
 }
 
-template<unsigned ABitWidth>
-    requires(ABitWidth == 256 or ABitWidth == 512)
-UseXoshiro<ABitWidth>::~UseXoshiro() {
+RandomEngineInstaller::~RandomEngineInstaller() {
     CLHEP::HepRandom::setTheEngine(nullptr);
     gRandom = nullptr;
 }
-
-template class UseXoshiro<256>;
-template class UseXoshiro<512>;
 
 } // namespace Mustard::inline Utility

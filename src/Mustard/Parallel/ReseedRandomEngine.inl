@@ -18,7 +18,7 @@
 
 namespace Mustard::Parallel {
 
-template<muc::random_number_engine E>
+template<muc::random_number_generator E>
 auto ReseedRandomEngine(E& engine) -> void {
     if (not impl::ReseedNeeded()) {
         return;

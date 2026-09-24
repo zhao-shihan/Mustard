@@ -49,7 +49,7 @@ namespace Mustard::ROOTX::Math {
 template<Mustard::Random::RandomNumberEngineOrReference R>
 class AsTRandomEngine : public ROOT::Math::TRandomEngine,
                         public Mustard::Random::RandomNumberEngineHolder<R>,
-                        public Utility::NoncopyableBase {
+                        public NoncopyableBase {
 private:
     using Base = Mustard::Random::RandomNumberEngineHolder<R>;
 

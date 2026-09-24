@@ -22,7 +22,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
-#include "Mustard/Math/Random/Generator/Xoshiro256StarStar.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro512StarStar.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/ROOTX/Math/AsTRandomEngine.h++"
 #include "Mustard/ROOTX/Math/Xoshiro.h++"
@@ -34,6 +34,8 @@
 
 #include "mplr/mplr.hpp"
 
+#include "muc/random"
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -41,6 +43,7 @@
 #include <filesystem>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -52,24 +55,27 @@ TestUnifiedRandomEngine::TestUnifiedRandomEngine() :
 
 auto TestUnifiedRandomEngine::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::MonteCarloCLI<> cli;
-    Mustard::Env::MPIMonteCarloEnv<512> env{argc, argv, cli};
+    using AnyEngine = muc::any_rng;
+    using ConcreteEngine = Random::Xoshiro512StarStar;
+    Mustard::Env::MPIMonteCarloEnv env{argc, argv, cli, {}, true, AnyEngine{ConcreteEngine{}}};
 
     auto& engine{env.RandomEngine()};
     auto& clhepEngine{env.CLHEPRandomEngine()};
     auto& rootEngine{env.ROOTRandomEngine()};
     using Engine = std::remove_reference_t<decltype(engine)>;
-    using SeedType = typename Engine::SeedType;
+    using SeedType = typename Engine::result_type;
     const auto worldSize{static_cast<int>(mplr::comm_world().size())};
 
-    // The 256-bit width, which this test does not run, selects the 256-bit engine
-    // and its two handles all the same
-    using Env256 = Mustard::Env::MPIMonteCarloEnv<256>;
-    static_assert(std::same_as<std::remove_reference_t<decltype(std::declval<Env256&>().RandomEngine())>,
-                               Mustard::Random::Xoshiro256StarStar>);
-    static_assert(std::same_as<std::remove_reference_t<decltype(std::declval<Env256&>().CLHEPRandomEngine())>,
-                               CLHEPX::Random::AsHepRandomEngine<Mustard::Random::Xoshiro256StarStar&>>);
-    static_assert(std::same_as<std::remove_reference_t<decltype(std::declval<Env256&>().ROOTRandomEngine())>,
-                               ROOTX::Math::AsTRandom<Mustard::Random::Xoshiro256StarStar&>>);
+    // The environment owns one type-erased engine and both handles refer to it
+    static_assert(std::same_as<Engine, muc::any_rng>);
+    static_assert(std::same_as<std::remove_reference_t<decltype(std::declval<Mustard::Env::MPIMonteCarloEnv&>().CLHEPRandomEngine())>,
+                               CLHEPX::Random::AsHepRandomEngine<Engine&>>);
+    static_assert(std::same_as<std::remove_reference_t<decltype(std::declval<Mustard::Env::MPIMonteCarloEnv&>().ROOTRandomEngine())>,
+                               ROOTX::Math::AsTRandom<Engine&>>);
+    // The engine given to the environment is installed, unless --rng overrides it
+    if (not cli->present<std::string>("--rng").has_value() and engine.target<ConcreteEngine>() == nullptr) {
+        Throw<std::runtime_error>("The engine given to the environment was not installed.");
+    }
 
     // The three handles are views of one and the same engine
     if (CLHEP::HepRandom::getTheEngine() != &clhepEngine) {
@@ -94,7 +100,10 @@ auto TestUnifiedRandomEngine::Main(int argc, char* argv[]) const -> int {
         if (cliSeed.has_value() and *cliSeed == 0) {
             PrintWarning("--seed 0 asks for a non-deterministic seed, which cannot be checked.");
         } else {
-            Engine expected;
+            // A copy owns an engine of the same type, so seeding both alike
+            // reproduces the state the environment's engine should be in
+            Engine expected{engine};
+            expected.seed();
             if (cliSeed.has_value()) {
                 expected.seed(static_cast<SeedType>(*cliSeed));
             }
@@ -144,8 +153,9 @@ auto TestUnifiedRandomEngine::Main(int argc, char* argv[]) const -> int {
 
     // Every handle advances the very same stream
     constexpr SeedType seed{0x123456789ABCDEF0};
-    Engine reference{seed};
+    Engine reference{engine}; // a copy owns an engine of the same type
     engine.seed(seed);
+    reference.seed(seed);
     for (int i = 0; i < 1000; ++i) {
         if (clhepEngine.flat() != Random::Uniform<double>{}(reference)) {
             Throw<std::runtime_error>("The CLHEP handle draws from a different stream.");
@@ -231,16 +241,16 @@ auto TestUnifiedRandomEngine::Main(int argc, char* argv[]) const -> int {
     {
         CLHEPX::Random::Xoshiro512StarStar clhepOwning{seed};
         ROOTX::Math::Xoshiro512StarStar rootOwning{seed};
-        ROOTX::Math::AsTRandomEngine<Engine> rootMathOwning{seed};
+        ROOTX::Math::AsTRandomEngine<ConcreteEngine> rootMathOwning{seed};
         if (clhepOwning.getSeed() != static_cast<long>(seed)) {
             Throw<std::runtime_error>("An owning CLHEP handle did not record its seed.");
         }
         if (rootOwning.GetSeed() != static_cast<unsigned>(seed)) {
             Throw<std::runtime_error>("An owning ROOT handle did not record its seed.");
         }
-        Engine clhepReference{seed};
-        Engine rootReference{seed};
-        Engine rootMathReference{seed};
+        ConcreteEngine clhepReference{seed};
+        ConcreteEngine rootReference{seed};
+        ConcreteEngine rootMathReference{seed};
         for (int i = 0; i < 10; ++i) {
             if (clhepOwning.flat() != Random::Uniform<double>{}(clhepReference)) {
                 Throw<std::runtime_error>("An owning CLHEP handle draws from a different stream.");

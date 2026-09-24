@@ -29,11 +29,11 @@ namespace Mustard::Env {
 
 /// @brief Geant4-specialized MPI Monte Carlo environment.
 /// @details Inherits the full MPI distribution and Monte Carlo random engine
-/// capabilities via `MPIMonteCarloEnv<512>`, using Xoshiro-512 as the
-/// pseudo-random engine. Integrates Geant4 CLI module support for Geant4
-/// simulation workflows. Uses the passive singleton pattern — clients access
-/// the environment via `Geant4Env::Instance()`.
-class Geant4Env : virtual public MPIMonteCarloEnv<512>,
+/// capabilities via `MPIMonteCarloEnv`, installing a Xoshiro512** engine by
+/// default (the --rng option can select another one). Integrates Geant4 CLI
+/// module support for Geant4 simulation workflows. Uses the passive singleton
+/// pattern — clients access the environment via `Geant4Env::Instance()`.
+class Geant4Env : virtual public MPIMonteCarloEnv,
                   public PassiveSingleton<Geant4Env> {
 protected:
     /// @brief Constructs the Geant4 environment without printing the start banner.

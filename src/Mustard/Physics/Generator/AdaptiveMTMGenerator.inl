@@ -46,7 +46,7 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 AdaptiveMTMGenerator<M, N, A>::~AdaptiveMTMGenerator() = default;
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto AdaptiveMTMGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
+auto AdaptiveMTMGenerator<M, N, A>::BurnIn(muc::rng_ref rng) -> void {
     // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
     // so we try to ensure E(random walk displacement) >~ scale * E(distance in d-dim space) with some scale
     // i.e. sqrt(random walk distance) >~ scale * sqrt(dimension)
@@ -70,9 +70,10 @@ auto AdaptiveMTMGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void 
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, double burnInStepSize) -> bool {
+auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(muc::rng_ref rng, double burnInStepSize) -> bool {
     // Adaptive multiple-try Metropolis sampler (Ref: Simon Fontaine, Mylène Bédard (2022), https://doi.org/10.3150/21-BEJ1408)
     // see also: Jun S. Liu et al (2000), https://doi.org/10.2307/2669532
+    auto uniform{Random::Uniform<double>{}};
     std::array<struct MarkovChain::State, fgNTrial> stateY; // y_1, ..., y_k
     std::array<struct Base::Event, fgNTrial> eventY;        // Event at y_1, ..., y_k
     std::array<double, fgNTrial> acceptanceY;               // Acceptance function value at y_1, ..., y_k
@@ -117,7 +118,7 @@ auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, d
     }
     const auto sumPiY{muc::ranges::reduce(piY)}; // pi(y_1) + ... + pi(y_k)
     const auto selected{[&] {                    // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
-        const auto u{sumPiY * rng.flat()};
+        const auto u{sumPiY * uniform(rng)};
         double c{};
         for (int i{}; i < fgNTrial; ++i) {
             c += piY[i];
@@ -144,7 +145,7 @@ auto AdaptiveMTMGenerator<M, N, A>::NextEventImpl(CLHEP::HepRandomEngine& rng, d
 
     // accept/reject Y
     const auto accepted{sumPiY >= sumPiX or
-                        sumPiY > sumPiX * rng.flat()};
+                        sumPiY > sumPiX * uniform(rng)};
     if (accepted) {
         this->fMC.state = stateY[selected];
         this->fMC.mSqAcceptanceDetJ = piY[selected];

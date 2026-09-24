@@ -30,8 +30,8 @@ Geant4Env::Geant4Env(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
                      bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
-    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
-    MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
+    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, muc::any_rng{Random::Xoshiro512StarStar{}}},
+    MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, muc::any_rng{Random::Xoshiro512StarStar{}}},
     PassiveSingleton<Geant4Env>{this} {
     if (not dynamic_cast<CLI::Geant4Module*>(&cli)) {
         Mustard::MasterPrintWarning("Geant4 CLI module (Mustard::CLI::Geant4Module) not found.");

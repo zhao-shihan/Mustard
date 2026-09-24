@@ -142,7 +142,7 @@ CPMFindPackage(
 CPMFindPackage(
     NAME muc
     GITHUB_REPOSITORY zhao-shihan/muc
-    VERSION 0.26.707
+    VERSION 0.26.925
     OPTIONS "MUC_INSTALL ON")
 
 # =============================================================================

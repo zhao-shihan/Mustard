@@ -42,8 +42,10 @@ namespace Mustard::Parallel {
 /// ranks. Every rank, including the master one, finally reseeds @p engine with
 /// its own seed, taken from [1, max(E::result_type) - 1].
 ///
-/// @tparam E A random number engine satisfying muc::random_number_engine.
-/// @param engine Engine to reseed; normally the unified engine of the process.
+/// @tparam E A random number generator satisfying muc::random_number_generator,
+/// that is, an engine or a reference to one such as muc::basic_rng_ref.
+/// @param engine Engine to reseed; normally the unified engine of the process,
+/// reached directly or through a type-erased reference.
 ///
 /// @note Collective MPI operation: every rank must call it, and all ranks must
 /// call the same overload, since the overloads do not agree on the seed range.
@@ -51,9 +53,10 @@ namespace Mustard::Parallel {
 /// @p engine is left untouched.
 /// @note Distinct streams require the engine to map distinct seeds onto distinct
 /// states. An engine that folds its seed into a narrower state, e.g. one seeded
-/// from an integer wider than its internal state, may in principle map two ranks
-/// onto the same stream.
-template<muc::random_number_engine E>
+/// from an integer wider than its internal state, or addressed through a
+/// reference wider than its own result type, may in principle map two ranks onto
+/// the same stream.
+template<muc::random_number_generator E>
 auto ReseedRandomEngine(E& engine) -> void;
 
 /// @brief Reseeds @p engine so that every MPI rank continues with a distinct stream.

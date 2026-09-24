@@ -62,7 +62,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void 
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
+auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(muc::rng_ref rng) -> void {
     // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
     // so we try to ensure E(random walk displacement) >~ scale * E(distance in d-dim space) with some scale
     // i.e. sqrt(random walk distance) >~ scale * sqrt(dimension)
@@ -76,10 +76,11 @@ auto MultipleTryMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng) -> bool {
+auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(muc::rng_ref rng) -> bool {
     if (std::isnan(fStepSize)) {
         Throw<std::logic_error>("Step size not set.");
     }
+    auto uniform{Random::Uniform<double>{}};
 
     // Multiple-try Metropolis sampler (Jun S. Liu et al (2000), https://doi.org/10.2307/2669532)
     std::array<struct MarkovChain::State, fgNTrial> stateY; // y_1, ..., y_k
@@ -115,7 +116,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
     }
     const auto sumPiY{muc::ranges::reduce(piY)}; // pi(y_1) + ... + pi(y_k)
     const auto selected{[&] {                    // Select Y from y_1, ..., y_k by pi(y_1), ..., pi(y_k)
-        const auto u{sumPiY * rng.flat()};
+        const auto u{sumPiY * uniform(rng)};
         double c{};
         for (int i{}; i < fgNTrial; ++i) {
             c += piY[i];
@@ -140,7 +141,7 @@ auto MultipleTryMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& 
 
     // accept/reject Y
     if (sumPiY >= sumPiX or
-        sumPiY > sumPiX * rng.flat()) {
+        sumPiY > sumPiX * uniform(rng)) {
         this->fMC.state = stateY[selected];
         this->fMC.mSqAcceptanceDetJ = piY[selected];
         this->fMC.event = std::move(eventY[selected]);

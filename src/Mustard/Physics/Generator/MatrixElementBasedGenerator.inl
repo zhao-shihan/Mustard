@@ -46,7 +46,7 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<long long>& executor, double precisionGoal, Statistic<1> statistic,
-                                                              CLHEP::HepRandomEngine& rng) -> Statistic<1> {
+                                                              muc::rng_ref rng) -> Statistic<1> {
     MasterPrintLn("Integrating |M|^2 * (Acceptance) over phase space in {}.\n", muc::try_demangle(typeid(*this).name()));
     if (fInfraredUnsafePID.empty()) {
         MasterPrintLn("No infrared cutoff is set.\n");
@@ -304,7 +304,7 @@ auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMom
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::MCIntegrate(Statistic<1>& statistic, std::regular_invocable<const Event&> auto&& integrand, double precisionGoal,
-                                                       Executor<long long>& executor, CLHEP::HepRandomEngine& rng) -> void {
+                                                       Executor<long long>& executor, muc::rng_ref rng) -> void {
     if (precisionGoal <= 0) [[unlikely]] {
         Mustard::PrintWarning(fmt::format("Non-positive precision goal (got {}), taking its absolute value.", precisionGoal));
         precisionGoal = std::abs(precisionGoal);

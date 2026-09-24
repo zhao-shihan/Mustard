@@ -21,30 +21,29 @@
 
 #include "mplr/mplr.hpp"
 
+#include <utility>
+
 namespace Mustard::Env {
 
-template<unsigned AXoshiroWidth>
-MPIMonteCarloEnv<AXoshiroWidth>::MPIMonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
-                                                  enum VerboseLevel verboseLevel,
-                                                  bool showBannerHint) :
+MPIMonteCarloEnv::MPIMonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
+                                   enum VerboseLevel verboseLevel,
+                                   bool showBannerHint,
+                                   std::optional<muc::any_rng> engine) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
-    MonteCarloEnv<AXoshiroWidth>{{}, argc, argv, cli, verboseLevel, showBannerHint},
+    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)},
     PassiveSingleton<MPIMonteCarloEnv>{this} {}
 
-template<unsigned AXoshiroWidth>
-MPIMonteCarloEnv<AXoshiroWidth>::MPIMonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
-                                                  enum VerboseLevel verboseLevel,
-                                                  bool showBannerHint) :
-    MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
+MPIMonteCarloEnv::MPIMonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
+                                   enum VerboseLevel verboseLevel,
+                                   bool showBannerHint,
+                                   std::optional<muc::any_rng> engine) :
+    MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)} {
     if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();
     }
 }
-
-template class MPIMonteCarloEnv<256>;
-template class MPIMonteCarloEnv<512>;
 
 } // namespace Mustard::Env

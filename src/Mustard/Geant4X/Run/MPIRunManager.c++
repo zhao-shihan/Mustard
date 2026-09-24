@@ -73,7 +73,8 @@ auto MPIRunManager::PrintProgressInterval(muc::chrono::seconds<double> t) -> voi
 auto MPIRunManager::BeamOn(int nEvent, gsl::czstring macroFile, int nSelect) -> void {
     // Reseed the process-wide unified engine through its CLHEP handle; ROOT's
     // gRandom is a handle of that same engine, hence reseeded with it. A process
-    // without a unified engine (no UseXoshiro) only has its CLHEP engine reseeded.
+    // whose environment installed no unified engine only has its CLHEP engine
+    // reseeded.
     if (auto randomEngine{CLHEP::HepRandom::getTheEngine()}) {
         Parallel::ReseedRandomEngine(*randomEngine);
     } else {

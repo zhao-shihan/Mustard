@@ -56,7 +56,7 @@ auto TestGaussian::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("--sigma3").help("Sigma 3 of 3D normal distribution.").default_value(3.).nargs(1).scan<'g', double>();
     cli->add_argument("--mu4").help("Mean 4 of 4D normal distribution.").default_value(3.).nargs(1).scan<'g', double>();
     cli->add_argument("--sigma4").help("Sigma 4 of 4D normal distribution.").default_value(4.).nargs(1).scan<'g', double>();
-    Mustard::Env::MPIMonteCarloEnv<256> env{argc, argv, cli};
+    Mustard::Env::MPIMonteCarloEnv env{argc, argv, cli};
 
     const auto n{cli->get<unsigned long long>("n")};
     const auto mu1{cli->get<double>("--mu1")};

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Mustard/Env/MonteCarloEnv.h++"
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Estimate.h++"
@@ -29,7 +30,6 @@
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
 
-#include "CLHEP/Random/Random.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "gtl/phmap.hpp"
@@ -40,6 +40,7 @@
 #include "muc/chrono"
 #include "muc/math"
 #include "muc/numeric"
+#include "muc/random"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -108,12 +109,12 @@ public:
     /// @param executor An executor instance
     /// @param precisionGoal Target relative uncertainty (e.g. 0.01 for 1% rel. unc.)
     /// @param integrationState Integration state for continuing integration
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return (1) Monte Carlo integration result of 1/S × |M|² × acceptance integral on phase space
     ///         (2) Effective sample size
     ///         (3) Current integration state
     auto PhaseSpaceIntegral(Executor<long long>& executor, double precisionGoal, Statistic<1> statistic = {},
-                            CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Statistic<1>;
+                            muc::rng_ref rng = Env::RandomEngine()) -> Statistic<1>;
 
 protected:
     /// @brief Set initial-state 4-momenta
@@ -150,9 +151,9 @@ protected:
     auto Mass(const std::array<double, N>& mass) -> void { fGENBOD.Mass(mass); }
 
     /// @brief Generate an event on phase space
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return An event from phase space
-    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fMomenta); }
+    auto PhaseSpace(muc::rng_ref rng) -> auto { return fGENBOD(rng, fMomenta); }
 
     /// @brief Add an identical particle index set
     /// @param set A vector of particle indices (0 ≤ index < N)
@@ -200,7 +201,7 @@ protected:
 private:
     /// @brief Monte Carlo integration implementation
     auto MCIntegrate(Statistic<1>& statistic, std::regular_invocable<const Event&> auto&& integrand, double precisionGoal,
-                     Executor<long long>& executor, CLHEP::HepRandomEngine& rng) -> void;
+                     Executor<long long>& executor, muc::rng_ref rng) -> void;
 
 protected:
     [[no_unique_address]] A fMatrixElement; ///< Matrix element

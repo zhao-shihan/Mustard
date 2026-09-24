@@ -18,13 +18,13 @@
 
 #pragma once
 
+#include "Mustard/Env/MonteCarloEnv.h++"
+#include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Utility/ClassSemanticHelper.h++"
 
-#include "CLHEP/Random/Random.h"
-#include "CLHEP/Random/RandomEngine.h"
-
 #include "muc/numeric"
+#include "muc/random"
 
 #include <algorithm>
 #include <array>
@@ -54,7 +54,7 @@ class EventGenerator;
 /// @class EventGenerator<M, N>
 /// @brief Specialization for random-engine-based generator
 ///
-/// Uses CLHEP random engines directly.
+/// Draws flat random numbers from a random number engine.
 ///
 /// @tparam M Number of initial-state particles (M ≥ 1)
 /// @tparam N Number of final-state particles (N ≥ 1)
@@ -75,19 +75,19 @@ public:
 
 public:
     /// @brief Generate event according to initial state
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)
     /// @return Generated event
-    virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event = 0;
-    /// @brief Generate event according to initial state using global CLHEP engine
+    virtual auto operator()(muc::rng_ref rng, InitialStateMomenta pI) -> Event = 0;
+    /// @brief Generate event according to initial state using the unified random engine of the environment
     /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)
     /// @return Generated event
     auto operator()(const InitialStateMomenta& pI) -> Event;
     /// @brief Generate event in c.m. frame.
     /// This overload is intended for generators with fixed c.m. energy (e.g. decay).
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return Generated event
-    auto operator()(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> Event;
+    auto operator()(muc::rng_ref rng = Env::RandomEngine()) -> Event;
 
 protected:
     /// @brief Calculate c.m. energy from initial state
@@ -146,10 +146,10 @@ public:
     auto operator()(const RandomState& u) -> Event;
 
     /// @brief Generate event according to initial state
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @param pI Initial-state 4-momenta (maybe ignored, depend on specific generator)
     /// @return Generated event
-    virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta pI) -> Event override;
+    virtual auto operator()(muc::rng_ref rng, InitialStateMomenta pI) -> Event override;
     // Avoid hiding other operator() overloads from base class
     using EventGenerator<M, N>::operator();
 };

@@ -422,6 +422,35 @@ namespace Mustard::inline Reconstruction::MMSTracking::inline Finder {
 } // namespace Mustard::inline Reconstruction::MMSTracking::inline Finder
 ```
 
+### Qualification
+- **Never qualify a name with an `inline` namespace**: an inline namespace is transparent, its members belong to the enclosing namespace, so name them from there and keep the shortest path that reaches the name
+- Qualify only to disambiguate, that is, when a nearer namespace hides the name
+
+```cpp
+namespace Mustard::inline Utility {
+
+// √ Good: Utility is inline, so its members are reachable directly
+auto MakeEngine() -> Random::AnyEngine;                 // Mustard::Math::Random, Math is inline
+class RandomEngineInstaller : public NoncopyableBase {  // Mustard::Utility::NoncopyableBase
+    /* ... */
+};
+
+// × Bad: redundant qualifications of inline namespaces
+auto MakeEngine() -> Math::Random::AnyEngine;
+class RandomEngineInstaller : public Utility::NoncopyableBase {
+    /* ... */
+};
+
+} // namespace Mustard::inline Utility
+
+namespace Mustard::CLHEPX::Random {
+
+// √ Good: CLHEPX::Random hides Math::Random, so the qualification is needed here
+using Xoshiro256StarStar = AsHepRandomEngine<Math::Random::Xoshiro256StarStar>;
+
+} // namespace Mustard::CLHEPX::Random
+```
+
 ### Using Directives
 - **Never use `using namespace` in header files**
 - Limit `using` declarations to implementation files or function scope
@@ -530,8 +559,7 @@ class Accelerator final : public Mustard::Detector::Definition::DefinitionBase {
 ```
 - Place multiple base classes on the different line successively
 ```cpp
-class Geant4Env : virtual public MPIEnv,
-                  virtual public MonteCarloEnv<512>,
+class Geant4Env : virtual public MPIMonteCarloEnv,
                   public PassiveSingleton<Geant4Env> {
     /* ... */
 };
@@ -983,8 +1011,8 @@ class Statistic {
 Declare extern templates in headers when specializations are defined in source file:
 
 ```cpp
-extern template class UseXoshiro<256>;
-extern template class UseXoshiro<512>;
+extern template class FStream<std::ifstream>;
+extern template class FStream<std::wifstream>;
 
 extern template class File<std::ifstream>;
 extern template class File<std::wifstream>;

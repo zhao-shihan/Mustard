@@ -26,7 +26,6 @@
 #include "Mustard/Testing/TestPhaseSpaceGenerator/TestPhaseSpaceGenerator.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
-#include "Mustard/Utility/UseXoshiro.h++"
 
 #include "TH2D.h"
 
@@ -44,7 +43,7 @@ auto TestPhaseSpaceGenerator::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("n").help("Number of events to generate.").default_value(10'000'000ull).nargs(1).scan<'i', unsigned long long>();
     cli->add_argument("-o", "--output").help("Output file path.").default_value("test_phase_space_generator.root").required().nargs(1);
     cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("RECREATE").required().nargs(1);
-    Mustard::Env::MPIMonteCarloEnv<256> env{argc, argv, cli};
+    Mustard::Env::MPIMonteCarloEnv env{argc, argv, cli};
 
     Mustard::ProcessSpecificFile<TFile> file{cli->get("--output"), cli->get("--output-mode")};
 

@@ -117,15 +117,20 @@ auto AsHepRandomEngine<R>::put(std::ostream& os) const -> decltype(os) {
 template<Math::Random::RandomNumberEngineOrReference R>
 auto AsHepRandomEngine<R>::get(std::istream& is) -> decltype(is) {
     const auto engineName{name()};
+    // An engine name may contain whitespace, since a type-erased engine names
+    // its template arguments, so the tags are read line by line, not as tokens
     std::string tag;
-    is >> tag;
+    std::getline(is, tag);
     if (tag != std::string(engineName).append("-begin")) {
         PrintError(fmt::format("CLHEPX::Random::AsHepRandomEngine<R>::get (with R = {}): No {} found at current position, engine state unchanged. Input stream has been consumed.",
                                muc::try_demangle(typeid(AsHepRandomEngine).name()), engineName));
         return is;
     }
-    EngineType volunteer;
-    is >> volunteer >> tag;
+    // The state is restored into an engine of the installed type, which a
+    // default constructed one need not be: an engine may erase its type
+    EngineType volunteer{Engine()};
+    is >> volunteer >> std::ws;
+    std::getline(is, tag);
     if (tag != std::string(engineName).append("-end")) {
         PrintError(fmt::format("CLHEPX::Random::AsHepRandomEngine<R>::get (with R = {}): {} read from the input stream is incomplete, engine state unchanged. Input stream has been consumed.",
                                muc::try_demangle(typeid(AsHepRandomEngine).name()), engineName));

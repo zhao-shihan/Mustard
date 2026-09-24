@@ -53,8 +53,8 @@ auto ClassicalMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
         PrintError(fmt::format("Non-finite MCMC step size not allowed (got {}), not setting it.", stepSize));
         return;
     }
-    if (stepSize <= muc::default_tolerance<double> or 0.5 <= stepSize) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5).", stepSize, muc::default_tolerance<double>));
+    if (stepSize <= muc::default_rel_tol<double> or 0.5 <= stepSize) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5).", stepSize, muc::default_rel_tol<double>));
     }
     // Rescale stepSize
     // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
@@ -62,7 +62,7 @@ auto ClassicalMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
+auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(muc::rng_ref rng) -> void {
     // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
     // so we try to ensure E(random walk displacement) >~ scale * E(distance in d-dim space) with some scale
     // i.e. sqrt(random walk distance) >~ scale * sqrt(dimension)
@@ -76,10 +76,11 @@ auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) 
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng) -> bool {
+auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(muc::rng_ref rng) -> bool {
     if (std::isnan(fStepSize)) {
         Throw<std::logic_error>("Step size not set.");
     }
+    auto uniform{Random::Uniform<double>{}};
     struct MarkovChain::State state;
     // Walk random state
     std::ranges::transform(this->fMC.state.u, state.u.begin(), [&](auto u0) {
@@ -97,7 +98,7 @@ auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rn
         const auto acceptance{this->Acceptance(event.p)};
         const auto mSqAcceptanceDetJ{this->MSqAcceptanceDetJ(event.p, acceptance, detJ)};
         if (mSqAcceptanceDetJ >= this->fMC.mSqAcceptanceDetJ or
-            mSqAcceptanceDetJ > this->fMC.mSqAcceptanceDetJ * rng.flat()) {
+            mSqAcceptanceDetJ > this->fMC.mSqAcceptanceDetJ * uniform(rng)) {
             this->fMC.state = std::move(state);
             this->fMC.mSqAcceptanceDetJ = mSqAcceptanceDetJ;
             this->fMC.event = std::move(event);

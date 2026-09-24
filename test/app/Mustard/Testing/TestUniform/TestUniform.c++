@@ -46,7 +46,7 @@ auto TestUniform::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("--b1").help("Upper bound of 1D uniform.").default_value(1.).nargs(1).scan<'g', double>();
     cli->add_argument("--a2").help("Lower bound 2 of 2D uniform.").default_value(0.).nargs(1).scan<'g', double>();
     cli->add_argument("--b2").help("Upper bound 2 of 2D uniform.").default_value(1.).nargs(1).scan<'g', double>();
-    Mustard::Env::MPIMonteCarloEnv<256> env{argc, argv, cli};
+    Mustard::Env::MPIMonteCarloEnv env{argc, argv, cli};
 
     const auto n{cli->get<unsigned long long>("n")};
     const auto a1{cli->get<double>("--a1")};

@@ -37,6 +37,8 @@
 #include <algorithm>
 #include <concepts>
 #include <fstream>
+#include <istream>
+#include <ostream>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -71,7 +73,7 @@ namespace Mustard::CLHEPX::Random {
 template<Math::Random::RandomNumberEngineOrReference R>
 class AsHepRandomEngine : public CLHEP::HepRandomEngine,
                           public Math::Random::RandomNumberEngineHolder<R>,
-                          public Utility::NoncopyableBase {
+                          public NoncopyableBase {
 private:
     using Base = Math::Random::RandomNumberEngineHolder<R>;
 

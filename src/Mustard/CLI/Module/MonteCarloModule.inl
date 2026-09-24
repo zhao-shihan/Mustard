@@ -18,7 +18,7 @@
 
 namespace Mustard::CLI::inline Module {
 
-template<muc::random_number_engine E>
+template<muc::random_number_generator E>
 auto MonteCarloModule::SeedRandomIfFlagged(E& engine) const -> bool {
     const auto theSeed{TheCLI()->present<std::int64_t>("--seed")};
     if (not theSeed.has_value()) {

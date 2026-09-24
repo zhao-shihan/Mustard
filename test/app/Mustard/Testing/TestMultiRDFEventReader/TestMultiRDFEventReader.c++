@@ -55,7 +55,7 @@ auto TestMultiRDFEventReader::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("-a", "--n-event-a").help("Number of events for TestingModelA").default_value(1000000ull).required().nargs(1).scan<'i', unsigned long long>();
     cli->add_argument("-b", "--n-event-b").help("Number of events for TestingModelB").default_value(1500000ull).required().nargs(1).scan<'i', unsigned long long>();
     cli->add_argument("-c", "--n-event-c").help("Number of events for TestingModelC").default_value(800000ull).required().nargs(1).scan<'i', unsigned long long>();
-    Mustard::Env::MonteCarloEnv<256> env{argc, argv, cli};
+    Mustard::Env::MonteCarloEnv env{argc, argv, cli};
     auto& rng{env.CLHEPRandomEngine()};
 
     const auto nEventA{gsl::narrow<gsl::index>(cli->get<unsigned long long>("--n-event-a"))};

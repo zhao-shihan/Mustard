@@ -19,13 +19,12 @@
 #pragma once
 
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
+#include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/Generator/MCMCGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Utility/VectorAssign.h++"
 #include "Mustard/Utility/VectorCast.h++"
-
-#include "CLHEP/Random/RandomEngine.h"
 
 #include "Eigen/Cholesky"
 
@@ -98,19 +97,19 @@ public:
 
 private:
     /// @brief Markov chain burn in stage
-    /// @param rng Reference to CLHEP random engine
-    virtual auto BurnIn(CLHEP::HepRandomEngine& rng) -> void override;
+    /// @param rng Reference to a random number engine
+    virtual auto BurnIn(muc::rng_ref rng) -> void override;
     /// @brief Advance Markov chain by one event
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return true if proposal accepted, false if not
-    virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override { return NextEventImpl(rng); }
+    virtual auto NextEvent(muc::rng_ref rng) -> bool override { return NextEventImpl(rng); }
 
     /// @brief Advance Markov chain by one event using
     /// adaptive multiple-try Metropolis (aMTM) algorithm
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @param burnInStepSize Step scale of random walk during burn in stage
     /// @return true if proposal accepted, false if not
-    auto NextEventImpl(CLHEP::HepRandomEngine& rng, double burnInStepSize = 0) -> bool;
+    auto NextEventImpl(muc::rng_ref rng, double burnInStepSize = 0) -> bool;
 
 private:
     Random::Gaussian<> fGaussian;                                                  ///< Gaussian distribution
