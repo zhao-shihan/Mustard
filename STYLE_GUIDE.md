@@ -816,7 +816,15 @@ Example::Example(int val, std::vector<int> vec, std::string str = {}) :
 
 ### Local Variable Initialization
 - Use brace initialization for local variables as well
-- Use `auto` with brace initialization
+- Use `auto` with brace initialization when the initializer determines the type
+- For zero-initialization, write the type explicitly: use `T var{}`, not `auto var{T{}}` or `auto var{0.}`. Empty braces carry no type for `auto`, and an explicit type makes the zero value and its type clear
+- This rule is about zero-initialization; using `auto` with a non-zero literal whose type is obvious (e.g., `auto k{2}`) remains acceptable
+
+```cpp
+double sum{};          // √ Zero-initialized double
+auto sum{0.};          // × Prefer double sum{}
+auto sum{double{}};    // × Redundant; prefer double sum{}
+```
 
 ```cpp
 auto RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double, N>& mass) :
@@ -1167,6 +1175,7 @@ private:
 ### Exceptions
 - **Use `Mustard::Throw<exception_type>()` for exceptions, do not use plain `throw` directly**
 - Usually use standard library exceptions: `std::runtime_error`, `std::invalid_argument`, etc.
+- `Throw` is `[[noreturn]]`; do not add `[[unlikely]]` to a branch whose body unconditionally throws. Reserve `[[unlikely]]` for rare branches that actually continue or return.
 
 ```cpp
 if (not opened) {
