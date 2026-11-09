@@ -102,7 +102,9 @@ jobs:
           - TestFieldTypeName
           - TestFile-TestFile
           - TestLinePointPOCA-TestLineLinePOCA-TestHelixAxisPOCA-TestHelixPointPOCA-TestHelixLinePOCA
+          - TestMCMCGenerator
           - TestMT1993732-TestMT1993764
+          - TestMarkovChainStatistic
           - TestMultiRDFEntryReader-TestMultiRDFEntryProcessor-TestMultiRDFEntryProcessor
           - TestMultiRDFEventReader-TestMultiRDFEventProcessor-TestMultiRDFEventProcessor
           - TestPassiveSingleton-TestPassiveSingleton
@@ -213,9 +215,15 @@ jobs:
                   ./MustardTest TestHelixPointPOCA
                   ./MustardTest TestHelixLinePOCA
                   ;;
+                "TestMCMCGenerator")
+                  parexec --use-hwthreads ./MustardTest TestMCMCGenerator
+                  ;;
                 "TestMT1993732-TestMT1993764")
                   ./MustardTest TestMT1993732
                   ./MustardTest TestMT1993764
+                  ;;
+                "TestMarkovChainStatistic")
+                  ./MustardTest TestMarkovChainStatistic
                   ;;
                 "TestMultiRDFEntryReader-TestMultiRDFEntryProcessor-TestMultiRDFEntryProcessor")
                   ./MustardTest TestMultiRDFEntryReader

@@ -137,11 +137,19 @@ echo "  -> ./MustardTest TestHelixPointPOCA"
 echo "  -> ./MustardTest TestHelixLinePOCA"
 ./MustardTest TestHelixLinePOCA
 
+echo "Running TestMCMCGenerator..."
+echo "  -> parexec ./MustardTest TestMCMCGenerator"
+parexec ./MustardTest TestMCMCGenerator
+
 echo "Running TestMT1993732/TestMT1993764..."
 echo "  -> ./MustardTest TestMT1993732"
 ./MustardTest TestMT1993732
 echo "  -> ./MustardTest TestMT1993764"
 ./MustardTest TestMT1993764
+
+echo "Running TestMarkovChainStatistic..."
+echo "  -> ./MustardTest TestMarkovChainStatistic"
+./MustardTest TestMarkovChainStatistic
 
 echo "Running TestMultiRDFEntryReader/TestMultiRDFEntryProcessor/TestMultiRDFEntryProcessor..."
 echo "  -> ./MustardTest TestMultiRDFEntryReader"

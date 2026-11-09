@@ -1467,6 +1467,60 @@ auto EstimateBase<ADerived, K, C>::FromPOD(const PODType& data) -> void
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
+auto EstimateBase<ADerived, K, C>::ToFlat() const -> std::pair<std::vector<long long>, std::vector<double>> {
+    const auto dim{Dimension()};
+    std::vector<long long> flatCount{dim};
+    std::vector<double> flatValue;
+    flatValue.reserve(dim + (C == CovarianceOption::Full ? dim * dim : dim));
+    flatValue.insert(flatValue.end(), fX.data(), fX.data() + dim);
+    if constexpr (C == CovarianceOption::Full) {
+        flatValue.insert(flatValue.end(), fCov.data(), fCov.data() + dim * dim);
+    } else {
+        const auto& diagonal{fCov.diagonal()};
+        flatValue.insert(flatValue.end(), diagonal.data(), diagonal.data() + dim);
+    }
+    return {std::move(flatCount), std::move(flatValue)};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto EstimateBase<ADerived, K, C>::FromFlat(const std::pair<std::vector<long long>, std::vector<double>>& data) -> void {
+    const auto& flatCount{data.first};
+    const auto& flatValue{data.second};
+    if (flatCount.size() != 1) {
+        Throw<std::invalid_argument>(fmt::format("Flat estimate counts must contain 1 element, got {}.", flatCount.size()));
+    }
+    const auto dim{static_cast<int>(flatCount[0])};
+    if (dim <= 0) {
+        Throw<std::invalid_argument>(fmt::format("Flat estimate dimension must be positive, got {}.", dim));
+    }
+    if constexpr (K != Eigen::Dynamic) {
+        if (dim != K) {
+            Throw<std::invalid_argument>(fmt::format("Flat estimate dimension ({}) does not match the estimate dimension ({}).", dim, K));
+        }
+    }
+    const auto expectedSize{dim + (C == CovarianceOption::Full ? dim * dim : dim)};
+    if (static_cast<int>(flatValue.size()) != expectedSize) {
+        Throw<std::invalid_argument>(fmt::format("Flat estimate values must contain {} elements, got {}.", expectedSize, flatValue.size()));
+    }
+    if constexpr (K == Eigen::Dynamic) {
+        fX.resize(dim);
+        if constexpr (C == CovarianceOption::Full) {
+            fCov.resize(dim, dim);
+        } else {
+            fCov.resize(dim);
+        }
+    }
+    std::copy_n(flatValue.data(), dim, fX.data());
+    if constexpr (C == CovarianceOption::Full) {
+        std::copy_n(flatValue.data() + dim, dim * dim, fCov.data());
+    } else {
+        std::copy_n(flatValue.data() + dim, dim, fCov.diagonal().data());
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
 template<typename AVec>
     requires((AVec::RowsAtCompileTime == K or
               K == Eigen::Dynamic or AVec::RowsAtCompileTime == Eigen::Dynamic) and

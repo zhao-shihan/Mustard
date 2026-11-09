@@ -37,13 +37,14 @@ public:
     /// @param parent "mu-" or "mu+" (determines PDG IDs in generated event)
     /// @param momentum Muon momentum
     /// @param polarization Muon polarization vector
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @param mSqVer The matrix element version
     M2ENNEEGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
-                     std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {},
-                     std::optional<double> stepSize = {}, std::optional<QFT::MSqM2ENNEE::Ver> mSqVer = {});
+                     std::optional<int> acfSampleSize = {},
+                     std::optional<int> acfReplicate = {}, std::optional<double> stepSize = {},
+                     std::optional<QFT::MSqM2ENNEE::Ver> mSqVer = {});
 
     /// @brief Set matrix element version
     /// @param mSqVer The matrix element version

@@ -187,6 +187,87 @@ auto StatisticBase<ADerived, K, C>::FromPOD(const PODType& data) -> void
 
 template<typename ADerived, int K, CovarianceOption C>
     requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::ToFlat() const -> std::pair<std::vector<long long>, std::vector<double>> {
+    const auto dim{Dimension()};
+    std::vector<long long> flatCount{fN, dim};
+    std::vector<double> flatValue;
+    flatValue.reserve(2 + dim + (C == CovarianceOption::Full ? dim * dim : dim));
+    flatValue.push_back(fW);
+    flatValue.push_back(fW2);
+    flatValue.insert(flatValue.end(), fM.data(), fM.data() + dim);
+    // Store the weighted sum of squares, which is additive across independent
+    // groups, instead of the within-group M2 statistic.
+    if constexpr (C == CovarianceOption::Full) {
+        Eigen::Matrix<double, K, K> sumSquare{Eigen::Matrix<double, K, K>::Zero(dim, dim)};
+        if (fW != 0) {
+            sumSquare = fM2 + fM * fM.transpose() / fW;
+        }
+        flatValue.insert(flatValue.end(), sumSquare.data(), sumSquare.data() + dim * dim);
+    } else {
+        Eigen::Vector<double, K> sumSquare{Eigen::Vector<double, K>::Zero(dim)};
+        if (fW != 0) {
+            sumSquare = fM2.diagonal() + fM.cwiseAbs2() / fW;
+        }
+        flatValue.insert(flatValue.end(), sumSquare.data(), sumSquare.data() + dim);
+    }
+    return {std::move(flatCount), std::move(flatValue)};
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
+auto StatisticBase<ADerived, K, C>::FromFlat(const std::pair<std::vector<long long>, std::vector<double>>& data) -> void {
+    const auto& flatCount{data.first};
+    const auto& flatValue{data.second};
+    if (flatCount.size() != 2) {
+        Throw<std::invalid_argument>(fmt::format("Flat statistic counts must contain 2 elements, got {}.", flatCount.size()));
+    }
+    const auto dim{static_cast<int>(flatCount[1])};
+    if (dim <= 0) {
+        Throw<std::invalid_argument>(fmt::format("Flat statistic dimension must be positive, got {}.", dim));
+    }
+    if constexpr (K != Eigen::Dynamic) {
+        if (dim != K) {
+            Throw<std::invalid_argument>(fmt::format("Flat statistic dimension ({}) does not match the statistic dimension ({}).", dim, K));
+        }
+    }
+    const auto expectedSize{2 + dim + (C == CovarianceOption::Full ? dim * dim : dim)};
+    if (static_cast<int>(flatValue.size()) != expectedSize) {
+        Throw<std::invalid_argument>(fmt::format("Flat statistic values must contain {} elements, got {}.", expectedSize, flatValue.size()));
+    }
+    if (flatCount[0] < 0) {
+        Throw<std::invalid_argument>(fmt::format("Flat statistic observation count must be non-negative, got {}.", flatCount[0]));
+    }
+    if constexpr (K == Eigen::Dynamic) {
+        fM.resize(dim);
+        if constexpr (C == CovarianceOption::Full) {
+            fM2.resize(dim, dim);
+        } else {
+            fM2.resize(dim);
+        }
+    }
+    fN = flatCount[0];
+    fW = flatValue[0];
+    fW2 = flatValue[1];
+    std::copy_n(flatValue.data() + 2, dim, fM.data());
+    if constexpr (C == CovarianceOption::Full) {
+        std::copy_n(flatValue.data() + 2 + dim, dim * dim, fM2.data());
+        if (fW != 0) {
+            fM2 -= fM * fM.transpose() / fW;
+        } else {
+            fM2.setZero();
+        }
+    } else {
+        std::copy_n(flatValue.data() + 2 + dim, dim, fM2.diagonal().data());
+        if (fW != 0) {
+            fM2.diagonal() -= fM.cwiseAbs2() / fW;
+        } else {
+            fM2.diagonal().setZero();
+        }
+    }
+}
+
+template<typename ADerived, int K, CovarianceOption C>
+    requires GoodStatisticDimension<K>::value
 auto StatisticBase<ADerived, K, C>::Corr(int i, int j, auto cov, auto var) const -> double {
     if (i == j) {
         return 1;

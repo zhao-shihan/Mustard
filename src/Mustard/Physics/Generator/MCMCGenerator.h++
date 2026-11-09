@@ -19,7 +19,11 @@
 #pragma once
 
 #include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/Env/MonteCarloEnv.h++"
+#include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/MarkovChainStatistic.h++"
+#include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Statistic.h++"
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
@@ -29,11 +33,7 @@
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
-#include "CLHEP/Random/Random.h"
-#include "CLHEP/Random/RandomEngine.h"
-
 #include "Eigen/Core"
-#include "unsupported/Eigen/FFT"
 
 #include "mplr/mplr.hpp"
 
@@ -42,6 +42,7 @@
 #include "muc/chrono"
 #include "muc/math"
 #include "muc/numeric"
+#include "muc/random"
 #include "muc/utility"
 
 #include "gsl/gsl"
@@ -50,7 +51,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <concepts>
 #include <functional>
 #include <limits>
@@ -59,7 +59,6 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <utility>
-#include <vector>
 
 namespace Mustard::inline Physics::inline Generator {
 
@@ -107,29 +106,25 @@ protected:
     };
 
 public:
-    /// @brief Autocorrelation function (row = lag, column = dimension)
-    using AutocorrelationFunction = std::vector<Eigen::Array<double, MarkovChain::dim, 1>>;
-
-public:
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     MCMCGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                  std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {});
+                  std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay.
     MCMCGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                   const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                  std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {})
+                  std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     /// @brief Get initial-state polarization vector(s)
@@ -159,30 +154,44 @@ public:
     /// @warning The Markov chain requires reinitialize after set.
     auto Acceptance(AcceptanceFunction acceptance) -> void;
 
-    /// @brief Set thinning ratio
-    /// Larger the thinning ratio, more samples will be discarded,
-    /// and events generated will be more likely to be i.i.d.
-    /// Thinning factor ~ thinning ratio * integrated autocorrelation.
-    /// @param value Thinning factor (>=0)
-    auto ThinningRatio(double value) -> void;
     /// @brief Set sample size for estimation autocorrelation function (ACF)
     /// @param n Sample size
     auto ACFSampleSize(int n) -> void;
+    /// @brief Set number of ACF replicate segments
+    /// The number is global; if it is less than the number of processes, it is
+    /// raised to the number of processes during initialization.
+    /// @param n Number of replicate segments (at least 3)
+    auto ACFReplicate(int n) -> void;
 
     /// @brief Return true if Markov chain initialized
     /// @return true if initialized
     auto MCMCInitialized() -> auto { return fMCMCInitialized; }
     /// @brief Initialize Markov chain
-    /// @param rng Reference to CLHEP random engine
-    /// @return The biased autocorrelation function
-    auto MCMCInitialize(CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> AutocorrelationFunction;
+    /// @param executor Executor used to run the ACF replicates in parallel
+    /// @param rng Reference to a random number engine
+    /// @return Statistics of the Markov chain sample
+    /// @note This function must be called before the first event is generated.
+    /// @note Collective operation: all MPI processes must call it.
+    /// @note Reseeds @p rng collectively, advances each process's Markov chain by
+    ///       `(locally executed tasks) * fACFSampleSize`, and temporarily overwrites
+    ///       the executor's execution, operation, and task names.
+    /// @note Consecutive replicate segments on one process are not strictly
+    ///       independent, so the reported standard error is a replication estimate.
+    /// @note The executor must run at least as many tasks as there are processes,
+    ///       and every process should execute at least one task.
+    /// @note Task assignment is dispatcher-dependent; with a dynamic dispatcher,
+    ///       the post-initialization chain state and thinning may vary between runs.
+    /// @note At least 3 ACF replicates are required.
+    /// @throws std::logic_error if the ACF sample size has not been set
+    auto MCMCInitialize(Executor<long long>& executor, muc::rng_ref rng = Env::RandomEngine()) -> MarkovChainStatistic<MarkovChain::dim>;
 
     /// @brief Generate event in c.m. frame
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return Generated event
+    /// @throws std::logic_error if the Markov chain has not been initialized
     /// @warning Initial-state momenta passed to this function are ignored.
     /// Use `Momenta` to set initial-state momenta.
-    virtual auto operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta) -> Event override;
+    virtual auto operator()(muc::rng_ref rng, InitialStateMomenta) -> Event override;
     // Avoid hiding other operator() overloads from base class
     using Base::operator();
 
@@ -222,26 +231,23 @@ protected:
     auto PhaseSpace(const MarkovChain::State& state) -> std::pair<Event, double>;
 
     /// @brief Proposal distribution for particle mapping. Propose swapping identical particle by chance
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @param state0 Initial state
     /// @param state Proposed state (modified in-place)
     /// @note Call this in `NextEvent()`.
-    auto ProposePID(CLHEP::HepRandomEngine& rng, const std::array<int, N>& pID0, std::array<int, N>& pID) -> void;
+    auto ProposePID(muc::rng_ref rng, const std::array<int, N>& pID0, std::array<int, N>& pID) -> void;
 
 private:
-    auto EstimateACF(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction;
-    auto EstimateIntegratedAutocorrelation(const AutocorrelationFunction& acf) -> double;
-
     /// @brief Markov chain burn in stage
-    /// @param rng Reference to CLHEP random engine
-    virtual auto BurnIn(CLHEP::HepRandomEngine& rng) -> void = 0;
+    /// @param rng Reference to a random number engine
+    virtual auto BurnIn(muc::rng_ref rng) -> void = 0;
     /// @brief Advance Markov chain by one event
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return true if proposal accepted, false if not
-    virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool = 0;
+    virtual auto NextEvent(muc::rng_ref rng) -> bool = 0;
 
 protected:
-    double fThinningRatio; ///< User-defined thinning ratio
+    int fACFReplicate;     ///< Number of ACF replicate segments
     int fACFSampleSize;    ///< Sample size for estimating autocorrelation function (ACF)
                            //
     bool fMCMCInitialized; ///< Initialization completed flag

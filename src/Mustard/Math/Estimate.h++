@@ -33,6 +33,7 @@
 
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -40,6 +41,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace Mustard::inline Math {
 
@@ -270,8 +272,9 @@ public:
     /// and covariance matrix.
     ///
     /// When @f$K = \mathrm{Eigen::Dynamic}@f$, constructs an empty object (size 0).
-    /// The only allowed operation on an empty object is assignment. Calling any
-    /// other member function on an empty object results in undefined behavior.
+    /// The only allowed operation on an empty object is assignment or
+    /// `FromFlat()`. Calling any other member function on an empty object
+    /// results in undefined behavior.
     EstimateBase();
     /// @brief Move constructor.
     ///
@@ -279,7 +282,7 @@ public:
     /// @warning Accessing any data or calling any operation (including
     /// `Fill`, `operator+=`) on a moved-from object is undefined behavior.
     /// @note A moved-from object is safe to assign a new value via
-    /// assignment operators or `FromPOD()`.
+    /// assignment operators, `FromPOD()`, or `FromFlat()`.
     EstimateBase(EstimateBase&&) noexcept = default;
     /// @brief Copy constructor.
     EstimateBase(const EstimateBase& other);
@@ -289,7 +292,7 @@ public:
     /// @warning Accessing any data or calling any operation (including
     /// `Fill`, `operator+=`) on a moved-from object is undefined behavior.
     /// @note A moved-from object is safe to assign a new value via
-    /// assignment operators or `FromPOD()`.
+    /// assignment operators, `FromPOD()`, or `FromFlat()`.
     auto operator=(EstimateBase&&) noexcept -> EstimateBase& = default;
     /// @brief Copy assignment.
     auto operator=(const EstimateBase& other) -> EstimateBase& { return CopyFrom(other); }
@@ -1110,6 +1113,29 @@ public:
     auto FromPOD(const PODType& data) -> void
         requires(K != Eigen::Dynamic);
 
+    /// @brief Convert the estimate state to a flat STL representation.
+    ///
+    /// Unlike `ToPOD()`, the result is not plain-old-data: the values are held in
+    /// `std::vector` so that a dynamically sized estimate can be represented and
+    /// transferred as a contiguous buffer. The counts are `{dimension}`, and the
+    /// values are `{value..., covariance...}` in Eigen storage order.
+    ///
+    /// @note This representation is not additive across independent estimates;
+    ///       use `CombineInPlace()` for statistical combination.
+    ///
+    /// @return Pair of counts and values
+    /// @see ToPOD, FromFlat
+    auto ToFlat() const -> std::pair<std::vector<long long>, std::vector<double>>;
+    /// @brief Restore the estimate state from a flat STL representation.
+    ///
+    /// The dimension is taken from the counts, so a dynamically sized estimate
+    /// is resized as needed.
+    ///
+    /// @param data Pair of counts `{dimension}` and values as described in `ToFlat()`
+    /// @throws std::invalid_argument if the counts or values are inconsistent
+    /// @see ToFlat
+    auto FromFlat(const std::pair<std::vector<long long>, std::vector<double>>& data) -> void;
+
 private:
     /// @brief Value vector as an Eigen array (unevaluated expression).
     auto ArrX() -> auto { return fX.array(); }
@@ -1338,7 +1364,9 @@ public:
 
     /// @name Other member functions
     /// @{
+    using Base::FromFlat;
     using Base::FromPOD;
+    using Base::ToFlat;
     using Base::ToPOD;
     /// @}
 };
@@ -1380,6 +1408,10 @@ public:
 
     /// @brief Inherit assignment operators from the base class.
     using Base::operator=;
+    /// @brief Inherit flat conversion from the base class.
+    using Base::ToFlat;
+    /// @brief Inherit flat restoration from the base class.
+    using Base::FromFlat;
 };
 
 // TODO: Estimate<2, C> specialization with extra RhoPhi(), RhoPhiInPlace(), Cross(), ...

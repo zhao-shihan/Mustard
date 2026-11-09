@@ -64,7 +64,7 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<long long
     }
 
     // Reseed random engine for statistical safety
-    Parallel::ReseedRandomEngine(&rng);
+    Parallel::ReseedRandomEngine(rng);
 
     // Set task name
     auto originalExecutionName{executor.ExecutionName()};
@@ -99,7 +99,7 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<long long
                 "  {}\n"
                 "The integral of |M|^2 * (Acceptance) over phase space:\n"
                 "  {} +/- {}  (rel. unc.: {:.3}%, N_eff: {:.2f})\n",
-                time, statistic.Serialize().EncodeBase64(), integral.value, integral.uncertainty,
+                time, ToBase64(statistic.ToPOD()), integral.Value(), integral.Uncertainty(),
                 integral.RelativeUncertainty() * 100, statistic.EffectiveSampleSize());
     return statistic;
 }
@@ -319,7 +319,7 @@ auto MatrixElementBasedGenerator<M, N, A>::MCIntegrate(Statistic<1>& statistic, 
         } else {
             MasterPrintLn("[Checkpoint {}] Continuing integration from state\n"
                           "  {}",
-                          checkpoint, statistic.Serialize().EncodeBase64());
+                          checkpoint, ToBase64(statistic.ToPOD()));
         }
         MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
         Statistic<1> batchStatistic;
@@ -331,9 +331,9 @@ auto MatrixElementBasedGenerator<M, N, A>::MCIntegrate(Statistic<1>& statistic, 
             batchStatistic.Fill(integrand(event));
         });
         if (mplr::available()) {
-            auto serializedBatchStatistic{batchStatistic.Serialize()};
-            mplr::comm_world().allreduce(std::plus{}, serializedBatchStatistic);
-            batchStatistic.Deserialize(serializedBatchStatistic);
+            auto podBatchStatistic{batchStatistic.ToPOD()};
+            mplr::comm_world().allreduce(std::plus{}, podBatchStatistic);
+            batchStatistic.FromPOD(podBatchStatistic);
         }
         statistic += batchStatistic;
         const auto integral{statistic.MeanEstimate()};

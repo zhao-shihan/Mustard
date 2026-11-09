@@ -29,6 +29,7 @@
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
+#include "Mustard/Utility/Base64.h++"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 

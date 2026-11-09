@@ -75,21 +75,23 @@ public:
     /// @param pI initial-state 4-momenta
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                         std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {});
+                         std::optional<int> acfSampleSize = {},
+                         std::optional<int> acfReplicate = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
     /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     /// @note This overload is only enabled for polarized decay.
     AdaptiveMTMGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                         std::optional<double> thinningRatio = {}, std::optional<int> acfSampleSize = {})
+                         std::optional<int> acfSampleSize = {},
+                         std::optional<int> acfReplicate = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     // Keep the class abstract

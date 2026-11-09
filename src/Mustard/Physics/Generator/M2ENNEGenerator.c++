@@ -33,9 +33,9 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, Vector3D momentum,
-                                 std::optional<double> thinningRatio, std::optional<int> acfSampleSize,
-                                 std::optional<double> stepSize) :
-    MultipleTryMetropolisGenerator{{}, {}, {}, thinningRatio, acfSampleSize.value_or(1 << 17), stepSize.value_or(0.1)} {
+                                 std::optional<int> acfSampleSize,
+                                 std::optional<int> acfReplicate, std::optional<double> stepSize) :
+    MultipleTryMetropolisGenerator{{}, {}, {}, acfSampleSize.value_or(1 << 17), std::move(acfReplicate), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2});

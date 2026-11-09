@@ -30,6 +30,7 @@
 
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <concepts>
@@ -37,6 +38,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace Mustard::inline Math {
 
@@ -107,6 +109,9 @@ namespace impl {
 ///
 /// The effective sample size (Kish's formula) is @f$W^2 / W_2@f$.
 ///
+/// The variance of the mean is undefined for a single observation; its
+/// accessors then return NaN.
+///
 /// When `C == CovarianceOption::Diagonal`, only the diagonal elements of
 /// @f$M_2@f$ are stored (variances only), reducing memory from @f$O(K^2)@f$ to @f$O(K)@f$.
 ///
@@ -147,8 +152,9 @@ public:
     /// When @f$K@f$ is known at compile time, zero-initializes all accumulators.
     ///
     /// When @f$K = \mathrm{Eigen::Dynamic}@f$, constructs an empty object (size 0).
-    /// The only allowed operation on an empty object is assignment. Calling any
-    /// other member function on an empty object results in undefined behavior.
+    /// The only allowed operation on an empty object is assignment, `FromPOD()`,
+    /// or `FromFlat()`. Calling any other member function on an empty object
+    /// results in undefined behavior.
     StatisticBase();
     /// @brief Move constructor.
     ///
@@ -156,7 +162,7 @@ public:
     /// @warning Accessing any data or calling any operation (including
     /// `Fill`, `operator+=`) on a moved-from object is undefined behavior.
     /// @note A moved-from object is safe to assign a new value via
-    /// assignment operators or `FromPOD()`.
+    /// assignment operators, `FromPOD()`, or `FromFlat()`.
     StatisticBase(StatisticBase&&) noexcept = default;
     /// @brief Copy constructor.
     StatisticBase(const StatisticBase& other);
@@ -166,7 +172,7 @@ public:
     /// @warning Accessing any data or calling any operation (including
     /// `Fill`, `operator+=`) on a moved-from object is undefined behavior.
     /// @note A moved-from object is safe to assign a new value via
-    /// assignment operators or `FromPOD()`.
+    /// assignment operators, `FromPOD()`, or `FromFlat()`.
     auto operator=(StatisticBase&&) noexcept -> StatisticBase& = default;
     /// @brief Copy assignment.
     auto operator=(const StatisticBase& other) -> StatisticBase& { return CopyFrom(other); }
@@ -323,6 +329,34 @@ public:
     auto FromPOD(const PODType& data) -> void
         requires(K != Eigen::Dynamic);
 
+    /// @brief Convert the statistic state to a flat STL representation.
+    ///
+    /// Unlike `ToPOD()`, the result is not plain-old-data: the values are held in
+    /// `std::vector` so that a dynamically sized statistic can be represented and
+    /// reduced element-wise (e.g., by MPI). The counts are `{n, dimension}`, and
+    /// the values are `{W, W2, M..., Q...}` in Eigen storage order, where
+    /// @f$Q = \sum w_i x_i^2@f$ is the weighted sum of squares. `Q` is additive
+    /// across independent groups, so the values can be reduced element-wise and
+    /// then restored with `FromFlat()`.
+    ///
+    /// @note The representation requires non-negative weights and a positive
+    ///       total weight. Recovering @f$M_2@f$ from @f$Q - M^2/W@f$ can lose
+    ///       precision when the mean is large compared with the variance.
+    ///
+    /// @return Pair of counts and values
+    /// @see ToPOD, FromFlat
+    auto ToFlat() const -> std::pair<std::vector<long long>, std::vector<double>>;
+    /// @brief Restore the statistic state from a flat STL representation.
+    ///
+    /// The dimension is taken from the counts, so a dynamically sized statistic
+    /// is resized as needed. The within-group @f$M_2@f$ statistic is recovered
+    /// from @f$Q - M^2 / W@f$.
+    ///
+    /// @param data Pair of counts `{n, dimension}` and values as described in `ToFlat()`
+    /// @throws std::invalid_argument if the counts or values are inconsistent
+    /// @see ToFlat
+    auto FromFlat(const std::pair<std::vector<long long>, std::vector<double>>& data) -> void;
+
 protected:
     /// @brief Computed mean vector (unevaluated expression), @f$\bar{x} = M / W@f$.
     auto MeanXpr() const -> auto { return fM / fW; }
@@ -439,6 +473,8 @@ public:
     /// @param x Observation value
     /// @param w Weight (default: 1)
     auto Fill(double x, double w = 1) -> void { Base::Fill(Eigen::Vector<double, 1>{x}, w); }
+    /// @brief Inherit the base-class vector `Fill` overload.
+    using Base::Fill;
 
     /// @brief Number of observations.
     using Base::SampleSize;
@@ -451,6 +487,9 @@ public:
     auto Sum() const -> auto { return Base::Sum(0); }
     /// @brief Arithmetic mean, @f$\bar{x} = M / W@f$.
     auto Mean() const -> auto { return Base::Mean(0); }
+    /// @brief Arithmetic mean through the base-class component interface.
+    /// @param i Component index; must be 0
+    auto Mean([[maybe_unused]] int i) const -> auto { return Base::Mean(0); }
     /// @brief Sample variance, @f$\sigma^2@f$.
     auto Variance() const -> auto { return Base::Variance(0); }
     /// @brief Sample standard deviation, @f$\sigma@f$.
@@ -474,6 +513,10 @@ public:
     using Base::ToPOD;
     /// @brief Inherit POD restoration from the base class.
     using Base::FromPOD;
+    /// @brief Inherit flat conversion from the base class.
+    using Base::ToFlat;
+    /// @brief Inherit flat restoration from the base class.
+    using Base::FromFlat;
 };
 
 /// @brief @f$K@f$-dimensional static-dimension Statistic.
@@ -496,6 +539,11 @@ public:
 
     /// @brief Inherit assignment operators from the base class.
     using Base::operator=;
+
+    /// @brief Inherit flat conversion from the base class.
+    using Base::ToFlat;
+    /// @brief Inherit flat restoration from the base class.
+    using Base::FromFlat;
 };
 
 namespace impl {

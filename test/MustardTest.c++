@@ -34,8 +34,10 @@
 #include "Mustard/Testing/TestHelixPointPOCA/TestHelixPointPOCA.h++"
 #include "Mustard/Testing/TestLineLinePOCA/TestLineLinePOCA.h++"
 #include "Mustard/Testing/TestLinePointPOCA/TestLinePointPOCA.h++"
+#include "Mustard/Testing/TestMCMCGenerator/TestMCMCGenerator.h++"
 #include "Mustard/Testing/TestMT1993732/TestMT1993732.h++"
 #include "Mustard/Testing/TestMT1993764/TestMT1993764.h++"
+#include "Mustard/Testing/TestMarkovChainStatistic/TestMarkovChainStatistic.h++"
 #include "Mustard/Testing/TestMultiRDFEntryProcessor/TestMultiRDFEntryProcessor.h++"
 #include "Mustard/Testing/TestMultiRDFEntryReader/TestMultiRDFEntryReader.h++"
 #include "Mustard/Testing/TestMultiRDFEventProcessor/TestMultiRDFEventProcessor.h++"
@@ -123,8 +125,10 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestHelixPointPOCA>();
     launcher.AddSubprogram<TestLineLinePOCA>();
     launcher.AddSubprogram<TestLinePointPOCA>();
+    launcher.AddSubprogram<TestMCMCGenerator>();
     launcher.AddSubprogram<TestMT1993732>();
     launcher.AddSubprogram<TestMT1993764>();
+    launcher.AddSubprogram<TestMarkovChainStatistic>();
     launcher.AddSubprogram<TestMultiRDFEntryProcessor>();
     launcher.AddSubprogram<TestMultiRDFEntryReader>();
     launcher.AddSubprogram<TestMultiRDFEventProcessor>();
