@@ -40,7 +40,7 @@ using namespace Mustard::Testing::TestEstimate;
 // =========================================================================
 
 constexpr auto manualProjToCov{[](const auto& x, const auto& y,
-                              const auto& covX, const auto& covY) -> Eigen::MatrixXd {
+                                  const auto& covX, const auto& covY) -> Eigen::MatrixXd {
     const auto yNormSq{y.squaredNorm()};
     const auto c{x.dot(y) / yNormSq};
     const auto invYSq{1. / yNormSq};
@@ -54,7 +54,7 @@ constexpr auto manualProjToCov{[](const auto& x, const auto& y,
 }};
 
 // Helper: build full cov matrix from Estimate accessors
-constexpr auto toFullCov{[]<int K, CovarianceOption C>(const Estimate<K, C>& est, int dim) {
+constexpr auto toFullCov36{[]<int K, CovarianceOption C>(const Estimate<K, C>& est, int dim) {
     Eigen::MatrixXd m(dim, dim);
     for (auto i{0}; i < dim; ++i) {
         for (auto j{0}; j < dim; ++j) {
@@ -84,14 +84,14 @@ constexpr auto sec36Smoke{[]<int K, CovarianceOption C>() {
             [[maybe_unused]] auto r2{e.ProjTo(e2)};        // const& -> copy
             [[maybe_unused]] auto r3{
                 Est{v, cov}
-                .ProjTo(e2)
+                    .ProjTo(e2)
             }; // && -> move
             // ProjFrom
             [[maybe_unused]] auto r4{e.ProjFromInPlace(e2)}; // & -> & reference
             [[maybe_unused]] auto r5{e.ProjFrom(e2)};        // const& -> copy
             [[maybe_unused]] auto r6{
                 Est{v, cov}
-                .ProjFrom(e2)
+                    .ProjFrom(e2)
             }; // && -> move
         }
 
@@ -104,13 +104,13 @@ constexpr auto sec36Smoke{[]<int K, CovarianceOption C>() {
             [[maybe_unused]] auto r2{e.ProjTo(eCross)};
             [[maybe_unused]] auto r3{
                 Est{v, cov}
-                .ProjTo(eCross)
+                    .ProjTo(eCross)
             };
             [[maybe_unused]] auto r4{e.ProjFromInPlace(eCross)};
             [[maybe_unused]] auto r5{e.ProjFrom(eCross)};
             [[maybe_unused]] auto r6{
                 Est{v, cov}
-                .ProjFrom(eCross)
+                    .ProjFrom(eCross)
             };
         } else {
             using EstF = Estimate<K, CovarianceOption::Full>;
@@ -120,13 +120,13 @@ constexpr auto sec36Smoke{[]<int K, CovarianceOption C>() {
             [[maybe_unused]] auto r2{e.ProjTo(eCross)};
             [[maybe_unused]] auto r3{
                 Est{v, cov}
-                .ProjTo(eCross)
+                    .ProjTo(eCross)
             };
             [[maybe_unused]] auto r4{e.ProjFromInPlace(eCross)};
             [[maybe_unused]] auto r5{e.ProjFrom(eCross)};
             [[maybe_unused]] auto r6{
                 Est{v, cov}
-                .ProjFrom(eCross)
+                    .ProjFrom(eCross)
             };
         }
 
@@ -137,13 +137,13 @@ constexpr auto sec36Smoke{[]<int K, CovarianceOption C>() {
             [[maybe_unused]] auto r2{e.ProjTo(vec)};
             [[maybe_unused]] auto r3{
                 Est{v, cov}
-                .ProjTo(vec)
+                    .ProjTo(vec)
             };
             [[maybe_unused]] auto r4{e.ProjFromInPlace(vec)};
             [[maybe_unused]] auto r5{e.ProjFrom(vec)};
             [[maybe_unused]] auto r6{
                 Est{v, cov}
-                .ProjFrom(vec)
+                    .ProjFrom(vec)
             };
         }
 
@@ -175,10 +175,10 @@ constexpr auto sec36Smoke{[]<int K, CovarianceOption C>() {
         // --- Free function Project with plain vector ---
         {
             auto vec{MakeTestValue<K, C>(dim)};
-            [[maybe_unused]] auto pv1{Project(e, vec)};                     // Estimate × Vector
-            [[maybe_unused]] auto pv2{Project(vec, e)};                     // Vector × Estimate
-            [[maybe_unused]] auto pv3{Project(Est{v, cov}, vec)};           // rval × Vector
-            [[maybe_unused]] auto pv4{Project(vec, Est{v, cov})};           // Vector × rval
+            [[maybe_unused]] auto pv1{Project(e, vec)};           // Estimate × Vector
+            [[maybe_unused]] auto pv2{Project(vec, e)};           // Vector × Estimate
+            [[maybe_unused]] auto pv3{Project(Est{v, cov}, vec)}; // rval × Vector
+            [[maybe_unused]] auto pv4{Project(vec, Est{v, cov})}; // Vector × rval
         }
     }
 }};
@@ -287,7 +287,7 @@ constexpr auto sec36cProjToCov{[]<int K, CovarianceOption C>() {
         const auto cov2{MakeTestCov<K, C>(dim)};
         Est e2{MakeEstimate<K, C>(v2, cov2)};
 
-        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov(e, dim), toFullCov(e2, dim))};
+        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov36(e, dim), toFullCov36(e2, dim))};
 
         // 36c-a: ProjTo covariance
         {
@@ -309,7 +309,7 @@ constexpr auto sec36cProjToCov{[]<int K, CovarianceOption C>() {
         {
             const auto result{e.ProjTo(v2)};
             const auto yNormSq{v2.squaredNorm()};
-            const double beta{(v2.transpose() * toFullCov(e, dim) * v2)(0, 0) / (yNormSq * yNormSq)};
+            const double beta{(v2.transpose() * toFullCov36(e, dim) * v2)(0, 0) / (yNormSq * yNormSq)};
             Eigen::MatrixXd expectedCov{dim, dim};
             expectedCov = beta * v2 * v2.transpose();
             for (auto i{0}; i < dim; ++i) {
@@ -348,7 +348,7 @@ constexpr auto sec36dProjFromCov{[]<int K, CovarianceOption C>() {
         Est e2{MakeEstimate<K, C>(v2, cov2)};
 
         // ProjFrom = swap x↔y in manualProjToCov
-        const auto expectedCovMat{manualProjToCov(v2, v, toFullCov(e2, dim), toFullCov(e, dim))};
+        const auto expectedCovMat{manualProjToCov(v2, v, toFullCov36(e2, dim), toFullCov36(e, dim))};
 
         // 36d-a: ProjFrom covariance
         {
@@ -373,7 +373,7 @@ constexpr auto sec36dProjFromCov{[]<int K, CovarianceOption C>() {
             const auto c{v2.dot(v) / xNormSq};
             const auto invXSq{1. / xNormSq};
             Eigen::VectorXd vVec{(v2 - 2. * c * v) * invXSq};
-            auto covXFull{toFullCov(e, dim)};
+            auto covXFull{toFullCov36(e, dim)};
             Eigen::VectorXd w{covXFull * vVec};
             const double beta{vVec.dot(w)};
             Eigen::MatrixXd expectedCov{c * c * covXFull};
@@ -414,7 +414,7 @@ constexpr auto sec36eProject{[]<int K, CovarianceOption C>() {
         const auto cov2{MakeTestCov<K, C>(dim)};
         Est e2{MakeEstimate<K, C>(v2, cov2)};
 
-        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov(e, dim), toFullCov(e2, dim))};
+        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov36(e, dim), toFullCov36(e2, dim))};
 
         // 36e-a: Project(e, e2) == e.ProjTo(e2)
         {
@@ -627,7 +627,7 @@ auto sec36gDynamic() -> void {
 
     // Covariance check
     {
-        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov(e, dim), toFullCov(e2, dim))};
+        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov36(e, dim), toFullCov36(e2, dim))};
         const auto result{e.ProjTo(e2)};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
@@ -736,7 +736,7 @@ auto sec36iCrossType() -> void {
         EstFF eF{v, covFull};
         EstFD eD{v2, covDiag};
         const auto result{eF.ProjTo(eD)};
-        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov(eF, dim), toFullCov(eD, dim))};
+        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov36(eF, dim), toFullCov36(eD, dim))};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
                 CheckClose(result.Covariance(i, j), expectedCovMat(i, j),
@@ -750,7 +750,7 @@ auto sec36iCrossType() -> void {
         EstDF eD{v, covDiag};
         EstFF eF{v2, covFull};
         const auto result{eD.ProjTo(eF)};
-        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov(eD, dim), toFullCov(eF, dim))};
+        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov36(eD, dim), toFullCov36(eF, dim))};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
                 if (i != j) {
@@ -767,7 +767,7 @@ auto sec36iCrossType() -> void {
         EstDF eD1{v, covDiag};
         EstDF eD2{v2, covDiag};
         const auto result{eD1.ProjTo(eD2)};
-        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov(eD1, dim), toFullCov(eD2, dim))};
+        const auto expectedCovMat{manualProjToCov(v, v2, toFullCov36(eD1, dim), toFullCov36(eD2, dim))};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
                 if (i != j) {
@@ -784,7 +784,7 @@ auto sec36iCrossType() -> void {
         EstFF eF{v, covFull};
         EstFD eD{v2, covDiag};
         const auto result{eF.ProjFrom(eD)};
-        const auto expectedCovMat{manualProjToCov(v2, v, toFullCov(eD, dim), toFullCov(eF, dim))};
+        const auto expectedCovMat{manualProjToCov(v2, v, toFullCov36(eD, dim), toFullCov36(eF, dim))};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
                 CheckClose(result.Covariance(i, j), expectedCovMat(i, j),
@@ -798,7 +798,7 @@ auto sec36iCrossType() -> void {
         EstDF eD{v, covDiag};
         EstFF eF{v2, covFull};
         const auto result{eD.ProjFrom(eF)};
-        const auto expectedCovMat{manualProjToCov(v2, v, toFullCov(eF, dim), toFullCov(eD, dim))};
+        const auto expectedCovMat{manualProjToCov(v2, v, toFullCov36(eF, dim), toFullCov36(eD, dim))};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
                 if (i != j) {
@@ -815,7 +815,7 @@ auto sec36iCrossType() -> void {
         EstDF eD1{v, covDiag};
         EstDF eD2{v2, covDiag};
         const auto result{eD1.ProjFrom(eD2)};
-        const auto expectedCovMat{manualProjToCov(v2, v, toFullCov(eD2, dim), toFullCov(eD1, dim))};
+        const auto expectedCovMat{manualProjToCov(v2, v, toFullCov36(eD2, dim), toFullCov36(eD1, dim))};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
                 if (i != j) {

@@ -39,7 +39,7 @@ using namespace Mustard::Testing::TestEstimate;
 // Helper: build full cov matrix from Estimate accessors
 // =========================================================================
 
-constexpr auto toFullCov{[]<int K, CovarianceOption C>(const Estimate<K, C>& est, int dim) {
+constexpr auto toFullCov37{[]<int K, CovarianceOption C>(const Estimate<K, C>& est, int dim) {
     Eigen::MatrixXd m(dim, dim);
     if constexpr (K == 1) {
         m(0, 0) = est.Variance();
@@ -70,7 +70,10 @@ constexpr auto sec37Smoke{[]<int K, CovarianceOption C>() {
             Est e2{MakeEstimate<K, C>(v, cov)};
             [[maybe_unused]] auto c1{e.Concat(e2)};
             [[maybe_unused]] auto c2{e.Concat(Est{v, cov})};
-            [[maybe_unused]] auto c3{Est{v, cov}.Concat(e2)};
+            [[maybe_unused]] auto c3{
+                Est{v, cov}
+                    .Concat(e2)
+            };
         }
 
         // Concat cross-type
@@ -151,8 +154,8 @@ constexpr auto sec37bConcatCov{[]<int K, CovarianceOption C>() {
         Est e2{MakeEstimate<K, C>(v2, cov2)};
         const auto result{e1.Concat(e2)};
 
-        const auto fullCov1{toFullCov(e1, dim)};
-        const auto fullCov2{toFullCov(e2, dim)};
+        const auto fullCov1{toFullCov37(e1, dim)};
+        const auto fullCov2{toFullCov37(e2, dim)};
 
         // Top-left block
         for (auto i{0}; i < dim; ++i) {
@@ -206,8 +209,8 @@ auto sec37cConcatCrossType() -> void {
         EstFD eD{v2, covDiag};
         const auto result{eF.Concat(eD)};
         CheckEq(result.Dimension(), 2 * dim, "37c: Full+Diag dim");
-        const auto fullCovF{toFullCov(eF, dim)};
-        const auto fullCovD{toFullCov(eD, dim)};
+        const auto fullCovF{toFullCov37(eF, dim)};
+        const auto fullCovD{toFullCov37(eD, dim)};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
                 CheckClose(result.Covariance(i, j), fullCovF(i, j),
@@ -224,8 +227,8 @@ auto sec37cConcatCrossType() -> void {
         EstFF eF{v2, covFull};
         const auto result{eD.Concat(eF)};
         CheckEq(result.Dimension(), 2 * dim, "37c: Diag+Full dim");
-        const auto fullCovD{toFullCov(eD, dim)};
-        const auto fullCovF{toFullCov(eF, dim)};
+        const auto fullCovD{toFullCov37(eD, dim)};
+        const auto fullCovF{toFullCov37(eF, dim)};
         for (auto i{0}; i < dim; ++i) {
             for (auto j{0}; j < dim; ++j) {
                 CheckClose(result.Covariance(i, j), fullCovD(i, j),
@@ -286,8 +289,8 @@ constexpr auto sec37dConcatK1{[]<int K, CovarianceOption C>() {
             CheckClose(result.Value(1), 2.5, "37d: scalar+scalar value(1)");
 
             // Scalar+scalar covariance
-            const auto fullCov1{toFullCov(s1, 1)};
-            const auto fullCov2{toFullCov(s2, 1)};
+            const auto fullCov1{toFullCov37(s1, 1)};
+            const auto fullCov2{toFullCov37(s2, 1)};
             CheckClose(result.Covariance(0, 0), fullCov1(0, 0), "37d: scalar+scalar cov(0,0)");
             CheckClose(result.Covariance(1, 1), fullCov2(0, 0), "37d: scalar+scalar cov(1,1)");
             CheckClose(result.Covariance(0, 1), 0., "37d: scalar+scalar cov(0,1)");
@@ -315,7 +318,7 @@ constexpr auto sec37eHead{[]<int K, CovarianceOption C>() {
             for (auto i{0}; i < 2; ++i) {
                 CheckClose(result.Value(i), v(i), fmt::format("37e: Head(2) value({})", i));
             }
-            const auto fullCov{toFullCov(e, dim)};
+            const auto fullCov{toFullCov37(e, dim)};
             for (auto i{0}; i < 2; ++i) {
                 for (auto j{0}; j < 2; ++j) {
                     CheckClose(result.Covariance(i, j), fullCov(i, j),
@@ -327,7 +330,7 @@ constexpr auto sec37eHead{[]<int K, CovarianceOption C>() {
         // Head all (Head(dim)) equals original
         {
             const auto result{e.Head(dim)};
-            const auto fullCov{toFullCov(e, dim)};
+            const auto fullCov{toFullCov37(e, dim)};
             for (auto i{0}; i < dim; ++i) {
                 CheckClose(result.Value(i), v(i), fmt::format("37e: Head(dim) value({})", i));
                 for (auto j{0}; j < dim; ++j) {
@@ -358,7 +361,7 @@ constexpr auto sec37fTail{[]<int K, CovarianceOption C>() {
             for (auto i{0}; i < 2; ++i) {
                 CheckClose(result.Value(i), v(dim - 2 + i), fmt::format("37f: Tail(2) value({})", i));
             }
-            const auto fullCov{toFullCov(e, dim)};
+            const auto fullCov{toFullCov37(e, dim)};
             for (auto i{0}; i < 2; ++i) {
                 for (auto j{0}; j < 2; ++j) {
                     CheckClose(result.Covariance(i, j), fullCov(dim - 2 + i, dim - 2 + j),
@@ -441,7 +444,7 @@ constexpr auto sec37hSegment{[]<int K, CovarianceOption C>() {
             for (auto i{0}; i < 2; ++i) {
                 CheckClose(result.Value(i), v(1 + i), fmt::format("37h: Segment(1,2) value({})", i));
             }
-            const auto fullCov{toFullCov(e, dim)};
+            const auto fullCov{toFullCov37(e, dim)};
             for (auto i{0}; i < 2; ++i) {
                 for (auto j{0}; j < 2; ++j) {
                     CheckClose(result.Covariance(i, j), fullCov(1 + i, 1 + j),
@@ -535,7 +538,7 @@ constexpr auto sec37jHeadTailTemplate{[]<int K, CovarianceOption C>() {
         {
             const auto result{e.template Head<1>()};
             CheckEq(result.Dimension(), 1, "37j: Head<1> dim");
-            const auto fullCov{toFullCov(e, dim)};
+            const auto fullCov{toFullCov37(e, dim)};
             CheckClose(result.Value(), v(0), "37j: Head<1> value");
             CheckClose(result.Variance(), fullCov(0, 0), "37j: Head<1> var");
         }
@@ -579,7 +582,7 @@ constexpr auto sec37kSegmentTemplate{[]<int K, CovarianceOption C>() {
                 for (auto i{0}; i < 2; ++i) {
                     CheckClose(result.Value(i), v(1 + i), fmt::format("37k: Segment<2>(1) value({})", i));
                 }
-                const auto fullCov{toFullCov(e, dim)};
+                const auto fullCov{toFullCov37(e, dim)};
                 for (auto i{0}; i < 2; ++i) {
                     for (auto j{0}; j < 2; ++j) {
                         CheckClose(result.Covariance(i, j), fullCov(1 + i, 1 + j),
