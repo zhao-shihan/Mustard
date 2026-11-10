@@ -33,8 +33,8 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, Vector3D momentum,
-                                 std::optional<int> acfSampleSize,
-                                 std::optional<int> acfReplicate, std::optional<double> stepSize) :
+                                 std::optional<int> acfSampleSize, std::optional<int> acfReplicate,
+                                 std::optional<double> stepSize) :
     MultipleTryMetropolisGenerator{{}, {}, {}, acfSampleSize.value_or(1 << 17), std::move(acfReplicate), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);

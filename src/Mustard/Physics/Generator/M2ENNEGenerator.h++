@@ -39,8 +39,8 @@ public:
     /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     M2ENNEGenerator(std::string_view parent, Vector3D momentum,
-                    std::optional<int> acfSampleSize = {},
-                    std::optional<int> acfReplicate = {}, std::optional<double> stepSize = {});
+                    std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {},
+                    std::optional<double> stepSize = {});
 
     /// @brief Set parent particle
     /// @param parent "muonium" or "anti_muonium"

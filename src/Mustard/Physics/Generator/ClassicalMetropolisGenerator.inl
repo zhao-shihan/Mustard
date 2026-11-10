@@ -20,8 +20,7 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                    std::optional<int> acfSampleSize,
-                                                                    std::optional<int> acfReplicate, std::optional<double> stepSize) :
+                                                                    std::optional<int> acfSampleSize, std::optional<int> acfReplicate, std::optional<double> stepSize) :
     Base{pI, pdgID, mass, std::move(acfSampleSize), std::move(acfReplicate)},
     fGaussian{},
     fStepSize{std::numeric_limits<double>::quiet_NaN()} {
@@ -33,8 +32,7 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                                     const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                    std::optional<int> acfSampleSize,
-                                                                    std::optional<int> acfReplicate, std::optional<double> stepSize) // clang-format off
+                                                                    std::optional<int> acfSampleSize, std::optional<int> acfReplicate, std::optional<double> stepSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
     Base{pI, polarization, pdgID, mass, std::move(acfSampleSize), std::move(acfReplicate)},
     fGaussian{},

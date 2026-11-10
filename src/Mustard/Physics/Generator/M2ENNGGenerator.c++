@@ -34,8 +34,8 @@ using namespace PhysicalConstant;
 
 M2ENNGGenerator::M2ENNGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
                                  double softCutoff, double collinearCutoff,
-                                 std::optional<int> acfSampleSize,
-                                 std::optional<int> acfReplicate, std::optional<double> stepSize) :
+                                 std::optional<int> acfSampleSize, std::optional<int> acfReplicate,
+                                 std::optional<double> stepSize) :
     MultipleTryMetropolisGenerator{{}, polarization, {}, {}, acfSampleSize.value_or(1 << 17), std::move(acfReplicate), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);

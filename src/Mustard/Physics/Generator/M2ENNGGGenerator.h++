@@ -44,8 +44,8 @@ public:
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     M2ENNGGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
                      double softCutoff, double collinearCutoff,
-                     std::optional<int> acfSampleSize = {},
-                     std::optional<int> acfReplicate = {}, std::optional<double> stepSize = {});
+                     std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {},
+                     std::optional<double> stepSize = {});
 
     /// @brief Set parent particle
     /// @param parent "mu-" or "mu+"

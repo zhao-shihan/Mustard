@@ -42,9 +42,8 @@ public:
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     /// @param mSqVer The matrix element version
     M2ENNEEGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
-                     std::optional<int> acfSampleSize = {},
-                     std::optional<int> acfReplicate = {}, std::optional<double> stepSize = {},
-                     std::optional<QFT::MSqM2ENNEE::Ver> mSqVer = {});
+                     std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {},
+                     std::optional<double> stepSize = {}, std::optional<QFT::MSqM2ENNEE::Ver> mSqVer = {});
 
     /// @brief Set matrix element version
     /// @param mSqVer The matrix element version

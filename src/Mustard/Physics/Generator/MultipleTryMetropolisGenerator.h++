@@ -76,8 +76,8 @@ public:
     /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   std::optional<int> acfSampleSize = {},
-                                   std::optional<int> acfReplicate = {}, std::optional<double> stepSize = {});
+                                   std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {},
+                                   std::optional<double> stepSize = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector(s)
@@ -89,8 +89,8 @@ public:
     /// @note This overload is only enabled for polarized decay.
     MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   std::optional<int> acfSampleSize = {},
-                                   std::optional<int> acfReplicate = {}, std::optional<double> stepSize = {})
+                                   std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {},
+                                   std::optional<double> stepSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     // Keep the class abstract
