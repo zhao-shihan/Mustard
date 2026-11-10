@@ -43,6 +43,9 @@ auto ExecutorImplBase<T>::SwitchDispatcher(std::unique_ptr<Dispatcher<T>> dispat
     if (fExecuting) {
         Throw<std::logic_error>("Try switching dispatcher during executing.");
     }
+    if (dispatcher == nullptr) {
+        Throw<std::invalid_argument>("Dispatcher is nullptr.");
+    }
     const auto task{fDispatcher->Task()};
     fDispatcher = std::move(dispatcher);
     fDispatcher->Task(task);
