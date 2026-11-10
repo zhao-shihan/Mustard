@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Particle/MuoniumBase.h++"
+#include "Mustard/Geant4X/Particle/impl/MuoniumBase.h++"
 
 namespace Mustard::Geant4X::inline Particle {
 
-class Antimuonium final : public MuoniumBase<Antimuonium> {
+class Antimuonium final : public impl::MuoniumBase<Antimuonium> {
     friend Env::SingletonFactory;
     Antimuonium();
 };

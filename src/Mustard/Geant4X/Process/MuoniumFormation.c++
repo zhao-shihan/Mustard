@@ -79,12 +79,8 @@ auto MuoniumFormation::AtRestDoIt(const G4Track& track, const G4Step&) -> G4VPar
     // The dynamic particle
     const auto muoniumDynamicParticle{new G4DynamicParticle{*track.GetDynamicParticle()}};
     muoniumDynamicParticle->SetDefinition(Muonium::Definition());
-    // A stopped muon captures an unpolarized electron, so the effective spin-1/2 muonium
-    // keeps only half of the parent muon polarization: the muon spin expectation value
-    // vanishes in the entangled singlet and m_F = 0 triplet components. See, e.g.,
-    // A. Amato, "Muon Spin Rotation" lecture notes, Sec. 8.3.
-    // Geant4's spin-dependent decay channels take the polarization as a unit rotation
-    // axis only, so a half-polarized muonium needs dedicated handling in the decay.
+    // In weak-field limit, muon decay from muonium looks as if lost half of the polarization,
+    // and have a gyromagnetic ratio of gamma_M = (gamma_e + gamma_mu) / 2.
     muoniumDynamicParticle->SetPolarization(0.5 * track.GetDynamicParticle()->GetPolarization());
     muoniumDynamicParticle->SetMomentumDirection(direction);
     muoniumDynamicParticle->SetKineticEnergy(kineticEnergy);

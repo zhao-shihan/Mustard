@@ -21,7 +21,7 @@
 
 #include "G4DecayTable.hh"
 
-namespace Mustard::Geant4X::inline Particle {
+namespace Mustard::Geant4X::inline Particle::impl {
 
 template<typename ADerived>
 MuoniumBase<ADerived>::MuoniumBase(const G4String& name, int pdgEncoding, int iSpin, int magneticMomentSign) :
@@ -45,13 +45,13 @@ MuoniumBase<ADerived>::MuoniumBase(const G4String& name, int pdgEncoding, int iS
                          nullptr,                                                            // decay table
                          false,                                                              // shortlived
                          "muonium"} {                                                        // subtype
-    using namespace PhysicalConstant;
-    // Magnetic moment of the effective spin-1/2 muonium, mu = gamma_M*hbar/2, so that
-    // Geant4's BMT equation precesses the muonium polarization at gamma_M*B. Note that a
-    // neutral particle feels its magnetic moment in tracking only when
+    // In weak-field limit, muon decay from muonium looks as if lost half of the polarization,
+    // and have a gyromagnetic ratio of gamma_M = (gamma_e + gamma_mu) / 2.
+    // Note that in G4 a neutral particle feels its magnetic moment in tracking only when
     // G4Transportation::EnableMagneticMoment() is enabled and the field manager uses a
     // spin equation of motion (G4Mag_SpinEqRhs); that equation takes |mu| and therefore
     // can only precess in the positive sense, whereas gamma_M is negative here.
+    using namespace PhysicalConstant;
     SetPDGMagneticMoment(magneticMomentSign * muonium_magnetic_moment);
 
     const auto table{new G4DecayTable};

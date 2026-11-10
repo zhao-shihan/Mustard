@@ -23,7 +23,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4String.hh"
 
-namespace Mustard::Geant4X::inline Particle {
+namespace Mustard::Geant4X::inline Particle::impl {
 
 template<typename ADerived>
 class MuoniumBase : public Env::Singleton<ADerived>,
@@ -37,4 +37,4 @@ public:
 
 } // namespace Mustard::Geant4X::inline Particle
 
-#include "Mustard/Geant4X/Particle/MuoniumBase.inl"
+#include "Mustard/Geant4X/Particle/impl/MuoniumBase.inl"
