@@ -33,7 +33,7 @@ auto CountRDFEntry(ROOT::RDF::RNode rdf) -> long long {
     if (not mplr::available()) {
         return gsl::narrow<long long>(*rdf.Count());
     }
-    const auto& worldComm{mplr::comm_world()};
+    const auto worldComm{mplr::comm_world()};
     if (worldComm.size() == 1) {
         return gsl::narrow<long long>(*rdf.Count());
     }

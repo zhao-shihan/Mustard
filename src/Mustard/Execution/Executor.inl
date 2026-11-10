@@ -182,6 +182,22 @@ auto Executor<T>::Run(T size, std::invocable<T> auto&& F) -> T {
 }
 
 template<std::integral T>
+auto Executor<T>::Run(std::string executionName, std::string operationName, std::string taskName, auto&&... args) -> T {
+    auto originalExecutionName{ExecutionName()};
+    auto originalOperationName{OperationName()};
+    auto originalTaskName{TaskName()};
+    const auto restoreNames{gsl::finally([&] {
+        ExecutionName(std::move(originalExecutionName));
+        OperationName(std::move(originalOperationName));
+        TaskName(std::move(originalTaskName));
+    })};
+    ExecutionName(std::move(executionName));
+    OperationName(std::move(operationName));
+    TaskName(std::move(taskName));
+    return Run(std::forward<decltype(args)>(args)...);
+}
+
+template<std::integral T>
 auto Executor<T>::ExecutionInfo() const -> const ExecutionInfoType& {
     return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.ExecutionInfo();

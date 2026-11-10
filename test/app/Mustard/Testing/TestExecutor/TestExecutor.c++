@@ -100,6 +100,27 @@ auto TestExecutor::Main(int argc, char* argv[]) const -> int {
     CheckIndexList(n, localIndexList);
     MasterPrintLn("");
 
+    const auto originalExecutionName{executor.ExecutionName()};
+    const auto originalOperationName{executor.OperationName()};
+    const auto originalTaskName{executor.TaskName()};
+    int namesCorrect{1};
+    executor.Run("Temporary execution", "Temporary operation", "Temporary task", executor.NProcess(),
+                 [&](auto) {
+                     namesCorrect = namesCorrect and
+                                    executor.ExecutionName() == "Temporary execution" and
+                                    executor.OperationName() == "Temporary operation" and
+                                    executor.TaskName() == "Temporary task";
+                 });
+    worldComm.allreduce(mplr::min<int>{}, namesCorrect);
+    if (namesCorrect == 0) {
+        PrintError("Executor::Run did not apply the temporary names.");
+    }
+    if (executor.ExecutionName() != originalExecutionName or
+        executor.OperationName() != originalOperationName or
+        executor.TaskName() != originalTaskName) {
+        PrintError("Executor::Run did not restore the original names.");
+    }
+
     std::this_thread::sleep_for(1s);
 
     const auto bigN{std::min<long long>(1000ll * n, std::numeric_limits<int>::max() / 2)};

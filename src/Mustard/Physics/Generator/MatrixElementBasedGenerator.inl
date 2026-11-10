@@ -66,19 +66,6 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<long long
     // Reseed random engine for statistical safety
     Parallel::ReseedRandomEngine(rng);
 
-    // Set task name
-    auto originalExecutionName{executor.ExecutionName()};
-    auto originalOperationName{executor.OperationName()};
-    auto originalTaskName{executor.TaskName()};
-    const auto _{gsl::finally([&] {
-        executor.ExecutionName(std::move(originalExecutionName));
-        executor.OperationName(std::move(originalOperationName));
-        executor.TaskName(std::move(originalTaskName));
-    })};
-    executor.ExecutionName("Integration");
-    executor.OperationName("Summation");
-    executor.TaskName("sample");
-
     // Start integration
     const auto integrand{[this](const Event& event) {
         const auto& [detJ, _, pF]{event};
@@ -323,7 +310,7 @@ auto MatrixElementBasedGenerator<M, N, A>::MCIntegrate(Statistic<1>& statistic, 
         }
         MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
         Statistic<1> batchStatistic;
-        executor.Run(batchSize, [&](auto) {
+        executor.Run("Integration", "Summation", "sample", batchSize, [&](auto) {
             const auto event{PhaseSpace(rng)};
             if (not InfraredSafe(event.p)) {
                 return;

@@ -44,8 +44,6 @@
 #include "muc/random"
 #include "muc/utility"
 
-#include "gsl/gsl"
-
 #include "fmt/std.h"
 
 #include <algorithm>

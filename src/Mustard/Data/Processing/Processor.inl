@@ -49,8 +49,7 @@ auto Processor<AExecutor>::Run(RDFEntryReader<Ms...>& reader, std::invocable<boo
 
 template<muc::instantiated_from<Executor> AExecutor>
 template<Modelized M, std::integral T>
-auto Processor<AExecutor>::Run(RDFEventReader<T, M>& reader,
-                               std::invocable<bool, ArcTupleVector<M>> auto&& f) -> Index {
+auto Processor<AExecutor>::Run(RDFEventReader<T, M>& reader, std::invocable<bool, ArcTupleVector<M>> auto&& f) -> Index {
     const auto nEvent{gsl::narrow<Index>(reader.NEvent())};
     if (nEvent == 0) {
         return 0;
@@ -60,8 +59,7 @@ auto Processor<AExecutor>::Run(RDFEventReader<T, M>& reader,
 
 template<muc::instantiated_from<Executor> AExecutor>
 template<Modelized... Ms, std::integral T>
-auto Processor<AExecutor>::Run(RDFEventReader<T, Ms...>& reader,
-                               std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index {
+auto Processor<AExecutor>::Run(RDFEventReader<T, Ms...>& reader, std::invocable<bool, ArcTupleVector<Ms>...> auto&& f) -> Index {
     const auto nEvent{gsl::narrow<Index>(reader.NEvent())};
     if (nEvent == 0) {
         return 0;

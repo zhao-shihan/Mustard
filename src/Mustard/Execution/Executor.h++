@@ -26,10 +26,13 @@
 
 #include "mplr/mplr.hpp"
 
+#include "gsl/gsl"
+
 #include <concepts>
 #include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <variant>
 
 namespace Mustard::inline Execution {
@@ -72,6 +75,7 @@ public:
 
     auto Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T;
     auto Run(T size, std::invocable<T> auto&& F) -> T;
+    auto Run(std::string executionName, std::string operationName, std::string taskName, auto&&... args) -> T;
 
     auto ExecutionInfo() const -> const ExecutionInfoType&;
     auto PrintExecutionSummary() const -> void;

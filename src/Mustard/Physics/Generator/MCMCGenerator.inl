@@ -199,20 +199,8 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(Executor<long long>& executor, muc::
     }
     MasterPrintLn("Estimating autocorrelation with {} replicates...", nReplicate);
 
-    auto originalExecutionName{executor.ExecutionName()};
-    auto originalOperationName{executor.OperationName()};
-    auto originalTaskName{executor.TaskName()};
-    const auto restoreExecutorNames{gsl::finally([&] {
-        executor.ExecutionName(std::move(originalExecutionName));
-        executor.OperationName(std::move(originalOperationName));
-        executor.TaskName(std::move(originalTaskName));
-    })};
-    executor.ExecutionName("MCMC initialization");
-    executor.OperationName("ACF estimation");
-    executor.TaskName("replicate");
-
     std::optional<MarkovChainStatistic<MarkovChain::dim>> local;
-    executor.Run(nReplicate, [&](long long) {
+    executor.Run("MCMC initialization", "ACF estimation", "replicate", nReplicate, [&](long long) {
         Eigen::Matrix<double, Eigen::Dynamic, MarkovChain::dim> sample(fACFSampleSize, MarkovChain::dim);
         Eigen::Vector<double, MarkovChain::dim> state;
         for (int i{}; i < fACFSampleSize; ++i) {
@@ -227,14 +215,12 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(Executor<long long>& executor, muc::
             local = std::move(statistic);
         }
     });
-    if (not local) {
-        Throw<std::logic_error>("No ACF replicate was executed on this process.");
-    }
+    Ensures(local);
 
     // Merge the per-process statistics into a global one
     auto flat{local->ToFlat()};
     if (mplr::available()) {
-        const auto& worldComm{mplr::comm_world()};
+        const auto worldComm{mplr::comm_world()};
         worldComm.allreduce(std::plus{}, flat.first.data(), mplr::contiguous_layout<long long>(flat.first.size()));
         worldComm.allreduce(std::plus{}, flat.second.data(), mplr::contiguous_layout<double>(flat.second.size()));
     }
