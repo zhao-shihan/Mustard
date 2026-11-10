@@ -43,78 +43,108 @@
 
 namespace Mustard::inline Execution {
 
+/// @class ClusterAwareMasterWorkerDispatcher
+/// @brief Hierarchical dynamic dispatcher for multi-node clusters.
+///
+/// The scheduler has three levels: a cluster master distributes inter-node
+/// batches to node masters, each node master distributes intra-node batches to
+/// its workers, and workers execute a batch before requesting the next one.
+/// This keeps most scheduling traffic inside each shared-memory domain while
+/// still balancing load across nodes.
+///
+/// @note Recommended for large multi-node clusters where inter-node communication
+///       is expensive. DefaultDispatcherCode() selects it for worlds with more than
+///       128 processes when at least one node has more than 8 processes.
+/// @tparam T Task index type
+/// @see Executor
 template<std::integral T>
 class ClusterAwareMasterWorkerDispatcher : public Dispatcher<T> {
 private:
     friend class ClusterMaster;
+    /// @brief Cluster-level master that distributes tasks to node masters.
     class ClusterMaster {
     public:
+        /// @brief Construct the cluster master.
+        /// @param s Owning dispatcher
         ClusterMaster(ClusterAwareMasterWorkerDispatcher<T>* s);
 
+        /// @brief Start all receive requests from node masters.
         auto StartAll() -> void;
+        /// @brief Serve node-master requests until all inter-node batches are assigned.
         auto operator()() -> void;
 
     private:
-        ClusterAwareMasterWorkerDispatcher<T>* fS;
-
-        mplr::prequest_pool fRecvFromNM;
-        std::vector<T> fTaskIDSendToNM;
-        mplr::prequest_pool fSendToNM;
+        ClusterAwareMasterWorkerDispatcher<T>* fS; ///< Owning dispatcher
+        mplr::prequest_pool fRecvFromNM;           ///< Pending receives from node masters
+        std::vector<T> fTaskIDSendToNM;            ///< Task ID sent to each node master
+        mplr::prequest_pool fSendToNM;             ///< Pending sends to node masters
     };
 
     friend class NodeMaster;
+    /// @brief Node-level master that distributes tasks within one node.
     class NodeMaster {
     public:
+        /// @brief Construct the node master.
+        /// @param s Owning dispatcher
         NodeMaster(ClusterAwareMasterWorkerDispatcher<T>* s);
 
+        /// @brief Start receive requests, start the cluster master on the root node, and synchronize.
         auto StartAll() -> void;
+        /// @brief Serve worker requests and fetch more work from the cluster master when needed.
         auto operator()() -> void;
 
     private:
-        ClusterAwareMasterWorkerDispatcher<T>* fS;
+        ClusterAwareMasterWorkerDispatcher<T>* fS; ///< Owning dispatcher
 
-        std::unique_ptr<ClusterMaster> fClusterMaster;
-        std::jthread fClusterMasterThread;
+        std::unique_ptr<ClusterMaster> fClusterMaster; ///< Cluster master (root node only)
+        std::jthread fClusterMasterThread;             ///< Cluster master thread (root node only)
 
-        mplr::prequest fSendToCM;
-        T fTaskIDRecvFromCM;
-        mplr::prequest fRecvFromCM;
+        mplr::prequest fSendToCM;   ///< Send request to the cluster master
+        T fTaskIDRecvFromCM;        ///< Task ID received from the cluster master
+        mplr::prequest fRecvFromCM; ///< Receive request from the cluster master
 
-        mplr::prequest_pool fRecvFromW;
-        std::vector<T> fTaskIDSendToW;
-        mplr::prequest_pool fSendToW;
+        mplr::prequest_pool fRecvFromW; ///< Pending receives from workers
+        std::vector<T> fTaskIDSendToW;  ///< Task ID sent to each worker
+        mplr::prequest_pool fSendToW;   ///< Pending sends to workers
     };
 
 public:
+    /// @brief Construct a cluster-aware dispatcher.
     ClusterAwareMasterWorkerDispatcher();
 
 private:
+    /// @brief Compute batches, start the node master, and synchronize.
     virtual auto PreLoopAction() -> void override;
+    /// @brief Start a batch request when entering a new batch.
     virtual auto PreTaskAction() -> void override;
+    /// @brief Request a new batch after finishing a batch, or advance locally.
     virtual auto PostTaskAction() -> void override;
+    /// @brief Wait for outstanding requests and join the node master thread.
     virtual auto PostLoopAction() -> void override;
 
+    /// @brief Estimate progress for progress reporting.
+    /// @return Pair of a validity flag and an estimated executed-task count
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    mplr::communicator fIntraNodeComm;
-    mplr::communicator fInterNodeComm;
+    mplr::communicator fIntraNodeComm; ///< Communicator within a shared-memory domain
+    mplr::communicator fInterNodeComm; ///< Communicator between node masters
 
-    T fIntraNodeBatchSize;
-    T fInterNodeBatchSizeMultiple;
-    std::vector<T> fInterNodeBatchSize;
+    T fIntraNodeBatchSize;              ///< Tasks per intra-node batch
+    T fInterNodeBatchSizeMultiple;      ///< Multiple of intra-node batches per inter-node batch
+    std::vector<T> fInterNodeBatchSize; ///< Inter-node batch size for each node
 
-    std::unique_ptr<NodeMaster> fNodeMaster;
-    std::jthread fNodeMasterThread;
+    std::unique_ptr<NodeMaster> fNodeMaster; ///< Node master (node root only)
+    std::jthread fNodeMasterThread;          ///< Node master thread (node root only)
 
-    mplr::prequest fSendToNM;
-    T fTaskIDRecvFromNM;
-    mplr::prequest fRecvFromNM;
+    mplr::prequest fSendToNM;   ///< Send request to the node master
+    T fTaskIDRecvFromNM;        ///< Task ID received from the node master
+    mplr::prequest fRecvFromNM; ///< Receive request from the node master
 
-    T fIntraNodeTaskCounter;
+    T fIntraNodeTaskCounter; ///< Tasks executed in the current intra-node batch
 
-    static constexpr long double fgImbalancingFactor{1e-3};
-    static constexpr long long fgMaxInterNodeBatchSizeMultiple{10};
+    static constexpr long double fgImbalancingFactor{1e-3};         ///< Batch-size imbalancing factor
+    static constexpr long long fgMaxInterNodeBatchSizeMultiple{10}; ///< Maximum inter-node batch multiple
 };
 
 } // namespace Mustard::inline Execution

@@ -27,16 +27,32 @@
 
 namespace Mustard::inline Execution {
 
+/// @class SequentialDispatcher
+/// @brief Dispatcher that executes all tasks sequentially on a single process.
+/// @note Construction throws if the MPI world contains more than one process.
+/// @note Recommended for single-process runs, small task counts, and debugging.
+///       DefaultDispatcherCode() selects it when MPI is unavailable or the world
+///       contains one process.
+/// @tparam T Task index type
+/// @see Executor
 template<std::integral T>
 class SequentialDispatcher : public Dispatcher<T> {
 public:
+    /// @brief Construct a sequential dispatcher.
+    /// @throws std::runtime_error if MPI is available with more than one process
     SequentialDispatcher();
 
+    /// @brief Set the next task index to the first task.
     virtual auto PreLoopAction() -> void override { this->fExecutingTask = this->fTask.first; }
+    /// @brief Do nothing.
     virtual auto PreTaskAction() -> void override {}
+    /// @brief Advance the next task index by one.
     virtual auto PostTaskAction() -> void override { this->fExecutingTask += 1; }
+    /// @brief Do nothing.
     virtual auto PostLoopAction() -> void override {}
 
+    /// @brief Estimate progress for progress reporting.
+    /// @return Pair of a validity flag and an estimated executed-task count
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 };
 

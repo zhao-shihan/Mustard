@@ -27,14 +27,34 @@
 
 namespace Mustard::inline Execution {
 
+/// @class StaticDispatcher
+/// @brief Dispatcher with a fixed, rank-interleaved task assignment.
+///
+/// Each process starts at a rank-dependent offset and then advances by the
+/// number of processes. There is no dynamic load balancing; the assignment is
+/// fixed for a given world size and rank.
+///
+/// @note Recommended mainly for debugging and scenarios requiring exactly
+///       reproducible dispatch order. Unlike the dynamic dispatchers, which may
+///       hand out tasks in a run-dependent order, this dispatcher uses a fixed
+///       rank-interleaved schedule. It is not selected automatically by
+///       DefaultDispatcherCode(), and uneven task costs can cause load imbalance.
+/// @tparam T Task index type
+/// @see Executor
 template<std::integral T>
 class StaticDispatcher : public Dispatcher<T> {
 public:
+    /// @brief Assign the first task of this process from its MPI rank.
     virtual auto PreLoopAction() -> void override;
+    /// @brief Do nothing.
     virtual auto PreTaskAction() -> void override {}
+    /// @brief Advance the next task index by the number of processes.
     virtual auto PostTaskAction() -> void override;
+    /// @brief Do nothing.
     virtual auto PostLoopAction() -> void override {}
 
+    /// @brief Estimate progress for progress reporting.
+    /// @return Pair of a validity flag and an estimated executed-task count
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 };
 

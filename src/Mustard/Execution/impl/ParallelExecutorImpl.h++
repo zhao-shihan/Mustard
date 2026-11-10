@@ -49,25 +49,48 @@
 
 namespace Mustard::inline Execution::impl {
 
+/// @class ParallelExecutorImpl
+/// @brief Parallel executor implementation over the MPI world communicator.
+///
+/// Runs tasks on all processes, gathers per-rank statistics, and requires at least one task per process.
+///
+/// @tparam T Task index type
 template<std::integral T>
 class ParallelExecutorImpl final : public ExecutorImplBase<T> {
 public:
+    /// @brief Construct a parallel executor implementation.
+    /// @param executionName Name shown in the start/end report
+    /// @param opName Operation name used in progress messages
+    /// @param taskName Task name used in progress messages
+    /// @param dispatcher Dispatcher object (must not be null)
     ParallelExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher);
 
+    /// @brief Return the number of processes participating in execution.
+    /// @return MPI world size
     auto NProcess() const -> int { return mplr::comm_world().size(); }
 
+    /// @brief Run a callable over a task range.
+    /// @param task Half-open task range
+    /// @param F Callable invoked as `F(taskIndex)` for each assigned task
+    /// @return Number of tasks executed by this process
+    /// @throws std::runtime_error if the range contains fewer tasks than processes
     auto Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T;
+    /// @brief Print the per-rank execution summary.
     auto PrintExecutionSummary() const -> void;
 
 private:
+    /// @brief Print progress after task @p iEnded when the progress interval has elapsed.
+    /// @param iEnded Index of the task just completed
     auto PostTaskReport(T iEnded) const -> void;
 
 private:
+    /// @brief Duration type used by the execution stopwatches.
     using typename ExecutorImplBase<T>::StopwatchDuration;
+    /// @brief Per-run execution statistics type.
     using typename ExecutorImplBase<T>::ExecutionInfoType;
 
 private:
-    std::vector<ExecutionInfoType> fExecutionInfoList;
+    std::vector<ExecutionInfoType> fExecutionInfoList; ///< Per-rank execution statistics
 };
 
 } // namespace Mustard::inline Execution::impl

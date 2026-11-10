@@ -35,26 +35,49 @@
 
 namespace Mustard::inline Execution {
 
+/// @class SharedMemoryDispatcher
+/// @brief Dynamic dispatcher using an MPI shared-memory window.
+///
+/// Processes in one shared-memory domain reserve batches of tasks by atomically
+/// incrementing a counter in a shared MPI window. This gives dynamic load
+/// balancing with very low communication overhead, but requires the whole MPI
+/// world to be a single shared-memory domain.
+///
+/// @note Recommended for a single shared-memory domain (typically one node) with
+///       many tasks of variable cost, where low-latency dynamic balancing matters.
+///       DefaultDispatcherCode() selects it for a single-cluster world with more
+///       than one process.
+/// @tparam T Task index type
+/// @see Executor
 template<std::integral T>
 class SharedMemoryDispatcher : public Dispatcher<T> {
 public:
+    /// @brief Construct a shared-memory dispatcher and allocate its task counter.
+    /// @throws std::runtime_error if the MPI world spans multiple shared-memory domains
     SharedMemoryDispatcher();
+    /// @brief Free the shared-memory window.
     ~SharedMemoryDispatcher();
 
+    /// @brief Initialize the shared task counter and per-process batch state.
     virtual auto PreLoopAction() -> void override;
+    /// @brief Do nothing.
     virtual auto PreTaskAction() -> void override {}
+    /// @brief Reserve the next batch after finishing the current one, or advance locally.
     virtual auto PostTaskAction() -> void override;
+    /// @brief Do nothing.
     virtual auto PostLoopAction() -> void override {}
 
+    /// @brief Estimate progress for progress reporting.
+    /// @return Pair of a validity flag and an estimated executed-task count
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    volatile T* fMainTaskID;
-    MPI_Win fMainTaskIDWindow;
-    T fBatchSize;
-    T fTaskCounter;
+    volatile T* fMainTaskID;   ///< Shared next-task counter, allocated on the window root
+    MPI_Win fMainTaskIDWindow; ///< Window exposing the shared counter
+    T fBatchSize;              ///< Number of tasks reserved per batch
+    T fTaskCounter;            ///< Tasks executed in the current batch
 
-    static constexpr long double fgImbalancingFactor{1e-4};
+    static constexpr long double fgImbalancingFactor{1e-4}; ///< Batch-size imbalancing factor
 };
 
 } // namespace Mustard::inline Execution

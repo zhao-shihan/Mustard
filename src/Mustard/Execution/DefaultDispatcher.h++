@@ -41,11 +41,33 @@
 
 namespace Mustard::inline Execution {
 
+/// @brief Return the default dispatcher code for the current environment.
+///
+/// The value of the @c MUSTARD_EXECUTION_DISPATCHER environment variable is
+/// used when set. Otherwise the code is selected from the MPI configuration:
+/// @c seq for a single process, @c shm for a single shared-memory domain,
+/// @c mw for small worlds, and @c cmw for large multi-node clusters.
+///
+/// @return Dispatcher code
+/// @see MakeCodedDispatcher
 auto DefaultDispatcherCode() -> std::string;
 
+/// @brief Construct a dispatcher from its code.
+///
+/// Supported codes are @c seq (sequential), @c stat (static rank-interleaved),
+/// @c shm (shared-memory dynamic), @c mw (master-worker), and @c cmw
+/// (cluster-aware master-worker).
+///
+/// @tparam T Task index type
+/// @param dispatcher Dispatcher code
+/// @return Newly constructed dispatcher
+/// @throws std::out_of_range if the code is not recognized
 template<std::integral T>
 auto MakeCodedDispatcher(std::string_view dispatcher) -> std::unique_ptr<Dispatcher<T>>;
 
+/// @brief Construct the dispatcher selected by DefaultDispatcherCode().
+/// @tparam T Task index type
+/// @return Newly constructed dispatcher
 template<std::integral T>
 auto MakeDefaultDispatcher() -> std::unique_ptr<Dispatcher<T>>;
 
