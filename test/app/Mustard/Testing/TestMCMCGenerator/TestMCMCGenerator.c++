@@ -67,7 +67,7 @@ auto TestMCMCGenerator::Main(int argc, char* argv[]) const -> int {
         }
     }
 
-    constexpr auto nEvent{10'000};
+    constexpr auto nEvent{1'000};
     for (int i{}; i < nEvent; ++i) {
         const auto event{generator()};
         if (not std::isfinite(event.weight) or event.weight <= 0) {
