@@ -82,11 +82,11 @@ set(MUSTARD_PUBLIC_COMPILE_DEFINITIONS "")
 
 # More warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS /W4)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /W4)
 endif()
 
 # Surpress some, if required
@@ -183,16 +183,21 @@ if(MUSTARD_USE_FFTW)
     list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_FFTW_DEFAULT=1)
 endif()
 
-# Suppress a false warning from Eigen.
+# Suppress a false warning from Eigen. Keep these in the public interface:
+# consumers include Mustard headers that pull in Eigen, and may build with -Werror.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-array-bounds -Wno-maybe-uninitialized)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-array-bounds>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-maybe-uninitialized>")
 endif()
 
 # =============================================================================
 # GTL-induced compile options for Mustard
 # =============================================================================
 
-# Suppress a warning from GTL.
+# Suppress a warning from GTL. Keep this in the public interface for the same
+# reason as the Eigen suppressions above.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wno-interference-size)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-interference-size>")
 endif()

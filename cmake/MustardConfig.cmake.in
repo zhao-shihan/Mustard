@@ -18,18 +18,33 @@
 
 include(CMakeFindDependencyMacro)
 
+# Dependencies installed together with Mustard live in this prefix, and
+# FindFFTW.cmake is installed next to this config file.
+list(PREPEND CMAKE_PREFIX_PATH "${PACKAGE_PREFIX_DIR}")
+list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
 find_dependency(fmt @MUSTARD_FMT_MINIMUM_REQUIRED@)
-find_dependency(Geant4 @MUSTARD_G4_MINIMUM_REQUIRED@ REQUIRED @MUSTARD_G4_REQUIRED_COMPONENTS@)
-find_dependency(ROOT @MUSTARD_ROOT_MINIMUM_REQUIRED@ REQUIRED @MUSTARD_ROOT_REQUIRED_COMPONENTS@)
+find_dependency(Geant4 @MUSTARD_G4_MINIMUM_REQUIRED@ REQUIRED COMPONENTS @MUSTARD_G4_REQUIRED_COMPONENTS@)
+find_dependency(ROOT @MUSTARD_ROOT_MINIMUM_REQUIRED@ REQUIRED COMPONENTS @MUSTARD_ROOT_REQUIRED_COMPONENTS@)
 find_dependency(yaml-cpp @MUSTARD_YAML_CPP_MINIMUM_REQUIRED@)
 
-find_dependency(argparse @MUSTARD_ARGPARSE_MINIMUM_REQUIRED@.0)
-find_dependency(eigen @MUSTARD_EIGEN_MINIMUM_REQUIRED@ REQUIRED)
+find_dependency(argparse @MUSTARD_ARGPARSE_MINIMUM_REQUIRED@)
+find_dependency(Eigen3 @MUSTARD_EIGEN_MINIMUM_REQUIRED@ REQUIRED)
 find_dependency(envparse @MUSTARD_ENVPARSE_MINIMUM_REQUIRED@)
 find_dependency(gtl @MUSTARD_GTL_MINIMUM_REQUIRED@)
 find_dependency(Microsoft.GSL @MUSTARD_MSGSL_MINIMUM_REQUIRED@)
 find_dependency(mplr @MUSTARD_MPLR_MINIMUM_REQUIRED@)
 find_dependency(muc @MUSTARD_MUC_MINIMUM_REQUIRED@)
+
+# Private dependencies (linked into Mustard, so consumers still need them).
+find_dependency(Backward)
+find_dependency(indicators @MUSTARD_INDICATORS_MINIMUM_REQUIRED@)
+if(@MUSTARD_USE_MIMALLOC@)
+    find_dependency(mimalloc @MUSTARD_MIMALLOC_MINIMUM_REQUIRED@)
+endif()
+if(@MUSTARD_USE_FFTW@)
+    find_dependency(FFTW @MUSTARD_FFTW_MINIMUM_REQUIRED@)
+endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/MustardTargets.cmake")
 

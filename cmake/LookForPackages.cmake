@@ -14,26 +14,33 @@
 # You should have received a copy of the GNU General Public License along with
 # Mustard. If not, see <https://www.gnu.org/licenses/>.
 
+# Avoid reusing packages registered in the CMake user package registry (e.g. a
+# build-tree Eigen3 left behind by a previous build directory).
+set(CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY ON)
+
 # =============================================================================
 # System-only packages (REQUIRED, no source fallback)
 # =============================================================================
 
 # ROOT
+set(MUSTARD_ROOT_MINIMUM_REQUIRED 6.36.00)
+set(MUSTARD_ROOT_REQUIRED_COMPONENTS Core Imt MathCore Hist Tree ROOTDataFrame ROOTNTuple RIO)
 find_package(
-    ROOT 6.36.00 REQUIRED
-    COMPONENTS Core Imt MathCore Hist Tree ROOTDataFrame ROOTNTuple RIO)
+    ROOT ${MUSTARD_ROOT_MINIMUM_REQUIRED} REQUIRED
+    COMPONENTS ${MUSTARD_ROOT_REQUIRED_COMPONENTS})
 
 # Geant4
-set(MUSTARD_REQUIRED_G4_COMPONENTS ui_all gdml)
+set(MUSTARD_G4_MINIMUM_REQUIRED 11.0.0)
+set(MUSTARD_G4_REQUIRED_COMPONENTS ui_all gdml)
 if(MUSTARD_USE_G4VIS)
-    list(APPEND MUSTARD_REQUIRED_G4_COMPONENTS vis_all)
+    list(APPEND MUSTARD_G4_REQUIRED_COMPONENTS vis_all)
 endif()
 if(MUSTARD_USE_STATIC_G4)
-    list(APPEND MUSTARD_REQUIRED_G4_COMPONENTS static)
+    list(APPEND MUSTARD_G4_REQUIRED_COMPONENTS static)
 endif()
 find_package(
-    Geant4 11.0.0 REQUIRED
-    COMPONENTS ${MUSTARD_REQUIRED_G4_COMPONENTS})
+    Geant4 ${MUSTARD_G4_MINIMUM_REQUIRED} REQUIRED
+    COMPONENTS ${MUSTARD_G4_REQUIRED_COMPONENTS})
 
 # =============================================================================
 # CPM.cmake, for package management
@@ -51,10 +58,12 @@ include(CPM)
 # =============================================================================
 
 # mplr (-> MPI)
+set(MUSTARD_MPLR_MINIMUM_REQUIRED 0.26.1110)
 CPMFindPackage(
     NAME mplr
     GITHUB_REPOSITORY zhao-shihan/mplr
-    VERSION 0.26.705
+    VERSION ${MUSTARD_MPLR_MINIMUM_REQUIRED}
+    GIT_TAG v0.26.1111 # The project version inside the tag is still 0.26.1110
     OPTIONS "MPLR_INSTALL ON")
 
 # FFTW
@@ -98,7 +107,7 @@ CPMFindPackage(
     "YAML_MSVC_SHARED_RT ${MUSTARD_USE_SHARED_MSVC_RT}")
 
 # fmt
-set(MUSTARD_FMT_MINIMUM_REQUIRED 12.2.0)
+set(MUSTARD_FMT_MINIMUM_REQUIRED 12.2.1)
 CPMFindPackage(
     NAME fmt
     GITHUB_REPOSITORY fmtlib/fmt
@@ -111,38 +120,43 @@ CPMFindPackage(
 # =============================================================================
 
 # argparse
+set(MUSTARD_ARGPARSE_MINIMUM_REQUIRED 3.2)
 CPMFindPackage(
     NAME argparse
     GITHUB_REPOSITORY p-ranav/argparse
-    VERSION 3.2
+    VERSION ${MUSTARD_ARGPARSE_MINIMUM_REQUIRED}
     OPTIONS "ARGPARSE_INSTALL ON")
 
 # envparse
+set(MUSTARD_ENVPARSE_MINIMUM_REQUIRED 1.0.0)
 CPMFindPackage(
     NAME envparse
     GITHUB_REPOSITORY zhao-shihan/envparse
-    VERSION 1.0.0
+    VERSION ${MUSTARD_ENVPARSE_MINIMUM_REQUIRED}
     OPTIONS "ENVPARSE_INSTALL ON")
 
 # gtl
+set(MUSTARD_GTL_MINIMUM_REQUIRED 1.3.1)
 CPMFindPackage(
     NAME gtl
-    GITHUB_REPOSITORY zhao-shihan/gtl
-    VERSION 1.2.2
+    GITHUB_REPOSITORY greg7mdp/gtl
+    VERSION ${MUSTARD_GTL_MINIMUM_REQUIRED}
     OPTIONS "GTL_INSTALL ON")
 
 # Microsoft.GSL
+set(MUSTARD_MSGSL_MINIMUM_REQUIRED 5.0.1)
 CPMFindPackage(
     NAME Microsoft.GSL
     GITHUB_REPOSITORY microsoft/GSL
-    VERSION 4.2.2
+    VERSION ${MUSTARD_MSGSL_MINIMUM_REQUIRED}
     OPTIONS "GSL_INSTALL ON")
 
 # muc
+set(MUSTARD_MUC_MINIMUM_REQUIRED 0.26.925)
 CPMFindPackage(
     NAME muc
     GITHUB_REPOSITORY zhao-shihan/muc
-    VERSION 0.26.925
+    VERSION ${MUSTARD_MUC_MINIMUM_REQUIRED}
     OPTIONS "MUC_INSTALL ON")
 
 # =============================================================================
@@ -153,24 +167,26 @@ CPMFindPackage(
 CPMFindPackage(
     NAME Backward
     GITHUB_REPOSITORY zhao-shihan/backward-cpp
-    VERSION 1.6.1
+    VERSION 1.6.3
     OPTIONS "BACKWARD_SHARED OFF"
     "BACKWARD_INSTALL ON"
     "BACKWARD_TESTS ${BUILD_TESTING}")
 
 # indicators
+set(MUSTARD_INDICATORS_MINIMUM_REQUIRED 2.3.2)
 CPMFindPackage(
     NAME indicators
     GITHUB_REPOSITORY zhao-shihan/indicators
-    VERSION 2.3.2
+    VERSION ${MUSTARD_INDICATORS_MINIMUM_REQUIRED}
     OPTIONS "INDICATORS_INSTALL ON" "INDICATORS_PACKAGE OFF")
 
 # mimalloc
+set(MUSTARD_MIMALLOC_MINIMUM_REQUIRED 3.3.2)
 if(MUSTARD_USE_MIMALLOC)
     CPMFindPackage(
         NAME mimalloc
         GITHUB_REPOSITORY microsoft/mimalloc
-        VERSION 3.3.2
+        VERSION ${MUSTARD_MIMALLOC_MINIMUM_REQUIRED}
         OPTIONS "MI_OVERRIDE OFF"
         "MI_OSX_INTERPOSE OFF"
         "MI_OSX_ZONE OFF"

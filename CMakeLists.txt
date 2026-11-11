@@ -135,6 +135,14 @@ set_target_properties(Mustard PROPERTIES
     SOVERSION ${MUSTARD_VERSION}
     DEBUG_POSTFIX ${MUSTARD_DEBUG_POSTFIX})
 
+if(BUILD_SHARED_LIBS)
+    if(APPLE)
+        set_target_properties(Mustard PROPERTIES INSTALL_RPATH "@loader_path;@loader_path/../lib")
+    else()
+        set_target_properties(Mustard PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib")
+    endif()
+endif()
+
 install(DIRECTORY src/Mustard
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN *.h++ PATTERN *.inl)
@@ -146,6 +154,14 @@ install(EXPORT MustardTargets
     NAMESPACE Mustard::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 
+if(MUSTARD_USE_FFTW)
+    install(FILES ${MUSTARD_CMAKE_MODULE_PATH}/FindFFTW.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
+endif()
+
+install(FILES COPYING DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/Mustard)
+install(FILES README.md DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/Mustard)
+
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
     ${MUSTARD_CMAKE_MODULE_PATH}/MustardConfig.cmake.in
@@ -153,7 +169,7 @@ configure_package_config_file(
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
-    COMPATIBILITY SameMajorVersion)
+    COMPATIBILITY ExactVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MustardConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/MustardConfigVersion.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Mustard)

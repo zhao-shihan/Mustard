@@ -53,13 +53,13 @@ The following dependencies are required, but built-in if not found.
 | Library                                                                     | Min version | Description                                              |
 | :-------------------------------------------------------------------------- | :---------- | :------------------------------------------------------- |
 | [**argparse**](https://github.com/p-ranav/argparse)                         | 3.2         | Argument parsing for modern C++                          |
-| [**zhao-shihan/backward-cpp**](https://github.com/zhao-shihan/backward-cpp) | 1.6.1       | A beautiful stack trace pretty printer for C++           |
+| [**zhao-shihan/backward-cpp**](https://github.com/zhao-shihan/backward-cpp) | 1.6.3       | A beautiful stack trace pretty printer for C++           |
 | [**envparse**](https://github.com/zhao-shihan/envparse)                     | 1.0.0       | A simple, header-only environment variable parser in C++ |
-| [**fmt**](https://github.com/fmtlib/fmt)                                    | 12.2.0      | A modern formatting library                              |
-| [**zhao-shihan/gtl**](https://github.com/zhao-shihan/gtl)                   | 1.2.2       | Greg's Template Library of useful classes                |
+| [**fmt**](https://github.com/fmtlib/fmt)                                    | 12.2.1      | A modern formatting library                              |
+| [**greg7mdp/gtl**](https://github.com/greg7mdp/gtl)                         | 1.3.1       | Greg's Template Library of useful classes                |
 | [**zhao-shihan/indicators**](https://github.com/zhao-shihan/indicators)     | 2.3.2       | Activity Indicators for Modern C++                       |
-| [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 4.2.2       | ISO C++ guidelines support library                       |
-| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.26.705    | A C++17 message passing library based on MPI             |
+| [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 5.0.1       | ISO C++ guidelines support library                       |
+| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.26.1110   | A C++17 message passing library based on MPI             |
 | [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.925    | A standard non-standard C++ library                      |
 | [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
 
