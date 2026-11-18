@@ -33,7 +33,7 @@ This section guides you through building Mustard from source.
 
 #### Toolchain
 
-- **C++ compiler:** GCC ≥ 13 or LLVM Clang ≥ 16 or equivalent
+- **C++ compiler:** GCC ≥ 13 or LLVM Clang ≥ 19 or equivalent
 - **C++ standard library:** libstdc++ ≥ 13 or equivalent
 - **Build system:** CMake ≥ 3.24, and GNU Make or Ninja or equivalent
 
