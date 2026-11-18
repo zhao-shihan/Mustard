@@ -20,7 +20,7 @@ namespace Mustard::inline Execution {
 
 template<std::integral T>
 auto StaticDispatcher<T>::PreLoopAction() -> void {
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     this->fExecutingTask = this->fTask.first + (worldComm.size() - 1 - worldComm.rank());
     if (this->fExecutingTask > this->fTask.last) [[unlikely]] {
         this->fExecutingTask = this->fTask.last;
@@ -29,7 +29,7 @@ auto StaticDispatcher<T>::PreLoopAction() -> void {
 
 template<std::integral T>
 auto StaticDispatcher<T>::PostTaskAction() -> void {
-    this->fExecutingTask += mplr::comm_world().size();
+    this->fExecutingTask += mp1::comm_world().size();
     if (this->fExecutingTask > this->fTask.last) [[unlikely]] {
         this->fExecutingTask = this->fTask.last;
     }

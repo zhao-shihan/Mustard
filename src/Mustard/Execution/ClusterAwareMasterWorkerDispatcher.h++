@@ -22,7 +22,7 @@
 #include "Mustard/Execution/Dispatcher.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/math"
 #include "muc/numeric"
@@ -32,7 +32,6 @@
 #include <algorithm>
 #include <cmath>
 #include <concepts>
-#include <cstddef>
 #include <functional>
 #include <memory>
 #include <numeric>
@@ -75,9 +74,9 @@ private:
 
     private:
         ClusterAwareMasterWorkerDispatcher<T>* fS; ///< Owning dispatcher
-        mplr::prequest_pool fRecvFromNM;           ///< Pending receives from node masters
+        std::vector<mp1::request> fRecvFromNM;     ///< Pending receives from node masters
         std::vector<T> fTaskIDSendToNM;            ///< Task ID sent to each node master
-        mplr::prequest_pool fSendToNM;             ///< Pending sends to node masters
+        std::vector<mp1::request> fSendToNM;       ///< Pending sends to node masters
     };
 
     friend class NodeMaster;
@@ -88,7 +87,7 @@ private:
         /// @param s Owning dispatcher
         NodeMaster(ClusterAwareMasterWorkerDispatcher<T>* s);
 
-        /// @brief Start receive requests, start the cluster master on the root node, and synchronize.
+        /// @brief Start receive requests, start the cluster master thread, and synchronize.
         auto StartAll() -> void;
         /// @brief Serve worker requests and fetch more work from the cluster master when needed.
         auto operator()() -> void;
@@ -99,13 +98,13 @@ private:
         std::unique_ptr<ClusterMaster> fClusterMaster; ///< Cluster master (root node only)
         std::jthread fClusterMasterThread;             ///< Cluster master thread (root node only)
 
-        mplr::prequest fSendToCM;   ///< Send request to the cluster master
-        T fTaskIDRecvFromCM;        ///< Task ID received from the cluster master
-        mplr::prequest fRecvFromCM; ///< Receive request from the cluster master
+        mp1::request fSendToCM;   ///< Send request to the cluster master
+        T fTaskIDRecvFromCM;      ///< Task ID received from the cluster master
+        mp1::request fRecvFromCM; ///< Receive request from the cluster master
 
-        mplr::prequest_pool fRecvFromW; ///< Pending receives from workers
-        std::vector<T> fTaskIDSendToW;  ///< Task ID sent to each worker
-        mplr::prequest_pool fSendToW;   ///< Pending sends to workers
+        std::vector<mp1::request> fRecvFromW; ///< Pending receives from workers
+        std::vector<T> fTaskIDSendToW;        ///< Task ID sent to each worker
+        std::vector<mp1::request> fSendToW;   ///< Pending sends to workers
     };
 
 public:
@@ -127,8 +126,8 @@ private:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    mplr::communicator fIntraNodeComm; ///< Communicator within a shared-memory domain
-    mplr::communicator fInterNodeComm; ///< Communicator between node masters
+    mp1::communicator fIntraNodeComm; ///< Communicator within a shared-memory domain
+    mp1::communicator fInterNodeComm; ///< Communicator between node masters
 
     T fIntraNodeBatchSize;              ///< Tasks per intra-node batch
     T fInterNodeBatchSizeMultiple;      ///< Multiple of intra-node batches per inter-node batch
@@ -137,9 +136,9 @@ private:
     std::unique_ptr<NodeMaster> fNodeMaster; ///< Node master (node root only)
     std::jthread fNodeMasterThread;          ///< Node master thread (node root only)
 
-    mplr::prequest fSendToNM;   ///< Send request to the node master
-    T fTaskIDRecvFromNM;        ///< Task ID received from the node master
-    mplr::prequest fRecvFromNM; ///< Receive request from the node master
+    mp1::request fSendToNM;   ///< Send request to the node master
+    T fTaskIDRecvFromNM;      ///< Task ID received from the node master
+    mp1::request fRecvFromNM; ///< Receive request from the node master
 
     T fIntraNodeTaskCounter; ///< Tasks executed in the current intra-node batch
 

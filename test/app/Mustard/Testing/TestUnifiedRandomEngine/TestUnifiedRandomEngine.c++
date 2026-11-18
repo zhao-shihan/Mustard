@@ -32,7 +32,7 @@
 
 #include "TRandom.h"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/random"
 
@@ -64,7 +64,7 @@ auto TestUnifiedRandomEngine::Main(int argc, char* argv[]) const -> int {
     auto& rootEngine{env.ROOTRandomEngine()};
     using Engine = std::remove_reference_t<decltype(engine)>;
     using SeedType = typename Engine::result_type;
-    const auto worldSize{static_cast<int>(mplr::comm_world().size())};
+    const auto worldSize{static_cast<int>(mp1::comm_world().size())};
 
     // The environment owns one type-erased engine and both handles refer to it
     static_assert(std::same_as<Engine, muc::any_rng>);
@@ -118,8 +118,10 @@ auto TestUnifiedRandomEngine::Main(int argc, char* argv[]) const -> int {
     // seeds of its own; both are checked before this test seeds the engine itself.
     // Gather one value from every rank and report whether all ranks differ
     const auto allRanksDistinct{[worldSize](auto draw) -> bool {
-        std::vector<std::remove_cvref_t<decltype(draw())>> allDraw(worldSize);
-        mplr::comm_world().allgather(draw(), allDraw.data());
+        using DrawType = std::remove_cvref_t<decltype(draw())>;
+        std::vector<DrawType> allDraw(worldSize);
+        const auto localDraw{static_cast<DrawType>(draw())};
+        mp1::allgather(mp1::comm_world(), localDraw, allDraw);
         std::ranges::sort(allDraw);
         return std::ranges::adjacent_find(allDraw) == allDraw.end();
     }};
@@ -213,7 +215,7 @@ auto TestUnifiedRandomEngine::Main(int argc, char* argv[]) const -> int {
     const auto statusFile{(std::filesystem::temp_directory_path() / "test_unified_random_engine.status").string()};
     clhepEngine.saveStatus(statusFile.c_str());
     const auto afterSave{clhepEngine.flat()};
-    if (mplr::comm_world().rank() == 0) {
+    if (mp1::comm_world().rank() == 0) {
         clhepEngine.showStatus();
     }
     clhepEngine.restoreStatus(statusFile.c_str());

@@ -24,7 +24,7 @@
 
 #include "Eigen/Core"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/math"
 
@@ -319,7 +319,7 @@ public:
     /// @brief Convert the current state to a plain-old-data struct for MPI reduction and Base64 encoding.
     /// @return A `StatisticPOD<K, C>` containing copies of all accumulators.
     /// @note Only available when the dimension is known at compile time.
-    ///       The `StatisticPOD` type is introspected by `MPLR_REFLECTION_TEMPLATE`
+    ///       The `StatisticPOD` type is introspected by `MP1_REFLECTION_TEMPLATE`
     ///       for use with MPI collective operations.
     auto ToPOD() const -> PODType
         requires(K != Eigen::Dynamic);
@@ -605,14 +605,14 @@ auto operator+(Statistic<K, C>&& lhs, Statistic<L, D>&& rhs) -> impl::StatisticC
 /// @brief POD (plain-old-data) struct holding a snapshot of `Statistic` state.
 ///
 /// The primary purpose of this struct is MPI operation (enabled by the
-/// `MPLR_REFLECTION_TEMPLATE` introspection at the bottom of this header)
+/// `MP1_REFLECTION_TEMPLATE` introspection at the bottom of this header)
 /// and Base64 encoding for storage or network transfer. The contiguous
 /// memory layout allows direct `memcpy` and use with MPI collective operations.
 ///
 /// @tparam K Dimension (must be a compile-time constant, not `Eigen::Dynamic`)
 /// @tparam C Covariance option
 ///
-/// @see StatisticBase::ToPOD, StatisticBase::FromPOD, MPLR_REFLECTION_TEMPLATE
+/// @see StatisticBase::ToPOD, StatisticBase::FromPOD, MP1_REFLECTION_TEMPLATE
 template<int K, CovarianceOption C>
     requires(impl::GoodStatisticDimension<K>{}() and K != Eigen::Dynamic)
 struct StatisticPOD<K, C> {
@@ -626,13 +626,13 @@ struct StatisticPOD<K, C> {
 
     /// @brief Merge two statistics.
     template<int L, CovarianceOption D>
-    auto operator+(const StatisticPOD<L, D>& other) -> auto { return (Statistic<K, C>{*this} + Statistic<L, D>{other}).ToPOD(); }
+    auto operator+(const StatisticPOD<L, D>& other) const noexcept -> auto { return (Statistic<K, C>{*this} + Statistic<L, D>{other}).ToPOD(); }
 };
 
 } // namespace Mustard::inline Math
 
-MPLR_REFLECTION_TEMPLATE((int K, Mustard::CovarianceOption C),
-                         (Mustard::StatisticPOD<K, C>),
-                         n, w, w2, m, m2)
+MP1_REFLECTION_TEMPLATE((int K, Mustard::CovarianceOption C),
+                        (Mustard::StatisticPOD<K, C>),
+                        n, w, w2, m, m2)
 
 #include "Mustard/Math/Statistic.inl"

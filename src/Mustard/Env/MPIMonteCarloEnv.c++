@@ -17,9 +17,10 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIMonteCarloEnv.h++"
+#include "Mustard/Env/impl/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include <utility>
 
@@ -29,6 +30,7 @@ MPIMonteCarloEnv::MPIMonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>&
                                    enum VerboseLevel verboseLevel,
                                    bool showBannerHint,
                                    std::optional<muc::any_rng> engine) :
+    impl::EnvBase(impl::EnableMPI{argc, argv}),
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)},
@@ -39,7 +41,7 @@ MPIMonteCarloEnv::MPIMonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
                                    bool showBannerHint,
                                    std::optional<muc::any_rng> engine) :
     MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)} {
-    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
+    if (fShowBanner and (not mp1::available() or mp1::comm_world().rank() == 0)) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();

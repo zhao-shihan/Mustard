@@ -57,14 +57,14 @@ include(CPM)
 # Public dependencies (somewhat sorted by dependency order)
 # =============================================================================
 
-# mplr (-> MPI)
-set(MUSTARD_MPLR_MINIMUM_REQUIRED 0.26.1110)
+# mp1 (-> MPI)
+set(MUSTARD_MP1_MINIMUM_REQUIRED 1.1.0)
 CPMFindPackage(
-    NAME mplr
-    GITHUB_REPOSITORY zhao-shihan/mplr
-    VERSION ${MUSTARD_MPLR_MINIMUM_REQUIRED}
-    GIT_TAG v0.26.1111 # The project version inside the tag is still 0.26.1110
-    OPTIONS "MPLR_INSTALL ON")
+    NAME mp1
+    GITHUB_REPOSITORY zhao-shihan/mp1
+    VERSION ${MUSTARD_MP1_MINIMUM_REQUIRED}
+    GIT_TAG v1.1.0
+    OPTIONS "MP1_INSTALL ON" "MP1_BUILD_EXAMPLES OFF")
 
 # FFTW
 if(MUSTARD_USE_FFTW)

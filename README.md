@@ -46,7 +46,7 @@ Mustard requires the following external libraries to be installed on your system
 | [**Eigen3**](https://eigen.tuxfamily.org/) | 5.0.0       | Requires unsupported module   |
 | [**Geant4**](https://geant4.org/)          | 11.0.0      | Requires GDML module          |
 | [**ROOT**](https://root.cern/)             | 6.36.00     |                               |
-| [**MPI**](https://www.mpi-forum.org/)      | 3.1         | MPICH, OpenMPI, or equivalent |
+| [**MPI**](https://www.mpi-forum.org/)      | 4.1         | MPICH, OpenMPI, or equivalent |
 
 The following dependencies are required, but built-in if not found.
 
@@ -59,7 +59,7 @@ The following dependencies are required, but built-in if not found.
 | [**greg7mdp/gtl**](https://github.com/greg7mdp/gtl)                         | 1.3.1       | Greg's Template Library of useful classes                |
 | [**zhao-shihan/indicators**](https://github.com/zhao-shihan/indicators)     | 2.3.2       | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 5.0.1       | ISO C++ guidelines support library                       |
-| [**MPLR**](https://github.com/zhao-shihan/mplr)                             | 0.26.1110   | A C++17 message passing library based on MPI             |
+| [**mp1**](https://github.com/zhao-shihan/mp1)                               | 1.1.0       | A thin, typed, header-only C++20 wrapper for MPI         |
 | [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.925    | A standard non-standard C++ library                      |
 | [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
 

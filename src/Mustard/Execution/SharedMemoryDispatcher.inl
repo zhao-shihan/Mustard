@@ -21,30 +21,23 @@ namespace Mustard::inline Execution {
 template<std::integral T>
 SharedMemoryDispatcher<T>::SharedMemoryDispatcher() :
     Dispatcher<T>{},
-    fMainTaskID{},
-    fMainTaskIDWindow{MPI_WIN_NULL},
+    fMainTaskIDWindow{},
     fBatchSize{},
     fTaskCounter{} {
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     if (mpiEnv.OnCluster()) {
         Throw<std::runtime_error>("World communicator involves multiple shared memory domains.");
     }
-    mplr::info winInfo;
+    mp1::info winInfo;
     winInfo.set("accumulate_ops", "same_op");
     winInfo.set("mpi_accumulate_granularity", std::to_string(sizeof(T)));
     winInfo.set("same_disp_unit", "true");
     const auto& intraNodeComm{mpiEnv.IntraNodeComm()};
-    T* mainTaskID;
-    MPI_Win_allocate_shared(intraNodeComm.rank() == 0 ? sizeof(T) : 0, sizeof(T), winInfo.native_handle(),
-                            intraNodeComm.native_handle(), &mainTaskID, &fMainTaskIDWindow);
-    fMainTaskID = mainTaskID;
-}
-
-template<std::integral T>
-SharedMemoryDispatcher<T>::~SharedMemoryDispatcher() {
-    if (fMainTaskIDWindow != MPI_WIN_NULL) {
-        MPI_Win_free(&fMainTaskIDWindow);
-    }
+    fMainTaskIDWindow = mp1::window::allocate_shared(
+        intraNodeComm,
+        {.size = intraNodeComm.rank() == 0 ? static_cast<MPI_Aint>(sizeof(T)) : 0,
+         .disp_unit = sizeof(T),
+         .info = winInfo});
 }
 
 template<std::integral T>
@@ -54,24 +47,28 @@ auto SharedMemoryDispatcher<T>::PreLoopAction() -> void {
     this->fExecutingTask = this->fTask.first + intraNodeComm.rank() * fBatchSize;
     fTaskCounter = 0;
 
-    if (fMainTaskID) {
-        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 0, 0, fMainTaskIDWindow);
-        *fMainTaskID = this->fTask.first + intraNodeComm.size() * fBatchSize;
-        MPI_Win_unlock(0, fMainTaskIDWindow);
+    mp1::lock(fMainTaskIDWindow, mp1::lock_type::shared, 0, MPI_MODE_NOCHECK);
+    if (intraNodeComm.rank() == 0) {
+        *static_cast<T*>(fMainTaskIDWindow.base()) = this->fTask.first + intraNodeComm.size() * fBatchSize;
+        mp1::sync(fMainTaskIDWindow);
     }
 }
 
 template<std::integral T>
 auto SharedMemoryDispatcher<T>::PostTaskAction() -> void {
     if (++fTaskCounter == fBatchSize) {
-        MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, fMainTaskIDWindow);
-        MPI_Fetch_and_op(&fBatchSize, &this->fExecutingTask, Parallel::MPIDataType<T>(), 0, 0, MPI_SUM, fMainTaskIDWindow);
-        MPI_Win_unlock(0, fMainTaskIDWindow);
+        mp1::fetch_and_op(fMainTaskIDWindow, &fBatchSize, &this->fExecutingTask, 0, 0, std::plus{});
+        mp1::flush(fMainTaskIDWindow, 0);
         this->fExecutingTask = std::min(this->fExecutingTask, this->fTask.last);
         fTaskCounter = 0;
     } else {
         ++this->fExecutingTask;
     }
+}
+
+template<std::integral T>
+auto SharedMemoryDispatcher<T>::PostLoopAction() -> void {
+    mp1::unlock(fMainTaskIDWindow, 0);
 }
 
 template<std::integral T>

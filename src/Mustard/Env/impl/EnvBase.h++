@@ -22,6 +22,10 @@
 
 #include <memory>
 
+namespace mp1 {
+class environment;
+} // namespace mp1
+
 namespace Mustard::Env {
 
 inline namespace ObjectRegistry {
@@ -33,23 +37,41 @@ class SingletonPool;
 
 namespace impl {
 
+/// @brief Implementation detail. Enables MPI in `EnvBase`.
+/// @details Holds references to `argc`/`argv` only for the duration of the
+/// `EnvBase` construction; do not store it beyond the constructor call.
+struct EnableMPI {
+    int& argc;
+    char**& argv;
+};
+
 /// @brief Implementation detail. Non-copyable base for all environment classes.
 /// @details Not API. Owns the `WeakSingletonPool` and `SingletonPool`
-/// instances that back the ObjectRegistry subsystem. Constructed first in
-/// the virtual inheritance hierarchy, ensuring the pools are available
-/// before any derived environment logic executes.
+/// instances that back the ObjectRegistry subsystem, and optionally owns an
+/// `mp1::environment` passed by an MPI-aware environment. Constructed first in
+/// the virtual inheritance hierarchy, ensuring the MPI environment and the
+/// pools are available before any derived environment logic executes.
+/// @note `EnvBase` is a virtual base: a most-derived class that derives from an
+/// MPI-aware environment must initialize it with `EnableMPI{argc, argv}`.
 class EnvBase : public NoncopyableBase {
 protected:
-    /// @brief Constructs the base, instantiating the singleton and weak-singleton pools.
+    /// @brief Constructs the base without an MPI environment.
     EnvBase();
-    /// @brief Destroys the base, tearing down the pools in reverse order.
+    /// @brief Constructs the base and initializes an owned MPI environment.
+    /// @param enable MPI enablement carrying the `argc`/`argv` references
+    EnvBase(EnableMPI enable);
+    /// @brief Destroys the base, tearing down the pools and then the MPI environment.
     ~EnvBase();
 
 private:
+    /// @brief Constructs the base, taking ownership of an optional MPI environment.
+    /// @param mp1 MPI environment to own; null for a non-MPI environment
+    explicit EnvBase(std::unique_ptr<mp1::environment> mp1);
     /// @brief Verifies consistency of fundamental type sizes across translation units.
     static auto CheckFundamentalType() -> void;
 
 private:
+    std::unique_ptr<mp1::environment> fMP1Env;                                   ///< Owned MPI environment, if any; destroyed last.
     std::unique_ptr<ObjectRegistry::impl::WeakSingletonPool> fWeakSingletonPool; ///< Weak singleton registry pool.
     std::unique_ptr<ObjectRegistry::impl::SingletonPool> fSingletonPool;         ///< Singleton registry pool.
 };

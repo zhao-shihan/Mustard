@@ -25,12 +25,17 @@
 #include "Mustard/Testing/DataModel/MultiTestingDataModel.h++"
 #include "Mustard/Testing/TestMultiRDFEventProcessor/TestMultiRDFEventProcessor.h++"
 
+#include "mp1/mp1.hpp"
+
+#include "gsl/gsl"
+
 #include <algorithm>
 #include <array>
 #include <cstdlib>
 #include <source_location>
 #include <stdexcept>
 #include <string_view>
+#include <vector>
 
 namespace Mustard::Testing {
 
@@ -63,7 +68,7 @@ auto TestMultiRDFEventProcessor::Main(int argc, char* argv[]) const -> int {
         return EXIT_FAILURE;
     }};
 
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     const auto validateWithProcessor{[&](std::array<std::string_view, 3> dataName, std::string_view sourceName) -> int {
         std::array<ROOT::RDF::RNode, 3> allRDF{
             ROOT::RDataFrame{dataName[0], fileName},
@@ -130,21 +135,25 @@ auto TestMultiRDFEventProcessor::Main(int argc, char* argv[]) const -> int {
         processor.Run(reader, collectEventIDs);
 
         const auto gatherEventIDs{[&](const gtl::vector<int>& localList, gtl::vector<int>& gatheredList) {
+            const auto localSize{gsl::narrow<int>(localList.size())};
+            std::vector<int> size(worldComm.rank() == 0 ? worldComm.size() : 0);
+            mp1::gather(worldComm, 0, localSize, size);
+
+            std::vector<mp1::count_t> count;
+            std::vector<mp1::count_t> disp;
             if (worldComm.rank() == 0) {
-                gtl::vector<int> size(worldComm.size());
-                worldComm.gather<int>(0, static_cast<int>(localList.size()), size.data());
-                mplr::displacements disp(worldComm.size());
-                for (int i = 1; i < worldComm.size(); ++i) {
-                    disp[i] = disp[i - 1] + size[i - 1];
+                count.resize(worldComm.size());
+                disp.resize(worldComm.size());
+                for (int i{}; i < worldComm.size(); ++i) {
+                    count[i] = size[i];
+                    if (i > 0) {
+                        disp[i] = disp[i - 1] + size[i - 1];
+                    }
                 }
-                mplr::contiguous_layouts<int> layout(worldComm.size());
-                std::ranges::transform(size, layout.begin(), [](auto n) { return mplr::contiguous_layout<int>(n); });
-                gatheredList.resize(disp[worldComm.size() - 1] + size.back());
-                worldComm.gatherv(0, localList.data(), mplr::contiguous_layout<int>{localList.size()}, gatheredList.data(), layout, disp);
-            } else {
-                worldComm.gather<int>(0, static_cast<int>(localList.size()));
-                worldComm.gatherv(0, localList.data(), mplr::contiguous_layout<int>{localList.size()});
+                gatheredList.resize(disp.back() + count.back());
             }
+            mp1::gatherv(worldComm, 0, localList, gatheredList,
+                         mp1::blocks{.counts = count, .displacements = disp});
         }};
 
         gtl::vector<int> eventIDListA;

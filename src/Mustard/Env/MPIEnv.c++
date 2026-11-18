@@ -17,6 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Env/impl/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 
@@ -30,9 +31,11 @@
 #include <array>
 #include <cstdio>
 #include <iterator>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 namespace Mustard::Env {
 
@@ -40,64 +43,65 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                muc::optional_ref<CLI::CLI<>> cli,
                enum VerboseLevel verboseLevel,
                bool showBannerHint) :
+    impl::EnvBase(impl::EnableMPI{argc, argv}),
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     PassiveSingleton<MPIEnv>{this},
-    fIntraNodeComm{},
-    fInterNodeComm{},
+    fIntraNodeComm{mp1::communicator::split_type(mp1::comm_world(), mp1::comm_type_shared)},
+    fInterNodeComm{mp1::communicator::split(mp1::comm_world(), fIntraNodeComm.rank() == 0 ? 0 : MPI_UNDEFINED)},
     fLocalNodeIdx{},
     fNodeList{} {
-    mplr::init(argc, argv);
-
-    const auto worldComm{mplr::comm_world()};
-    fIntraNodeComm = mplr::communicator{mplr::communicator::split_shared_memory, worldComm};
-    enum struct IntraNodeColor { Leader = 0,
-                                 Other = MPI_UNDEFINED };
-    fInterNodeComm = mplr::communicator{mplr::communicator::split, worldComm,
-                                        fIntraNodeComm.rank() == 0 ?
-                                            IntraNodeColor::Leader :
-                                            IntraNodeColor::Other};
-
+    const auto& worldComm{mp1::comm_world()};
     fLocalNodeIdx = fInterNodeComm.is_valid() ? fInterNodeComm.rank() : 0;
-    fIntraNodeComm.bcast(0, fLocalNodeIdx);
+    mp1::bcast(fIntraNodeComm, 0, fLocalNodeIdx);
 
     auto nNode{fInterNodeComm.is_valid() ? fInterNodeComm.size() : 0};
-    fIntraNodeComm.bcast(0, nNode);
+    mp1::bcast(fIntraNodeComm, 0, nNode);
     fNodeList.resize(nNode);
 
-    using NodeNameType = std::array<char, MPI_MAX_PROCESSOR_NAME>;
-    std::vector<NodeNameType> nodeName(nNode);
+    constexpr std::size_t maxProcName{MPI_MAX_PROCESSOR_NAME};
+    using NodeNameType = std::array<char, maxProcName>;
+    std::vector<char> nodeName(nNode * maxProcName);
     if (fInterNodeComm.is_valid()) {
         NodeNameType localNodeName{};
-        std::ranges::copy(mplr::processor_name(), localNodeName.begin());
-        fInterNodeComm.allgather(localNodeName, nodeName.data());
+        const auto localNodeNameString{mp1::processor_name()};
+        std::ranges::copy_n(localNodeNameString.cbegin(),
+                            std::min(localNodeNameString.size(), localNodeName.size()),
+                            localNodeName.begin());
+        mp1::allgather(fInterNodeComm, localNodeName, nodeName);
     }
-    fIntraNodeComm.bcast(0, nodeName.data(), mplr::vector_layout<NodeNameType>(nNode));
+    mp1::bcast(fIntraNodeComm, 0, nodeName);
 
     std::vector<int> nodeSize(nNode);
     std::vector<int> localWorldRank(fInterNodeComm.is_valid() ? fIntraNodeComm.size() : 0);
-    fIntraNodeComm.gather(0, worldComm.rank(), localWorldRank.data());
+    const auto localWorldRankValue{worldComm.rank()};
+    mp1::gather(fIntraNodeComm, 0, localWorldRankValue, localWorldRank);
     if (fInterNodeComm.is_valid()) {
-        fInterNodeComm.allgather(gsl::narrow<int>(localWorldRank.size()), nodeSize.data());
+        const auto localWorldRankCount{gsl::narrow<int>(localWorldRank.size())};
+        mp1::allgather(fInterNodeComm, localWorldRankCount, nodeSize);
     }
-    fIntraNodeComm.bcast(0, nodeSize.data(), mplr::vector_layout<int>(nNode));
+    mp1::bcast(fIntraNodeComm, 0, nodeSize);
 
-    mplr::displacements disp(nNode);
+    std::vector<mp1::count_t> disp(nNode);
     for (auto i{1}; i < nNode; ++i) {
         disp[i] = disp[i - 1] + nodeSize[i - 1];
     }
     std::vector<int> flatWorldRank(worldComm.size());
     if (fInterNodeComm.is_valid()) {
-        mplr::contiguous_layouts<int> worldRankLayout(nNode);
-        std::ranges::transform(nodeSize, worldRankLayout.begin(), [](int size) { return mplr::contiguous_layout<int>(size); });
-        fInterNodeComm.allgatherv(localWorldRank.data(), mplr::contiguous_layout<int>(localWorldRank.size()),
-                                  flatWorldRank.data(), worldRankLayout, disp);
+        std::vector<mp1::layout<int>> worldRankLayout(nNode);
+        std::ranges::transform(nodeSize, worldRankLayout.begin(),
+                               [](int size) { return mp1::layout<int>::contiguous(size); });
+        mp1::allgatherv(fInterNodeComm, localWorldRank, flatWorldRank,
+                        worldRankLayout,
+                        disp);
     }
-    fIntraNodeComm.bcast(0, flatWorldRank.data(), mplr::vector_layout<int>{flatWorldRank.size()});
+    mp1::bcast(fIntraNodeComm, 0, flatWorldRank);
 
+    const std::span nodeNameView{nodeName};
     for (int i{}; i < nNode; ++i) {
         auto& node{fNodeList[i]};
-        const auto nameEnd{std::ranges::find(std::as_const(nodeName[i]), '\0')};
-        node.name = std::string_view{nodeName[i].cbegin(), nameEnd};
+        const auto nameSpan{nodeNameView.subspan(i * maxProcName, maxProcName)};
+        const auto nameEnd{std::ranges::find(nameSpan, '\0')};
+        node.name = std::string_view{nameSpan.begin(), nameEnd};
         node.size = nodeSize[i];
         node.worldRank.resize(node.size);
         std::ranges::copy_n(flatWorldRank.cbegin() + disp[i], nodeSize[i], node.worldRank.begin());
@@ -114,7 +118,7 @@ MPIEnv::MPIEnv(int argc, char* argv[],
                enum VerboseLevel verboseLevel,
                bool showBannerHint) :
     MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
-    if (fShowBanner and mplr::comm_world().rank() == 0) {
+    if (fShowBanner and mp1::comm_world().rank() == 0) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();
@@ -122,10 +126,9 @@ MPIEnv::MPIEnv(int argc, char* argv[],
 }
 
 MPIEnv::~MPIEnv() {
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     // Wait all processes before finalizing
-    worldComm.ibarrier()
-        .wait(mplr::duty_ratio::preset::relaxed);
+    mp1::barrier(worldComm);
     // Show exit banner
     if (fShowBanner and worldComm.rank() == 0) {
         PrintExitBanner();
@@ -136,11 +139,11 @@ MPIEnv::~MPIEnv() {
 auto MPIEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     BasicEnv::PrintStartBannerBody(argc, argv);
     // MPI library version
-    const auto mpiLibVersion{mplr::get_library_version()};
+    const auto mpiLibVersion{mp1::get_library_version()};
     // MPI version at runtime
-    const auto mpiRuntimeVersion{mplr::get_version()};
+    const auto mpiRuntimeVersion{mp1::get_version()};
     // Messages
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     Print(fmt::emphasis::bold,
           "\n"
           " Parallelized with MPI, running {}\n",

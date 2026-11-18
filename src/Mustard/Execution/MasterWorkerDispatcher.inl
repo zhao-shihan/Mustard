@@ -25,39 +25,43 @@ MasterWorkerDispatcher<T>::Master::Master(MasterWorkerDispatcher<T>* s) :
     fTaskIDSend{},
     fSend{} {
     const auto commSize{fS->fComm.size()};
+    fRecv.reserve(commSize);
     for (int src{}; src < commSize; ++src) {
-        fRecv.push(fS->fComm.recv_init(src));
+        fRecv.emplace_back(mp1::recv_init(fS->fComm, mp1::empty_data, src));
     }
-    fTaskIDSend.reserve(commSize);
+    fTaskIDSend.resize(commSize);
+    fSend.reserve(commSize);
     for (int dest{}; dest < commSize; ++dest) {
-        fSend.push(fS->fComm.rsend_init(fTaskIDSend.emplace_back(), dest));
+        fSend.emplace_back(mp1::rsend_init(fS->fComm, fTaskIDSend[dest], dest));
     }
 }
 
 template<std::integral T>
 auto MasterWorkerDispatcher<T>::Master::StartAll() -> void {
-    fRecv.startall();
+    mp1::start_all(fRecv);
 }
 
 template<std::integral T>
 auto MasterWorkerDispatcher<T>::Master::operator()() -> void {
     T mainTaskID{fS->fTask.first + fS->fComm.size() * fS->fBatchSize};
     while (true) {
-        const auto [result, recvRank]{fRecv.waitsome(mplr::duty_ratio::preset::active)};
-        if (result == mplr::test_result::no_active_requests) {
+        const auto completed{mp1::wait_some(fRecv)};
+        if (completed.empty()) {
             break;
         }
-        for (auto&& rank : recvRank) {
-            fTaskIDSend[rank] = std::min(mainTaskID, fS->fTask.last);
-            if (fTaskIDSend[rank] != fS->fTask.last) [[likely]] {
+        for (auto&& [rank, status] : std::as_const(completed)) {
+            const auto taskID{std::min(mainTaskID, fS->fTask.last)};
+            if (taskID != fS->fTask.last) [[likely]] {
+                // The worker's next request is a ready send: post fRecv before waiting.
                 mainTaskID += fS->fBatchSize;
-                fRecv.start(rank);
+                fRecv[rank].start();
             }
-            fSend.wait(rank);
-            fSend.start(rank);
+            fSend[rank].wait();
+            fTaskIDSend[rank] = taskID; // fTaskIDSend[rank] can only be reused after fSend[rank].wait() returns
+            fSend[rank].start();
         }
     }
-    fSend.waitall(mplr::duty_ratio::preset::moderate);
+    mp1::wait_all(fSend);
 }
 
 template<std::integral T>
@@ -71,17 +75,17 @@ MasterWorkerDispatcher<T>::MasterWorkerDispatcher() :
     fTaskIDRecv{},
     fRecv{},
     fTaskCounter{} {
-    mplr::info commInfo;
+    mp1::info commInfo;
     commInfo.set("mpi_assert_no_any_tag", "true");
     commInfo.set("mpi_assert_no_any_source", "true");
     commInfo.set("mpi_assert_exact_length", "true");
     commInfo.set("mpi_assert_allow_overtaking", "true");
-    fComm = mplr::communicator{mplr::comm_world(), commInfo};
+    fComm = mp1::communicator::dup_with_info(mp1::comm_world(), commInfo);
     if (fComm.rank() == 0) {
         fMaster = std::make_unique<Master>(this);
     }
-    fSend = fComm.rsend_init(0);
-    fRecv = fComm.recv_init(fTaskIDRecv, 0);
+    fSend = mp1::rsend_init(fComm, mp1::empty_data, 0);
+    fRecv = mp1::recv_init(fComm, fTaskIDRecv, 0);
 }
 
 template<std::integral T>
@@ -94,8 +98,7 @@ auto MasterWorkerDispatcher<T>::PreLoopAction() -> void {
         fMaster->StartAll();
         fMasterThread = std::jthread{std::ref(*fMaster)};
     }
-    fComm.ibarrier()
-        .wait(mplr::duty_ratio::preset::moderate);
+    mp1::barrier(fComm);
 }
 
 template<std::integral T>
@@ -120,8 +123,8 @@ auto MasterWorkerDispatcher<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto MasterWorkerDispatcher<T>::PostLoopAction() -> void {
-    fSend.wait(mplr::duty_ratio::preset::moderate);
-    fRecv.wait(mplr::duty_ratio::preset::moderate);
+    fSend.wait();
+    fRecv.wait();
 
     if (fMasterThread.joinable()) {
         fMasterThread.join();

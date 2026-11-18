@@ -33,7 +33,7 @@ Executor<T>::Executor(std::unique_ptr<Dispatcher<T>> dispatcher) :
 template<std::integral T>
 Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher) :
     fImpl{[&] {
-        if (not mplr::available() or mplr::comm_world().size() == 1) {
+        if (not mp1::available() or mp1::comm_world().size() == 1) {
             return std::make_unique<Impl>(
                 std::in_place_type<impl::SequentialExecutorImpl<T>>,
                 std::move(executionName), std::move(opName), std::move(taskName), std::move(dispatcher));

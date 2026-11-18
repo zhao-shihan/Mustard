@@ -21,7 +21,7 @@ namespace Mustard::inline Execution {
 template<std::integral T>
 SequentialDispatcher<T>::SequentialDispatcher() :
     Dispatcher<T>{} {
-    if (mplr::available() and mplr::comm_world().size() > 1) {
+    if (mp1::available() and mp1::comm_world().size() > 1) {
         Throw<std::runtime_error>("Running with more than one process is not supported.");
     }
 }

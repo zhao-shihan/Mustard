@@ -25,39 +25,43 @@ ClusterAwareMasterWorkerDispatcher<T>::ClusterMaster::ClusterMaster(ClusterAware
     fTaskIDSendToNM{},
     fSendToNM{} {
     const auto commSize{s->fInterNodeComm.size()};
+    fRecvFromNM.reserve(commSize);
     for (int src{}; src < commSize; ++src) {
-        fRecvFromNM.push(s->fInterNodeComm.recv_init(src));
+        fRecvFromNM.emplace_back(mp1::recv_init(s->fInterNodeComm, mp1::empty_data, src));
     }
-    fTaskIDSendToNM.reserve(commSize);
+    fTaskIDSendToNM.resize(commSize);
+    fSendToNM.reserve(commSize);
     for (int dest{}; dest < commSize; ++dest) {
-        fSendToNM.push(s->fInterNodeComm.rsend_init(fTaskIDSendToNM.emplace_back(), dest));
+        fSendToNM.emplace_back(mp1::rsend_init(s->fInterNodeComm, fTaskIDSendToNM[dest], dest));
     }
 }
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerDispatcher<T>::ClusterMaster::StartAll() -> void {
-    fRecvFromNM.startall();
+    mp1::start_all(fRecvFromNM);
 }
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerDispatcher<T>::ClusterMaster::operator()() -> void {
     auto interNodeTaskID{muc::ranges::reduce(fS->fInterNodeBatchSize, fS->fTask.first)};
     while (true) {
-        const auto [result, recvRank]{fRecvFromNM.waitsome(mplr::duty_ratio::preset::active)};
-        if (result == mplr::test_result::no_active_requests) {
+        const auto completed{mp1::wait_some(fRecvFromNM)};
+        if (completed.empty()) {
             break;
         }
-        for (auto&& rank : recvRank) {
-            fTaskIDSendToNM[rank] = std::min(interNodeTaskID, fS->fTask.last);
-            if (fTaskIDSendToNM[rank] != fS->fTask.last) [[likely]] {
+        for (auto&& [rank, status] : std::as_const(completed)) {
+            const auto taskID{std::min(interNodeTaskID, fS->fTask.last)};
+            if (taskID != fS->fTask.last) [[likely]] {
+                // The node master's next request is a ready send: post fRecvFromNM before waiting.
                 interNodeTaskID += fS->fInterNodeBatchSize[rank];
-                fRecvFromNM.start(rank);
+                fRecvFromNM[rank].start();
             }
-            fSendToNM.wait(rank);
-            fSendToNM.start(rank);
+            fSendToNM[rank].wait();
+            fTaskIDSendToNM[rank] = taskID; // fTaskIDSendToNM[rank] can only be reused after fSendToNM[rank].wait() returns
+            fSendToNM[rank].start();
         }
     }
-    fSendToNM.waitall(mplr::duty_ratio::preset::moderate);
+    mp1::wait_all(fSendToNM);
 }
 
 template<std::integral T>
@@ -65,32 +69,33 @@ ClusterAwareMasterWorkerDispatcher<T>::NodeMaster::NodeMaster(ClusterAwareMaster
     fS{s},
     fClusterMaster{s->fInterNodeComm.rank() == 0 ? std::make_unique<ClusterMaster>(s) : nullptr},
     fClusterMasterThread{},
-    fSendToCM{s->fInterNodeComm.rsend_init(0)},
+    fSendToCM{mp1::rsend_init(s->fInterNodeComm, mp1::empty_data, 0)},
     fTaskIDRecvFromCM{},
-    fRecvFromCM{s->fInterNodeComm.recv_init(fTaskIDRecvFromCM, 0)},
+    fRecvFromCM{mp1::recv_init(s->fInterNodeComm, fTaskIDRecvFromCM, 0)},
     fRecvFromW{},
     fTaskIDSendToW{},
     fSendToW{} {
     const auto nodeSize{s->fIntraNodeComm.size()};
+    fRecvFromW.reserve(nodeSize);
     for (int src{}; src < nodeSize; ++src) {
-        fRecvFromW.push(s->fIntraNodeComm.recv_init(src));
+        fRecvFromW.emplace_back(mp1::recv_init(s->fIntraNodeComm, mp1::empty_data, src));
     }
-    fTaskIDSendToW.reserve(nodeSize);
+    fTaskIDSendToW.resize(nodeSize);
+    fSendToW.reserve(nodeSize);
     for (int dest{}; dest < nodeSize; ++dest) {
-        fSendToW.push(s->fIntraNodeComm.rsend_init(fTaskIDSendToW.emplace_back(), dest));
+        fSendToW.emplace_back(mp1::rsend_init(s->fIntraNodeComm, fTaskIDSendToW[dest], dest));
     }
 }
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerDispatcher<T>::NodeMaster::StartAll() -> void {
-    fRecvFromW.startall();
+    mp1::start_all(fRecvFromW);
 
     if (fClusterMaster) {
         fClusterMaster->StartAll();
         fClusterMasterThread = std::jthread{std::ref(*fClusterMaster)};
     }
-    fS->fInterNodeComm.ibarrier()
-        .wait(mplr::duty_ratio::preset::moderate);
+    mp1::barrier(fS->fInterNodeComm);
 }
 
 template<std::integral T>
@@ -105,11 +110,11 @@ auto ClusterAwareMasterWorkerDispatcher<T>::NodeMaster::operator()() -> void {
     fRecvFromCM.start();
     fSendToCM.start();
     while (true) {
-        const auto [result, recvRank]{fRecvFromW.waitsome(mplr::duty_ratio::preset::active)};
-        if (result == mplr::test_result::no_active_requests) {
+        const auto completed{mp1::wait_some(fRecvFromW)};
+        if (completed.empty()) {
             break;
         }
-        for (auto&& rank : recvRank) {
+        for (auto&& [rank, status] : std::as_const(completed)) {
             if (intraNodeTaskID == intraNodeTaskEnd and intraNodeTaskID != fS->fTask.last) {
                 fSendToCM.wait();
                 fRecvFromCM.wait();
@@ -122,18 +127,20 @@ auto ClusterAwareMasterWorkerDispatcher<T>::NodeMaster::operator()() -> void {
                     intraNodeTaskEnd = intraNodeTaskID;
                 }
             }
-            fTaskIDSendToW[rank] = std::min(intraNodeTaskID, fS->fTask.last);
-            if (fTaskIDSendToW[rank] != fS->fTask.last) [[likely]] {
+            const auto taskID{std::min(intraNodeTaskID, fS->fTask.last)};
+            if (taskID != fS->fTask.last) [[likely]] {
+                // The worker's next request is a ready send: post fRecvFromW before waiting.
                 intraNodeTaskID += fS->fIntraNodeBatchSize;
-                fRecvFromW.start(rank);
+                fRecvFromW[rank].start();
             }
-            fSendToW.wait(rank);
-            fSendToW.start(rank);
+            fSendToW[rank].wait();
+            fTaskIDSendToW[rank] = taskID; // fTaskIDSendToW[rank] can only be reused after fSendToW[rank].wait() returns
+            fSendToW[rank].start();
         }
     }
-    fSendToCM.wait(mplr::duty_ratio::preset::moderate);
-    fRecvFromCM.wait(mplr::duty_ratio::preset::moderate);
-    fSendToW.waitall(mplr::duty_ratio::preset::moderate);
+    fSendToCM.wait();
+    fRecvFromCM.wait();
+    mp1::wait_all(fSendToW);
 
     if (fClusterMasterThread.joinable()) {
         fClusterMasterThread.join();
@@ -154,25 +161,25 @@ ClusterAwareMasterWorkerDispatcher<T>::ClusterAwareMasterWorkerDispatcher() :
     fTaskIDRecvFromNM{},
     fRecvFromNM{},
     fIntraNodeTaskCounter{} {
-    mplr::info commInfo;
+    mp1::info commInfo;
     commInfo.set("mpi_assert_no_any_tag", "true");
     commInfo.set("mpi_assert_no_any_source", "true");
     commInfo.set("mpi_assert_exact_length", "true");
     commInfo.set("mpi_assert_allow_overtaking", "true");
     const auto& mpiEnv{Env::MPIEnv::Instance()};
-    fIntraNodeComm = mplr::communicator{mpiEnv.IntraNodeComm(), commInfo};
+    fIntraNodeComm = mp1::communicator::dup_with_info(mpiEnv.IntraNodeComm(), commInfo);
     if (mpiEnv.InterNodeComm().is_valid()) {
-        fInterNodeComm = mplr::communicator{mpiEnv.InterNodeComm(), commInfo};
+        fInterNodeComm = mp1::communicator::dup_with_info(mpiEnv.InterNodeComm(), commInfo);
         fNodeMaster = std::make_unique<NodeMaster>(this);
     }
     fInterNodeBatchSize.resize(mpiEnv.ClusterSize());
-    fSendToNM = fIntraNodeComm.rsend_init(0);
-    fRecvFromNM = fIntraNodeComm.recv_init(fTaskIDRecvFromNM, 0);
+    fSendToNM = mp1::rsend_init(fIntraNodeComm, mp1::empty_data, 0);
+    fRecvFromNM = mp1::recv_init(fIntraNodeComm, fTaskIDRecvFromNM, 0);
 }
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerDispatcher<T>::PreLoopAction() -> void {
-    const auto avgTaskPerProc{static_cast<long double>(this->NTask()) / mplr::comm_world().size()};
+    const auto avgTaskPerProc{static_cast<long double>(this->NTask()) / mp1::comm_world().size()};
     fInterNodeBatchSizeMultiple = std::min(muc::lltrunc(avgTaskPerProc), fgMaxInterNodeBatchSizeMultiple);
     Ensures(fInterNodeBatchSizeMultiple >= 1);
     fIntraNodeBatchSize = std::max(1ll, std::llround(fgImbalancingFactor * avgTaskPerProc / fInterNodeBatchSizeMultiple));
@@ -193,8 +200,7 @@ auto ClusterAwareMasterWorkerDispatcher<T>::PreLoopAction() -> void {
         fNodeMaster->StartAll();
         fNodeMasterThread = std::jthread{std::ref(*fNodeMaster)};
     }
-    fIntraNodeComm.ibarrier()
-        .wait(mplr::duty_ratio::preset::moderate);
+    mp1::barrier(fIntraNodeComm);
 }
 
 template<std::integral T>
@@ -219,8 +225,8 @@ auto ClusterAwareMasterWorkerDispatcher<T>::PostTaskAction() -> void {
 
 template<std::integral T>
 auto ClusterAwareMasterWorkerDispatcher<T>::PostLoopAction() -> void {
-    fSendToNM.wait(mplr::duty_ratio::preset::moderate);
-    fRecvFromNM.wait(mplr::duty_ratio::preset::moderate);
+    fSendToNM.wait();
+    fRecvFromNM.wait();
 
     if (fNodeMasterThread.joinable()) {
         fNodeMasterThread.join();

@@ -22,7 +22,7 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/optional"
 
@@ -36,7 +36,7 @@
 namespace Mustard::Env {
 
 /// @brief MPI-aware runtime environment for distributed Mustard applications.
-/// @details This environment initializes MPI via MPLR and derives a two-level
+/// @details This environment initializes MPI via mp1 and derives a two-level
 /// communicator topology:
 /// - Intra-node communicator (`IntraNodeComm`) involves processes sharing
 ///   the same node (shared-memory domain).
@@ -47,6 +47,10 @@ namespace Mustard::Env {
 ///
 /// The class also builds a node table that maps node names to world ranks,
 /// allowing code to reason about cluster layout.
+///
+/// MPI is owned by the optional `mp1::environment` held by `EnvBase`. `MPIEnv`
+/// constructs it before `BasicEnv`/`EnvBase` logic runs, and it is destroyed
+/// after `EnvBase`'s singleton pools have been destroyed.
 class MPIEnv : virtual public BasicEnv,
                public PassiveSingleton<MPIEnv> {
 protected:
@@ -57,6 +61,9 @@ protected:
     /// @param verboseLevel Logging verbosity inherited from BasicEnv.
     /// @param showBannerHint Whether banner hint should still be tracked.
     /// @note Intended for derived/internal construction paths.
+    /// @note A most-derived class derived from `MPIEnv` must initialize
+    ///       `impl::EnvBase` with `impl::EnableMPI{argc, argv}` itself; the
+    ///       initializer in this constructor is ignored in that case.
     MPIEnv(NoBanner, int argc, char* argv[],
            muc::optional_ref<CLI::CLI<>> cli,
            enum VerboseLevel verboseLevel,
@@ -75,8 +82,11 @@ public:
            bool showBannerHint = true);
 
     /// @brief Synchronizes all processes and finalizes environment shutdown.
-    /// @details An MPI non-blocking barrier is waited before teardown to keep
-    /// shutdown output consistent across processes.
+    /// @details A barrier is waited before teardown to keep shutdown output
+    /// consistent across processes. MPI itself is finalized by the owned
+    /// `mp1::environment`, which is destroyed after the communicator members,
+    /// the derived environments, and `EnvBase` (the singleton pools) have been
+    /// destroyed.
     virtual ~MPIEnv();
 
     using PassiveSingleton<MPIEnv>::Instance;
@@ -133,8 +143,8 @@ private:
     };
 
 private:
-    mplr::communicator fIntraNodeComm; ///< Communicator grouping processes on the same physical node.
-    mplr::communicator fInterNodeComm; ///< Communicator containing one leader rank per node.
+    mp1::communicator fIntraNodeComm; ///< Communicator grouping processes on the same physical node.
+    mp1::communicator fInterNodeComm; ///< Communicator containing one leader rank per node.
 
     int fLocalNodeIdx;                  ///< Index of the current rank's node in the node list.
     std::vector<struct Node> fNodeList; ///< Metadata for all discovered nodes in the cluster.

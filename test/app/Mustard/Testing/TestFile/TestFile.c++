@@ -21,7 +21,7 @@
 #include "Mustard/IO/File.h++"
 #include "Mustard/Testing/TestFile/TestFile.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include <memory>
 #include <vector>
@@ -41,7 +41,7 @@ auto TestFile::Main(int argc, char* argv[]) const -> int {
     const auto extension{cli->get("extension")};
 
     std::vector<std::unique_ptr<Mustard::File<>>> file;
-    if (mplr::comm_world().size() == 1) {
+    if (mp1::comm_world().size() == 1) {
         int i{};
         file.emplace_back(std::make_unique<Mustard::File<TFile>>(fmt::format("{}_{}.{}", path, i++, extension), "RECREATE"));
         file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(fmt::format("{}_{}.{}", path, i++, extension), "w"));
@@ -64,7 +64,7 @@ auto TestFile::Main(int argc, char* argv[]) const -> int {
 
     file.clear(); // Close files
 
-    if (mplr::comm_world().size() == 1) {
+    if (mp1::comm_world().size() == 1) {
         file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(fmt::format("{}_0.{}", path, extension), "a"));
         file.emplace_back(std::make_unique<Mustard::File<TFile>>(fmt::format("{}_0.{}", path, extension), "UPDATE"));
     }
@@ -73,7 +73,7 @@ auto TestFile::Main(int argc, char* argv[]) const -> int {
 
     file.clear(); // Close files
 
-    if (mplr::comm_world().size() == 1) {
+    if (mp1::comm_world().size() == 1) {
         file.emplace_back(std::make_unique<Mustard::File<std::FILE>>(fmt::format("{}_0.{}", path, extension), "r"));
         file.emplace_back(std::make_unique<Mustard::File<TFile>>(fmt::format("{}_0.{}", path, extension), "READ"));
     }

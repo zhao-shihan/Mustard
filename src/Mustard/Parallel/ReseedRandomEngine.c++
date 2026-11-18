@@ -26,7 +26,7 @@
 
 #include "gtl/phmap.hpp"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "gsl/gsl"
 
@@ -103,21 +103,20 @@ auto MakeUniqueSeedSeries(std::uint64_t material, int worldSize, std::uint64_t s
 } // namespace
 
 auto ReseedNeeded() -> bool {
-    return mplr::available() and mplr::comm_world().size() > 1;
+    return mp1::available() and mp1::comm_world().size() > 1;
 }
 
 auto RankSeed(std::uint64_t material, std::uint64_t supremum) -> std::uint64_t {
     Expects(ReseedNeeded());
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     Expects(std::cmp_less_equal(worldComm.size(), supremum)); // enough distinct seeds to go around
-    std::uint64_t seed;
+    std::uint64_t seed{};
+    std::vector<std::uint64_t> seedSend;
     if (worldComm.rank() == 0) {
-        const auto seedSend{MakeUniqueSeedSeries(material, worldComm.size(), supremum)};
+        seedSend = MakeUniqueSeedSeries(material, worldComm.size(), supremum);
         Ensures(std::cmp_equal(seedSend.size(), worldComm.size()));
-        worldComm.scatter(0, seedSend.data(), seed);
-    } else {
-        worldComm.scatter(0, seed);
     }
+    mp1::scatter(worldComm, 0, seedSend, seed);
     Ensures(1 <= seed and seed <= supremum); // not 0x00...00
     return seed;
 }

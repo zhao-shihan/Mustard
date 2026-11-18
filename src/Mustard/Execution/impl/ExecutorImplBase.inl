@@ -57,7 +57,7 @@ auto ExecutorImplBase<T>::PreLoopReport() const -> void {
     if (not this->fPrintProgress) {
         return;
     }
-    const auto worldComm{mplr::available() ? mplr::comm_world() : mplr::comm_null()};
+    const auto& worldComm{mp1::available() ? mp1::comm_world() : mp1::comm_null()};
     if (worldComm.is_valid() and worldComm.rank() != 0) {
         return;
     }
@@ -77,7 +77,7 @@ auto ExecutorImplBase<T>::PostLoopReport() const -> void {
     if (not this->fPrintProgress) {
         return;
     }
-    const auto worldComm{mplr::available() ? mplr::comm_world() : mplr::comm_null()};
+    const auto& worldComm{mp1::available() ? mp1::comm_world() : mp1::comm_null()};
     if (worldComm.is_valid() and worldComm.rank() != 0) {
         return;
     }

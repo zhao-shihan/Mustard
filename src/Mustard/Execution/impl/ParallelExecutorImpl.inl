@@ -35,7 +35,7 @@ auto ParallelExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocabl
     if (task.last == task.first) {
         return 0;
     }
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     const auto nTask{task.last - task.first};
     if (nTask < static_cast<T>(worldComm.size())) {
         Throw<std::runtime_error>(fmt::format("Number of tasks ({}) is less than number of processes ({}).", nTask, worldComm.size()));
@@ -48,8 +48,7 @@ auto ParallelExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocabl
     // initialize
     this->fExecuting = true;
     this->fDispatcher->PreLoopAction();
-    worldComm.ibarrier()
-        .wait(mplr::duty_ratio::preset::moderate);
+    mp1::barrier(worldComm);
     this->fExecutionBeginTime = std::chrono::system_clock::now();
     this->fStopwatch.reset();
     this->fProcessorStopwatch.reset();
@@ -68,10 +67,9 @@ auto ParallelExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocabl
     using ExecutionInfoTuple = std::tuple<T, typename StopwatchDuration::rep, typename StopwatchDuration::rep>;
     std::tuple executionInfo{this->NLocalExecutedTask(), this->fStopwatch.read().count(), this->fProcessorStopwatch.read().count()};
     std::vector<ExecutionInfoTuple> executionInfoList(worldComm.rank() == 0 ? worldComm.size() : 0);
-    auto gatherExecutionInfo{worldComm.igather(0, executionInfo, executionInfoList.data())};
+    auto gatherExecutionInfo{mp1::igather(worldComm, 0, executionInfo, executionInfoList)};
     this->fDispatcher->PostLoopAction();
-    gatherExecutionInfo
-        .wait(mplr::duty_ratio::preset::relaxed);
+    gatherExecutionInfo.wait();
     constexpr auto ToExecutionInfo{[](const ExecutionInfoTuple& t) -> ExecutionInfoType {
         return {.nExecutedTask = get<0>(t),
                 .wallTime = StopwatchDuration{get<1>(t)},
@@ -90,8 +88,7 @@ auto ParallelExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocabl
                                  fExecutionInfoList, StopwatchDuration::zero(), std::plus{}, [](auto&& a) { return a.processorTime; })
                                  .count();
     }
-    worldComm.ibcast(0, executionInfo)
-        .wait(mplr::duty_ratio::preset::relaxed);
+    mp1::bcast(worldComm, 0, executionInfo);
     this->fExecutionInfo = ToExecutionInfo(executionInfo);
     this->fExecuting = false;
     this->PostLoopReport();
@@ -100,7 +97,7 @@ auto ParallelExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocabl
 
 template<std::integral T>
 auto ParallelExecutorImpl<T>::PrintExecutionSummary() const -> void {
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     if (worldComm.rank() != 0) {
         return;
     }
@@ -139,7 +136,7 @@ auto ParallelExecutorImpl<T>::PostTaskReport(T iEnded) const -> void {
     if ((iEnded + 1) % std::max(1ll, muc::llround(speed * printInterval.count())) != 0) {
         return;
     }
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     const auto perSecondSpeed{muc::chrono::seconds<double>{1} / StopwatchDuration{1} * speed};
     const auto now{std::chrono::system_clock::now()};
     Print("MPI{}> [{}] {} of {} {} completed \n"

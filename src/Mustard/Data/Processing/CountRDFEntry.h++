@@ -27,18 +27,18 @@ namespace Mustard::Data::inline Processing {
 /// @brief Count entries for a single ROOT RDataFrame node.
 /// @param rdf Input ROOT RDataFrame node.
 /// @return Number of entries.
-/// @note Local path (`mplr::available()==false` or world size is 1): directly
+/// @note Local path (`mp1::available()==false` or world size is 1): directly
 ///   returns `*rdf.Count()` in the local process.
-/// @note MPI multi-process path (`mplr::available()==true` and world size > 1):
+/// @note MPI multi-process path (`mp1::available()==true` and world size > 1):
 ///   world rank 0 evaluates `*rdf.Count()`, then broadcasts the result.
 auto CountRDFEntry(ROOT::RDF::RNode rdf) -> long long;
 
 /// @brief Count entries for multiple ROOT RDataFrame nodes.
 /// @param rdf Input ROOT RDataFrame nodes.
 /// @return Entry counts in the same order as @p rdf.
-/// @note Local path (`mplr::available()==false` or world size is 1): counts
+/// @note Local path (`mp1::available()==false` or world size is 1): counts
 ///   each node with `std::async` in the local process.
-/// @note MPI multi-process path (`mplr::available()==true` and world size > 1):
+/// @note MPI multi-process path (`mp1::available()==true` and world size > 1):
 ///   selected node leaders compute counts, then values are broadcast among node
 ///   leaders (inter-node), and finally broadcast to all local processes
 ///   (intra-node).

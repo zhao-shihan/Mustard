@@ -19,7 +19,7 @@
 #include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "fmt/format.h"
 
@@ -56,7 +56,7 @@ auto MasterException(G4ExceptionSeverity severity,
                      const std::string& message,
                      const std::source_location& loc,
                      const std::string& code) -> void {
-    if (not mplr::available() or mplr::comm_world().rank() == 0) {
+    if (not mp1::available() or mp1::comm_world().rank() == 0) {
         Exception(severity, message, loc, code);
     }
 }

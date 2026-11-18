@@ -21,29 +21,29 @@
 
 #include "RtypesCore.h"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "gsl/gsl"
 
 #include <future>
+#include <vector>
 
 namespace Mustard::Data::inline Processing {
 
 auto CountRDFEntry(ROOT::RDF::RNode rdf) -> long long {
-    if (not mplr::available()) {
+    if (not mp1::available()) {
         return gsl::narrow<long long>(*rdf.Count());
     }
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     if (worldComm.size() == 1) {
         return gsl::narrow<long long>(*rdf.Count());
     }
     // Process 0 counts the number of entries and broadcast to other processes
-    long long nEntry;
+    long long nEntry{};
     if (worldComm.rank() == 0) {
         nEntry = gsl::narrow<long long>(*rdf.Count());
     }
-    worldComm.ibcast(0, nEntry)
-        .wait(mplr::duty_ratio::preset::relaxed);
+    mp1::bcast(worldComm, 0, nEntry);
     return nEntry;
 }
 
@@ -51,7 +51,7 @@ auto CountRDFEntry(std::vector<ROOT::RDF::RNode> rdf) -> gtl::vector<long long> 
     const auto nRDF{ssize(rdf)};
     std::vector<std::future<long long>> nEntryFuture(nRDF);
     gtl::vector<long long> nEntry(nRDF);
-    if (not mplr::available() or mplr::comm_world().size() == 1) {
+    if (not mp1::available() or mp1::comm_world().size() == 1) {
         for (gsl::index k{}; k < nRDF; ++k) {
             nEntryFuture[k] = std::async([&rdf, k] {
                 return gsl::narrow<long long>(*rdf[k].Count());
@@ -75,19 +75,19 @@ auto CountRDFEntry(std::vector<ROOT::RDF::RNode> rdf) -> gtl::vector<long long> 
                 });
             }
         }
-        mplr::irequest_pool bcastNEntry;
+        std::vector<mp1::request> bcastNEntry;
+        bcastNEntry.reserve(nRDF);
         for (gsl::index k{}; k < nRDF; ++k) {
             const auto rootNodeIdx{k % mpiEnv.ClusterSize()};
             if (mpiEnv.LocalNodeIdx() == rootNodeIdx) {
                 nEntry[k] = nEntryFuture[k].get();
             }
-            bcastNEntry.push(interNodeComm.ibcast(rootNodeIdx, nEntry[k]));
+            bcastNEntry.emplace_back(mp1::ibcast(interNodeComm, rootNodeIdx, nEntry[k]));
         }
-        bcastNEntry.waitall(mplr::duty_ratio::preset::relaxed);
+        mp1::wait_all(bcastNEntry);
     }
     // Node leaders broadcast the number of entries to other processes in the same node
-    intraNodeComm.ibcast(0, nEntry.data(), mplr::vector_layout<long long>(nRDF))
-        .wait(mplr::duty_ratio::preset::relaxed);
+    mp1::bcast(intraNodeComm, 0, nEntry);
     return nEntry;
 }
 

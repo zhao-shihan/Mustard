@@ -19,7 +19,7 @@
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Execution/DefaultDispatcher.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "envparse/parse.h++"
 
@@ -32,10 +32,10 @@ auto DefaultDispatcherCode() -> std::string {
         not envDispatcher.empty()) {
         return envDispatcher;
     }
-    if (not mplr::available()) {
+    if (not mp1::available()) {
         return "seq";
     }
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     if (worldComm.size() == 1) {
         return "seq";
     }

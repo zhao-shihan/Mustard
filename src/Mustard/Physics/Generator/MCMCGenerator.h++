@@ -35,7 +35,7 @@
 
 #include "Eigen/Core"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/algorithm"
 #include "muc/array"

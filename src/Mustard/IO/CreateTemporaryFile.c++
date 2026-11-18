@@ -20,7 +20,7 @@
 #include "Mustard/IO/CreateTemporaryFile.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include <chrono>
 #include <cstdio>
@@ -48,7 +48,7 @@ auto CreateTemporaryFile(std::string_view signature, std::filesystem::path exten
         path = fs::temp_directory_path() /
                fmt::format("{}_{}_{:x}_{:x}tmp.",
                            programName, signature, random(),
-                           mplr::available() ? mplr::comm_world().rank() : 0);
+                           mp1::available() ? mp1::comm_world().rank() : 0);
         path.replace_extension(extension);
         file = std::fopen(path.generic_string().c_str(), "wx");
         if (file) {

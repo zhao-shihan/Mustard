@@ -22,6 +22,7 @@
 #include "Mustard/Testing/TestCLHEPXXoshiro256StarStar/TestCLHEPXXoshiro256StarStar.h++"
 #include "Mustard/Testing/TestCLHEPXXoshiro512StarStar/TestCLHEPXXoshiro512StarStar.h++"
 #include "Mustard/Testing/TestCreateTemporaryFile/TestCreateTemporaryFile.h++"
+#include "Mustard/Testing/TestDispatcher/TestDispatcher.h++"
 #include "Mustard/Testing/TestEstimate/TestEstimate.h++"
 #include "Mustard/Testing/TestExecutor/TestExecutor.h++"
 #include "Mustard/Testing/TestExecutorSequential/TestExecutorSequential.h++"
@@ -35,6 +36,8 @@
 #include "Mustard/Testing/TestLineLinePOCA/TestLineLinePOCA.h++"
 #include "Mustard/Testing/TestLinePointPOCA/TestLinePointPOCA.h++"
 #include "Mustard/Testing/TestMCMCGenerator/TestMCMCGenerator.h++"
+#include "Mustard/Testing/TestMPIEnv/TestMPIEnv.h++"
+#include "Mustard/Testing/TestMPIReduction/TestMPIReduction.h++"
 #include "Mustard/Testing/TestMT1993732/TestMT1993732.h++"
 #include "Mustard/Testing/TestMT1993764/TestMT1993764.h++"
 #include "Mustard/Testing/TestMarkovChainStatistic/TestMarkovChainStatistic.h++"
@@ -45,6 +48,7 @@
 #include "Mustard/Testing/TestPassiveSingleton/TestPassiveSingleton.h++"
 #include "Mustard/Testing/TestPhaseSpaceGenerator/TestPhaseSpaceGenerator.h++"
 #include "Mustard/Testing/TestRandomNumberDistribution/TestRandomNumberDistribution.h++"
+#include "Mustard/Testing/TestShmArray/TestShmArray.h++"
 #include "Mustard/Testing/TestSingleRDFEntryProcessor/TestSingleRDFEntryProcessor.h++"
 #include "Mustard/Testing/TestSingleRDFEntryReader/TestSingleRDFEntryReader.h++"
 #include "Mustard/Testing/TestSingleRDFEventProcessor/TestSingleRDFEventProcessor.h++"
@@ -73,6 +77,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestCLHEPXXoshiro256StarStar>();
     launcher.AddSubprogram<TestCLHEPXXoshiro512StarStar>();
     launcher.AddSubprogram<TestCreateTemporaryFile>();
+    launcher.AddSubprogram<TestDispatcher>();
     launcher.AddSubprogram<TestEstimate0>();
     launcher.AddSubprogram<TestEstimate1>();
     launcher.AddSubprogram<TestEstimate10>();
@@ -126,6 +131,8 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestLineLinePOCA>();
     launcher.AddSubprogram<TestLinePointPOCA>();
     launcher.AddSubprogram<TestMCMCGenerator>();
+    launcher.AddSubprogram<TestMPIEnv>();
+    launcher.AddSubprogram<TestMPIReduction>();
     launcher.AddSubprogram<TestMT1993732>();
     launcher.AddSubprogram<TestMT1993764>();
     launcher.AddSubprogram<TestMarkovChainStatistic>();
@@ -140,6 +147,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestSingleRDFEntryReader>();
     launcher.AddSubprogram<TestSingleRDFEventProcessor>();
     launcher.AddSubprogram<TestSingleRDFEventReader>();
+    launcher.AddSubprogram<TestShmArray>();
     launcher.AddSubprogram<TestSingleton>();
     launcher.AddSubprogram<TestStatistic0>();
     launcher.AddSubprogram<TestStatistic1>();

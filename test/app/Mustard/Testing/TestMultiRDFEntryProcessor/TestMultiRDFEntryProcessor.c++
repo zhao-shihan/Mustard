@@ -25,6 +25,8 @@
 #include "Mustard/Testing/DataModel/MultiTestingDataModel.h++"
 #include "Mustard/Testing/TestMultiRDFEntryProcessor/TestMultiRDFEntryProcessor.h++"
 
+#include "mp1/mp1.hpp"
+
 #include "muc/array"
 
 #include <array>
@@ -64,7 +66,7 @@ auto TestMultiRDFEntryProcessor::Main(int argc, char* argv[]) const -> int {
         return EXIT_FAILURE;
     }};
 
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     const auto validateWithProcessor{[&](std::array<std::string_view, 3> dataName, std::string_view sourceName) -> int {
         std::array<ROOT::RDF::RNode, 3> allRDF{
             ROOT::RDataFrame{dataName[0], fileName},
@@ -99,7 +101,9 @@ auto TestMultiRDFEntryProcessor::Main(int argc, char* argv[]) const -> int {
         processor.Run(reader, countEntries);
 
         muc::arrayull<3> nEntry{};
-        worldComm.reduce(std::plus{}, 0, nEntryLocal.data(), nEntry.data(), mplr::contiguous_layout<unsigned long long>{3});
+        mp1::reduce(worldComm, std::plus{}, 0,
+                    nEntryLocal,
+                    nEntry);
         if (worldComm.rank() == 0) {
             if (nEntry[0] != nEntryExpectedA) {
                 return fail(fmt::format("{} TestingModelA entry count mismatch. expected={}, actual={}", sourceName, nEntryExpectedA, nEntry[0]));

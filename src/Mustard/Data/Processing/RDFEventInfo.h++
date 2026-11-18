@@ -31,7 +31,7 @@
 #include "gtl/phmap.hpp"
 #include "gtl/vector.hpp"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/algorithm"
 #include "muc/chrono"
@@ -109,7 +109,7 @@ public:
     /// communications; all processes in the world communicator must call it with
     /// compatible arguments.
     explicit SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string eventIDColumnName, int rootNodeIdx = 0,
-                                std::optional<std::pair<mplr::communicator, mplr::communicator>> intraInterNodeComm = {});
+                                std::optional<std::pair<mp1::communicator, mp1::communicator>> intraInterNodeComm = {});
 
     /// @brief Number of contiguous event blocks (event-index domain size).
     auto NEvent() const -> auto { return gsl::narrow_cast<IndexType>(fEventID.size()); }
@@ -130,9 +130,9 @@ public:
     auto Size(IndexType i) const -> auto { return Entry(i + 1) - Entry(i); }
 
 private:
-    std::optional<std::pair<mplr::communicator, mplr::communicator>> fIntraInterNodeComm; ///< Optional communicators; must outlive fEventID and fEntry.
-    Parallel::ShmArray<T> fEventID;                                                       ///< Shared-memory or local storage of event-block IDs.
-    Parallel::ShmArray<EntryType> fEntry;                                                 ///< Shared-memory or local storage of block boundaries, including sentinel.
+    std::optional<std::pair<mp1::communicator, mp1::communicator>> fIntraInterNodeComm; ///< Optional communicators; must outlive fEventID and fEntry.
+    Parallel::ShmArray<T> fEventID;                                                     ///< Shared-memory or local storage of event-block IDs.
+    Parallel::ShmArray<EntryType> fEntry;                                               ///< Shared-memory or local storage of block boundaries, including sentinel.
 };
 
 /// @brief Multi-RDF event alignment table and index mappings.

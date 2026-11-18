@@ -25,7 +25,7 @@
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/chrono"
 #include "muc/math"
@@ -67,7 +67,7 @@ public:
 
     /// @brief Return the number of processes participating in execution.
     /// @return MPI world size
-    auto NProcess() const -> int { return mplr::comm_world().size(); }
+    auto NProcess() const -> int { return mp1::comm_world().size(); }
 
     /// @brief Run a callable over a task range.
     /// @param task Half-open task range

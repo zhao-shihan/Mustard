@@ -219,10 +219,10 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(Executor<long long>& executor, muc::
 
     // Merge the per-process statistics into a global one
     auto flat{local->ToFlat()};
-    if (mplr::available()) {
-        const auto worldComm{mplr::comm_world()};
-        worldComm.allreduce(std::plus{}, flat.first.data(), mplr::contiguous_layout<long long>(flat.first.size()));
-        worldComm.allreduce(std::plus{}, flat.second.data(), mplr::contiguous_layout<double>(flat.second.size()));
+    if (mp1::available()) {
+        const auto& worldComm{mp1::comm_world()};
+        mp1::allreduce(worldComm, std::plus{}, mp1::in_place, flat.first);
+        mp1::allreduce(worldComm, std::plus{}, mp1::in_place, flat.second);
     }
     auto statistic{MarkovChainStatistic<MarkovChain::dim>::FromFlat(flat, fACFSampleSize, local->MaxLag())};
 
@@ -245,8 +245,12 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(Executor<long long>& executor, muc::
 
     fMCMCInitialized = true;
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
-    if (mplr::available()) {
-        mplr::comm_world().reduce(mplr::max<double>{}, 0, time);
+    if (mp1::available()) {
+        double maxTime{};
+        mp1::reduce(mp1::comm_world(), mp1::max{}, 0, time, maxTime);
+        if (mp1::comm_world().rank() == 0) {
+            time = maxTime;
+        }
     }
     MasterPrint("{} initialized in {:.3f}s.\n"
                 "\n",

@@ -21,6 +21,8 @@
 #include "Mustard/Env/impl/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
+#include "mp1/mp1.hpp"
+
 #include "muc/bit"
 #include "muc/utility"
 
@@ -28,7 +30,9 @@
 
 #include <exception>
 #include <limits>
+#include <memory>
 #include <stdexcept>
+#include <utility>
 
 #ifdef MUSTARD_SIGNAL_HANDLER
 
@@ -47,7 +51,13 @@ namespace Mustard::Env::impl {
 [[noreturn]] auto TerminateHandler() -> void;
 
 EnvBase::EnvBase() :
-    NoncopyableBase{},
+    EnvBase{nullptr} {}
+
+EnvBase::EnvBase(EnableMPI enable) :
+    EnvBase{std::make_unique<mp1::environment>(enable.argc, enable.argv, mp1::threading_mode::multiple)} {}
+
+EnvBase::EnvBase(std::unique_ptr<mp1::environment> mp1) :
+    fMP1Env{std::move(mp1)},
     fWeakSingletonPool{},
     fSingletonPool{} {
 

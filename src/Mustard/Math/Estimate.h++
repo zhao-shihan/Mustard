@@ -26,7 +26,7 @@
 #include "Eigen/Core"
 #include "unsupported/Eigen/SpecialFunctions"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/math"
 #include "muc/numeric"
@@ -1103,7 +1103,7 @@ public:
     /// @brief Convert the current state to a plain-old-data struct.
     /// @return A `EstimatePOD<K, C>` containing copies of value and covariance.
     /// @note Only available when the dimension is known at compile time.
-    ///       The `EstimatePOD` type is introspected by `MPLR_REFLECTION_TEMPLATE`
+    ///       The `EstimatePOD` type is introspected by `MP1_REFLECTION_TEMPLATE`
     ///       for use with MPI collective operations.
     auto ToPOD() const -> PODType
         requires(K != Eigen::Dynamic);
@@ -1603,12 +1603,12 @@ auto operator*(const Estimate<K, C>& est, const Eigen::MatrixBase<AMat>& aXpr) -
 /// @brief POD (plain-old-data) struct holding a snapshot of `Estimate` state.
 ///
 /// The primary purpose of this struct is MPI operation (enabled by the
-/// `MPLR_REFLECTION_TEMPLATE` introspection at the bottom of this header).
+/// `MP1_REFLECTION_TEMPLATE` introspection at the bottom of this header).
 ///
 /// @tparam K Dimension (must be a compile-time constant, not `Eigen::Dynamic`)
 /// @tparam C Covariance option
 ///
-/// @see EstimateBase::ToPOD, EstimateBase::FromPOD, MPLR_REFLECTION_TEMPLATE
+/// @see EstimateBase::ToPOD, EstimateBase::FromPOD, MP1_REFLECTION_TEMPLATE
 template<int K, CovarianceOption C>
     requires(impl::GoodStatisticDimension<K>{}() and K != Eigen::Dynamic)
 struct EstimatePOD<K, C> {
@@ -1622,7 +1622,7 @@ struct EstimatePOD<K, C> {
     auto Combine(const EstimatePOD<L, D>& other) -> auto { return Combine(Estimate<K, C>{*this}, Estimate<L, D>{other}).ToPOD(); }
     /// @brief Add two estimates.
     template<int L, CovarianceOption D>
-    auto operator+(const EstimatePOD<L, D>& other) -> auto { return (Estimate<K, C>{*this} + Estimate<L, D>{other}).ToPOD(); }
+    auto operator+(const EstimatePOD<L, D>& other) const noexcept -> auto { return (Estimate<K, C>{*this} + Estimate<L, D>{other}).ToPOD(); }
     /// @brief Multiply two estimates element-wise.
     template<int L, CovarianceOption D>
     auto operator*(const EstimatePOD<L, D>& other) -> auto { return (Estimate<K, C>{*this} * Estimate<L, D>{other}).ToPOD(); }
@@ -1630,8 +1630,8 @@ struct EstimatePOD<K, C> {
 
 } // namespace Mustard::inline Math
 
-MPLR_REFLECTION_TEMPLATE((int K, Mustard::CovarianceOption C),
-                         (Mustard::EstimatePOD<K, C>),
-                         x, cov)
+MP1_REFLECTION_TEMPLATE((int K, Mustard::CovarianceOption C),
+                        (Mustard::EstimatePOD<K, C>),
+                        x, cov)
 
 #include "Mustard/Math/Estimate.inl"

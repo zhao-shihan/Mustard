@@ -22,7 +22,7 @@
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Testing/TestExecutor/TestExecutor.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/algorithm"
 #include "muc/numeric"
@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace Mustard::Testing {
 
@@ -44,39 +45,45 @@ TestExecutor::TestExecutor() :
 namespace {
 
 auto CheckIndexList(int truthN, const std::vector<int>& localIndexList) -> void {
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
+    const auto localSize{gsl::narrow<int>(localIndexList.size())};
+    std::vector<int> size(worldComm.rank() == 0 ? worldComm.size() : 0);
+    mp1::gather(worldComm, 0, localSize, size);
+
+    std::vector<mp1::count_t> count;
+    std::vector<mp1::count_t> disp;
+    std::vector<int> indexList;
     if (worldComm.rank() == 0) {
-        std::vector<int> size(worldComm.size());
-        worldComm.gather<int>(0, localIndexList.size(), size.data());
         const auto n{muc::ranges::reduce(size, 0ll)};
-
-        mplr::displacements disp(worldComm.size());
-        for (auto i{1}; i < worldComm.size(); ++i) {
-            disp[i] = disp[i - 1] + size[i - 1];
+        count.resize(worldComm.size());
+        disp.resize(worldComm.size());
+        for (int i{}; i < worldComm.size(); ++i) {
+            count[i] = size[i];
+            if (i > 0) {
+                disp[i] = disp[i - 1] + size[i - 1];
+            }
         }
-        mplr::contiguous_layouts<int> layout(worldComm.size());
-        std::ranges::transform(size, layout.begin(), [](auto n) { return mplr::contiguous_layout<int>(n); });
-        std::vector<int> indexList(n);
-        worldComm.gatherv(0, localIndexList.data(), mplr::contiguous_layout<int>{localIndexList.size()},
-                          indexList.data(), layout, disp);
+        indexList.resize(n);
+    }
+    mp1::gatherv(worldComm, 0, localIndexList, indexList,
+                 mp1::blocks{.counts = count, .displacements = disp});
 
+    if (worldComm.rank() == 0) {
         muc::timsort(indexList);
         std::vector<int> diffList(indexList.size());
         muc::ranges::adjacent_difference(indexList, diffList.begin());
+        const auto n{indexList.size()};
         const auto sum{muc::ranges::reduce(indexList, 0ll)};
 
-        if (n != truthN) {
+        if (n != static_cast<std::size_t>(truthN)) {
             PrintError("n != truthN");
         }
         if (not std::ranges::all_of(diffList.cbegin() + 1, diffList.cend(), [](auto d) { return d == 1; })) {
             PrintError("not std::ranges::all_of(diffList.cbegin() + 1, diffList.cend(), [](auto d) { return d == 1; })");
         }
-        if (sum != n * (n - 1) / 2) {
+        if (sum != static_cast<long long>(n) * (static_cast<long long>(n) - 1) / 2) {
             PrintError("sum != n * (n - 1) / 2");
         }
-    } else {
-        worldComm.gather<int>(0, localIndexList.size());
-        worldComm.gatherv(0, localIndexList.data(), mplr::contiguous_layout<int>{localIndexList.size()});
     }
 }
 
@@ -91,7 +98,7 @@ auto TestExecutor::Main(int argc, char* argv[]) const -> int {
 
     Executor<int> executor;
 
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
 
     std::vector<int> localIndexList;
     executor.PrintProgress(false);
@@ -111,7 +118,7 @@ auto TestExecutor::Main(int argc, char* argv[]) const -> int {
                                     executor.OperationName() == "Temporary operation" and
                                     executor.TaskName() == "Temporary task";
                  });
-    worldComm.allreduce(mplr::min<int>{}, namesCorrect);
+    mp1::allreduce(worldComm, mp1::min{}, mp1::in_place, namesCorrect);
     if (namesCorrect == 0) {
         PrintError("Executor::Run did not apply the temporary names.");
     }

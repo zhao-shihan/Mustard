@@ -21,12 +21,11 @@
 #include "Mustard/Execution/Dispatcher.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <concepts>
-#include <cstddef>
 #include <functional>
 #include <memory>
 #include <stdexcept>
@@ -67,10 +66,10 @@ private:
         auto operator()() -> void;
 
     private:
-        MasterWorkerDispatcher<T>* fS; ///< Owning dispatcher
-        mplr::prequest_pool fRecv;     ///< Pending receives from workers
-        std::vector<T> fTaskIDSend;    ///< Task ID sent to each worker
-        mplr::prequest_pool fSend;     ///< Pending sends to workers
+        MasterWorkerDispatcher<T>* fS;   ///< Owning dispatcher
+        std::vector<mp1::request> fRecv; ///< Pending receives from workers
+        std::vector<T> fTaskIDSend;      ///< Task ID sent to each worker
+        std::vector<mp1::request> fSend; ///< Pending sends to workers
     };
 
 public:
@@ -91,15 +90,15 @@ public:
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    mplr::communicator fComm;        ///< Communicator used by the master and workers
+    mp1::communicator fComm;         ///< Communicator used by the master and workers
     T fBatchSize;                    ///< Number of tasks per batch
     std::unique_ptr<Master> fMaster; ///< Master handler (rank 0 only)
     std::jthread fMasterThread;      ///< Master thread (rank 0 only)
 
-    mplr::prequest fSend; ///< Send request for the next batch
-    T fTaskIDRecv;        ///< Task ID received from the master
-    mplr::prequest fRecv; ///< Receive request for the next batch
-    T fTaskCounter;       ///< Tasks executed in the current batch
+    mp1::request fSend; ///< Send request for the next batch
+    T fTaskIDRecv;      ///< Task ID received from the master
+    mp1::request fRecv; ///< Receive request for the next batch
+    T fTaskCounter;     ///< Tasks executed in the current batch
 
     static constexpr long double fgImbalancingFactor{1e-3}; ///< Batch-size imbalancing factor
 };

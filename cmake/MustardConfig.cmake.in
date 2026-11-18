@@ -33,7 +33,7 @@ find_dependency(Eigen3 @MUSTARD_EIGEN_MINIMUM_REQUIRED@ REQUIRED)
 find_dependency(envparse @MUSTARD_ENVPARSE_MINIMUM_REQUIRED@)
 find_dependency(gtl @MUSTARD_GTL_MINIMUM_REQUIRED@)
 find_dependency(Microsoft.GSL @MUSTARD_MSGSL_MINIMUM_REQUIRED@)
-find_dependency(mplr @MUSTARD_MPLR_MINIMUM_REQUIRED@)
+find_dependency(mp1 @MUSTARD_MP1_MINIMUM_REQUIRED@)
 find_dependency(muc @MUSTARD_MUC_MINIMUM_REQUIRED@)
 
 # Private dependencies (linked into Mustard, so consumers still need them).

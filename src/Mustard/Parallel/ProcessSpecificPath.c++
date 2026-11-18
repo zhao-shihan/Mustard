@@ -20,7 +20,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "fmt/std.h"
 
@@ -38,10 +38,10 @@ auto ProcessSpecificPath(const std::filesystem::path& path, std::string_view suf
         Throw<std::invalid_argument>(fmt::format("File name '{}' is invalid.", stem));
     }
 
-    if (not mplr::available()) {
+    if (not mp1::available()) {
         return path;
     }
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     if (worldComm.size() == 1) {
         return path;
     }
@@ -58,7 +58,7 @@ auto ProcessSpecificPath(const std::filesystem::path& path, std::string_view suf
         std::filesystem::create_directories(parent);
     }
     // wait for create_directories
-    intraNodeComm.barrier();
+    mp1::barrier(intraNodeComm);
     // construct full path
     return parent / stem.concat(fmt::format("{}{}.", suffix, worldComm.rank()))
                         .replace_extension(path.extension());

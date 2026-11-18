@@ -95,7 +95,7 @@ auto Processor<AExecutor>::RunImpl(RDFReader<T, D, N>& reader, Index n, std::str
 
     std::future<typename RDFReader<T, D, N>::Data> asyncRead;
     const auto byPassWillOccur{ByPassOccurrenceCheck(n, what)};
-    const auto worldCommSize{mplr::comm_world().size()};
+    const auto worldCommSize{mp1::comm_world().size()};
     const auto batch{CalculateBatchConfiguration(worldCommSize, n)};
     if (batch.remainder == 0) {
         MasterPrintLn("There are {} {} (proceeding as {}*{}).", n, what, batch.size, batch.count);
@@ -133,7 +133,7 @@ auto Processor<AExecutor>::RunImpl(RDFReader<T, D, N>& reader, Index n, std::str
 
 template<muc::instantiated_from<Executor> AExecutor>
 auto Processor<AExecutor>::ByPassOccurrenceCheck(Index n, std::string_view what) -> bool {
-    const auto worldCommSize{mplr::comm_world().size()};
+    const auto worldCommSize{mp1::comm_world().size()};
     const auto byPassWillOccur{static_cast<Index>(worldCommSize) > n};
     if (byPassWillOccur) [[unlikely]] {
         MasterPrintWarning(fmt::format("Number of processes ({}) are more than number of {} ({}).", worldCommSize, what, n));

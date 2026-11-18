@@ -19,15 +19,17 @@
 #include "Mustard/CLI/Module/DetectorDescriptionModule.h++"
 #include "Mustard/CLI/Module/Geant4Module.h++"
 #include "Mustard/Env/Geant4Env.h++"
+#include "Mustard/Env/impl/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 namespace Mustard::Env {
 
 Geant4Env::Geant4Env(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
                      enum VerboseLevel verboseLevel,
                      bool showBannerHint) :
+    impl::EnvBase(impl::EnableMPI{argc, argv}),
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, muc::any_rng{Random::Xoshiro512StarStar{}}},
@@ -45,7 +47,7 @@ Geant4Env::Geant4Env(int argc, char* argv[], CLI::CLI<>& cli,
                      enum VerboseLevel verboseLevel,
                      bool showBannerHint) :
     Geant4Env{{}, argc, argv, cli, verboseLevel, showBannerHint} {
-    if (fShowBanner and mplr::comm_world().rank() == 0) {
+    if (fShowBanner and mp1::comm_world().rank() == 0) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();

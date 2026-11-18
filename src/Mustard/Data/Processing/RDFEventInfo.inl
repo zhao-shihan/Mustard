@@ -20,7 +20,7 @@ namespace Mustard::Data::inline Processing {
 
 template<std::integral T, std::signed_integral U>
 SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string eventIDColumnName, int rootNodeIdx,
-                                             std::optional<std::pair<mplr::communicator, mplr::communicator>> intraInterNodeComm) :
+                                             std::optional<std::pair<mp1::communicator, mp1::communicator>> intraInterNodeComm) :
     fIntraInterNodeComm{},
     fEventID{},
     fEntry{} {
@@ -61,7 +61,7 @@ SingleRDFEventInfo<T, U>::SingleRDFEventInfo(ROOT::RDF::RNode rdf, std::string e
     }};
 
     // Non-MPI path: build and store locally
-    if (not mplr::available() or mplr::comm_world().size() == 1) {
+    if (not mp1::available() or mp1::comm_world().size() == 1) {
         auto [eventID, entry]{buildData()};
         fEventID = Parallel::ShmArray<T>{eventID};
         fEntry = Parallel::ShmArray<EntryType>{entry};
@@ -123,7 +123,7 @@ MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rd
         MasterPrintLn("Finished building multi-RDF event info in {:.2f}s.", elapsed.count());
     })};
 
-    if (not mplr::available() or mplr::comm_world().size() == 1) {
+    if (not mp1::available() or mp1::comm_world().size() == 1) {
         // Build per-RDF event info in parallel
         std::array<std::future<Arc<SingleRDFEventInfo<T, U>>>, N> perRDFEventInfoFuture;
         for (gsl::index k{}; k < nRDF; ++k) {
@@ -148,7 +148,7 @@ MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rd
     const auto& mpiEnv{Env::MPIEnv::Instance()};
     const auto& intraNodeComm{mpiEnv.IntraNodeComm()};
     const auto& interNodeComm{mpiEnv.InterNodeComm()};
-    mplr::info commInfo;
+    mp1::info commInfo;
     commInfo.set("mpi_assert_no_any_tag", "true");
     commInfo.set("mpi_assert_no_any_source", "true");
 
@@ -156,10 +156,10 @@ MultiRDFEventInfo<T, N, U>::MultiRDFEventInfo(std::array<ROOT::RDF::RNode, N> rd
     std::array<std::future<Arc<SingleRDFEventInfo<T, U>>>, N> perRDFEventInfoFuture;
     // Node k%nNode build per-RDF event info for RDF k
     for (gsl::index k{}; k < nRDF; ++k) {
-        std::pair<mplr::communicator, mplr::communicator> dupIntraInterNodeComm;
-        dupIntraInterNodeComm.first = mplr::communicator{intraNodeComm, commInfo};
+        std::pair<mp1::communicator, mp1::communicator> dupIntraInterNodeComm;
+        dupIntraInterNodeComm.first = mp1::communicator::dup_with_info(intraNodeComm, commInfo);
         if (interNodeComm.is_valid()) {
-            dupIntraInterNodeComm.second = mplr::communicator{interNodeComm, commInfo};
+            dupIntraInterNodeComm.second = mp1::communicator::dup_with_info(interNodeComm, commInfo);
         }
         perRDFEventInfoFuture[k] = std::async([&, k, comm = std::move(dupIntraInterNodeComm)]() mutable {
             const auto rootNodeIdx{k % mpiEnv.ClusterSize()};

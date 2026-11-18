@@ -45,8 +45,8 @@ target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
 
 # Public dependencies
 
-# mplr (-> MPI)
-target_link_libraries(Mustard PUBLIC mplr::mplr)
+# mp1 (-> MPI)
+target_link_libraries(Mustard PUBLIC mp1::mp1)
 # FFTW
 if(MUSTARD_USE_FFTW)
     target_link_libraries(Mustard PRIVATE FFTW::Double)

@@ -24,7 +24,7 @@
 
 #include "gtl/vector.hpp"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "mpi.h"
 
@@ -76,10 +76,9 @@ struct BcastTag {};
 ///     The typical workflow is to construct the array once and then read from
 ///     it many times across multiple threads or processes.
 /// @li The constructor involves synchronous collective communication (e.g.
-///     @c MPI_Win_allocate_shared, @c MPI_Win_create, and barrier
-///     synchronization). Calling the constructor repeatedly on a
-///     performance-critical path can introduce significant overhead due to
-///     these synchronization points.
+///     @c mp1::window::allocate_shared and barrier synchronization). Calling
+///     the constructor repeatedly on a performance-critical path can introduce
+///     significant overhead due to these synchronization points.
 /// @li For workloads that require frequent updates to shared data, consider
 ///     alternative approaches such as maintaining a long-lived @ref ShmArray
 ///     and replacing its content via move-assignment, or using a different
@@ -94,7 +93,7 @@ struct BcastTag {};
 ///     intra-node communicator allocates the shared memory window and copies
 ///     data into it.
 /// @li Other processes allocate zero-size windows and attach via
-///     @c MPI_Win_shared_query.
+///     @c mp1::window::shared_query.
 /// @li After construction, the shared-memory window is synchronized and all
 ///     processes in the communicator can read the data concurrently.
 ///
@@ -130,8 +129,8 @@ public:
     /// @param intraNodeComm Optional intra-node communicator.
     ///        If absent, @ref Env::MPIEnv::IntraNodeComm() is used.
     ///        Provide an explicit communicator duplicated with
-    ///        @c mplr::communicator(comm, info) when calling from a non-main
-    ///        thread.
+    ///        @c mp1::communicator::dup_with_info(comm, info) when calling from
+    ///        a non-main thread.
     /// @pre @p first points to at least @p count valid elements.
     /// @pre @p root is in <tt>[0, intraNodeComm.size())</tt>.
     /// @warning In MPI mode this constructor is collective over the intra-node
@@ -139,7 +138,7 @@ public:
     /// @note In MPI mode, only the root rank is required to provide meaningful
     ///       data via @p first and @p count; both are ignored on other ranks.
     explicit ShmArray(std::input_iterator auto first, std::size_t count, int root = 0,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm = {});
+                      muc::optional_ref<const mp1::communicator> intraNodeComm = {});
     /// @brief Construct a shared-memory array from a sized range, with
     ///        intra-node sharing only.
     /// @param range A sized range whose elements are copied into shared memory.
@@ -148,15 +147,15 @@ public:
     /// @param intraNodeComm Optional intra-node communicator.
     ///        If absent, @ref Env::MPIEnv::IntraNodeComm() is used.
     ///        Provide an explicit communicator duplicated with
-    ///        @c mplr::communicator(comm, info) when calling from a non-main
-    ///        thread.
+    ///        @c mp1::communicator::dup_with_info(comm, info) when calling from
+    ///        a non-main thread.
     /// @pre @p root is in <tt>[0, intraNodeComm.size())</tt>.
     /// @warning In MPI mode this constructor is collective over the intra-node
     ///          communicator.
     /// @note Only the root rank needs to provide a meaningful @p range;
     ///       the range is ignored on other ranks.
     explicit ShmArray(std::ranges::sized_range auto&& range, int root = 0,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm = {});
+                      muc::optional_ref<const mp1::communicator> intraNodeComm = {});
     /// @brief Construct a shared-memory array on a non-root rank without source
     ///        data, with intra-node sharing only.
     /// @param root Rank in the intra-node communicator that allocates the shared
@@ -164,15 +163,15 @@ public:
     /// @param intraNodeComm Optional intra-node communicator.
     ///        If absent, @ref Env::MPIEnv::IntraNodeComm() is used.
     ///        Provide an explicit communicator duplicated with
-    ///        @c mplr::communicator(comm, info) when calling from a non-main
-    ///        thread.
+    ///        @c mp1::communicator::dup_with_info(comm, info) when calling from
+    ///        a non-main thread.
     /// @pre In MPI mode, the calling process must <em>not</em> be @p root.
     /// @warning This constructor is collective. All ranks must specify the same
     ///          @p root.
     /// @note The element count is broadcast from @p root and does not need to
     ///       be provided on this rank.
     explicit ShmArray(NonRootTag, int root = 0,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm = {});
+                      muc::optional_ref<const mp1::communicator> intraNodeComm = {});
 
     /// @brief Construct a shared-memory array from an iterator range, with
     ///        inter-node broadcast.
@@ -184,8 +183,8 @@ public:
     /// @param intraNodeComm Optional intra-node communicator.
     ///        If absent, @ref Env::MPIEnv::IntraNodeComm() is used.
     ///        Provide an explicit communicator duplicated with
-    ///        @c mplr::communicator(comm, info) when calling from a non-main
-    ///        thread.
+    ///        @c mp1::communicator::dup_with_info(comm, info) when calling from
+    ///        a non-main thread.
     /// @param interNodeComm Optional inter-node communicator.
     ///        If absent, @ref Env::MPIEnv::InterNodeComm() is used.
     ///        When provided and valid on the calling process, data is
@@ -201,8 +200,8 @@ public:
     /// @note In MPI mode, only the root rank is required to provide meaningful
     ///       data via @p first and @p count; both are ignored on other ranks.
     explicit ShmArray(BcastTag, std::input_iterator auto first, std::size_t count, int root = 0,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm = {},
-                      muc::optional_ref<const mplr::communicator> interNodeComm = {});
+                      muc::optional_ref<const mp1::communicator> intraNodeComm = {},
+                      muc::optional_ref<const mp1::communicator> interNodeComm = {});
     /// @brief Construct a shared-memory array from a sized range, with
     ///        inter-node broadcast.
     /// @param range A sized range whose elements are copied into shared memory.
@@ -211,8 +210,8 @@ public:
     /// @param intraNodeComm Optional intra-node communicator.
     ///        If absent, @ref Env::MPIEnv::IntraNodeComm() is used.
     ///        Provide an explicit communicator duplicated with
-    ///        @c mplr::communicator(comm, info) when calling from a non-main
-    ///        thread.
+    ///        @c mp1::communicator::dup_with_info(comm, info) when calling from
+    ///        a non-main thread.
     /// @param interNodeComm Optional inter-node communicator.
     ///        If absent, @ref Env::MPIEnv::InterNodeComm() is used.
     ///        When provided and valid on the calling process, data is
@@ -227,8 +226,8 @@ public:
     /// @note Only the root rank needs to provide a meaningful @p range;
     ///       the range is ignored on other ranks.
     explicit ShmArray(BcastTag, std::ranges::sized_range auto&& range, int root = 0,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm = {},
-                      muc::optional_ref<const mplr::communicator> interNodeComm = {});
+                      muc::optional_ref<const mp1::communicator> intraNodeComm = {},
+                      muc::optional_ref<const mp1::communicator> interNodeComm = {});
     /// @brief Construct a shared-memory array on a non-root rank without source
     ///        data, with inter-node broadcast.
     /// @param root Rank in the inter-node communicator of the node holding
@@ -236,8 +235,8 @@ public:
     /// @param intraNodeComm Optional intra-node communicator.
     ///        If absent, @ref Env::MPIEnv::IntraNodeComm() is used.
     ///        Provide an explicit communicator duplicated with
-    ///        @c mplr::communicator(comm, info) when calling from a non-main
-    ///        thread.
+    ///        @c mp1::communicator::dup_with_info(comm, info) when calling from
+    ///        a non-main thread.
     /// @param interNodeComm Optional inter-node communicator.
     ///        If absent, @ref Env::MPIEnv::InterNodeComm() is used.
     ///        When provided and valid on the calling process, data is
@@ -253,8 +252,8 @@ public:
     /// @note The element count is broadcast from @p root and does not need to
     ///       be provided on this rank.
     explicit ShmArray(BcastTag, NonRootTag, int root = 0,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm = {},
-                      muc::optional_ref<const mplr::communicator> interNodeComm = {});
+                      muc::optional_ref<const mp1::communicator> intraNodeComm = {},
+                      muc::optional_ref<const mp1::communicator> interNodeComm = {});
 
     /// @brief Move-construct, transferring ownership of the shared-memory window.
     /// @param other The source object. After the move, @p other holds no window
@@ -307,12 +306,12 @@ private:
     auto Init(std::input_iterator auto first, std::size_t count) -> void;
     /// @brief Allocate an intra-node shared-memory window and copy data into it.
     auto Init(std::input_iterator auto first, std::size_t count, int root,
-              muc::optional_ref<const mplr::communicator> intraNodeComm) -> void;
+              muc::optional_ref<const mp1::communicator> intraNodeComm) -> void;
     /// @brief Broadcast data across nodes via the inter-node communicator, then
     ///        share within each node via intra-node shared memory.
     auto Init(std::input_iterator auto first, std::size_t count, int root,
-              muc::optional_ref<const mplr::communicator> intraNodeComm,
-              muc::optional_ref<const mplr::communicator> interNodeComm) -> void;
+              muc::optional_ref<const mp1::communicator> intraNodeComm,
+              muc::optional_ref<const mp1::communicator> interNodeComm) -> void;
     /// @brief Transfer ownership from @p other and leave it in a safe-to-destroy state.
     auto MoveFrom(ShmArray&& other) noexcept -> void;
     /// @brief Release the MPI shared-memory window (if active) and destroy elements.
@@ -321,8 +320,8 @@ private:
     auto Destroy() noexcept -> void;
 
 private:
-    std::span<const T> fSpan;                            ///< Non-owning view of elements (into shared memory or local vector).
-    std::variant<MPI_Win, gtl::vector<T>> fShmWinOrData; ///< Storage backend: MPI shared-memory window or local data.
+    std::span<const T> fSpan;                                ///< Non-owning view of elements (into shared memory or local vector).
+    std::variant<mp1::window, gtl::vector<T>> fShmWinOrData; ///< Storage backend: MPI shared-memory window or local data.
 };
 
 } // namespace Mustard::Parallel

@@ -96,6 +96,7 @@ jobs:
         test:
           - TestCLHEPXMT1993732-TestCLHEPXMT1993764-TestCLHEPXXoshiro256StarStar-TestCLHEPXXoshiro512StarStar
           - TestCreateTemporaryFile-TestCreateTemporaryFile
+          - TestDispatcher-TestDispatcher
           - TestEstimate0-TestEstimate1-TestEstimate2-TestEstimate3-TestEstimate4-TestEstimate5-TestEstimate6-TestEstimate7-TestEstimate8-TestEstimate9-TestEstimate10-TestEstimate11-TestEstimate12-TestEstimate13-TestEstimate14-TestEstimate15-TestEstimate16-TestEstimate17-TestEstimate18-TestEstimate19-TestEstimate20-TestEstimate21-TestEstimate22-TestEstimate23-TestEstimate24-TestEstimate25-TestEstimate26-TestEstimate27-TestEstimate28-TestEstimate29-TestEstimate30-TestEstimate31-TestEstimate32-TestEstimate33-TestEstimate34-TestEstimate35-TestEstimate36-TestEstimate37-TestEstimate38-TestEstimate39-TestEstimate40
           - TestExecutor-TestExecutor
           - TestExecutorSequential
@@ -103,6 +104,8 @@ jobs:
           - TestFile-TestFile
           - TestLinePointPOCA-TestLineLinePOCA-TestHelixAxisPOCA-TestHelixPointPOCA-TestHelixLinePOCA
           - TestMCMCGenerator
+          - TestMPIEnv-TestMPIEnv
+          - TestMPIReduction-TestMPIReduction
           - TestMT1993732-TestMT1993764
           - TestMarkovChainStatistic
           - TestMultiRDFEntryReader-TestMultiRDFEntryProcessor-TestMultiRDFEntryProcessor
@@ -112,6 +115,7 @@ jobs:
           - TestRandomNumberDistribution-TestGaussian-TestUniform
           - TestSingleRDFEntryReader-TestSingleRDFEntryProcessor-TestSingleRDFEntryProcessor
           - TestSingleRDFEventReader-TestSingleRDFEventProcessor-TestSingleRDFEventProcessor
+          - TestShmArray-TestShmArray
           - TestSingleton-TestSingleton
           - TestStatistic0-TestStatistic1-TestStatistic2-TestStatistic3-TestStatistic4-TestStatistic5-TestStatistic6-TestStatistic7-TestStatistic8-TestStatistic9-TestStatistic10
           - TestStatisticalTTest-TestStatisticalZTest-TestStatisticalTSquaredTest-TestStatisticalChiSquaredTest
@@ -150,6 +154,10 @@ jobs:
                 "TestCreateTemporaryFile-TestCreateTemporaryFile")
                   ./MustardTest TestCreateTemporaryFile
                   parexec --use-hwthreads ./MustardTest TestCreateTemporaryFile
+                  ;;
+                "TestDispatcher-TestDispatcher")
+                  ./MustardTest TestDispatcher
+                  parexec --use-hwthreads ./MustardTest TestDispatcher
                   ;;
                 "TestEstimate0-TestEstimate1-TestEstimate2-TestEstimate3-TestEstimate4-TestEstimate5-TestEstimate6-TestEstimate7-TestEstimate8-TestEstimate9-TestEstimate10-TestEstimate11-TestEstimate12-TestEstimate13-TestEstimate14-TestEstimate15-TestEstimate16-TestEstimate17-TestEstimate18-TestEstimate19-TestEstimate20-TestEstimate21-TestEstimate22-TestEstimate23-TestEstimate24-TestEstimate25-TestEstimate26-TestEstimate27-TestEstimate28-TestEstimate29-TestEstimate30-TestEstimate31-TestEstimate32-TestEstimate33-TestEstimate34-TestEstimate35-TestEstimate36-TestEstimate37-TestEstimate38-TestEstimate39-TestEstimate40")
                   ./MustardTest TestEstimate0
@@ -218,6 +226,14 @@ jobs:
                 "TestMCMCGenerator")
                   parexec --use-hwthreads ./MustardTest TestMCMCGenerator
                   ;;
+                "TestMPIEnv-TestMPIEnv")
+                  ./MustardTest TestMPIEnv
+                  parexec --use-hwthreads ./MustardTest TestMPIEnv
+                  ;;
+                "TestMPIReduction-TestMPIReduction")
+                  ./MustardTest TestMPIReduction
+                  parexec --use-hwthreads ./MustardTest TestMPIReduction
+                  ;;
                 "TestMT1993732-TestMT1993764")
                   ./MustardTest TestMT1993732
                   ./MustardTest TestMT1993764
@@ -257,6 +273,10 @@ jobs:
                   ./MustardTest TestSingleRDFEventReader
                   ./MustardTest TestSingleRDFEventProcessor
                   parexec --use-hwthreads ./MustardTest TestSingleRDFEventProcessor
+                  ;;
+                "TestShmArray-TestShmArray")
+                  ./MustardTest TestShmArray
+                  parexec --use-hwthreads ./MustardTest TestShmArray
                   ;;
                 "TestSingleton-TestSingleton")
                   ./MustardTest TestSingleton

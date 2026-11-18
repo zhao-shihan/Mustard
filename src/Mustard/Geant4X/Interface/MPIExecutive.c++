@@ -21,7 +21,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "fmt/format.h"
 
@@ -36,7 +36,7 @@ MPIExecutive::MPIExecutive() :
     fIsInteractive{} {}
 
 auto MPIExecutive::CheckSequential() const -> void {
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     if (worldComm.size() == 1) {
         return;
     }

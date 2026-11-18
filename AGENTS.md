@@ -57,8 +57,8 @@ Module rough roles:
 - **Language:** C++20, no compiler extensions (`CMAKE_CXX_EXTENSIONS OFF`).
 - **Minimum compilers** (enforced in `CMakeLists.txt`): GCC 13, Clang 19, IntelLLVM 2025, MSVC 19.50. Local tree is built with GCC 16.2.
 - **Build system:** CMake ≥ 3.24 + Ninja (or Make). Default build type is `Release` when unspecified.
-- **System (must be installed, no fallback):** ROOT ≥ 6.36 (`Core Imt MathCore Hist Tree ROOTDataFrame ROOTNTuple RIO`), Geant4 ≥ 11.0 (`ui_all gdml`, plus `vis_all`/`static` per options), MPI ≥ 3.1.
-- **Built from source via CPM if not found:** Eigen 5.0 (with `unsupported`), mplr, muc, fmt 12.2, yaml-cpp 0.9, argparse, envparse, gtl, Microsoft.GSL, backward-cpp, indicators, mimalloc, FFTW.
+- **System (must be installed, no fallback):** ROOT ≥ 6.36 (`Core Imt MathCore Hist Tree ROOTDataFrame ROOTNTuple RIO`), Geant4 ≥ 11.0 (`ui_all gdml`, plus `vis_all`/`static` per options), MPI ≥ 4.1.
+- **Built from source via CPM if not found:** Eigen 5.0 (with `unsupported`), mp1, muc, fmt 12.2, yaml-cpp 0.9, argparse, envparse, gtl, Microsoft.GSL, backward-cpp, indicators, mimalloc, FFTW.
 - CPM downloads land in `.cache/cpm` (`CPM_SOURCE_CACHE`), so a re-configure is usually cheap; the first configure on a fresh machine is not.
 
 Common options (all defined in `CMakeLists.txt`, defaults shown):

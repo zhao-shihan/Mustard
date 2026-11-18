@@ -75,8 +75,12 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<long long
     muc::chrono::stopwatch stopwatch;
     MCIntegrate(statistic, integrand, precisionGoal, executor, rng);
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
-    if (mplr::available()) {
-        mplr::comm_world().reduce(mplr::max<double>{}, 0, time);
+    if (mp1::available()) {
+        double maxTime{};
+        mp1::reduce(mp1::comm_world(), mp1::max{}, 0, time, maxTime);
+        if (mp1::comm_world().rank() == 0) {
+            time = maxTime;
+        }
     }
 
     // Report result
@@ -317,9 +321,9 @@ auto MatrixElementBasedGenerator<M, N, A>::MCIntegrate(Statistic<1>& statistic, 
             }
             batchStatistic.Fill(integrand(event));
         });
-        if (mplr::available()) {
+        if (mp1::available()) {
             auto podBatchStatistic{batchStatistic.ToPOD()};
-            mplr::comm_world().allreduce(std::plus{}, podBatchStatistic);
+            mp1::allreduce(mp1::comm_world(), std::plus{}, mp1::in_place, podBatchStatistic);
             batchStatistic.FromPOD(podBatchStatistic);
         }
         statistic += batchStatistic;

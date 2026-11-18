@@ -20,15 +20,15 @@
 
 #include "Mustard/Execution/Dispatcher.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Parallel/MPIDataType.h++"
 
-#include "mpi.h"
+#include "mp1/mp1.hpp"
 
 #include "gsl/gsl"
 
 #include <algorithm>
 #include <cmath>
 #include <concepts>
+#include <functional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -55,27 +55,24 @@ public:
     /// @brief Construct a shared-memory dispatcher and allocate its task counter.
     /// @throws std::runtime_error if the MPI world spans multiple shared-memory domains
     SharedMemoryDispatcher();
-    /// @brief Free the shared-memory window.
-    ~SharedMemoryDispatcher();
-
-    /// @brief Initialize the shared task counter and per-process batch state.
+    /// @brief Initialize the shared task counter and per-process batch state,
+    ///        and start a shared-memory epoch.
     virtual auto PreLoopAction() -> void override;
     /// @brief Do nothing.
     virtual auto PreTaskAction() -> void override {}
     /// @brief Reserve the next batch after finishing the current one, or advance locally.
     virtual auto PostTaskAction() -> void override;
-    /// @brief Do nothing.
-    virtual auto PostLoopAction() -> void override {}
+    /// @brief Close the shared-memory epoch.
+    virtual auto PostLoopAction() -> void override;
 
     /// @brief Estimate progress for progress reporting.
     /// @return Pair of a validity flag and an estimated executed-task count
     virtual auto NExecutedTaskEstimation() const -> std::pair<bool, T> override;
 
 private:
-    volatile T* fMainTaskID;   ///< Shared next-task counter, allocated on the window root
-    MPI_Win fMainTaskIDWindow; ///< Window exposing the shared counter
-    T fBatchSize;              ///< Number of tasks reserved per batch
-    T fTaskCounter;            ///< Tasks executed in the current batch
+    mp1::window fMainTaskIDWindow; ///< Window exposing the shared counter
+    T fBatchSize;                  ///< Number of tasks reserved per batch
+    T fTaskCounter;                ///< Tasks executed in the current batch
 
     static constexpr long double fgImbalancingFactor{1e-4}; ///< Batch-size imbalancing factor
 };

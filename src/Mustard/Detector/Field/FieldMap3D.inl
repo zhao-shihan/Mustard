@@ -32,7 +32,7 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
     fCachedProjPos{std::numeric_limits<double>::quiet_NaN()},
     fCachedInterpolatedValue{} {
     gtl::vector<GridValueType> fieldGrid;
-    if (not mplr::available() or mplr::comm_world().rank() == 0) {
+    if (not mp1::available() or mp1::comm_world().rank() == 0) {
         // Take grid and field columns from RDataFrame.
         auto gridData{[&] {
             const auto readData{[&] {
@@ -122,15 +122,13 @@ FieldMap3D<T, AProjection, ATransformation>::FieldMap3D(std::string_view dataNam
     }
 
     // Broadcast fGridInfo: split into int[3] and double[9] then broadcast.
-    if (mplr::available() and mplr::comm_world().size() > 1) {
+    if (mp1::available() and mp1::comm_world().size() > 1) {
         std::array gridN{fGridInfo[0].n, fGridInfo[1].n, fGridInfo[2].n};
         std::array gridD{fGridInfo[0].min, fGridInfo[0].max, fGridInfo[0].delta,
                          fGridInfo[1].min, fGridInfo[1].max, fGridInfo[1].delta,
                          fGridInfo[2].min, fGridInfo[2].max, fGridInfo[2].delta};
-        mplr::irequest_pool bcast;
-        bcast.push(mplr::comm_world().ibcast(0, gridN.data(), mplr::vector_layout<long long>{3}));
-        bcast.push(mplr::comm_world().ibcast(0, gridD.data(), mplr::vector_layout<double>{9}));
-        bcast.waitall(mplr::duty_ratio::preset::relaxed); // Mostly wait for process 0 to read data from RDF
+        mp1::bcast(mp1::comm_world(), 0, gridN);
+        mp1::bcast(mp1::comm_world(), 0, gridD); // Mostly wait for process 0 to read data from RDF
         for (int i{}; i < 3; ++i) {
             fGridInfo[i] = {gridN[i], gridD[3 * i], gridD[3 * i + 1], gridD[3 * i + 2]};
         }

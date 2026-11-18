@@ -25,6 +25,8 @@
 #include "Mustard/Testing/DataModel/SingleTestingDataModel.h++"
 #include "Mustard/Testing/TestSingleRDFEntryProcessor/TestSingleRDFEntryProcessor.h++"
 
+#include "mp1/mp1.hpp"
+
 #include <cstdlib>
 #include <functional>
 #include <source_location>
@@ -53,7 +55,7 @@ auto TestSingleRDFEntryProcessor::Main(int argc, char* argv[]) const -> int {
         return EXIT_FAILURE;
     }};
 
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     const auto validateWithProcessor{[&](std::string_view dataName, std::string_view sourceName) -> int {
         ROOT::RDataFrame rdf{dataName, fileName};
 
@@ -73,7 +75,7 @@ auto TestSingleRDFEntryProcessor::Main(int argc, char* argv[]) const -> int {
         processor.Run(reader, countEntries);
 
         unsigned long long nEntry{};
-        worldComm.reduce(std::plus{}, 0, nEntryLocal, nEntry);
+        mp1::reduce(worldComm, std::plus{}, 0, nEntryLocal, nEntry);
         if (worldComm.rank() == 0) {
             if (nEntry != nEntryExpected) {
                 return fail(fmt::format("{} entry count mismatch. expected={}, actual={}", sourceName, nEntryExpected, nEntry));

@@ -20,7 +20,7 @@
 #include "Mustard/Env/MonteCarloEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include <utility>
 
@@ -43,7 +43,7 @@ MonteCarloEnv::MonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
                              bool showBannerHint,
                              std::optional<muc::any_rng> engine) :
     MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)} {
-    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
+    if (fShowBanner and (not mp1::available() or mp1::comm_world().rank() == 0)) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();

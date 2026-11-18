@@ -23,7 +23,7 @@
 #    include "Mustard/Utility/FunctionAttribute.h++"
 #    include "Mustard/Utility/PrintStackTrace.h++"
 
-#    include "mplr/mplr.hpp"
+#    include "mp1/mp1.hpp"
 
 #    include <chrono>
 #    include <csignal>
@@ -46,8 +46,8 @@ auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
     static struct Handler {
         MUSTARD_ALWAYS_INLINE Handler(int sig) {
             const auto now{std::chrono::system_clock::now()};
-            const auto lineHeader{mplr::available() ?
-                                      fmt::format("MPI{}> ", mplr::comm_world().rank()) :
+            const auto lineHeader{mp1::available() ?
+                                      fmt::format("MPI{}> ", mp1::comm_world().rank()) :
                                       ""};
             const auto ts{fmt::emphasis::bold};
             Print<'E'>(stderr, "\n");
@@ -59,9 +59,9 @@ auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
                 Print<'E'>(stderr, ts, "{}***** TERMINATE (SIGTERM received)\n", lineHeader);
                 break;
             }
-            if (mplr::available()) {
+            if (mp1::available()) {
                 Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                           lineHeader, mplr::comm_world().rank(), mplr::processor_name());
+                           lineHeader, mp1::comm_world().rank(), mp1::processor_name());
             }
             Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
             PrintStackTrace(64, 2, stderr, ts);
@@ -84,15 +84,15 @@ auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
 [[noreturn]] auto Mustard_SIGABRT_Handler(int) -> void {
     std::signal(SIGABRT, SIG_DFL);
     const auto now{std::chrono::system_clock::now()};
-    const auto lineHeader{mplr::available() ?
-                              fmt::format("MPI{}> ", mplr::comm_world().rank()) :
+    const auto lineHeader{mp1::available() ?
+                              fmt::format("MPI{}> ", mp1::comm_world().rank()) :
                               ""};
     const auto ts{fmt::emphasis::bold | fg(fmt::color::orange)};
     Print<'E'>(stderr, "\n");
     Print<'E'>(stderr, ts, "{}***** ABORT (SIGABRT received)\n", lineHeader);
-    if (mplr::available()) {
+    if (mp1::available()) {
         Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                   lineHeader, mplr::comm_world().rank(), mplr::processor_name());
+                   lineHeader, mp1::comm_world().rank(), mp1::processor_name());
     }
     Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
     PrintStackTrace(64, 2, stderr, ts);
@@ -114,8 +114,8 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
     static struct Handler {
         MUSTARD_ALWAYS_INLINE Handler(int sig) {
             const auto now{std::chrono::system_clock::now()};
-            const auto lineHeader{mplr::available() ?
-                                      fmt::format("MPI{}> ", mplr::comm_world().rank()) :
+            const auto lineHeader{mp1::available() ?
+                                      fmt::format("MPI{}> ", mp1::comm_world().rank()) :
                                       ""};
             const auto ts{fmt::emphasis::bold | fg(fmt::color::tomato)};
             Print<'E'>(stderr, "\n");
@@ -130,9 +130,9 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
                 Print<'E'>(stderr, ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV received)\n", lineHeader);
                 break;
             }
-            if (mplr::available()) {
+            if (mp1::available()) {
                 Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                           lineHeader, mplr::comm_world().rank(), mplr::processor_name());
+                           lineHeader, mp1::comm_world().rank(), mp1::processor_name());
             }
             Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
             PrintStackTrace(64, 2, stderr, ts);

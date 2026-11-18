@@ -21,6 +21,12 @@ echo "  -> ./MustardTest TestCreateTemporaryFile"
 echo "  -> parexec ./MustardTest TestCreateTemporaryFile"
 parexec ./MustardTest TestCreateTemporaryFile
 
+echo "Running TestDispatcher/TestDispatcher..."
+echo "  -> ./MustardTest TestDispatcher"
+./MustardTest TestDispatcher
+echo "  -> parexec ./MustardTest TestDispatcher"
+parexec ./MustardTest TestDispatcher
+
 echo "Running TestEstimate0/TestEstimate1/TestEstimate2/TestEstimate3/TestEstimate4/TestEstimate5/TestEstimate6/TestEstimate7/TestEstimate8/TestEstimate9/TestEstimate10/TestEstimate11/TestEstimate12/TestEstimate13/TestEstimate14/TestEstimate15/TestEstimate16/TestEstimate17/TestEstimate18/TestEstimate19/TestEstimate20/TestEstimate21/TestEstimate22/TestEstimate23/TestEstimate24/TestEstimate25/TestEstimate26/TestEstimate27/TestEstimate28/TestEstimate29/TestEstimate30/TestEstimate31/TestEstimate32/TestEstimate33/TestEstimate34/TestEstimate35/TestEstimate36/TestEstimate37/TestEstimate38/TestEstimate39/TestEstimate40..."
 echo "  -> ./MustardTest TestEstimate0"
 ./MustardTest TestEstimate0
@@ -141,6 +147,18 @@ echo "Running TestMCMCGenerator..."
 echo "  -> parexec ./MustardTest TestMCMCGenerator"
 parexec ./MustardTest TestMCMCGenerator
 
+echo "Running TestMPIEnv/TestMPIEnv..."
+echo "  -> ./MustardTest TestMPIEnv"
+./MustardTest TestMPIEnv
+echo "  -> parexec ./MustardTest TestMPIEnv"
+parexec ./MustardTest TestMPIEnv
+
+echo "Running TestMPIReduction/TestMPIReduction..."
+echo "  -> ./MustardTest TestMPIReduction"
+./MustardTest TestMPIReduction
+echo "  -> parexec ./MustardTest TestMPIReduction"
+parexec ./MustardTest TestMPIReduction
+
 echo "Running TestMT1993732/TestMT1993764..."
 echo "  -> ./MustardTest TestMT1993732"
 ./MustardTest TestMT1993732
@@ -202,6 +220,12 @@ echo "  -> ./MustardTest TestSingleRDFEventProcessor"
 ./MustardTest TestSingleRDFEventProcessor
 echo "  -> parexec ./MustardTest TestSingleRDFEventProcessor"
 parexec ./MustardTest TestSingleRDFEventProcessor
+
+echo "Running TestShmArray/TestShmArray..."
+echo "  -> ./MustardTest TestShmArray"
+./MustardTest TestShmArray
+echo "  -> parexec ./MustardTest TestShmArray"
+parexec ./MustardTest TestShmArray
 
 echo "Running TestSingleton/TestSingleton..."
 echo "  -> ./MustardTest TestSingleton"

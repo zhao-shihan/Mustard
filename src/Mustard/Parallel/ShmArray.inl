@@ -23,12 +23,12 @@ template<typename T>
 ShmArray<T>::ShmArray() noexcept :
     MoveOnlyBase{},
     fSpan{},
-    fShmWinOrData{MPI_WIN_NULL} {}
+    fShmWinOrData{std::in_place_type<mp1::window>} {}
 
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 ShmArray<T>::ShmArray(std::input_iterator auto first, std::size_t count, int root,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm) :
+                      muc::optional_ref<const mp1::communicator> intraNodeComm) :
     ShmArray{} {
     Init(first, count, root,
          std::move(intraNodeComm));
@@ -37,7 +37,7 @@ ShmArray<T>::ShmArray(std::input_iterator auto first, std::size_t count, int roo
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 ShmArray<T>::ShmArray(std::ranges::sized_range auto&& range, int root,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm) :
+                      muc::optional_ref<const mp1::communicator> intraNodeComm) :
     ShmArray{} {
     Init(std::ranges::begin(range), std::ranges::size(range), root,
          std::move(intraNodeComm));
@@ -46,7 +46,7 @@ ShmArray<T>::ShmArray(std::ranges::sized_range auto&& range, int root,
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 ShmArray<T>::ShmArray(NonRootTag, int root,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm) :
+                      muc::optional_ref<const mp1::communicator> intraNodeComm) :
     ShmArray{} {
     Init(static_cast<const T*>(nullptr), 0, root,
          std::move(intraNodeComm));
@@ -55,8 +55,8 @@ ShmArray<T>::ShmArray(NonRootTag, int root,
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 ShmArray<T>::ShmArray(BcastTag, std::input_iterator auto first, std::size_t count, int root,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm,
-                      muc::optional_ref<const mplr::communicator> interNodeComm) :
+                      muc::optional_ref<const mp1::communicator> intraNodeComm,
+                      muc::optional_ref<const mp1::communicator> interNodeComm) :
     ShmArray{} {
     Init(first, count, root,
          std::move(intraNodeComm), std::move(interNodeComm));
@@ -65,8 +65,8 @@ ShmArray<T>::ShmArray(BcastTag, std::input_iterator auto first, std::size_t coun
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 ShmArray<T>::ShmArray(BcastTag, std::ranges::sized_range auto&& range, int root,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm,
-                      muc::optional_ref<const mplr::communicator> interNodeComm) :
+                      muc::optional_ref<const mp1::communicator> intraNodeComm,
+                      muc::optional_ref<const mp1::communicator> interNodeComm) :
     ShmArray{} {
     Init(std::ranges::begin(range), std::ranges::size(range), root,
          std::move(intraNodeComm), std::move(interNodeComm));
@@ -75,8 +75,8 @@ ShmArray<T>::ShmArray(BcastTag, std::ranges::sized_range auto&& range, int root,
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 ShmArray<T>::ShmArray(BcastTag, NonRootTag, int root,
-                      muc::optional_ref<const mplr::communicator> intraNodeComm,
-                      muc::optional_ref<const mplr::communicator> interNodeComm) :
+                      muc::optional_ref<const mp1::communicator> intraNodeComm,
+                      muc::optional_ref<const mp1::communicator> interNodeComm) :
     ShmArray{} {
     Init(static_cast<const T*>(nullptr), 0, root,
          std::move(intraNodeComm), std::move(interNodeComm));
@@ -125,9 +125,9 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count) -> voi
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int root,
-                       muc::optional_ref<const mplr::communicator> intraNodeComm) -> void {
+                       muc::optional_ref<const mp1::communicator> intraNodeComm) -> void {
     // Non-MPI path: store data in a local vector.
-    if (not mplr::available() or mplr::comm_world().size() == 1) {
+    if (not mp1::available() or mp1::comm_world().size() == 1) {
         Init(first, count);
         return;
     }
@@ -141,8 +141,7 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int ro
         Throw<std::runtime_error>("root must be in [0, comm.size()).");
     }
 
-    intraComm.ibcast(root, count)
-        .wait(mplr::duty_ratio::preset::moderate);
+    mp1::bcast(intraComm, root, count);
     if (count == 0) {
         return;
     }
@@ -152,23 +151,25 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int ro
     const auto requiredWinSizeByte{gsl::narrow<MPI_Aint>(count * sizeof(T))};
 
     // Passive-target window: write-once, read-many without locks.
-    mplr::info winInfo;
+    mp1::info winInfo;
     winInfo.set("no_locks", "true");
     winInfo.set("same_disp_unit", "true");
     winInfo.set("alloc_shared_noncontig", "true");
     winInfo.set("mpi_minimum_memory_alignment", std::to_string(alignof(T)));
 
+    auto& shmWin{fShmWinOrData.template emplace<mp1::window>(
+        mp1::window::allocate_shared(
+            intraComm, {.size = intraComm.rank() == root ? requiredWinSizeByte : 0,
+                        .disp_unit = 1,
+                        .info = winInfo}))};
     T* shm{};
-    auto& shmWin{std::get<MPI_Win>(fShmWinOrData)};
     if (intraComm.rank() == root) {
-        MPI_Win_allocate_shared(requiredWinSizeByte, 1, winInfo.native_handle(), intraComm.native_handle(), &shm, &shmWin);
+        shm = static_cast<T*>(shmWin.base());
     } else {
-        MPI_Win_allocate_shared(0, 1, winInfo.native_handle(), intraComm.native_handle(), &shm, &shmWin);
-        MPI_Aint winSizeByte;
-        int winDispUnit;
-        MPI_Win_shared_query(shmWin, root, &winSizeByte, &winDispUnit, &shm);
-        Ensures(winSizeByte >= requiredWinSizeByte);
-        Ensures(winDispUnit == 1);
+        const auto segment{shmWin.shared_query(root)};
+        Ensures(segment.size >= requiredWinSizeByte);
+        Ensures(segment.disp_unit == 1);
+        shm = static_cast<T*>(segment.base);
     }
     Ensures(shm != nullptr);
 
@@ -183,17 +184,17 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int ro
 #    pragma GCC diagnostic pop
 #endif
     }
-    MPI_Win_fence(MPI_MODE_NOSUCCEED, shmWin);
+    mp1::fence(shmWin, MPI_MODE_NOSUCCEED);
     fSpan = std::span{shm, count};
 }
 
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int root,
-                       muc::optional_ref<const mplr::communicator> intraNodeComm,
-                       muc::optional_ref<const mplr::communicator> interNodeComm) -> void {
+                       muc::optional_ref<const mp1::communicator> intraNodeComm,
+                       muc::optional_ref<const mp1::communicator> interNodeComm) -> void {
     // Non-MPI path: store data in a local vector.
-    if (not mplr::available() or mplr::comm_world().size() == 1) {
+    if (not mp1::available() or mp1::comm_world().size() == 1) {
         Init(first, count);
         return;
     }
@@ -223,7 +224,7 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int ro
         if (std::to_address(first) == nullptr and count != 0 and mpiEnv.LocalNodeIdx() == root) {
             Throw<std::invalid_argument>("first cannot be null when count is non-zero on the root process.");
         }
-        auto bcastCount{interComm.ibcast(root, count)};
+        mp1::bcast(interComm, root, count);
         gtl::vector<T> bcastData;
         if (mpiEnv.LocalNodeIdx() == root) {
             bcastData.resize(count);
@@ -236,13 +237,11 @@ auto ShmArray<T>::Init(std::input_iterator auto first, std::size_t count, int ro
 #    pragma GCC diagnostic pop
 #endif
         }
-        bcastCount.wait(mplr::duty_ratio::preset::moderate);
         if (mpiEnv.LocalNodeIdx() != root) {
             bcastData.resize(count);
         }
         if (count != 0) {
-            interComm.ibcast(root, bcastData.data(), mplr::vector_layout<T>{count})
-                .wait(mplr::duty_ratio::preset::active);
+            mp1::bcast(interComm, root, bcastData);
         }
         Init(bcastData.begin(), bcastData.size(), 0, intraComm);
     } else { // Non-leader rank on multi-node: attach without source data.
@@ -255,21 +254,16 @@ template<typename T>
 auto ShmArray<T>::MoveFrom(ShmArray&& other) noexcept -> void {
     fSpan = other.fSpan;
     fShmWinOrData = std::move(other.fShmWinOrData);
-    // Reset the source's MPI_Win to prevent double-free in its destructor.
-    if (auto win{std::get_if<MPI_Win>(&other.fShmWinOrData)}) {
-        *win = MPI_WIN_NULL;
-    }
 }
 
 template<typename T>
     requires std::is_trivially_copyable_v<T>
 auto ShmArray<T>::Destroy() noexcept -> void {
-    if (auto win{std::get_if<MPI_Win>(&fShmWinOrData)}) {
-        if (*win != MPI_WIN_NULL) {
-            // no need to destroy the data in the window since it's trivially copyable
-            MPI_Win_free(win);
-        }
+    if (std::holds_alternative<mp1::window>(fShmWinOrData)) {
+        // The window destructor is noexcept and frees the shared segment.
+        fShmWinOrData.template emplace<gtl::vector<T>>();
     }
+    fSpan = {};
 }
 
 } // namespace Mustard::Parallel

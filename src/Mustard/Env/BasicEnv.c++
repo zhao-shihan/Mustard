@@ -28,7 +28,7 @@
 
 #include "TROOT.h"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/numeric"
 
@@ -77,7 +77,7 @@ BasicEnv::BasicEnv(int argc, char* argv[],
                    enum VerboseLevel verboseLevel,
                    bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
-    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
+    if (fShowBanner and (not mp1::available() or mp1::comm_world().rank() == 0)) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();
@@ -85,7 +85,7 @@ BasicEnv::BasicEnv(int argc, char* argv[],
 }
 
 BasicEnv::~BasicEnv() {
-    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
+    if (fShowBanner and (not mp1::available() or mp1::comm_world().rank() == 0)) {
         PrintExitBanner();
     }
     fShowBanner = false;
