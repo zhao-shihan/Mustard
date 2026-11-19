@@ -167,7 +167,7 @@ CPMFindPackage(
 CPMFindPackage(
     NAME Backward
     GITHUB_REPOSITORY zhao-shihan/backward-cpp
-    VERSION 1.6.3
+    VERSION 1.6.1
     OPTIONS "BACKWARD_SHARED OFF"
     "BACKWARD_INSTALL ON"
     "BACKWARD_TESTS ${BUILD_TESTING}")
