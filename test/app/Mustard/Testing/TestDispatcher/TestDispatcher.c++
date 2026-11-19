@@ -27,10 +27,13 @@
 #include "gsl/gsl"
 
 #include <algorithm>
+#include <charconv>
 #include <cstddef>
 #include <cstdlib>
 #include <stdexcept>
+#include <string>
 #include <string_view>
+#include <system_error>
 #include <vector>
 
 namespace Mustard::Testing {
@@ -40,6 +43,40 @@ namespace {
 namespace TestDispatcherSection {
 
 constexpr auto nTask{20000};
+
+// Open MPI 6.0.0 (including its release candidates) is known to hang in this
+// test, so skip it for that version only; later 6.0.x releases run normally.
+// Revisit once Open MPI 6.0.0 is no longer used in CI.
+auto IsOpenMPI600() -> bool {
+    const auto libraryVersion{mp1::get_library_version()};
+    constexpr std::string_view vendor{"Open MPI v"};
+    const auto versionBegin{libraryVersion.find(vendor)};
+    if (versionBegin == std::string::npos) {
+        return false;
+    }
+    const auto first{libraryVersion.data() + versionBegin + vendor.size()};
+    const auto last{libraryVersion.data() + libraryVersion.size()};
+    int major{};
+    int minor{};
+    int patch{};
+    const auto [majorEnd, majorError]{std::from_chars(first, last, major)};
+    if (majorError != std::errc{}) {
+        return false;
+    }
+    if (majorEnd == last or *majorEnd != '.') {
+        return false;
+    }
+    const auto [minorEnd, minorError]{std::from_chars(majorEnd + 1, last, minor)};
+    if (minorError != std::errc{}) {
+        return false;
+    }
+    if (minorEnd == last or *minorEnd != '.') {
+        return false;
+    }
+    const auto [patchEnd, patchError]{std::from_chars(minorEnd + 1, last, patch)};
+    (void)patchEnd;
+    return patchError == std::errc{} and major == 6 and minor == 0 and patch == 0;
+}
 
 auto CheckTaskSet(int expectedN, const std::vector<int>& localTask) -> void {
     const auto& worldComm{mp1::comm_world()};
@@ -97,6 +134,11 @@ auto TestDispatcher::Main(int argc, char* argv[]) const -> int {
     Mustard::Env::MPIEnv env{argc, argv, cli};
 
     using namespace TestDispatcherSection;
+
+    if (IsOpenMPI600()) {
+        MasterPrintWarning("Skipping TestDispatcher under Open MPI 6.0.0.");
+        return EXIT_SUCCESS;
+    }
 
     const auto& worldComm{mp1::comm_world()};
     RunDispatcher("stat");
