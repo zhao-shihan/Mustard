@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate6::TestEstimate6() :
     Subprogram{"TestEstimate6", "Test Mustard::Math::Estimate (Section 6: NegateAdd)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -306,6 +308,8 @@ constexpr auto sec5NegateAddSelf{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate6::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

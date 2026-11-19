@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate21::TestEstimate21() :
     Subprogram{"TestEstimate21", "Test Mustard::Math::Estimate (Section 21: Cross-Verification)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -115,6 +117,8 @@ constexpr auto sec18CrossVerification{[] {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate21::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

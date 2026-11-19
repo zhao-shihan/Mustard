@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate26::TestEstimate26() :
     Subprogram{"TestEstimate26", "Test Mustard::Math::Estimate (Section 26: Norm)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -92,6 +94,8 @@ constexpr auto sec23Norm{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate26::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

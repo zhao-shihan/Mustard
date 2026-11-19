@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic7::TestStatistic7() :
     Subprogram{"TestStatistic7", "Test Mustard::Statistic (Section 7: Dimension and Move Semantics)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -271,6 +273,8 @@ constexpr auto sec7PostMove{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic7::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

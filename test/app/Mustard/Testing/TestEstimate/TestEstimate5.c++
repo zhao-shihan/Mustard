@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate5::TestEstimate5() :
     Subprogram{"TestEstimate5", "Test Mustard::Math::Estimate (Section 5: operator* and operator/)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -289,6 +291,8 @@ constexpr auto sec5SelfMulDiv{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate5::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

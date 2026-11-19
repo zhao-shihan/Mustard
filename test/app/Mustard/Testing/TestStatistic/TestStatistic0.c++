@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic0::TestStatistic0() :
     Subprogram{"TestStatistic0", "Test Mustard::Statistic (Section 0: Construction)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -147,6 +149,8 @@ constexpr auto sec0Construction{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic0::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

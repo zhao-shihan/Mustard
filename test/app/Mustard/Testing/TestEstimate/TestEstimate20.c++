@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate20::TestEstimate20() :
     Subprogram{"TestEstimate20", "Test Mustard::Math::Estimate (Section 20: Edge Cases)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -185,6 +187,8 @@ constexpr auto sec19cCorrZeroVar{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate20::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

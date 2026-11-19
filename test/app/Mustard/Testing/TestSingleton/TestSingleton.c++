@@ -25,12 +25,16 @@ namespace Mustard::Testing {
 
 namespace {
 
+namespace TestSingletonSection {
+
 class NullSingleton final : public Mustard::Env::Singleton<NullSingleton> {
     friend Mustard::Env::SingletonFactory;
 
 private:
     NullSingleton() = default;
 };
+
+} // namespace TestSingletonSection
 
 } // namespace
 
@@ -40,6 +44,8 @@ TestSingleton::TestSingleton() :
 auto TestSingleton::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     Mustard::Env::MPIEnv env{argc, argv, cli};
+
+    using namespace TestSingletonSection;
 
     NullSingleton::Instance();
     return EXIT_SUCCESS;

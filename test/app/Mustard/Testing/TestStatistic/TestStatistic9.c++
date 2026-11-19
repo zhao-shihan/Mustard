@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic9::TestStatistic9() :
     Subprogram{"TestStatistic9", "Test Mustard::Statistic (Section 9: Component Consistency)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -72,6 +74,8 @@ constexpr auto sec9ComponentConsistency{[] {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic9::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

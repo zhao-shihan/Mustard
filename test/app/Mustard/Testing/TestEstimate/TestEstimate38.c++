@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate38::TestEstimate38() :
     Subprogram{"TestEstimate38", "Test Mustard::Math::Estimate (Section 38: User-defined Apply)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -254,6 +256,8 @@ constexpr auto sec38ApplyDynamic{[] {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate38::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

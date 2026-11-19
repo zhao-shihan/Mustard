@@ -44,6 +44,8 @@ TestExecutor::TestExecutor() :
 
 namespace {
 
+namespace TestExecutorSection {
+
 auto CheckIndexList(int truthN, const std::vector<int>& localIndexList) -> void {
     const auto& worldComm{mp1::comm_world()};
     const auto localSize{gsl::narrow<int>(localIndexList.size())};
@@ -87,12 +89,16 @@ auto CheckIndexList(int truthN, const std::vector<int>& localIndexList) -> void 
     }
 }
 
+} // namespace TestExecutorSection
+
 } // namespace
 
 auto TestExecutor::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     cli->add_argument("n").help("Number of tasks.").default_value(10'000'000).required().nargs(1).scan<'i', int>();
     Mustard::Env::MPIEnv env{argc, argv, cli};
+
+    using namespace TestExecutorSection;
 
     const auto n{cli->get<int>("n")};
 

@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate29::TestEstimate29() :
     Subprogram{"TestEstimate29", "Test Mustard::Math::Estimate (Section 29: GeometricMean)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -78,6 +80,8 @@ constexpr auto sec26GeometricMean{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate29::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

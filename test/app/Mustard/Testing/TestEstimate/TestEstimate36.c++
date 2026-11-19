@@ -30,6 +30,8 @@ namespace Mustard::Testing {
 TestEstimate36::TestEstimate36() :
     Subprogram{"TestEstimate36", "Test Mustard::Math::Estimate (Section 36: ProjTo, ProjFrom, Project)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -840,6 +842,8 @@ auto sec36iCrossType() -> void {
 };
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate36::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

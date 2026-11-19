@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate28::TestEstimate28() :
     Subprogram{"TestEstimate28", "Test Mustard::Math::Estimate (Section 28: HarmonicMean)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -78,6 +80,8 @@ constexpr auto sec25HarmonicMean{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate28::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

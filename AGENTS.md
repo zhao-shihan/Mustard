@@ -12,6 +12,7 @@ Guidance for AI coding agents working in the **Mustard** repository — a C++20 
 6. **Never hand-edit generated files** (see [Generated files](#generated-files-do-not-edit)). Edit the source of truth, then regenerate.
 7. **Every new file needs the license header** (see [License headers](#license-headers)) and, in headers, `#pragma once`.
 8. **Prefer building over guessing.** The library is large; build the narrowest target that proves your change, and do not reconfigure an existing build tree needlessly.
+9. **Do scratch work under `tmp/` — keep the workspace clean.** By default, put logs, temporary scripts, test artifacts, and throwaway build trees under the gitignored `tmp/` directory (e.g. `tmp/build-ci`), and clean them up when finished. Do not leave unrelated files anywhere else in the workspace; only intentional changes to tracked files should remain.
 
 ## Where things live
 
@@ -71,8 +72,8 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DMUSTARD_BUILD_TESTING=
 
 - Sources are globbed (`file(GLOB_RECURSE ...)` in `src/CMakeLists.txt` and `test/{app,lib}/CMakeLists.txt`), so a **new `.c++` file needs a re-configure** before `ninja` sees it.
 - Builds are heavy (ROOT/Geant4/Eigen in the include graph): build narrow targets rather than everything, and never run two builds on the same tree concurrently.
-- Local `MUSTARD_WERROR=OFF` + `MUSTARD_UNITY_BUILD=OFF` hides the two most common CI failures: new warnings and unity-build collisions between anonymous-namespace symbols. CI adds `-DMUSTARD_FULL_UNITY_BUILD=ON -DMUSTARD_WERROR=ON`, runs 4 build jobs (GCC/Clang × MPICH/OpenMPI) plus one test job per sequence, and can be reproduced with a throwaway `build-ci` tree.
-- Never modify or commit `build/`, `install/`, `.cache/`. `tmp/` is a gitignored scratch area for logs and drafts — fine to write, never to commit.
+- Local `MUSTARD_WERROR=OFF` + `MUSTARD_UNITY_BUILD=OFF` hides the two most common CI failures: new warnings and unity-build collisions between anonymous-namespace symbols. CI adds `-DMUSTARD_FULL_UNITY_BUILD=ON -DMUSTARD_WERROR=ON`, runs 4 build jobs (GCC/Clang × MPICH/OpenMPI) plus one test job per sequence, and can be reproduced with a throwaway `tmp/build-ci` tree.
+- Never modify or commit `build/`, `install/`, `.cache/`. `tmp/` is a gitignored scratch area for logs and drafts (see ground rule 9) — fine to write, never to commit.
 
 ## Testing
 

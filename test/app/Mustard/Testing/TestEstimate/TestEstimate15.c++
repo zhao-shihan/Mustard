@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate15::TestEstimate15() :
     Subprogram{"TestEstimate15", "Test Mustard::Math::Estimate (Section 15: Hyperbolic Functions)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -124,6 +126,8 @@ constexpr auto sec12Hyperbolic{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate15::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

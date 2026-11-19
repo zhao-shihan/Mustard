@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic10::TestStatistic10() :
     Subprogram{"TestStatistic10", "Test Mustard::Statistic (Section 10: Cross-Verification)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -535,6 +537,8 @@ constexpr auto sec10CrossDimRvalueAdd{[] {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic10::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

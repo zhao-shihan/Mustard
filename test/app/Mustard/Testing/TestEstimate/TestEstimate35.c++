@@ -30,6 +30,8 @@ namespace Mustard::Testing {
 TestEstimate35::TestEstimate35() :
     Subprogram{"TestEstimate35", "Test Mustard::Math::Estimate (Section 35: ScalarProjTo, ScalarProjFrom, ScalarProj)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -172,9 +174,13 @@ constexpr auto sec35aScalarProjTo{[]<int K, CovarianceOption C>() {
         // Expected value: v·v2 / |v2|
         const double expectedValue{[&] {
             double dot{0.};
-            for (auto i{0}; i < dim; ++i) { dot += v(i) * (dim - i); }
+            for (auto i{0}; i < dim; ++i) {
+                dot += v(i) * (dim - i);
+            }
             double normSq{0.};
-            for (auto i{0}; i < dim; ++i) { normSq += (dim - i) * (dim - i); }
+            for (auto i{0}; i < dim; ++i) {
+                normSq += (dim - i) * (dim - i);
+            }
             return dot / std::sqrt(normSq);
         }()};
 
@@ -216,7 +222,9 @@ constexpr auto sec35aScalarProjTo{[]<int K, CovarianceOption C>() {
         // 35a-d. Near-zero |y| guard
         {
             auto vZero{MakeTestValue<K, C>(dim)};
-            for (auto i{0}; i < dim; ++i) { const_cast<double&>(vZero(i)) = 0.; }
+            for (auto i{0}; i < dim; ++i) {
+                const_cast<double&>(vZero(i)) = 0.;
+            }
             Est eZero{MakeEstimate<K, C>(vZero, cov2)};
             const auto result{e.ScalarProjTo(eZero)};
             CheckClose(result.Value(), 0., "35a-d: ScalarProjTo near-zero value");
@@ -248,9 +256,13 @@ constexpr auto sec35bScalarProjFrom{[]<int K, CovarianceOption C>() {
         // ScalarProjFrom: project other onto self = (v2·v) / |v|
         const double expectedValue{[&] {
             double dot{0.};
-            for (auto i{0}; i < dim; ++i) { dot += (dim - i) * v(i); }
+            for (auto i{0}; i < dim; ++i) {
+                dot += (dim - i) * v(i);
+            }
             double normSq{0.};
-            for (auto i{0}; i < dim; ++i) { normSq += v(i) * v(i); }
+            for (auto i{0}; i < dim; ++i) {
+                normSq += v(i) * v(i);
+            }
             return dot / std::sqrt(normSq);
         }()};
 
@@ -301,7 +313,9 @@ constexpr auto sec35bScalarProjFrom{[]<int K, CovarianceOption C>() {
         // 35b-d. Near-zero |self| guard
         {
             auto vZero{MakeTestValue<K, C>(dim)};
-            for (auto i{0}; i < dim; ++i) { const_cast<double&>(vZero(i)) = 0.; }
+            for (auto i{0}; i < dim; ++i) {
+                const_cast<double&>(vZero(i)) = 0.;
+            }
             Est eZero{MakeEstimate<K, C>(vZero, cov)};
             const auto result{eZero.ScalarProjFrom(e2)};
             CheckClose(result.Value(), 0., "35b-d: ScalarProjFrom near-zero self value");
@@ -392,7 +406,9 @@ auto sec35dCrossType() -> void {
 
     const auto v{MakeTestValue<dim, CovarianceOption::Full>(dim)};
     auto v2{MakeTestValue<dim, CovarianceOption::Full>(dim)};
-    for (auto i{0}; i < dim; ++i) { const_cast<double&>(v2(i)) = dim - i; }
+    for (auto i{0}; i < dim; ++i) {
+        const_cast<double&>(v2(i)) = dim - i;
+    }
     const auto covFull{MakeTestCov<dim, CovarianceOption::Full>(dim)};
     const auto covDiag{MakeTestCov<dim, CovarianceOption::Diagonal>(dim)};
 
@@ -632,6 +648,8 @@ auto sec35fEdgeCases() -> void {
 };
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate35::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

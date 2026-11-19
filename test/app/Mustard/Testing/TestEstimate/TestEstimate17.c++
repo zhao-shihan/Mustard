@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate17::TestEstimate17() :
     Subprogram{"TestEstimate17", "Test Mustard::Math::Estimate (Section 17: Special Functions)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -136,12 +138,12 @@ constexpr auto sec14Special{[]<int K, CovarianceOption C>() {
     //                           [&](int i) { return -2.0 / std::sqrt(std::numbers::pi) * std::exp(-x(i) * x(i)); });
     //     }
 
-    //     const auto eErfc{erfc(MakeEstimate<K, C>(x, cov))};
-    //     if constexpr (K == 1) {
-    //         CheckClose(eErfc.Value(), std::erfc(x(0)), "17f: erfc() free value");
-    //     } else {
-    //         CheckClose(eErfc.Value(0), std::erfc(x(0)), "17f: erfc() free value");
-    //     }
+    // const auto eErfc{erfc(MakeEstimate<K, C>(x, cov))};
+    // if constexpr (K == 1) {
+    //     CheckClose(eErfc.Value(), std::erfc(x(0)), "17f: erfc() free value");
+    // } else {
+    //     CheckClose(eErfc.Value(0), std::erfc(x(0)), "17f: erfc() free value");
+    // }
     // }
 
     // --- Lgamma ---
@@ -197,6 +199,8 @@ constexpr auto sec14Special{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate17::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

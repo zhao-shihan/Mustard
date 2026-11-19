@@ -36,6 +36,8 @@ namespace Mustard::Testing {
 
 namespace {
 
+namespace TestShmArraySection {
+
 constexpr auto nElement{1024};
 
 auto MakeSource() -> std::vector<int> {
@@ -61,6 +63,8 @@ auto CheckIntArray(const Parallel::ShmArray<int>& array) -> void {
     }
 }
 
+} // namespace TestShmArraySection
+
 } // namespace
 
 TestShmArray::TestShmArray() :
@@ -69,6 +73,8 @@ TestShmArray::TestShmArray() :
 auto TestShmArray::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     Mustard::Env::MPIEnv env{argc, argv, cli};
+
+    using namespace TestShmArraySection;
 
     const auto& worldComm{mp1::comm_world()};
     // Two kinds of roots are involved. The inter-node root is world rank 0, while

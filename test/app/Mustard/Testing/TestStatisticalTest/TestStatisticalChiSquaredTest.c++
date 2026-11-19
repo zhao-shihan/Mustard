@@ -30,6 +30,8 @@ namespace Mustard::Testing {
 TestStatisticalChiSquaredTest::TestStatisticalChiSquaredTest() :
     Subprogram{"TestStatisticalChiSquaredTest", "Test Mustard::Math::StatisticalChiSquaredTest."} {}
 
+namespace {
+
 namespace TestStatisticalChiSquaredTestSection {
 
 using namespace Mustard::Math;
@@ -288,6 +290,8 @@ constexpr auto sec6Delegation{[] {
 }};
 
 } // namespace TestStatisticalChiSquaredTestSection
+
+} // namespace
 
 auto TestStatisticalChiSquaredTest::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

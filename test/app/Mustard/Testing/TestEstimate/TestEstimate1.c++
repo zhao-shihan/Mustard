@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate1::TestEstimate1() :
     Subprogram{"TestEstimate1", "Test Mustard::Math::Estimate (Section 1: Assignment)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -327,6 +329,8 @@ constexpr auto sec1CrossDimAssignment{[] {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate1::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

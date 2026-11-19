@@ -43,6 +43,8 @@ namespace Mustard::Testing {
 
 namespace {
 
+namespace TestMarkovChainStatisticSection {
+
 auto CheckClose(double actual, double expected, double relativeTolerance, std::string_view context) -> void {
     if (const auto tolerance{relativeTolerance * std::abs(expected) + 1e-12};
         not(std::abs(actual - expected) <= tolerance)) {
@@ -79,6 +81,8 @@ auto GenerateAR1(int size, double phi, std::mt19937_64& rng) -> Eigen::VectorXd 
     return sample;
 }
 
+} // namespace TestMarkovChainStatisticSection
+
 } // namespace
 
 TestMarkovChainStatistic::TestMarkovChainStatistic() :
@@ -88,6 +92,7 @@ auto TestMarkovChainStatistic::Main(int argc, char* argv[]) const -> int {
     CLI::BasicCLI<> cli;
     Env::BasicEnv env{argc, argv, cli};
 
+    using namespace TestMarkovChainStatisticSection;
     using namespace Math;
 
     PrintLn("--- AR(1) autocorrelation, IACT, and ESS ---");

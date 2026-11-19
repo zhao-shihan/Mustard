@@ -30,6 +30,8 @@ namespace Mustard::Testing {
 TestStatisticalTSquaredTest::TestStatisticalTSquaredTest() :
     Subprogram{"TestStatisticalTSquaredTest", "Test Mustard::Math::StatisticalTSquaredTest."} {}
 
+namespace {
+
 namespace TestStatisticalTSquaredTestSection {
 
 using namespace Mustard::Math;
@@ -324,6 +326,8 @@ constexpr auto sec7Delegation{[] {
 }};
 
 } // namespace TestStatisticalTSquaredTestSection
+
+} // namespace
 
 auto TestStatisticalTSquaredTest::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

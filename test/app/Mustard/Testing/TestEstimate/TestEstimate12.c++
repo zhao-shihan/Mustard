@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate12::TestEstimate12() :
     Subprogram{"TestEstimate12", "Test Mustard::Math::Estimate (Section 12: Logarithmic Functions)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -168,6 +170,8 @@ constexpr auto sec9Logarithmic{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate12::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

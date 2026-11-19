@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate11::TestEstimate11() :
     Subprogram{"TestEstimate11", "Test Mustard::Math::Estimate (Section 11: Exponential Functions)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -156,6 +158,8 @@ constexpr auto sec8Exponential{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate11::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

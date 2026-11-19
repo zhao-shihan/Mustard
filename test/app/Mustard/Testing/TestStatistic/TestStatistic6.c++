@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic6::TestStatistic6() :
     Subprogram{"TestStatistic6", "Test Mustard::Statistic (Section 6: Numerical Stress)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -218,6 +220,8 @@ constexpr auto sec6NumericalStressVectors{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic6::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

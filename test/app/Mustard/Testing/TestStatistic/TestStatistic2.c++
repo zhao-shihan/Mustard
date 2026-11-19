@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic2::TestStatistic2() :
     Subprogram{"TestStatistic2", "Test Mustard::Statistic (Section 2: Merge Operations)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -212,6 +214,8 @@ constexpr auto sec2SelfMerge{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic2::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

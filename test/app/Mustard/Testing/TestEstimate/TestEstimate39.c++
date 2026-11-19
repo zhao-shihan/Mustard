@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate39::TestEstimate39() :
     Subprogram{"TestEstimate39", "Test Mustard::Math::Estimate (Section 39: User-defined Reduce)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -230,6 +232,8 @@ constexpr auto sec39ReduceDynamic{[] {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate39::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

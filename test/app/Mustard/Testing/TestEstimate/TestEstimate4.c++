@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate4::TestEstimate4() :
     Subprogram{"TestEstimate4", "Test Mustard::Math::Estimate (Section 4: *= and /=)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -538,6 +540,8 @@ constexpr auto sec4MulDivScalarEst{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate4::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

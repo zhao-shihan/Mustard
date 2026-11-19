@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic3::TestStatistic3() :
     Subprogram{"TestStatistic3", "Test Mustard::Statistic (Section 3: POD and Base64)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -191,6 +193,8 @@ constexpr auto sec3PODAdd{[] {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic3::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

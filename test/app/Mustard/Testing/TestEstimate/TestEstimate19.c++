@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate19::TestEstimate19() :
     Subprogram{"TestEstimate19", "Test Mustard::Math::Estimate (Section 19: POD / Base64)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -158,6 +160,8 @@ constexpr auto sec16InvalidBase64{[] {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate19::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

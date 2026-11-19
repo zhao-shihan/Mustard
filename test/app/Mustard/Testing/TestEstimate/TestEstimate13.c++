@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate13::TestEstimate13() :
     Subprogram{"TestEstimate13", "Test Mustard::Math::Estimate (Section 13: Trigonometric Functions)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -121,6 +123,8 @@ constexpr auto sec10Trigonometric{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate13::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

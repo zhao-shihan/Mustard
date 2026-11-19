@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate7::TestEstimate7() :
     Subprogram{"TestEstimate7", "Test Mustard::Math::Estimate (Section 7: Divide)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -296,6 +298,8 @@ constexpr auto sec5DivideSelf{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate7::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

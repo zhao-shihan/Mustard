@@ -37,6 +37,8 @@ namespace Mustard::Testing {
 
 namespace {
 
+namespace TestDispatcherSection {
+
 constexpr auto nTask{20000};
 
 auto CheckTaskSet(int expectedN, const std::vector<int>& localTask) -> void {
@@ -83,6 +85,8 @@ auto RunDispatcher(std::string_view code) -> void {
     CheckTaskSet(nTask, localTask);
 }
 
+} // namespace TestDispatcherSection
+
 } // namespace
 
 TestDispatcher::TestDispatcher() :
@@ -91,6 +95,8 @@ TestDispatcher::TestDispatcher() :
 auto TestDispatcher::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     Mustard::Env::MPIEnv env{argc, argv, cli};
+
+    using namespace TestDispatcherSection;
 
     const auto& worldComm{mp1::comm_world()};
     RunDispatcher("stat");

@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic5::TestStatistic5() :
     Subprogram{"TestStatistic5", "Test Mustard::Statistic (Section 5: Negative Weights)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -207,6 +209,8 @@ constexpr auto sec5NegativeWeightVectors{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic5::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

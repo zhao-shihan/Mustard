@@ -45,6 +45,8 @@ TestFieldTypeName::TestFieldTypeName() :
 
 namespace {
 
+namespace TestFieldTypeNameSection {
+
 template<typename T>
 auto ExpectTypeName(std::string_view expected) -> bool {
     const auto name{Mustard::Data::FieldTypeName<T>()};
@@ -61,12 +63,15 @@ auto ExpectObjectName(const T& object, std::string_view expected) -> bool {
     return name == expected;
 }
 
+} // namespace TestFieldTypeNameSection
+
 } // namespace
 
 auto TestFieldTypeName::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     Mustard::Env::BasicEnv env{argc, argv, cli};
 
+    using namespace TestFieldTypeNameSection;
     using namespace Mustard::Data;
 
     if (not ExpectTypeName<bool>("b")) {

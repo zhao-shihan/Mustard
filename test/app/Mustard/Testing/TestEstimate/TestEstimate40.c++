@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate40::TestEstimate40() :
     Subprogram{"TestEstimate40", "Test Mustard::Math::Estimate (Section 40: User-defined Transform)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -368,6 +370,8 @@ constexpr auto sec40fRuntimeL{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate40::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

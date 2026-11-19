@@ -31,6 +31,8 @@ namespace Mustard::Testing {
 TestEstimate33::TestEstimate33() :
     Subprogram{"TestEstimate33", "Test Mustard::Math::Estimate (Section 33: Combine)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -260,6 +262,8 @@ auto sec32bCombineCrossType() -> void {
 };
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate33::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

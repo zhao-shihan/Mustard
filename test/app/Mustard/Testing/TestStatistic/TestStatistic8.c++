@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic8::TestStatistic8() :
     Subprogram{"TestStatistic8", "Test Mustard::Statistic (Section 8: Partition and Correlation Consistency)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -147,6 +149,8 @@ constexpr auto sec8CorrZeroVar{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic8::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate18::TestEstimate18() :
     Subprogram{"TestEstimate18", "Test Mustard::Math::Estimate (Section 18: Negate and Chaining)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -125,6 +127,8 @@ constexpr auto sec15NegateChaining{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate18::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

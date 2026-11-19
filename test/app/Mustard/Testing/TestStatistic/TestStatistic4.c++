@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestStatistic4::TestStatistic4() :
     Subprogram{"TestStatistic4", "Test Mustard::Statistic (Section 4: Edge Cases)."} {}
 
+namespace {
+
 namespace TestStatisticSection {
 
 using namespace Mustard::Math;
@@ -216,6 +218,8 @@ constexpr auto sec4EdgeCases{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestStatisticSection
+
+} // namespace
 
 auto TestStatistic4::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

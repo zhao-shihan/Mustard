@@ -30,6 +30,8 @@ namespace Mustard::Testing {
 TestEstimate37::TestEstimate37() :
     Subprogram{"TestEstimate37", "Test Mustard::Math::Estimate (Section 37: Concat, Head, Tail, Segment)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -668,6 +670,8 @@ auto sec37lDynamic() -> void {
 };
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate37::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

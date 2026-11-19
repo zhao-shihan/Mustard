@@ -29,6 +29,8 @@ namespace Mustard::Testing {
 TestEstimate0::TestEstimate0() :
     Subprogram{"TestEstimate0", "Test Mustard::Math::Estimate (Section 0: Construction)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -512,6 +514,8 @@ constexpr auto sec0Implicit1DConversion{[] {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate0::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

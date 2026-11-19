@@ -30,6 +30,8 @@ namespace Mustard::Testing {
 TestEstimate34::TestEstimate34() :
     Subprogram{"TestEstimate34", "Test Mustard::Math::Estimate (Section 34: Cosine, Angle)."} {}
 
+namespace {
+
 namespace TestEstimateSection {
 
 using namespace Mustard::Math;
@@ -100,7 +102,9 @@ constexpr auto sec34Cosine{[]<int K, CovarianceOption C>() {
         // Expected value: v·v2 / (|v|·|v2|)
         const double expectedValue{[&] {
             double dot{0.};
-            for (auto i{0}; i < dim; ++i) { dot += v(i) * (dim - i); }
+            for (auto i{0}; i < dim; ++i) {
+                dot += v(i) * (dim - i);
+            }
             double normSq1{0.}, normSq2{0.};
             for (auto i{0}; i < dim; ++i) {
                 normSq1 += v(i) * v(i);
@@ -160,7 +164,9 @@ constexpr auto sec34Cosine{[]<int K, CovarianceOption C>() {
         // 34a-d. Near-zero |y| guard
         {
             auto vZero{MakeTestValue<K, C>(dim)};
-            for (auto i{0}; i < dim; ++i) { const_cast<double&>(vZero(i)) = 0.; }
+            for (auto i{0}; i < dim; ++i) {
+                const_cast<double&>(vZero(i)) = 0.;
+            }
             Est eZero{MakeEstimate<K, C>(vZero, cov2)};
             const auto result{e.Cosine(eZero)};
             CheckClose(result.Value(), 0., "34a-d: Cosine near-zero y value");
@@ -170,7 +176,9 @@ constexpr auto sec34Cosine{[]<int K, CovarianceOption C>() {
         // 34a-e. Near-zero |x| guard
         {
             auto vZero{MakeTestValue<K, C>(dim)};
-            for (auto i{0}; i < dim; ++i) { const_cast<double&>(vZero(i)) = 0.; }
+            for (auto i{0}; i < dim; ++i) {
+                const_cast<double&>(vZero(i)) = 0.;
+            }
             Est eZero{MakeEstimate<K, C>(vZero, cov)};
             const auto result{eZero.Cosine(e2)};
             CheckClose(result.Value(), 0., "34a-e: Cosine near-zero x value");
@@ -202,7 +210,9 @@ constexpr auto sec34Angle{[]<int K, CovarianceOption C>() {
         // Expected value: acos(v·v2 / (|v|·|v2|))
         const double expectedValue{[&] {
             double dot{0.};
-            for (auto i{0}; i < dim; ++i) { dot += v(i) * (dim - i); }
+            for (auto i{0}; i < dim; ++i) {
+                dot += v(i) * (dim - i);
+            }
             double normSq1{0.}, normSq2{0.};
             for (auto i{0}; i < dim; ++i) {
                 normSq1 += v(i) * v(i);
@@ -256,7 +266,9 @@ auto sec34CrossType() -> void {
 
     const auto v{MakeTestValue<dim, CovarianceOption::Full>(dim)};
     auto v2{MakeTestValue<dim, CovarianceOption::Full>(dim)};
-    for (auto i{0}; i < dim; ++i) { const_cast<double&>(v2(i)) = dim - i; }
+    for (auto i{0}; i < dim; ++i) {
+        const_cast<double&>(v2(i)) = dim - i;
+    }
     const auto covFull{MakeTestCov<dim, CovarianceOption::Full>(dim)};
     const auto covDiag{MakeTestCov<dim, CovarianceOption::Diagonal>(dim)};
 
@@ -537,6 +549,8 @@ constexpr auto sec34FreeAngle{[]<int K, CovarianceOption C>() {
 }};
 
 } // namespace TestEstimateSection
+
+} // namespace
 
 auto TestEstimate34::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;

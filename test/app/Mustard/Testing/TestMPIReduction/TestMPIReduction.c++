@@ -39,6 +39,8 @@ namespace Mustard::Testing {
 
 namespace {
 
+namespace TestMPIReductionSection {
+
 // Every rank computes the same expected values locally, so only the rounding of
 // the floating-point additions performed by MPI can differ from them.
 constexpr auto relativeTolerance{1.e-12};
@@ -115,6 +117,8 @@ auto CheckEqual(auto actual, auto expected, std::string_view context) -> void {
     }
 }
 
+} // namespace TestMPIReductionSection
+
 } // namespace
 
 TestMPIReduction::TestMPIReduction() :
@@ -123,6 +127,8 @@ TestMPIReduction::TestMPIReduction() :
 auto TestMPIReduction::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     Mustard::Env::MPIEnv env{argc, argv, cli};
+
+    using namespace TestMPIReductionSection;
 
     const auto& worldComm{mp1::comm_world()};
     const auto worldSize{worldComm.size()};
