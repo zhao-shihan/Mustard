@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,27 +20,27 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                      std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) :
+                                      std::optional<int> acfSampleSize, std::optional<int> acfReplicate) :
     Base{pI, pdgID, mass},
-    fThinningRatio{1.5},
+    fACFReplicate{10},
     fACFSampleSize{fgDefaultInvalidACFSampleSize},
     fMCMCInitialized{},
-    fThinningSize{},
+    fSamplingInterval{},
     fMC{} {
-    if (thinningRatio) {
-        ThinningRatio(*thinningRatio);
-    }
     if (acfSampleSize) {
         ACFSampleSize(*acfSampleSize);
+    }
+    if (acfReplicate) {
+        ACFReplicate(*acfReplicate);
     }
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 MCMCGenerator<M, N, A>::MCMCGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                       const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                      std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize) // clang-format off
+                                      std::optional<int> acfSampleSize, std::optional<int> acfReplicate) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
-    MCMCGenerator{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)} {
+    MCMCGenerator{pI, pdgID, mass, std::move(acfSampleSize), std::move(acfReplicate)} {
     this->Polarization(polarization);
 }
 
@@ -60,12 +60,12 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Polarization(const typename A::InitialStatePolarization& pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> {
     if constexpr (M == 1) {
-        if (not pol.isNear(Polarization(), muc::default_rel_tol<double>)) {
+        if (not pol.isNear(Polarization())) {
             MCMCInitializationRequired();
         }
     } else {
         if (not std::ranges::equal(pol, Polarization(),
-                                   [](auto&& a, auto&& b) { return a.isNear(b, muc::default_rel_tol<double>); })) {
+                                   [](auto&& a, auto&& b) { return a.isNear(b); })) {
             MCMCInitializationRequired();
         }
     }
@@ -75,7 +75,7 @@ auto MCMCGenerator<M, N, A>::Polarization(const typename A::InitialStatePolariza
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Polarization(int i, Vector3D pol) -> void
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1) {
-    if (not pol.isNear(Polarization(i), muc::default_rel_tol<double>)) {
+    if (not pol.isNear(Polarization(i))) {
         MCMCInitializationRequired();
     }
     Base::Polarization(i, pol);
@@ -88,45 +88,49 @@ auto MCMCGenerator<M, N, A>::Acceptance(AcceptanceFunction Acceptance) -> void {
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ThinningRatio(double value) -> void {
-    if (not std::isfinite(value)) [[unlikely]] {
-        PrintError(fmt::format("Non-finite thinning ratio not allowed (got {}), not setting it", value));
+auto MCMCGenerator<M, N, A>::ACFSampleSize(int n) -> void {
+    if (n <= 0) [[unlikely]] {
+        PrintError("Zero or negative ACF sample size not allowed, not setting it.");
         return;
     }
-    if (value < 0) [[unlikely]] {
-        PrintError(fmt::format("Negative thinning ratio not allowed (got {}), not setting it", value));
+    if (n >= std::numeric_limits<int>::max() / 2) [[unlikely]] {
+        PrintError(fmt::format("ACF sample size too large (got {}), not setting it.", n));
         return;
     }
-    if (value > 10) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious thinning ratio (got {})", value));
-    }
-    fThinningRatio = value;
-}
-
-template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ACFSampleSize(unsigned n) -> void {
-    if (n == 0) {
-        PrintError("Zero ACF sample size not allowed, not setting it");
+    if (n < 256) [[unlikely]] {
+        PrintError(fmt::format("ACF sample size too small (got {}), not setting it.", n));
         return;
-    }
-    if (n <= 10 or std::numeric_limits<int>::max() <= n) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious ACF sample size (got {})", n));
     }
     fACFSampleSize = n;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> AutocorrelationFunction {
-    if (fACFSampleSize == fgDefaultInvalidACFSampleSize) {
-        Throw<std::logic_error>("ACF sample size not set");
+auto MCMCGenerator<M, N, A>::ACFReplicate(int n) -> void {
+    if (n < 3) [[unlikely]] {
+        PrintError(fmt::format("ACF replicate count must be at least 3 (got {}), not setting it.", n));
+        return;
     }
+    if (n >= std::numeric_limits<int>::max() / 2) [[unlikely]] {
+        PrintError(fmt::format("ACF replicate count too large (got {}), not setting it.", n));
+        return;
+    }
+    fACFReplicate = n;
+}
+
+template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
+auto MCMCGenerator<M, N, A>::MCMCInitialize(Executor<long long>& executor, muc::rng_ref rng) -> MarkovChainStatistic<MarkovChain::dim> {
+    if (fACFSampleSize == fgDefaultInvalidACFSampleSize) {
+        Throw<std::logic_error>("ACF sample size not set.");
+    }
+    fMCMCInitialized = false;
 
     const auto thisName{muc::try_demangle(typeid(*this).name())};
+    Random::Uniform<double> uniform{};
     MasterPrintLn("Initializing {}...", thisName);
     muc::chrono::stopwatch stopwatch;
 
     // Reseed random engine for statistical safety
-    Parallel::ReseedRandomEngine(&rng);
+    Parallel::ReseedRandomEngine(rng);
 
     // find phase space
     MasterPrintLn("Finding phase space...");
@@ -138,10 +142,10 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
                 PrintWarning(fmt::format("Tried {} billion times to find phase space in {} initialization, still trying...", billion.quot, thisName));
             }
             if (billion.quot == 1000) {
-                Throw<std::runtime_error>(fmt::format("Failed to find phase space after 1 trillion tries in {} initialization", thisName));
+                Throw<std::runtime_error>(fmt::format("Failed to find phase space after 1 trillion tries in {} initialization.", thisName));
             }
         }
-        rng.flatArray(fMC.state.u.size(), fMC.state.u.data());
+        std::ranges::generate(fMC.state.u, [&] { return uniform(rng); });
         auto [event, detJ]{DirectPhaseSpace(fMC.state.u)};
         if (not this->InfraredSafe(event.p)) {
             continue;
@@ -163,133 +167,103 @@ auto MCMCGenerator<M, N, A>::MCMCInitialize(CLHEP::HepRandomEngine& rng) -> Auto
     BurnIn(rng);
     MasterPrintLn("Markov chain burnt in.");
 
+    // Estimate covariance of random state u weighted by |M|^2 * acceptance * |J| for diagnostic purposes
     if (Env::VerboseLevelReach<'I'>()) {
-        struct {
+        Statistic<MarkovChain::dim> stat;
+        for (int i{}; i < fACFSampleSize;) {
             Eigen::Vector<double, MarkovChain::dim> u;
-            Eigen::Matrix<double, MarkovChain::dim, MarkovChain::dim> uuT;
-        } mean;
-        mean.u.setZero();
-        mean.uuT.setZero();
-        double sumMSqAcceptanceDetJ{};
-        for (unsigned i{}; i < 100 * fACFSampleSize; ++i) {
-            Eigen::Vector<double, MarkovChain::dim> u;
-            rng.flatArray(u.size(), u.data());
+            std::ranges::generate(u, [&] { return uniform(rng); });
             auto [event, detJ]{DirectPhaseSpace(VectorCast<RandomState>(u))};
             if (not this->InfraredSafe(event.p)) {
                 continue;
             }
             const auto acceptance{this->Acceptance(event.p)};
             const auto mSqAcceptanceDetJ{this->MSqAcceptanceDetJ(event.p, acceptance, detJ)};
-            const auto uMSqAcceptanceDetJ{(mSqAcceptanceDetJ * u).eval()};
-            mean.u += uMSqAcceptanceDetJ;
-            mean.uuT += uMSqAcceptanceDetJ * u.transpose();
-            sumMSqAcceptanceDetJ += mSqAcceptanceDetJ;
+            stat.Fill(u, mSqAcceptanceDetJ);
+            ++i;
         }
-        mean.u /= sumMSqAcceptanceDetJ;
-        mean.uuT /= sumMSqAcceptanceDetJ;
-        const auto covariance{(mean.uuT - mean.u * mean.u.transpose()).eval()};
-        const Eigen::SelfAdjointEigenSolver<decltype(covariance)> covEigenSolver{covariance};
-        const auto sqrtDiagCov{covEigenSolver.eigenvalues().array().sqrt()};
-        PrintInfo(fmt::format("Sqrt(diag(covariance)): {}", sqrtDiagCov));
+        std::ostringstream covOSS;
+        covOSS << "Covariance of random state u (weighted by |M|^2 * acceptance * |J|):\n"
+               << stat.Covariance();
+        PrintInfo(covOSS.view());
     }
 
-    // Estimate autocorrelation and decide thinning
-    MasterPrintLn("Estimating autocorrelation and decide thinning...");
-    using ArrayDimMC = Eigen::Array<double, MarkovChain::dim, 1>;
+    // Estimate autocorrelation on replicate chain segments, distributed over processes
+    const auto nProcess{executor.NProcess()};
+    auto nReplicate{fACFReplicate};
+    if (nReplicate < nProcess) [[unlikely]] {
+        MasterPrintWarning(fmt::format("ACF replicate count ({}) is less than the number of processes ({}), using {}.",
+                                       nReplicate, nProcess, nProcess));
+        nReplicate = nProcess;
+        fACFReplicate = nReplicate;
+    }
+    MasterPrintLn("Estimating autocorrelation with {} replicates...", nReplicate);
 
-    std::vector<ArrayDimMC> sample(fACFSampleSize);
-    for (unsigned i{}; i < fACFSampleSize; ++i) {
-        NextEvent(rng);
-        std::ranges::copy(fMC.state.u, sample[i].begin());
-    }
-    ArrayDimMC sampleMean;
-    sampleMean.setZero();
-    for (auto&& x : sample) {
-        sampleMean += x;
-    }
-    sampleMean /= fACFSampleSize;
-    ArrayDimMC autocorrelationDenominator;
-    autocorrelationDenominator.setZero();
-    for (auto&& x : sample) {
-        const auto delta{(x - sampleMean).eval()};
-        autocorrelationDenominator += delta * delta;
-    }
-
-    const auto maxLag{fACFSampleSize / 2};
-    const auto deltaLag{std::max(1u, maxLag / 1000)};
-    AutocorrelationFunction autocorrelationFunction;
-    autocorrelationFunction.reserve(maxLag / deltaLag + 2);
-    autocorrelationFunction.emplace_back(0, ArrayDimMC::Ones());
-    for (auto lag{deltaLag}; lag <= maxLag; lag += deltaLag) {
-        ArrayDimMC autocorrelationNumerator;
-        autocorrelationNumerator.setZero();
-        for (unsigned i{}; i < fACFSampleSize - lag; ++i) {
-            autocorrelationNumerator += (sample[i] - sampleMean) * (sample[i + lag] - sampleMean);
+    std::optional<MarkovChainStatistic<MarkovChain::dim>> local;
+    executor.Run("MCMC initialization", "ACF estimation", "replicate", nReplicate, [&](long long) {
+        Eigen::Matrix<double, Eigen::Dynamic, MarkovChain::dim> sample(fACFSampleSize, MarkovChain::dim);
+        Eigen::Vector<double, MarkovChain::dim> state;
+        for (int i{}; i < fACFSampleSize; ++i) {
+            NextEvent(rng);
+            std::ranges::copy(fMC.state.u, state.begin());
+            sample.row(i) = state.transpose();
         }
-        autocorrelationFunction.emplace_back(lag, autocorrelationNumerator / autocorrelationDenominator);
-    }
-
-    ArrayDimMC sumAutocorrelation;
-    sumAutocorrelation.setZero();
-    std::array<bool, MarkovChain::dim> autocorrelationConverged{};
-    auto lastAutocorrelation{&autocorrelationFunction.front().second};
-    for (auto&& [lag, autocorrelation] : autocorrelationFunction) {
-        if (lag == 0) {
-            continue;
+        MarkovChainStatistic<MarkovChain::dim> statistic{sample};
+        if (local) {
+            *local += statistic;
+        } else {
+            local = std::move(statistic);
         }
-        for (int k{}; k < MarkovChain::dim; ++k) {
-            if (autocorrelationConverged[k]) {
-                continue;
-            }
-            if (autocorrelation[k] < 0) {
-                autocorrelationConverged[k] = true;
-            }
-            sumAutocorrelation[k] += ((*lastAutocorrelation)[k] + autocorrelation[k]) / 2 * deltaLag +
-                                     ((*lastAutocorrelation)[k] - autocorrelation[k]) / 2; // approximate sum
-        }
-        lastAutocorrelation = &autocorrelation;
-    }
-    if (not std::ranges::all_of(autocorrelationConverged, [](auto c) { return c; })) {
-        PrintWarning(fmt::format("Autocorrelation not converged. Try increasing ACF sample size (current: {}). "
-                                 "Generated events may be highly correlated.",
-                                 fACFSampleSize));
-    }
+    });
+    Ensures(local);
 
-    double meanSumAutocorrelation{};
-    for (auto&& rho : std::as_const(sumAutocorrelation)) {
-        meanSumAutocorrelation += muc::pow(rho, 2);
+    // Merge the per-process statistics into a global one
+    auto flat{local->ToFlat()};
+    if (mp1::available()) {
+        const auto& worldComm{mp1::comm_world()};
+        mp1::allreduce(worldComm, std::plus{}, mp1::in_place, flat.first);
+        mp1::allreduce(worldComm, std::plus{}, mp1::in_place, flat.second);
     }
-    meanSumAutocorrelation = std::sqrt(meanSumAutocorrelation / sumAutocorrelation.size());
-    if (mplr::available()) {
-        const auto worldComm{mplr::comm_world()};
-        worldComm.iallreduce(std::plus{}, meanSumAutocorrelation).wait(mplr::duty_ratio::preset::relaxed);
-        meanSumAutocorrelation /= worldComm.size();
+    auto statistic{MarkovChainStatistic<MarkovChain::dim>::FromFlat(flat, fACFSampleSize, local->MaxLag())};
+
+    const auto& scalarTauStatistic{statistic.ScalarIntegratedAutocorrelationStatistic()};
+    if (scalarTauStatistic.SampleSize() < 3) {
+        Throw<std::logic_error>("At least 3 ACF replicates are required to determine the thinning interval.");
     }
-    // Here sumAutocorrelation = sum(rho_k,0,inf) = sum(rho_k,1,inf)+1,
-    // So N_eff = N/(1+2*sum(rho_k,1,inf)) = N/(2*sum(rho_k,0,inf)-1) => int. ac. = 2*sum(rho_k,0,inf)-1
-    const auto integratedAutocorrelation{2 * meanSumAutocorrelation - 1};
-    MasterPrintLn("Approximate mean integrated autocorrelation: {:.2f}.", integratedAutocorrelation);
-    fThinningSize = fThinningRatio * integratedAutocorrelation;
-    MasterPrintLn("Thinning Markov chain by 1/{}.", fThinningSize + 1);
+    const auto tauEstimate{scalarTauStatistic.MeanEstimate()};
+    MasterPrintLn("Scalar integrated autocorrelation: {:.3f} +/- {:.3f}.", tauEstimate.Value(), tauEstimate.Uncertainty());
+    for (int i{}; i < MarkovChain::dim; ++i) {
+        if (statistic.EffectiveSampleSize(i) < 100) [[unlikely]] {
+            MasterPrintWarning(fmt::format("Effective sample size for dimension {} is too low: {:.2f} (IACT {:.2f}). "
+                                           "The analysis of the chain may not be accurate.",
+                                           i, statistic.EffectiveSampleSize(i), statistic.IntegratedAutocorrelation(i)));
+        }
+    }
+    fSamplingInterval = static_cast<int>(std::min({tauEstimate.Value() + 3 * tauEstimate.Uncertainty(),
+                                                   static_cast<double>(std::numeric_limits<int>::max() / 2)}));
+    MasterPrintLn("Thinning Markov chain by 1/{}.", fSamplingInterval + 1);
 
     fMCMCInitialized = true;
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
-    if (mplr::available()) {
-        mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
+    if (mp1::available()) {
+        double maxTime{};
+        mp1::reduce(mp1::comm_world(), mp1::max{}, 0, time, maxTime);
+        if (mp1::comm_world().rank() == 0) {
+            time = maxTime;
+        }
     }
     MasterPrint("{} initialized in {:.3f}s.\n"
                 "\n",
                 thisName, time);
-    return autocorrelationFunction;
+    return statistic;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStateMomenta) -> Event {
-    if (not fMCMCInitialized) [[unlikely]] {
-        PrintWarning("Markov chain not initialized. Initializing it");
-        MCMCInitialize(rng);
+auto MCMCGenerator<M, N, A>::operator()(muc::rng_ref rng, InitialStateMomenta) -> Event {
+    if (not fMCMCInitialized) {
+        Throw<std::logic_error>("Markov chain not initialized. Call MCMCInitialize before generating events.");
     }
-    for (unsigned i{}; i < fThinningSize; ++i) {
+    for (int i{}; i < fSamplingInterval; ++i) {
         NextEvent(rng);
     }
     NextEvent(rng);
@@ -299,12 +273,12 @@ auto MCMCGenerator<M, N, A>::operator()(CLHEP::HepRandomEngine& rng, InitialStat
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::Momenta(const InitialStateMomenta& pI) -> void {
     if constexpr (M == 1) {
-        if (not pI.isNear(Base::Momenta(), muc::default_rel_tol<double>)) {
+        if (not pI.isNear(Base::Momenta())) {
             MCMCInitializationRequired();
         }
     } else {
         if (not std::ranges::equal(pI, Base::Momenta(),
-                                   [](auto p, auto q) { return p.isNear(q, muc::default_rel_tol<double>); })) {
+                                   [](auto p, auto q) { return p.isNear(q); })) {
             MCMCInitializationRequired();
         }
     }
@@ -335,7 +309,7 @@ auto MCMCGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> pID, double cut
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MCMCGenerator<M, N, A>::MCMCInitializationRequired() -> void {
     fMCMCInitialized = false;
-    fThinningSize = 0;
+    fSamplingInterval = 0;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -354,17 +328,18 @@ auto MCMCGenerator<M, N, A>::PhaseSpace(const MarkovChain::State& state) -> std:
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MCMCGenerator<M, N, A>::ProposePID(CLHEP::HepRandomEngine& rng, const std::array<int, N>& pID0, std::array<int, N>& pID) -> void {
+auto MCMCGenerator<M, N, A>::ProposePID(muc::rng_ref rng, const std::array<int, N>& pID0, std::array<int, N>& pID) -> void {
     pID = pID0;
+    auto uniform{Random::Uniform<double>{}};
     // Walk particle mapping if there are identical particles
-    if (this->IdenticalSet().empty() or rng.flat() < 0.5) {
+    if (this->IdenticalSet().empty() or uniform(rng) < 0.5) {
         return;
     }
-    const auto RandomIndex([&rng](int n) {
+    const auto RandomIndex([&rng, &uniform](int n) {
         muc::assume(n >= 2);
-        auto i{static_cast<int>(n * rng.flat())};
+        auto i{static_cast<int>(n * uniform(rng))};
         while (i == n) [[unlikely]] {
-            i = n * rng.flat();
+            i = n * uniform(rng);
         }
         return i;
     });

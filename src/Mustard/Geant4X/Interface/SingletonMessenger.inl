@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,7 +20,7 @@ namespace Mustard::Geant4X::inline Interface {
 
 template<typename ADerived, typename... ARecipients>
 SingletonMessenger<ADerived, ARecipients...>::SingletonMessenger() :
-    Env::Memory::Singleton<ADerived>{},
+    Env::Singleton<ADerived>{},
     G4UImessenger{},
     fDelivering{},
     fRecipientSetTuple{} {
@@ -31,10 +31,10 @@ SingletonMessenger<ADerived, ARecipients...>::SingletonMessenger() :
 template<typename ADerived, typename... ARecipients>
 template<typename ARecipient>
 SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::Register(gsl::not_null<ARecipient*> recipient) :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fRecipient{recipient} {
     static_assert(muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>);
-    get<muc::flat_hash_set<ARecipient*>>(SingletonMessenger::Instance().fRecipientSetTuple).emplace(fRecipient);
+    get<gtl::flat_hash_set<ARecipient*>>(SingletonMessenger::Instance().fRecipientSetTuple).emplace(fRecipient);
 }
 
 template<typename ADerived, typename... ARecipients>
@@ -45,24 +45,24 @@ SingletonMessenger<ADerived, ARecipients...>::Register<ARecipient>::~Register() 
     }
     auto& messenger{SingletonMessenger::Instance()};
     if (messenger.fDelivering) {
-        PrintError("De-register from SingletonMessenger during delivering (fatal error)");
+        PrintError("De-register from SingletonMessenger during delivering (fatal error).");
         std::terminate();
     }
-    get<muc::flat_hash_set<ARecipient*>>(messenger.fRecipientSetTuple).erase(fRecipient);
+    get<gtl::flat_hash_set<ARecipient*>>(messenger.fRecipientSetTuple).erase(fRecipient);
 }
 
 template<typename ADerived, typename... ARecipients>
 template<typename ARecipient>
     requires muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>
-auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& Action) const -> void {
-    const auto& recipientSet{get<muc::flat_hash_set<ARecipient*>>(fRecipientSetTuple)};
+auto SingletonMessenger<ADerived, ARecipients...>::Deliver(std::invocable<ARecipient&> auto&& action) const -> void {
+    const auto& recipientSet{get<gtl::flat_hash_set<ARecipient*>>(fRecipientSetTuple)};
     if (recipientSet.empty()) {
-        PrintError(fmt::format("Error: {} not registered", muc::try_demangle(typeid(ARecipient).name())));
+        PrintError(fmt::format("{} is not registered.", muc::try_demangle(typeid(ARecipient).name())));
         return;
     }
     fDelivering = true;
     for (auto&& recipient : recipientSet) {
-        std::invoke(std::forward<decltype(Action)>(Action), *recipient);
+        std::invoke(std::forward<decltype(action)>(action), *recipient);
     }
     fDelivering = false;
 }
@@ -71,8 +71,8 @@ template<typename ADerived, typename... ARecipients>
 template<typename... Rs, typename F>
     requires(sizeof...(Rs) >= 2 and
              (... and (std::invocable<F &&, Rs&> and muc::is_uniquely_contained_in_v<Rs, ARecipients...>)))
-auto SingletonMessenger<ADerived, ARecipients...>::Deliver(F&& Action) const -> void {
-    (..., Deliver<Rs>(std::forward<F>(Action)));
+auto SingletonMessenger<ADerived, ARecipients...>::Deliver(F&& action) const -> void {
+    (..., Deliver<Rs>(std::forward<F>(action)));
 }
 
 } // namespace Mustard::Geant4X::inline Interface

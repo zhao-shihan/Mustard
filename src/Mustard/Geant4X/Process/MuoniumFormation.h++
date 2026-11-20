@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,11 +18,6 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Particle/Antimuonium.h++"
-#include "Mustard/Geant4X/Particle/Muonium.h++"
-#include "Mustard/Geant4X/Physics/MuoniumPhysicsMessenger.h++"
-#include "Mustard/Geant4X/Physics/TargetForMuoniumPhysics.h++"
-#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
@@ -31,36 +26,31 @@
 #include "G4VRestProcess.hh"
 #include "Randomize.hh"
 
-#include "muc/math"
-#include "muc/numeric"
+#include "gtl/phmap.hpp"
 
-#include "gsl/gsl"
+#include <utility>
 
-#include <limits>
+class G4Run;
 
 namespace Mustard::Geant4X::inline Process {
 
-template<TargetForMuoniumPhysics ATarget>
 class MuoniumFormation : public G4VRestProcess {
 public:
     MuoniumFormation();
 
-    auto ConversionProbability(G4double p) -> void { fConversionProbability = muc::clamp<"[]">(p, 0., 1.); }
-
-    virtual auto IsApplicable(const G4ParticleDefinition&) -> G4bool override;
-    virtual auto AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
-
-private:
-    virtual auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> G4double override;
+    auto IsApplicable(const G4ParticleDefinition&) -> bool override;
+    auto StartTracking(G4Track*) -> void override;
+    auto AtRestDoIt(const G4Track& track, const G4Step&) -> G4VParticleChange* override;
 
 private:
-    G4double fConversionProbability;
+    virtual auto FormationFractionIn(const G4Material& material) -> double;
+    auto GetMeanLifeTime(const G4Track& track, G4ForceCondition*) -> double override;
+
+private:
+    std::pair<const G4Run*, int> fCurrentRun;
+    gtl::flat_hash_map<const G4MaterialPropertiesTable*, double> fFormationFractionCache;
 
     G4ParticleChange fParticleChange;
-
-    typename MuoniumPhysicsMessenger<ATarget>::template Register<MuoniumFormation<ATarget>> fMessengerRegister;
 };
 
 } // namespace Mustard::Geant4X::inline Process
-
-#include "Mustard/Geant4X/Process/MuoniumFormation.inl"

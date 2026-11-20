@@ -1,0 +1,101 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
+//
+// This file is part of Mustard, an offline software framework for HEP experiments.
+//
+// Mustard is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Mustard. If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
+
+#include "Mustard/Env/ObjectRegistry/Singletonified.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
+#include "Mustard/Utility/FunctionAttribute.h++"
+
+#include "muc/mutex"
+#include "muc/utility"
+
+#include "fmt/format.h"
+
+#include <memory>
+#include <mutex>
+#include <stdexcept>
+#include <typeinfo>
+
+namespace Mustard::Env::inline ObjectRegistry {
+
+/// @brief Base mixin for lazily created environment singletons.
+/// @tparam ADerived Final derived singleton type.
+/// @details The first call to Instance() resolves the instance through
+/// `impl::SingletonPool`, creating it on demand when needed.
+/// @note Derived types must declare Mustard::Env::SingletonFactory as a friend
+/// to allow construction and destruction.
+/// Registration uses a shared indirection node from the global pool, so
+/// code in different dynamic libraries can observe the same object pointer when
+/// they are running in the same Mustard environment.
+/// @warning Singleton uses a special allocator to allocate instances,
+/// and this base class inherits matching ClassSpecificAllocation to
+/// allow usual delete expression on singleton instances. Do not implement
+/// any allocation/deallocation function in derived classes, otherwise
+/// memory could corrupt.
+template<typename ADerived>
+class Singleton : public impl::SingletonBase {
+protected:
+    /// @brief Protected constructor for CRTP inheritance.
+    Singleton();
+    /// @brief Marks the shared instance as expired.
+    ~Singleton();
+
+public:
+    /// @brief Returns the singleton instance, constructing it on first use.
+    /// @return Reference to the singleton instance.
+    /// @throw std::runtime_error If the singleton has been destroyed.
+    MUSTARD_ALWAYS_INLINE static auto Instance() -> ADerived&;
+    /// @brief Ensures the singleton is constructed.
+    MUSTARD_ALWAYS_INLINE static auto EnsureInstantiation() -> void { Instance(); }
+
+    /// @brief Checks whether the singleton has ever been instantiated.
+    MUSTARD_ALWAYS_INLINE static auto Instantiated() -> bool { return not NotInstantiated(); }
+    /// @brief Checks whether the singleton has ever been instantiated.
+    MUSTARD_ALWAYS_INLINE static auto NotInstantiated() -> bool { return Status() == Status::NotInstantiated; }
+    /// @brief Checks whether the singleton instance is currently alive.
+    MUSTARD_ALWAYS_INLINE static auto Available() -> bool { return Status() == Status::Available; }
+    /// @brief Checks whether the singleton was instantiated but already destroyed.
+    MUSTARD_ALWAYS_INLINE static auto Expired() -> bool { return Status() == Status::Expired; }
+
+private:
+    /// @brief Internal lifecycle state of the singleton.
+    /// Not instantiated is represented by a null `fgInstancePtr`,
+    /// not by an enumerator.
+    enum struct Status {
+        Available, ///< Singleton instance is alive.
+        Expired    ///< Singleton was previously alive but now destroyed.
+    };
+
+private:
+    /// @brief Queries the singleton pool for the current lifecycle status.
+    MUSTARD_ALWAYS_INLINE static auto Status() -> enum Status;
+    /// @brief Creates and registers the singleton instance into the pool on first access.
+    MUSTARD_NOINLINE static auto LoadInstance() -> enum Status;
+
+private:
+    static std::shared_ptr<void*> fgInstancePtr; ///< Shared indirection node from the singleton pool.
+    static muc::spin_mutex fgSpinMutex;          ///< Spinlock serializing instance lookup and creation.
+};
+
+} // namespace Mustard::Env::inline ObjectRegistry
+
+#include "Mustard/Env/ObjectRegistry/Singleton.inl"

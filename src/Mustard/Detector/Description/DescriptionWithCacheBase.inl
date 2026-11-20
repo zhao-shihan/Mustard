@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,19 +20,19 @@ namespace Mustard::Detector::Description {
 
 template<typename T>
 DescriptionWithCacheBase<>::Simple<T>::Simple(const DescriptionWithCacheBase<>* description, const T& value) :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fValue{value},
     fDescription{description} {}
 
 template<typename T>
 DescriptionWithCacheBase<>::Simple<T>::Simple(const DescriptionWithCacheBase<>* description, T&& value) :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fValue{std::move(value)},
     fDescription{description} {}
 
 template<typename T>
 DescriptionWithCacheBase<>::Simple<T>::Simple(const DescriptionWithCacheBase<>* description, auto&&... args) :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fValue{std::forward<decltype(args)>(args)...},
     fDescription{description} {}
 

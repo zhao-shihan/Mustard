@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -26,7 +26,7 @@ class TMacro;
 
 namespace Mustard::ROOTX {
 
-/// @brief Creates a TMacro object that prints text when executed
+/// @brief Creates a TMacro object that prints text when executed.
 ///
 /// Generates a temporary ROOT macro file (.C) containing a function that prints the provided text.
 /// The macro is read into a TMacro object and the temporary file is automatically cleaned up.

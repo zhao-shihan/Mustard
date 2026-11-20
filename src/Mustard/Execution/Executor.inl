@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,185 +19,208 @@
 namespace Mustard::inline Execution {
 
 template<std::integral T>
-Executor<T>::Executor(std::string_view scheduler) :
-    Executor{MakeCodedScheduler<T>(scheduler)} {}
+Executor<T>::Executor(std::string_view dispatcher) :
+    Executor{MakeCodedDispatcher<T>(dispatcher)} {}
 
 template<std::integral T>
-Executor<T>::Executor(std::string executionName, std::string taskName, std::string_view scheduler) :
-    Executor{std::move(executionName), std::move(taskName), MakeCodedScheduler<T>(scheduler)} {}
+Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::string_view dispatcher) :
+    Executor{std::move(executionName), std::move(opName), std::move(taskName), MakeCodedDispatcher<T>(dispatcher)} {}
 
 template<std::integral T>
-Executor<T>::Executor(std::unique_ptr<Scheduler<T>> scheduler) :
-    Executor{"Execution", "Task", std::move(scheduler)} {}
+Executor<T>::Executor(std::unique_ptr<Dispatcher<T>> dispatcher) :
+    Executor{"Run", "Execution", "task", std::move(dispatcher)} {}
 
 template<std::integral T>
-Executor<T>::Executor(std::string executionName, std::string taskName, std::unique_ptr<Scheduler<T>> scheduler) :
+Executor<T>::Executor(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher) :
     fImpl{[&] {
-        if (not mplr::available() or mplr::comm_world().size() == 1) {
+        if (not mp1::available() or mp1::comm_world().size() == 1) {
             return std::make_unique<Impl>(
-                std::in_place_type<internal::SequentialExecutorImpl<T>>,
-                std::move(executionName), std::move(taskName), std::move(scheduler));
+                std::in_place_type<impl::SequentialExecutorImpl<T>>,
+                std::move(executionName), std::move(opName), std::move(taskName), std::move(dispatcher));
         }
         return std::make_unique<Impl>(
-            std::in_place_type<internal::ParallelExecutorImpl<T>>,
-            std::move(executionName), std::move(taskName), std::move(scheduler));
+            std::in_place_type<impl::ParallelExecutorImpl<T>>,
+            std::move(executionName), std::move(opName), std::move(taskName), std::move(dispatcher));
     }()} {}
 
 template<std::integral T>
-auto Executor<T>::SwitchScheduler(std::string_view scheduler) -> void {
-    std::visit([&](auto&& impl) {
-        impl.SwitchScheduler(scheduler);
-    },
-               *fImpl);
+auto Executor<T>::SwitchDispatcher(std::string_view dispatcher) -> void {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
+        impl.SwitchDispatcher(dispatcher);
+    });
 }
 
 template<std::integral T>
-auto Executor<T>::SwitchScheduler(std::unique_ptr<Scheduler<T>> scheduler) -> void {
-    std::visit([&](auto&& impl) {
-        impl.SwitchScheduler(std::move(scheduler));
-    },
-               *fImpl);
+auto Executor<T>::SwitchDispatcher(std::unique_ptr<Dispatcher<T>> dispatcher) -> void {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
+        impl.SwitchDispatcher(std::move(dispatcher));
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::NProcess() const -> int {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.NProcess();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
-auto Executor<T>::Task() const -> struct Scheduler<T>::Task {
-    return std::visit([&](auto&& impl) {
+auto Executor<T>::Task() const -> struct Dispatcher<T>::Task {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.Task();
-    },
-                      *fImpl);
+    });
 }
 //
 template<std::integral T>
 auto Executor<T>::NTask() const -> T {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.NTask();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::ExecutingTask() const -> T {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.ExecutingTask();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::NLocalExecutedTask() const -> T {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.NLocalExecutedTask();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::Executing() const -> bool {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.Executing();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintProgress() const -> bool {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.PrintProgress();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintProgressInterval() const -> muc::chrono::seconds<double> {
-    return std::visit([&](auto&& impl) {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.PrintProgressInterval();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintProgress(bool print) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.PrintProgress(print);
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintProgressInterval(muc::chrono::seconds<double> t) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.PrintProgressInterval(t);
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::ExecutionName() const -> const std::string& {
-    return std::visit([&](auto&& impl) -> const auto& {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.ExecutionName();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::ExecutionName(std::string name) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.ExecutionName(std::move(name));
-    },
-               *fImpl);
+    });
+}
+
+template<std::integral T>
+auto Executor<T>::OperationName() const -> const std::string& {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
+        return impl.OperationName();
+    });
+}
+
+template<std::integral T>
+auto Executor<T>::OperationName(std::string name) -> void {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
+        impl.OperationName(std::move(name));
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::TaskName() const -> const std::string& {
-    return std::visit([&](auto&& impl) -> const auto& {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.TaskName();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::TaskName(std::string name) -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.TaskName(std::move(name));
-    },
-               *fImpl);
+    });
 }
 
 template<std::integral T>
-auto Executor<T>::operator()(struct Scheduler<T>::Task task, std::invocable<T> auto&& F) -> T {
-    return std::visit([&](auto&& impl) {
-        return impl(std::move(task), std::forward<decltype(F)>(F));
-    },
-                      *fImpl);
+auto Executor<T>::Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
+        return impl.Run(std::move(task), std::forward<decltype(F)>(F));
+    });
 }
 
 template<std::integral T>
-auto Executor<T>::operator()(T size, std::invocable<T> auto&& F) -> T {
-    return (*this)({0, size}, std::forward<decltype(F)>(F));
+auto Executor<T>::Run(T size, std::invocable<T> auto&& F) -> T {
+    return Run({0, size}, std::forward<decltype(F)>(F));
+}
+
+template<std::integral T>
+auto Executor<T>::Run(std::string executionName, std::string operationName, std::string taskName, auto&&... args) -> T {
+    auto originalExecutionName{ExecutionName()};
+    auto originalOperationName{OperationName()};
+    auto originalTaskName{TaskName()};
+    const auto restoreNames{gsl::finally([&] {
+        ExecutionName(std::move(originalExecutionName));
+        OperationName(std::move(originalOperationName));
+        TaskName(std::move(originalTaskName));
+    })};
+    ExecutionName(std::move(executionName));
+    OperationName(std::move(operationName));
+    TaskName(std::move(taskName));
+    return Run(std::forward<decltype(args)>(args)...);
 }
 
 template<std::integral T>
 auto Executor<T>::ExecutionInfo() const -> const ExecutionInfoType& {
-    return std::visit([&](auto&& impl) -> const auto& {
+    return VisitImpl([&](auto&& impl) -> decltype(auto) {
         return impl.ExecutionInfo();
-    },
-                      *fImpl);
+    });
 }
 
 template<std::integral T>
 auto Executor<T>::PrintExecutionSummary() const -> void {
-    std::visit([&](auto&& impl) {
+    VisitImpl([&](auto&& impl) -> decltype(auto) {
         impl.PrintExecutionSummary();
-    },
-               *fImpl);
+    });
+}
+
+template<std::integral T>
+template<typename F>
+auto Executor<T>::VisitImpl(F&& visitor) const -> decltype(auto) {
+    return std::visit(std::forward<F>(visitor), *fImpl);
+}
+
+template<std::integral T>
+template<typename F>
+auto Executor<T>::VisitImpl(F&& visitor) -> decltype(auto) {
+    return std::visit(std::forward<F>(visitor), *fImpl);
 }
 
 } // namespace Mustard::inline Execution

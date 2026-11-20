@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,9 +20,9 @@
 
 #include "Mustard/Detector/Description/Description.h++"
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "yaml-cpp/yaml.h"
 
@@ -30,9 +30,11 @@
 
 #include <array>
 #include <concepts>
+#include <functional>
 #include <iostream>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace Mustard::Detector::Description {
@@ -42,10 +44,10 @@ template<typename... Ts>
 class DescriptionBase;
 
 template<>
-class DescriptionBase<> : public NonCopyableBase {
+class DescriptionBase<> : public NoncopyableBase {
 protected:
     DescriptionBase(std::string name);
-    ~DescriptionBase() = default;
+    virtual ~DescriptionBase() = default;
 
 public:
     const auto& Name() const { return fName; }
@@ -58,7 +60,7 @@ protected:
         requires std::assignable_from<AValue&, AReadAs>
     auto ImportValue(const YAML::Node& node, AValue& value, std::convertible_to<std::string> auto&&... names) -> void;
     template<typename AReadAs>
-    auto ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& ImportAction, std::convertible_to<std::string> auto&&... names) -> void;
+    auto ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& importAction, std::convertible_to<std::string> auto&&... names) -> void;
     template<typename AValue, typename AWriteAs = AValue>
         requires std::convertible_to<const AValue&, AWriteAs>
     auto ExportValue(YAML::Node& node, const AValue& value, std::convertible_to<std::string> auto&&... names) const -> void;
@@ -76,11 +78,11 @@ private:
 };
 
 template<typename ADerived>
-class DescriptionBase<ADerived> : public Env::Memory::Singleton<ADerived>,
+class DescriptionBase<ADerived> : public Env::Singleton<ADerived>,
                                   public DescriptionBase<> {
 protected:
     DescriptionBase(std::string name);
-    ~DescriptionBase() = default;
+    ~DescriptionBase() override = default;
 };
 
 } // namespace Mustard::Detector::Description

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,7 +22,7 @@
 
 #include "muc/math"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -33,9 +33,9 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 M2ENNEEGenerator::M2ENNEEGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
-                                   std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                   std::optional<int> acfSampleSize, std::optional<int> acfReplicate,
                                    std::optional<double> stepSize, std::optional<QFT::MSqM2ENNEE::Ver> mSqVer) :
-    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(40000), stepSize.value_or(0.1)} {
+    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, acfSampleSize.value_or(1 << 16), std::move(acfReplicate), stepSize.value_or(0.1)} {
     if (mSqVer) {
         MSqVersion(*mSqVer);
     }
@@ -51,7 +51,7 @@ auto M2ENNEEGenerator::Parent(std::string_view parent) -> void {
     } else if (parent == "mu+") {
         PDGID({-11, 12, -14, 11, -11});
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'", parent));
+        Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'.", parent));
     }
 }
 

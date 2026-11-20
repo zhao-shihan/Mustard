@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -79,13 +79,24 @@ using CLHEP::eplus;
 constexpr auto muon_mass_c2{105.6583755 * CLHEP::MeV};
 constexpr auto muonium_reduced_mass_c2{1 / (1 / electron_mass_c2 + 1 / muon_mass_c2)};
 constexpr auto muonium_mass_c2{muon_mass_c2 + electron_mass_c2 -
-                               muc::pow(fine_structure_const * muonium_reduced_mass_c2, 2) / (2 * electron_mass_c2)};
+                               muonium_reduced_mass_c2 * muc::pow(fine_structure_const, 2) / 2};
 constexpr auto muonium_decay_constant{muc::pow(fine_structure_const * muonium_reduced_mass_c2, 3) * muonium_mass_c2 /
                                       (2 * CLHEP::pi * muon_mass_c2 * electron_mass_c2)};
 constexpr auto muonium_Bohr_radius{hbarc / (fine_structure_const * muonium_reduced_mass_c2)};
 
 constexpr auto muon_lifetime{2.1969811 * CLHEP::us};
 constexpr auto muonium_lifetime{muon_lifetime};
+
+// Gyromagnetic ratios. 1.0011659208 and 1.0011596521859 are g/2 = 1 + a of the muon
+// and of the electron respectively (a_mu = 1.1659208e-3, a_e = 1.1596521859e-3). The
+// electron gyromagnetic ratio is negative since the electron charge is negative.
+constexpr auto muon_gyromagnetic_ratio{1.0011659208 * eplus / (muon_mass_c2 / c_squared)};
+constexpr auto electron_gyromagnetic_ratio{-1.0011596521859 * eplus / (electron_mass_c2 / c_squared)};
+// Muonium is described as an effective spin-1/2 particle whose polarization is half
+// that of the parent muon and precesses at the average gyromagnetic ratio of its
+// constituents, i.e. the weak-field muonium precession frequency (~1.39 MHz/G).
+constexpr auto muonium_gyromagnetic_ratio{0.5 * (muon_gyromagnetic_ratio + electron_gyromagnetic_ratio)};
+constexpr auto muonium_magnetic_moment{0.5 * muonium_gyromagnetic_ratio * hbar_Planck}; // gamma_M * hbar/2
 
 constexpr auto reduced_Fermi_constant{1.1663788e-5 * muc::pow(CLHEP::GeV, -2)};
 constexpr auto Fermi_constant{reduced_Fermi_constant * muc::pow(hbarc, 3)};

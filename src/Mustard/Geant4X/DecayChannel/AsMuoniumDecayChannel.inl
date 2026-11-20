@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,8 +19,8 @@
 namespace Mustard::Geant4X::inline DecayChannel {
 
 template<std::derived_from<G4VDecayChannel> AMuonDecayChannel, muc::ceta_string AName>
-AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4String& parentName, G4double br, G4int verbose) :
-    AMuonDecayChannel{parentName == "muonium" ? "mu+" : "mu-", br},
+AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4String& parentName, double br, int verbose) :
+    AMuonDecayChannel{parentName.ends_with("anti_muonium") ? "mu-" : "mu+", br},
     fAtomicShellProductIndex{this->numberOfDaughters} {
     this->SetVerboseLevel(verbose);
     // save muon decay info
@@ -34,7 +34,7 @@ AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4S
     } else if (parentName == "anti_muonium") {
         daughter.emplace_back("e+");
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent particle is not muonium or anti_muonium but {}", parentName));
+        Throw<std::invalid_argument>(fmt::format("Parent should be a muonium-family particle, got '{}'.", parentName));
     }
     // set muonium decay info
     this->kinematics_name = AName.sv();
@@ -47,7 +47,7 @@ AsMuoniumDecayChannel<AMuonDecayChannel, AName>::AsMuoniumDecayChannel(const G4S
 }
 
 template<std::derived_from<G4VDecayChannel> AMuonDecayChannel, muc::ceta_string AName>
-auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4DecayProducts* {
+auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(double) -> G4DecayProducts* {
     using namespace LiteralUnit::MathConstantSuffix;
     using namespace PhysicalConstant;
 
@@ -55,8 +55,8 @@ auto AsMuoniumDecayChannel<AMuonDecayChannel, AName>::DecayIt(G4double) -> G4Dec
 
     G4ThreeVector p{};
     for (auto i{0};; ++i) {
-        if (i == 100) {
-            PrintError("Atomic shell e+/e- momentum disconverged");
+        if (i == 100) [[unlikely]] {
+            PrintError("Atomic shell e+/e- momentum disconverged.");
             break;
         }
         const auto [pStar, converged]{muc::find_root::secant(

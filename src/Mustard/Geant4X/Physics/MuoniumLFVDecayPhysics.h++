@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -31,7 +31,7 @@ namespace Mustard::Geant4X::inline Physics {
 
 class MuoniumLFVDecayPhysics : public MuoniumNLODecayPhysics {
 public:
-    MuoniumLFVDecayPhysics(G4int verbose);
+    MuoniumLFVDecayPhysics(int verbose);
 
     auto DoubleRadiativeDecayBR(double b) -> void { fDoubleRadiativeDecayBR = b; }
     auto AnnihilativeDecayBR(double b) -> void { fAnnihilativeDecayBR = b; }

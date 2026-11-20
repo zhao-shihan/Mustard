@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,62 +19,90 @@
 #pragma once
 
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
-#include "Mustard/Math/Random/UniformPseudoRandomBitGenerator.h++"
+#include "Mustard/Math/Random/RandomNumberEngineHolder.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "Math/TRandomEngine.h"
 
 #include "muc/utility"
 
+#include <concepts>
+#include <string>
+#include <type_traits>
 #include <typeinfo>
 
 namespace Mustard::ROOTX::Math {
 
 /// @brief Adapter that wraps Mustard RNGs as ROOT-compatible random engines
 ///
-/// Implements the ROOT::Math::TRandomEngine interface for any Mustard library
-/// UniformPseudoRandomBitGenerator type. Allows using modern Mustard RNGs
-/// with ROOT's statistical functions and classes.
+/// Implements the ROOT::Math::TRandomEngine interface for any
+/// standard-compliant random number engine, which is either owned by this
+/// adapter or referred to by it.
 ///
-/// @tparam PRBG Mustard UniformPseudoRandomBitGenerator type to adapt
-///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator concept
-///   - Must provide SeedType, Seed(), Min(), Max(), and operator()
+/// @tparam R A random number engine type (this adapter owns an engine of that
+/// type) or an lvalue reference to one (this adapter refers to an engine
+/// belonging to someone else).
 ///
-/// @note Inherits from ROOT::Math::TRandomEngine to integrate with ROOT framework
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
-class AsTRandomEngine : public ROOT::Math::TRandomEngine {
+/// @note Inherits from ROOT::Math::TRandomEngine to integrate with ROOT framework.
+/// @note Not copyable nor movable: an adapter is bound to the engine it owns or
+/// refers to.
+template<Mustard::Random::RandomNumberEngineOrReference R>
+class AsTRandomEngine : public ROOT::Math::TRandomEngine,
+                        public Mustard::Random::RandomNumberEngineHolder<R>,
+                        public NoncopyableBase {
+private:
+    using Base = Mustard::Random::RandomNumberEngineHolder<R>;
+
 public:
-    /// @brief Default constructor (uses PRBG's default seed)
-    AsTRandomEngine() = default;
-    /// @brief Construct with specific seed value
-    /// @param seed Initialization seed for underlying PRBG
-    explicit AsTRandomEngine(typename PRBG::SeedType seed);
+    using Base::Engine;
+    using typename Base::EngineType;
+    using typename Base::SeedType;
 
-    /// @brief Virtual destructor (default implementation)
-    virtual ~AsTRandomEngine() override = default;
+    /// @brief Construct an adapter owning a default-state engine.
+    /// @note Only available when @c R is an engine type.
+    AsTRandomEngine()
+        requires(not std::is_reference_v<R>)
+    = default;
+    /// @brief Construct an adapter owning an engine seeded with @p seed.
+    /// @param seed Initialization seed of the engine.
+    /// @note Only available when @c R is an engine type.
+    explicit AsTRandomEngine(SeedType seed)
+        requires(not std::is_reference_v<R>);
+    /// @brief Construct an adapter referring to @p engine.
+    /// @param engine Engine to refer to.
+    /// @pre @p engine outlives this adapter.
+    /// @note Only available when @c R is an engine reference type.
+    explicit AsTRandomEngine(EngineType& engine)
+        requires(std::is_reference_v<R>);
 
-    /// @brief Generate uniform double in [0,1) (ROOT interface requirement)
-    /// @return Random double value in unit interval
-    auto Rndm() -> double override { return Mustard::Random::Uniform<double>{}(fPRBG); }
+    /// @brief Generate uniform double in (0, 1) (ROOT interface requirement)
+    /// @return Random double value strictly inside the unit interval
+    auto Rndm() -> double override { return DrawOpen01<double>(); }
 
     /// @brief Functor interface equivalent to Rndm()
     auto operator()() -> auto { return Rndm(); }
-    /// @brief Generate native integer from underlying PRBG
-    /// @return Raw random integer from PRBG's output range
-    auto IntRndm() -> auto { return fPRBG(); }
+    /// @brief Generate native integer from underlying PRNG
+    /// @return Raw random integer from PRNG's output range
+    auto IntRndm() -> auto { return Engine()(); }
     /// @brief Re-seed the underlying random engine
-    /// @param seed New seed value for PRBG
-    auto SetSeed(typename PRBG::SeedType seed) -> void { fPRBG.Seed(seed); }
+    /// @param seed New seed value for PRNG
+    auto SetSeed(SeedType seed) -> void { Engine().seed(seed); }
 
-    /// @brief Maximum integer value from underlying PRBG
-    static auto MaxInt() -> auto { return PRBG::Max(); }
-    /// @brief Minimum integer value from underlying PRBG
-    static auto MinInt() -> auto { return PRBG::Min(); }
-    /// @brief Human-readable name of the adapted PRBG type
-    /// @return Demangled type name of the PRBG template parameter
-    static auto Name() -> std::string { return muc::try_demangle(typeid(PRBG).name()); }
+    /// @brief Maximum integer value from underlying PRNG
+    static auto MaxInt() -> auto { return EngineType::Max(); }
+    /// @brief Minimum integer value from underlying PRNG
+    static auto MinInt() -> auto { return EngineType::Min(); }
+    /// @brief Human-readable name of the adapted PRNG type
+    /// @return Demangled type name of the engine template parameter
+    static auto Name() -> std::string { return muc::try_demangle(typeid(EngineType).name()); }
 
 private:
-    PRBG fPRBG;
+    /// @brief Draw a uniform value on the open interval (0, 1).
+    /// @tparam T Floating-point type of the value.
+    /// @return A value strictly between 0 and 1; an exact 0, which the wrapped
+    /// engines can produce, is drawn again.
+    template<std::floating_point T>
+    auto DrawOpen01() -> T;
 };
 
 } // namespace Mustard::ROOTX::Math

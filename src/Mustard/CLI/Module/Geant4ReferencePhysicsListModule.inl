@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -39,7 +39,7 @@ auto Geant4ReferencePhysicsListModule<ADefault>::PhysicsList() -> G4VModularPhys
     G4PhysListFactory physicsListFactory{muc::to_underlying(Env::BasicEnv::Instance().VerboseLevel())};
 
     if (not physicsListFactory.IsReferencePhysList(physicsList)) {
-        Throw<std::runtime_error>(fmt::format("{} is not a reference physics list", physicsList));
+        Throw<std::runtime_error>(fmt::format("{} is not a reference physics list.", physicsList));
     }
 
     fReferencePhysicsList = physicsListFactory.GetReferencePhysList(physicsList);

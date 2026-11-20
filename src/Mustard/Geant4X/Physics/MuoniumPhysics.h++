@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,28 +18,25 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Particle/Antimuonium.h++"
-#include "Mustard/Geant4X/Particle/Muonium.h++"
-#include "Mustard/Geant4X/Physics/TargetForMuoniumPhysics.h++"
-#include "Mustard/Geant4X/Process/MuoniumFormation.h++"
-#include "Mustard/Geant4X/Process/MuoniumTransport.h++"
+#include "Mustard/Geant4X/Process/FineStructureForThermalScattering.h++"
 
-#include "G4EmBuilder.hh"
-#include "G4MuonPlus.hh"
-#include "G4ProcessManager.hh"
 #include "G4VPhysicsConstructor.hh"
+
+#include <vector>
 
 namespace Mustard::Geant4X::inline Physics {
 
-template<TargetForMuoniumPhysics ATarget>
 class MuoniumPhysics : public G4VPhysicsConstructor {
 public:
-    MuoniumPhysics(G4int verbose);
+    explicit MuoniumPhysics(int verbose);
 
-    virtual auto ConstructParticle() -> void override;
-    virtual auto ConstructProcess() -> void override;
+    auto AddFineStructure(const FineStructureForThermalScattering* fineStructure) -> void;
+
+    auto ConstructParticle() -> void override;
+    auto ConstructProcess() -> void override;
+
+private:
+    std::vector<const FineStructureForThermalScattering*> fFineStructure;
 };
 
 } // namespace Mustard::Geant4X::inline Physics
-
-#include "Mustard/Geant4X/Physics/MuoniumPhysics.inl"

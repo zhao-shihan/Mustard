@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -41,7 +41,7 @@ auto MSqM2ENNEE::operator()(const InitialStateMomenta& pI, const FinalStateMomen
     case Ver::McMuleLegacy:
         return MSqMcMuleLegacy(pI, pF);
     default:
-        Throw<std::invalid_argument>("No such version");
+        Throw<std::invalid_argument>("No such version.");
     }
 }
 

@@ -1,0 +1,70 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
+//
+// This file is part of Mustard, an offline software framework for HEP experiments.
+//
+// Mustard is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Mustard. If not, see <https://www.gnu.org/licenses/>.
+
+#include "Mustard/CLI/BasicCLI.h++"
+#include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/IO/Print.h++"
+#include "Mustard/Math/Random/Distribution/Uniform.h++"
+#include "Mustard/Math/Random/Generator/MT1993732.h++"
+#include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
+#include "Mustard/Math/Random/RandomNumberDistribution.h++"
+#include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
+#include "Mustard/Testing/TestRandomNumberDistribution/TestRandomNumberDistribution.h++"
+
+#include <random>
+#include <stdexcept>
+
+namespace Mustard::Testing {
+
+TestRandomNumberDistribution::TestRandomNumberDistribution() :
+    Subprogram{"TestRandomNumberDistribution", "Test Mustard::Random::RandomNumberDistribution."} {}
+
+auto TestRandomNumberDistribution::Main(int argc, char* argv[]) const -> int {
+    Mustard::CLI::BasicCLI<> cli;
+    cli->add_argument("x1").help("Lower bound.").default_value(0.).required().nargs(1).scan<'g', double>();
+    cli->add_argument("x2").help("Upper bound.").default_value(1.).required().nargs(1).scan<'g', double>();
+    Mustard::Env::BasicEnv env{argc, argv, cli};
+
+    Random::Xoshiro256Plus rng;
+    // Random::MT1993732 rng;
+
+    using RNG = decltype(rng);
+
+    const auto x1{cli->get<double>("x1")};
+    const auto x2{cli->get<double>("x2")};
+    auto a{x1};
+    for (auto i{0ull}; i < 1'000'000'000ull; ++i) {
+        do {
+            const auto u = static_cast<decltype(a)>(1 / static_cast<long double>(RNG::Max() - RNG::Min())) *
+                           (rng() - RNG::Min());
+            a = x1 * (1 - u) + x2 * u;
+        } while (a <= x1 || a >= x2);
+        if (a <= x1 || a >= x2) {
+            PrintLn("{}", a);
+            Throw<std::runtime_error>("Failed");
+        }
+        a = Random::Uniform<double>()(rng);
+    }
+    Random::Uniform<double>().Reset();
+    PrintLn("{}", a);
+
+    return 0;
+}
+
+} // namespace Mustard::Testing

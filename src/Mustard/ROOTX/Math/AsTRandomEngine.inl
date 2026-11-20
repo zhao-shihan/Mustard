@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,8 +18,28 @@
 
 namespace Mustard::ROOTX::Math {
 
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
-AsTRandomEngine<PRBG>::AsTRandomEngine(typename PRBG::SeedType seed) :
-    fPRBG{seed} {}
+template<Mustard::Random::RandomNumberEngineOrReference R>
+AsTRandomEngine<R>::AsTRandomEngine(SeedType seed)
+    requires(not std::is_reference_v<R>)
+    :
+    Base{seed},
+    NoncopyableBase{} {}
+
+template<Mustard::Random::RandomNumberEngineOrReference R>
+AsTRandomEngine<R>::AsTRandomEngine(EngineType& engine)
+    requires(std::is_reference_v<R>)
+    :
+    Base{engine},
+    NoncopyableBase{} {}
+
+template<Mustard::Random::RandomNumberEngineOrReference R>
+template<std::floating_point T>
+auto AsTRandomEngine<R>::DrawOpen01() -> T {
+    T value;
+    do {
+        value = Mustard::Random::Uniform<T>{}(Engine());
+    } while (value == 0);
+    return value;
+}
 
 } // namespace Mustard::ROOTX::Math

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,7 +20,6 @@
 
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/Geant4X/Run/MPIRunMessenger.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
 
 #include "G4RunManager.hh"
 
@@ -30,7 +29,7 @@
 
 namespace Mustard::Geant4X::inline Run {
 
-namespace internal {
+namespace impl {
 
 class FlipG4cout {
 protected:
@@ -41,27 +40,27 @@ class PreG4RunManagerInitFlipG4cout : private FlipG4cout {};
 
 class PostG4RunManagerInitFlipG4cout : private FlipG4cout {};
 
-} // namespace internal
+} // namespace impl
 
-class MPIRunManager : private internal::PreG4RunManagerInitFlipG4cout,
+class MPIRunManager : private impl::PreG4RunManagerInitFlipG4cout,
                       public G4RunManager,
-                      private internal::PostG4RunManagerInitFlipG4cout {
+                      private impl::PostG4RunManagerInitFlipG4cout {
 public:
     MPIRunManager();
     virtual ~MPIRunManager() = default;
 
     static auto GetRunManager() -> auto { return static_cast<MPIRunManager*>(G4RunManager::GetRunManager()); }
 
-    auto PrintProgress(G4bool print) -> void;
+    auto PrintProgress(bool print) -> void;
     auto PrintProgressInterval(muc::chrono::seconds<double> t) -> void;
 
-    virtual auto BeamOn(G4int nEvent, gsl::czstring macroFile = nullptr, G4int nSelect = -1) -> void override;
-    virtual auto DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void override;
+    virtual auto BeamOn(int nEvent, gsl::czstring macroFile = nullptr, int nSelect = -1) -> void override;
+    virtual auto DoEventLoop(int nEvent, gsl::czstring macroFile, int nSelect) -> void override;
 
     auto PrintRunSummary() const -> void { fExecutor.PrintExecutionSummary(); }
 
 private:
-    Executor<G4int> fExecutor;
+    Executor<int> fExecutor;
 
     MPIRunMessenger::Register<MPIRunManager> fMessengerRegister;
 };

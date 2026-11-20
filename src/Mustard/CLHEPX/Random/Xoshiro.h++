@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/CLHEPX/Random/Wrap.h++"
+#include "Mustard/CLHEPX/Random/AsHepRandomEngine.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256Plus.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256PlusPlus.h++"
 #include "Mustard/Math/Random/Generator/Xoshiro256StarStar.h++"
@@ -28,11 +28,11 @@
 
 namespace Mustard::CLHEPX::Random {
 
-using Xoshiro256StarStar = CLHEPX::Random::Wrap<Math::Random::Xoshiro256StarStar>;
-using Xoshiro256PlusPlus = CLHEPX::Random::Wrap<Math::Random::Xoshiro256PlusPlus>;
-using Xoshiro256Plus = CLHEPX::Random::Wrap<Math::Random::Xoshiro256Plus>;
-using Xoshiro512StarStar = CLHEPX::Random::Wrap<Math::Random::Xoshiro512StarStar>;
-using Xoshiro512PlusPlus = CLHEPX::Random::Wrap<Math::Random::Xoshiro512PlusPlus>;
-using Xoshiro512Plus = CLHEPX::Random::Wrap<Math::Random::Xoshiro512Plus>;
+using Xoshiro256StarStar = CLHEPX::Random::AsHepRandomEngine<Math::Random::Xoshiro256StarStar>;
+using Xoshiro256PlusPlus = CLHEPX::Random::AsHepRandomEngine<Math::Random::Xoshiro256PlusPlus>;
+using Xoshiro256Plus = CLHEPX::Random::AsHepRandomEngine<Math::Random::Xoshiro256Plus>;
+using Xoshiro512StarStar = CLHEPX::Random::AsHepRandomEngine<Math::Random::Xoshiro512StarStar>;
+using Xoshiro512PlusPlus = CLHEPX::Random::AsHepRandomEngine<Math::Random::Xoshiro512PlusPlus>;
+using Xoshiro512Plus = CLHEPX::Random::AsHepRandomEngine<Math::Random::Xoshiro512Plus>;
 
 } // namespace Mustard::CLHEPX::Random

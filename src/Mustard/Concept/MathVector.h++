@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,6 +22,9 @@
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
+#include "muc/type_traits"
+
+#include <complex>
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -29,31 +32,11 @@
 
 namespace Mustard::Concept {
 
-namespace internal {
-
-template<typename T>
-concept ExtraRequirementsForMathVector =
-    requires(T u, const T v, const T w, const VectorValueType<T> c) {
-        { u += v } -> std::same_as<T&>;
-        { u -= v } -> std::same_as<T&>;
-        { u *= c } -> std::same_as<T&>;
-        { u /= c } -> std::same_as<T&>;
-        { -v } -> std::convertible_to<T>;
-        { v + w } -> std::convertible_to<T>;
-        { v - w } -> std::convertible_to<T>;
-        { c * v } -> std::convertible_to<T>;
-        { v * c } -> std::convertible_to<T>;
-        { v / c } -> std::convertible_to<T>;
-    };
-
-} // namespace internal
-
 template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept MathVector =
-    requires {
-        requires NumericVector<T, F, N>;
-        requires internal::ExtraRequirementsForMathVector<T>;
-    };
+concept MathVector = requires {
+    requires NumericVector<T, F, N>;
+    requires muc::linearly_combinable<T>;
+};
 
 template<typename T, typename F>
 concept MathVector2 = MathVector<T, F, 2>;
@@ -73,13 +56,36 @@ template<typename T>
 concept MathVector3D = MathVector3<T, double>;
 template<typename T>
 concept MathVector4D = MathVector4<T, double>;
+template<typename T>
+concept MathVector2LD = MathVector2<T, long double>;
+template<typename T>
+concept MathVector3LD = MathVector3<T, long double>;
+template<typename T>
+concept MathVector4LD = MathVector4<T, long double>;
+template<typename T>
+concept MathVector2CD = MathVector2<T, std::complex<double>>;
+template<typename T>
+concept MathVector3CD = MathVector3<T, std::complex<double>>;
+template<typename T>
+concept MathVector4CD = MathVector4<T, std::complex<double>>;
+template<typename T>
+concept MathVector2CF = MathVector2<T, std::complex<float>>;
+template<typename T>
+concept MathVector3CF = MathVector3<T, std::complex<float>>;
+template<typename T>
+concept MathVector4CF = MathVector4<T, std::complex<float>>;
+template<typename T>
+concept MathVector2CLD = MathVector2<T, std::complex<long double>>;
+template<typename T>
+concept MathVector3CLD = MathVector3<T, std::complex<long double>>;
+template<typename T>
+concept MathVector4CLD = MathVector4<T, std::complex<long double>>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept MathVectorIntegral =
-    requires {
-        requires NumericVectorIntegral<T, N>;
-        requires internal::ExtraRequirementsForMathVector<T>;
-    };
+concept MathVectorIntegral = requires {
+    requires NumericVectorIntegral<T, N>;
+    requires muc::linearly_combinable<T>;
+};
 
 template<typename T>
 concept MathVector2Integral = MathVectorIntegral<T, 2>;
@@ -89,11 +95,10 @@ template<typename T>
 concept MathVector4Integral = MathVectorIntegral<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept MathVectorFloatingPoint =
-    requires {
-        requires NumericVectorFloatingPoint<T, N>;
-        requires internal::ExtraRequirementsForMathVector<T>;
-    };
+concept MathVectorFloatingPoint = requires {
+    requires NumericVectorFloatingPoint<T, N>;
+    requires muc::linearly_combinable<T>;
+};
 
 template<typename T>
 concept MathVector2FloatingPoint = MathVectorFloatingPoint<T, 2>;
@@ -103,11 +108,23 @@ template<typename T>
 concept MathVector4FloatingPoint = MathVectorFloatingPoint<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept MathVectorAny =
-    requires {
-        requires NumericVectorAny<T, N>;
-        requires internal::ExtraRequirementsForMathVector<T>;
-    };
+concept MathVectorComplex = requires {
+    requires NumericVectorComplex<T, N>;
+    requires muc::linearly_combinable<T>;
+};
+
+template<typename T>
+concept MathVector2Complex = MathVectorComplex<T, 2>;
+template<typename T>
+concept MathVector3Complex = MathVectorComplex<T, 3>;
+template<typename T>
+concept MathVector4Complex = MathVectorComplex<T, 4>;
+
+template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
+concept MathVectorAny = requires {
+    requires NumericVectorAny<T, N>;
+    requires muc::linearly_combinable<T>;
+};
 
 template<typename T>
 concept MathVector2Any = MathVectorAny<T, 2>;

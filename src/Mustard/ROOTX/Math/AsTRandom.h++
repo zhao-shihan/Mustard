@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,69 +18,105 @@
 
 #pragma once
 
-#include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Random/Distribution/Exponential.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
-#include "Mustard/Math/Random/UniformPseudoRandomBitGenerator.h++"
+#include "Mustard/Math/Random/Generator/RandomDevice.h++"
+#include "Mustard/Math/Random/RandomNumberEngineHolder.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "TRandom.h"
 
 #include <algorithm>
-#include <cstdio>
+#include <concepts>
+#include <type_traits>
 
 namespace Mustard::ROOTX::Math {
 
 /// @brief Full-featured adapter for Mustard RNGs to ROOT's TRandom interface
 ///
 /// Provides a complete implementation of ROOT's TRandom interface using any
-/// Mustard UniformPseudoRandomBitGenerator. Supports all TRandom features
-/// including Gaussian generation and bulk array generation.
+/// standard-compliant random number engine, which is either owned by this
+/// adapter or referred to by it. Supports all TRandom features including
+/// Gaussian generation and bulk array generation.
 ///
-/// @tparam PRBG Mustard UniformPseudoRandomBitGenerator type to adapt
-///   - Must satisfy Mustard::Random::UniformPseudoRandomBitGenerator
-///   - Must provide SeedType and Seed() method
+/// @tparam R A random number engine type (this adapter owns an engine of that
+/// type) or an lvalue reference to one (this adapter refers to an engine
+/// belonging to someone else).
 ///
-/// @note Inherits from ROOT's TRandom for full framework integration
-/// @warning GetSeed() is intentionally non-functional (ROOT API limitation)
-template<Mustard::Random::UniformPseudoRandomBitGenerator PRBG>
-class AsTRandom : public TRandom {
+/// @note Inherits from ROOT's TRandom for full framework integration.
+/// @note Not copyable nor movable: an adapter is bound to the engine it owns or
+/// refers to, and its seed record cannot be transferred with it.
+/// @note The seed record, i.e. GetSeed(), reports the seed this adapter was
+/// constructed or SetSeed()-ed with, and 0 as long as it has not been told any
+/// seed. A wrapper referring to an external engine cannot know how that engine
+/// was seeded, and the engine may be reseeded behind its back at any time.
+/// ROOT truncates it to 32 bits in any case.
+template<Mustard::Random::RandomNumberEngineOrReference R>
+class AsTRandom : public TRandom,
+                  public Mustard::Random::RandomNumberEngineHolder<R>,
+                  public NoncopyableBase {
+private:
+    using Base = Mustard::Random::RandomNumberEngineHolder<R>;
+
 public:
-    /// @brief Default constructor (uses PRBG's default seed)
-    AsTRandom() = default;
-    /// @brief Construct with specific seed value
-    /// @param seed Initialization seed for underlying PRBG
-    AsTRandom(typename PRBG::SeedType seed);
+    using Base::Engine;
+    using typename Base::EngineType;
+    using typename Base::SeedType;
 
-    virtual ~AsTRandom() override = default;
+    /// @brief Construct an adapter owning a default-state engine.
+    /// @note Only available when @c R is an engine type.
+    AsTRandom()
+        requires(not std::is_reference_v<R>);
+    /// @brief Construct an adapter owning an engine seeded with @p seed.
+    /// @param seed Initialization seed of the engine; 0 draws a non-deterministic
+    /// one, exactly as TRandom(0) does.
+    /// @note Only available when @c R is an engine type.
+    explicit AsTRandom(SeedType seed)
+        requires(not std::is_reference_v<R>);
+    /// @brief Construct an adapter referring to @p engine.
+    /// @param engine Engine to refer to.
+    /// @pre @p engine outlives this adapter.
+    /// @note Only available when @c R is an engine reference type.
+    explicit AsTRandom(EngineType& engine)
+        requires(std::is_reference_v<R>);
 
+    /// @brief Generate exponential-distributed number
+    /// @param tau Mean of the distribution
+    virtual auto Exp(double tau) -> double override { return Random::Exponential{tau}(Engine()); }
     /// @brief Generate Gaussian-distributed number
     /// @param mu Mean of the distribution (default: 0)
     /// @param sigma Standard deviation (default: 1)
-    virtual auto Gaus(Double_t mu = 0, Double_t sigma = 1) -> Double_t override { return fGaussian(fPRBG, {mu, sigma}); }
+    /// @note The cached variate pair is dropped by SetSeed(), but not when the
+    /// engine is reseeded through another handle referring to it, in which case
+    /// one variate may still come from the previous stream.
+    virtual auto Gaus(double mu = 0, double sigma = 1) -> double override { return fGaus(Engine(), {mu, sigma}); }
 
     /// @brief Seed the underlying random engine
-    /// @param seed New seed value (converted to PRBG's SeedType)
-    virtual auto SetSeed(ULong_t seed) -> void override { fPRBG.Seed(seed); }
-    /// @brief Generate uniform double in (0,1)
-    virtual auto Rndm() -> Double_t override { return Mustard::Random::Uniform<Double_t>{}(fPRBG); }
-    /// @brief Fill array with uniform float values in (0,1)
+    /// @param seed New seed value (converted to the engine's seed type); 0 draws
+    /// a non-deterministic one, exactly as TRandom::SetSeed(0) does
+    virtual auto SetSeed(unsigned long seed) -> void override;
+    /// @brief Generate uniform double in (0, 1)
+    virtual auto Rndm() -> double override { return DrawOpen01<double>(); }
+    /// @brief Fill array with uniform float values in (0, 1)
     /// @param n Number of elements to generate
     /// @param array Pre-allocated output buffer
-    virtual auto RndmArray(Int_t n, Float_t* array) -> void override;
-    /// @brief Fill array with uniform double values in (0,1)
+    virtual auto RndmArray(int n, float* array) -> void override;
+    /// @brief Fill array with uniform double values in (0, 1)
     /// @param n Number of elements to generate
     /// @param array Pre-allocated output buffer
-    virtual auto RndmArray(Int_t n, Double_t* array) -> void override;
+    virtual auto RndmArray(int n, double* array) -> void override;
 
 private:
-    /// @brief [Disabled] TRandom requires GetSeed() but PRBGs are stateless
-    /// @return Always 0
-    /// @warning Prints error message when called (ROOT API limitation)
-    virtual auto GetSeed() const -> UInt_t override;
+    /// @brief Draw a uniform value on the open interval (0, 1).
+    /// @tparam T Floating-point type of the value.
+    /// @return A value strictly between 0 and 1, as ROOT's Rndm() gives: an
+    /// exact 0, which the wrapped engines can produce, is drawn again.
+    template<std::floating_point T>
+    auto DrawOpen01() -> T;
 
 private:
-    PRBG fPRBG;
-    Mustard::Random::Gaussian<Double_t> fGaussian;
+    Random::Gaussian<> fGaus;
 };
 
 } // namespace Mustard::ROOTX::Math

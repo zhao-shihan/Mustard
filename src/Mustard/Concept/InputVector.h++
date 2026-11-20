@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,6 +22,7 @@
 
 #include "muc/concepts"
 
+#include <complex>
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -30,16 +31,13 @@
 namespace Mustard::Concept {
 
 template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept InputVector =
-    requires {
-        requires(N >= 2);
-        requires muc::arithmetic<F>;
-        requires(std::is_class_v<T> and
-                 std::default_initializable<T>) or
-                    (std::is_pointer_v<T> or
-                     std::is_array_v<T>);
-        requires SubscriptableToMaybeConstReferenced<T, F>;
-    };
+concept InputVector = requires {
+    requires(N >= 2);
+    requires muc::numeric<F>;
+    requires(std::is_class_v<T> and std::default_initializable<T>) or
+                (std::is_pointer_v<T> or std::is_array_v<T>);
+    requires SubscriptableToMaybeConstReferenced<T, F>;
+};
 
 template<typename T, typename F>
 concept InputVector2 = InputVector<T, F, 2>;
@@ -59,24 +57,49 @@ template<typename T>
 concept InputVector3D = InputVector3<T, double>;
 template<typename T>
 concept InputVector4D = InputVector4<T, double>;
+template<typename T>
+concept InputVector2LD = InputVector2<T, long double>;
+template<typename T>
+concept InputVector3LD = InputVector3<T, long double>;
+template<typename T>
+concept InputVector4LD = InputVector4<T, long double>;
+template<typename T>
+concept InputVector2CD = InputVector2<T, std::complex<double>>;
+template<typename T>
+concept InputVector3CD = InputVector3<T, std::complex<double>>;
+template<typename T>
+concept InputVector4CD = InputVector4<T, std::complex<double>>;
+template<typename T>
+concept InputVector2CF = InputVector2<T, std::complex<float>>;
+template<typename T>
+concept InputVector3CF = InputVector3<T, std::complex<float>>;
+template<typename T>
+concept InputVector4CF = InputVector4<T, std::complex<float>>;
+template<typename T>
+concept InputVector2CLD = InputVector2<T, std::complex<long double>>;
+template<typename T>
+concept InputVector3CLD = InputVector3<T, std::complex<long double>>;
+template<typename T>
+concept InputVector4CLD = InputVector4<T, std::complex<long double>>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept InputVectorIntegral = InputVector<T, bool, N> or
-                              InputVector<T, signed char, N> or
-                              InputVector<T, unsigned char, N> or
-                              InputVector<T, char, N> or
-                              InputVector<T, char8_t, N> or
-                              InputVector<T, char16_t, N> or
-                              InputVector<T, char32_t, N> or
-                              InputVector<T, wchar_t, N> or
-                              InputVector<T, short, N> or
-                              InputVector<T, int, N> or
-                              InputVector<T, long, N> or
-                              InputVector<T, long long, N> or
-                              InputVector<T, unsigned short, N> or
-                              InputVector<T, unsigned int, N> or
-                              InputVector<T, unsigned long, N> or
-                              InputVector<T, unsigned long long, N>;
+concept InputVectorIntegral =
+    InputVector<T, bool, N> or
+    InputVector<T, signed char, N> or
+    InputVector<T, unsigned char, N> or
+    InputVector<T, char, N> or
+    InputVector<T, char8_t, N> or
+    InputVector<T, char16_t, N> or
+    InputVector<T, char32_t, N> or
+    InputVector<T, wchar_t, N> or
+    InputVector<T, short, N> or
+    InputVector<T, int, N> or
+    InputVector<T, long, N> or
+    InputVector<T, long long, N> or
+    InputVector<T, unsigned short, N> or
+    InputVector<T, unsigned int, N> or
+    InputVector<T, unsigned long, N> or
+    InputVector<T, unsigned long long, N>;
 
 template<typename T>
 concept InputVector2Integral = InputVectorIntegral<T, 2>;
@@ -86,9 +109,10 @@ template<typename T>
 concept InputVector4Integral = InputVectorIntegral<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept InputVectorFloatingPoint = InputVector<T, float, N> or
-                                   InputVector<T, double, N> or
-                                   InputVector<T, long double, N>;
+concept InputVectorFloatingPoint =
+    InputVector<T, float, N> or
+    InputVector<T, double, N> or
+    InputVector<T, long double, N>;
 
 template<typename T>
 concept InputVector2FloatingPoint = InputVectorFloatingPoint<T, 2>;
@@ -98,8 +122,23 @@ template<typename T>
 concept InputVector4FloatingPoint = InputVectorFloatingPoint<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept InputVectorAny = InputVectorIntegral<T, N> or
-                         InputVectorFloatingPoint<T, N>;
+concept InputVectorComplex =
+    InputVector<T, std::complex<float>, N> or
+    InputVector<T, std::complex<double>, N> or
+    InputVector<T, std::complex<long double>, N>;
+
+template<typename T>
+concept InputVector2Complex = InputVectorComplex<T, 2>;
+template<typename T>
+concept InputVector3Complex = InputVectorComplex<T, 3>;
+template<typename T>
+concept InputVector4Complex = InputVectorComplex<T, 4>;
+
+template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
+concept InputVectorAny =
+    InputVectorIntegral<T, N> or
+    InputVectorFloatingPoint<T, N> or
+    InputVectorComplex<T, N>;
 
 template<typename T>
 concept InputVector2Any = InputVectorAny<T, 2>;

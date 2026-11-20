@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2025  Mustard developers
+# Copyright (C) 2020-2026  Shihan Zhao and contributors
 #
 # This file is part of Mustard, an offline software framework for HEP experiments.
 #
@@ -58,7 +58,7 @@ endif()
 if(MUSTARD_ENABLE_IPO)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT MUSTARD_ENABLE_IPO_SUPPORTED
-                        OUTPUT MUSTARD_IPO_SUPPORTED_ERROR)
+        OUTPUT MUSTARD_IPO_SUPPORTED_ERROR)
     if(MUSTARD_ENABLE_IPO_SUPPORTED)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
         message(STATUS "LTO/IPO enabled for Mustard")
@@ -82,11 +82,11 @@ set(MUSTARD_PUBLIC_COMPILE_DEFINITIONS "")
 
 # More warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Wall -Wextra -Wduplicated-cond -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -WCL4 -Wmove -Wnon-virtual-dtor -pedantic -Wundef -Wunused-macros)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS /W4)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /W4)
 endif()
 
 # Surpress some, if required
@@ -112,8 +112,8 @@ if(NOT MUSTARD_SHOW_MORE_COMPILER_WARNINGS)
         # # Eigen (operator 'operator-name': deprecated between enumerations of different types)
         # list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /wd5054)
     endif()
-# Even more warnings, if required
 elseif(MUSTARD_SHOW_EVEN_MORE_COMPILER_WARNINGS)
+    # Even more warnings, if required
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Weffc++)
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")
@@ -128,9 +128,9 @@ endif()
 # =============================================================================
 
 if(MUSTARD_SIGNAL_HANDLER)
-    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MUSTARD_SIGNAL_HANDLER=1)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_DEFINITIONS MUSTARD_SIGNAL_HANDLER=1)
 else()
-    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MUSTARD_SIGNAL_HANDLER=0)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_DEFINITIONS MUSTARD_SIGNAL_HANDLER=0)
 endif()
 
 if(MUSTARD_USE_G4VIS)
@@ -139,12 +139,26 @@ else()
     list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MUSTARD_USE_G4VIS=0)
 endif()
 
+if(MUSTARD_USE_MIMALLOC)
+    list(APPEND MUSTARD_PRIVATE_COMPILE_DEFINITIONS MUSTARD_USE_MIMALLOC=1)
+else()
+    list(APPEND MUSTARD_PRIVATE_COMPILE_DEFINITIONS MUSTARD_USE_MIMALLOC=0)
+endif()
+
 if(MUSTARD_ENABLE_MSVC_STD_CONFORMITY AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Enable standard-conformity
     list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS /permissive- /Zc:__cplusplus /Zc:inline)
     message(STATUS "MSVC standard-conformity enabled (/permissive- /Zc:__cplusplus /Zc:inline)")
     # Be permissive to standard cfunctions
     list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS=1)
+endif()
+
+if(MUSTARD_WERROR)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|IntelLLVM)$")
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS -Werror)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        list(APPEND MUSTARD_PRIVATE_COMPILE_OPTIONS /WX)
+    endif()
 endif()
 
 # =============================================================================
@@ -164,8 +178,26 @@ list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS MPICH_SKIP_MPICXX=1)
 # Inform Eigen not to enable multithreading, though we are not using OpenMP. It is safer to do so.
 list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_DONT_PARALLELIZE=1)
 
-if(CMAKE_CXX_PLATFORM_ID STREQUAL "MinGW")
-    # MinGW and GCC 12.2 have issues with explitic vectorization
-    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_DONT_VECTORIZE=1)
-    message(NOTICE "***Notice: Building on Windows with MinGW, disabling vectorization of Eigen")
+# If option is set, inform Eigen to use FFTW as the default backend for FFT.
+if(MUSTARD_USE_FFTW)
+    list(APPEND MUSTARD_PUBLIC_COMPILE_DEFINITIONS EIGEN_FFTW_DEFAULT=1)
+endif()
+
+# Suppress a false warning from Eigen. Keep these in the public interface:
+# consumers include Mustard headers that pull in Eigen, and may build with -Werror.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-array-bounds>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-maybe-uninitialized>")
+endif()
+
+# =============================================================================
+# GTL-induced compile options for Mustard
+# =============================================================================
+
+# Suppress a warning from GTL. Keep this in the public interface for the same
+# reason as the Eigen suppressions above.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND MUSTARD_PUBLIC_COMPILE_OPTIONS
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-interference-size>")
 endif()

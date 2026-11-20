@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,7 +18,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<std::floating_point T, template<typename> typename AExponential>
 constexpr BasicExponentialParameter<T, AExponential>::BasicExponentialParameter() :
@@ -53,20 +53,18 @@ constexpr ExponentialBase<ADerived, T>::ExponentialBase(const typename Base::Par
     Base{},
     fParameter{p} {}
 
-} // namespace internal
-
-#define MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(TheLog) \
-    static_assert(Uniform<T>::Stateless());                                    \
-    return -p.Expectation() * TheLog(Uniform<T>{}(g));
+} // namespace impl
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE auto Exponential<T>::Impl(auto& g, const ExponentialParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(std::log)
+constexpr auto Exponential<T>::Impl(auto& g, const ExponentialParameter<T>& p) -> T {
+    const auto u{1 - Uniform<T>{}(g)}; // u in [0,1) so 1-u in (0,1]
+    return -p.Expectation() * impl::FastLogOn01(u);
 }
 
 template<std::floating_point T>
-MUSTARD_ALWAYS_INLINE constexpr auto ExponentialFast<T>::Impl(auto& g, const ExponentialFastParameter<T>& p) -> T {
-    MUSTARD_MATH_RANDOM_DISTRIBUTION_EXPONENTIAL_GENERATOR_SNIPPET(Math::internal::FastLogOn01)
+auto ExponentialS<T>::Impl(auto& g, const ExponentialSParameter<T>& p) -> T {
+    const auto u{1 - Uniform<T>{}(g)}; // u in [0,1) so 1-u in (0,1]
+    return -p.Expectation() * std::log(u);
 }
 
 } // namespace Mustard::inline Math::Random::inline Distribution

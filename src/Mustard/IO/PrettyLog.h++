@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include <concepts>
 #include <source_location>
@@ -64,9 +64,9 @@ auto MasterPrintError(std::string_view message, const std::source_location& loca
 template<std::constructible_from<std::string> AException>
 [[noreturn]] auto Throw(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
-namespace internal {
+namespace impl {
 auto PrettyException(std::string_view message, const std::source_location& location) -> std::string;
-} // namespace internal
+} // namespace impl
 
 } // namespace Mustard::inline IO
 

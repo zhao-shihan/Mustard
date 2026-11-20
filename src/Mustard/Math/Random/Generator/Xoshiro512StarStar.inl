@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,7 +21,7 @@ namespace Mustard::inline Math::Random::inline Generator {
 constexpr Xoshiro512StarStar::Xoshiro512StarStar(Xoshiro512StarStar::SeedType seed) :
     Xoshiro512Base{seed} {}
 
-MUSTARD_ALWAYS_INLINE constexpr auto Xoshiro512StarStar::operator()() -> Xoshiro512StarStar::ResultType {
+constexpr auto Xoshiro512StarStar::operator()() -> Xoshiro512StarStar::ResultType {
     const auto result{std::rotl(fState[1] * 5, 7) * 9};
     Step();
     return result;

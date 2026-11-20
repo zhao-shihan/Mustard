@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2025  Mustard developers
+# Copyright (C) 2020-2026  Shihan Zhao and contributors
 #
 # This file is part of Mustard, an offline software framework for HEP experiments.
 #
@@ -14,9 +14,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-add_subdirectory(Physics)
-add_subdirectory(Concept)
-add_subdirectory(Env)
-add_subdirectory(Execution)
-add_subdirectory(Math)
-add_subdirectory(Utility)
+add_subdirectory(app)
+add_subdirectory(lib)
+
+add_executable(MustardTest MustardTest.c++)
+target_link_libraries(MustardTest Mustard::Mustard MustardTesting MustardTestingApp)

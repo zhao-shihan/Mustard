@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,15 +21,15 @@ namespace Mustard::inline Math::Random::inline Generator {
 template<typename ADerived, std::size_t NBit>
     requires(NBit % 64 == 0)
 constexpr XoshiroBase<ADerived, NBit>::XoshiroBase(std::array<std::uint64_t, NBit / 64> defaultState) :
-    UniformPseudoRandomBitGeneratorBase<ADerived, std::uint64_t, std::uint64_t>{},
-    fState{std::move(defaultState)} {
+    Base{},
+    fState{defaultState} {
     static_assert(std::derived_from<ADerived, XoshiroBase<ADerived, NBit>>);
 }
 
 template<typename ADerived, std::size_t NBit>
     requires(NBit % 64 == 0)
 constexpr XoshiroBase<ADerived, NBit>::XoshiroBase(std::uint64_t seed) :
-    UniformPseudoRandomBitGeneratorBase<ADerived, std::uint64_t, std::uint64_t>{},
+    Base{},
     fState{} {
     Seed(seed);
 }

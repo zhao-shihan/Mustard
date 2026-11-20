@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,34 +18,40 @@
 
 #pragma once
 
-#include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectromagneticField.h++"
-
-#include "muc/array"
+#include "Mustard/Math/Vector.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <concepts>
 
 namespace Mustard::Detector::Field {
 
-namespace internal {
-
-template<Concept::NumericVector3D T>
-struct BEFieldValue {
-    T B;
-    T E;
-};
-
-} // namespace internal
-
+/// @brief CRTP base class for electromagnetic field implementations.
+///
+/// Provides the @c BEField aggregate type used as the return value of
+/// combined BE queries. Derived classes must implement @c B() and @c E()
+/// (or inherit zero-valued defaults from @c ElectricFieldBase or
+/// @c MagneticFieldBase).
+///
+/// @tparam ADerived The derived class (CRTP parameter).
+///
+/// @note The constructor enforces at compile time:
+/// - @c ADerived derives from @c ElectromagneticFieldBase<ADerived>
+/// - @c ADerived satisfies @c ElectromagneticField<ADerived>
 template<typename ADerived>
 class ElectromagneticFieldBase {
 public:
-    template<Concept::NumericVector3D T>
-    using F = internal::BEFieldValue<T>;
+    /// @brief Aggregate holding both electric and magnetic field vectors.
+    struct BEField {
+        Vector3D B; ///< Magnetic field vector.
+        Vector3D E; ///< Electric field vector.
+    };
 
 protected:
+    /// @brief Default constructor. Enforces CRTP and concept constraints at compile time.
     constexpr ElectromagneticFieldBase();
-    constexpr ~ElectromagneticFieldBase() = default;
+    /// @brief Defaulted destructor.
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEONLY(ElectromagneticFieldBase)
 };
 
 } // namespace Mustard::Detector::Field

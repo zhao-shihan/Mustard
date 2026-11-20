@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,13 +18,13 @@
 
 #pragma once
 
-#include "Mustard/CLHEPX/Random/Wrap.h++"
+#include "Mustard/CLHEPX/Random/AsHepRandomEngine.h++"
 #include "Mustard/Math/Random/Generator/MT1993732.h++"
 #include "Mustard/Math/Random/Generator/MT1993764.h++"
 
 namespace Mustard::CLHEPX::Random {
 
-using MT1993732 = CLHEPX::Random::Wrap<Random::MT1993732>;
-using MT1993764 = CLHEPX::Random::Wrap<Random::MT1993764>;
+using MT1993732 = CLHEPX::Random::AsHepRandomEngine<Math::Random::MT1993732>;
+using MT1993764 = CLHEPX::Random::AsHepRandomEngine<Math::Random::MT1993764>;
 
 } // namespace Mustard::CLHEPX::Random

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,13 +19,13 @@
 #include "Mustard/Geant4X/DecayChannel/MuonNeutrinolessDoubleRadiativeDecayChannel.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <stdexcept>
 
 namespace Mustard::Geant4X::inline DecayChannel {
 
-MuonNeutrinolessDoubleRadiativeDecayChannel::MuonNeutrinolessDoubleRadiativeDecayChannel(const G4String& parentName, G4double br, G4int verbose) :
+MuonNeutrinolessDoubleRadiativeDecayChannel::MuonNeutrinolessDoubleRadiativeDecayChannel(const G4String& parentName, double br, int verbose) :
     G4PhaseSpaceDecayChannel{parentName, br, 3, DaughterLeptonName(parentName), "gamma", "gamma"} {
     SetVerboseLevel(verbose);
 }
@@ -36,7 +36,7 @@ auto MuonNeutrinolessDoubleRadiativeDecayChannel::DaughterLeptonName(const G4Str
     } else if (parentName == "mu+") {
         return "e+";
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}", parentName));
+        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}.", parentName));
     }
 }
 

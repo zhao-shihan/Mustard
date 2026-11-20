@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/Decay/ExtendedDecayWithSpin.h++"
 #include "Mustard/Geant4X/DecayChannel/MuoniumDecayChannelWithSpin.h++"
 #include "Mustard/Geant4X/DecayChannel/MuoniumRadiativeDecayChannelWithSpin.h++"
 #include "Mustard/Geant4X/Particle/Antimuonium.h++"
@@ -25,12 +24,13 @@
 #include "Mustard/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
 
 #include "G4DecayTable.hh"
+#include "G4DecayWithSpin.hh"
 #include "G4EmBuilder.hh"
 #include "G4ProcessTable.hh"
 
 namespace Mustard::Geant4X::inline Physics {
 
-MuoniumNLODecayPhysics::MuoniumNLODecayPhysics(G4int verbose) :
+MuoniumNLODecayPhysics::MuoniumNLODecayPhysics(int verbose) :
     DecayPhysicsBase{"MuoniumNLODecayPhysics"},
     fRadiativeDecayBR{0.014},
     fMessengerRegister{this} {
@@ -65,7 +65,7 @@ auto MuoniumNLODecayPhysics::ConstructParticle() -> void {
 
 auto MuoniumNLODecayPhysics::ConstructProcess() -> void {
     const auto ReplaceDecayPhysics{
-        [decayWithSpin = new ExtendedDecayWithSpin,
+        [decayWithSpin = new G4DecayWithSpin,
          processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* muonium) {
             const auto manager{muonium->GetProcessManager()};
             if (manager == nullptr) {
@@ -86,7 +86,7 @@ auto MuoniumNLODecayPhysics::ConstructProcess() -> void {
 
 auto MuoniumNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
     if (parentName != "muonium" and parentName != "anti_muonium") {
-        Throw<std::invalid_argument>(fmt::format("Parent particle is not muonium or anti_muonium but {}", parentName));
+        Throw<std::invalid_argument>(fmt::format("Parent should be a muonium-family particle, got '{}'.", parentName));
     }
     // sort by initial BR! we firstly write random BRs in decrease order...
     decay->Insert(new MuoniumDecayChannelWithSpin{parentName, 1e-1, verboseLevel});

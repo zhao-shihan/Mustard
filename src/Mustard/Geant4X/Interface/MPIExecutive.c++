@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -17,12 +17,13 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Geant4X/Interface/MPIExecutive.h++"
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <ostream>
 #include <source_location>
@@ -35,17 +36,11 @@ MPIExecutive::MPIExecutive() :
     fIsInteractive{} {}
 
 auto MPIExecutive::CheckSequential() const -> void {
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     if (worldComm.size() == 1) {
         return;
     }
-    if (worldComm.rank() == 0) {
-        G4Exception(std::source_location::current().function_name(),
-                    "InteractiveSessionMustBeSequential",
-                    JustWarning,
-                    "Interactive session must be run with only 1 process.\nThrowing an instance of std::logic_error.");
-    }
-    Throw<std::logic_error>("Interactive session must be sequential");
+    MasterException(FatalException, "Interactive session must be run with only 1 process.");
 }
 
 auto MPIExecutive::Execute(const std::string& macro) const -> void {
@@ -53,7 +48,7 @@ auto MPIExecutive::Execute(const std::string& macro) const -> void {
     uiPtr->ExecuteMacroFile(macro.c_str());
     if (uiPtr->GetLastReturnCode() != fCommandSucceeded) {
         if (not fIsInteractive) {
-            Throw<std::runtime_error>(fmt::format("Failed to execute file '{}'", macro));
+            Throw<std::runtime_error>(fmt::format("Failed to execute file '{}'.", macro));
         }
     }
 }

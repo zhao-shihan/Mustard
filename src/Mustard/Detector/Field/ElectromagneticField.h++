@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,25 +18,29 @@
 
 #pragma once
 
-#include "Mustard/Concept/NumericVector.h++"
-
-#include "muc/array"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 #include <concepts>
 
 namespace Mustard::Detector::Field {
 
+/// @brief Concept constraining a type to provide both electric and magnetic
+/// field queries.
+///
+/// Requires four expressions to be valid:
+/// - @c f.B(position) returns @c Vector3D (magnetic field at a point)
+/// - @c f.E(position) returns @c Vector3D (electric field at a point)
+/// - @c f.BE(position).B returns @c Vector3D&& (combined B component)
+/// - @c f.BE(position).E returns @c Vector3D&& (combined E component)
+///
+/// @tparam F Candidate type to check against the concept.
 template<typename F>
-concept ElectromagneticField =
-    requires(const F f, muc::array3d x) {
-        { f.B(x) } -> std::same_as<muc::array3d>;
-        { f.E(x) } -> std::same_as<muc::array3d>;
-        { f.BE(x).B } -> std::same_as<muc::array3d&&>;
-        { f.BE(x).E } -> std::same_as<muc::array3d&&>;
-        { f.template B<muc::array3d>({}) } -> std::same_as<muc::array3d>;
-        { f.template E<muc::array3d>({}) } -> std::same_as<muc::array3d>;
-        { f.template BE<muc::array3d>({}).B } -> std::same_as<muc::array3d&&>;
-        { f.template BE<muc::array3d>({}).E } -> std::same_as<muc::array3d&&>;
-    };
+concept ElectromagneticField = requires(const F f, Point3D position) {
+    { f.B(position) } -> std::same_as<Vector3D>;
+    { f.E(position) } -> std::same_as<Vector3D>;
+    { f.BE(position).B } -> std::same_as<Vector3D&&>;
+    { f.BE(position).E } -> std::same_as<Vector3D&&>;
+};
 
 } // namespace Mustard::Detector::Field

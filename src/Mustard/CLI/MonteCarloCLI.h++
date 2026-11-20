@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -26,6 +26,15 @@
 
 namespace Mustard::CLI {
 
+/// @brief CLI alias for Monte Carlo applications.
+///
+/// MonteCarloCLI builds on BasicCLI by adding MonteCarloModule, which
+/// provides random seed configuration via the --seed flag. Useful as a
+/// base for any simulation that requires configurable seed from command line.
+///
+/// @tparam AExtraModules  Additional ModuleBase-derived types (must be unique).
+///
+/// Equivalent to CLI<BasicModule, MonteCarloModule, AExtraModules...>.
 template<std::derived_from<ModuleBase>... AExtraModules>
 using MonteCarloCLI = BasicCLI<MonteCarloModule,
                                AExtraModules...>;

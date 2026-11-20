@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,7 +22,7 @@
 
 #include "muc/math"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -33,9 +33,9 @@ namespace Mustard::inline Physics::inline Generator {
 using namespace PhysicalConstant;
 
 M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, Vector3D momentum,
-                                 std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                 std::optional<int> acfSampleSize, std::optional<int> acfReplicate,
                                  std::optional<double> stepSize) :
-    MultipleTryMetropolisGenerator{{}, {}, {}, thinningRatio, acfSampleSize.value_or(100000), stepSize.value_or(0.1)} {
+    MultipleTryMetropolisGenerator{{}, {}, {}, acfSampleSize.value_or(1 << 17), std::move(acfReplicate), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);
     Mass({electron_mass_c2, 0, 0, electron_mass_c2});
@@ -44,10 +44,10 @@ M2ENNEGenerator::M2ENNEGenerator(std::string_view parent, Vector3D momentum,
 auto M2ENNEGenerator::Parent(std::string_view parent) -> void {
     if (parent == "muonium") {
         PDGID({-11, 12, -14, 11});
-    } else if (parent == "antimuonium") {
+    } else if (parent == "anti_muonium") {
         PDGID({11, -12, 14, -11});
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent should be muonium or antimuonium, got '{}'", parent));
+        Throw<std::invalid_argument>(fmt::format("Parent should be a muonium-family particle, got '{}'.", parent));
     }
 }
 

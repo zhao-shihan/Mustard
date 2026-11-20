@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,19 +18,19 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<typename... Ts>
 CartesianProductMargin<Ts...>::CartesianProductMargin(const Ts&... objects) :
-    internal::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...>{{objects}...} {}
+    impl::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...>{{objects}...} {}
 
-} // namespace internal
+} // namespace impl
 
 template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 constexpr JointParameterInterface<ADerived, ADistribution, Ds...>::JointParameterInterface() :
     DistributionParameterBase<ADerived, ADistribution>{},
-    internal::CartesianProductMargin<typename Ds::ParameterType...>{} {
+    impl::CartesianProductMargin<typename Ds::ParameterType...>{} {
     static_assert(std::derived_from<ADerived, JointParameterInterface<ADerived, ADistribution, Ds...>>);
 }
 
@@ -38,13 +38,13 @@ template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 constexpr JointParameterInterface<ADerived, ADistribution, Ds...>::JointParameterInterface(const typename Ds::ParameterType&... p) :
     DistributionParameterBase<ADerived, ADistribution>{},
-    internal::CartesianProductMargin<typename Ds::ParameterType...>{p...} {}
+    impl::CartesianProductMargin<typename Ds::ParameterType...>{p...} {}
 
 template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 template<muc::character AChar>
 auto JointParameterInterface<ADerived, ADistribution, Ds...>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
-    return ([&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return ([&]<gsl::index... Is>(gslx::index_sequence<Is...>) -> decltype(auto) {
         return (os << ... << this->template Margin<Is>());
     })(gslx::index_sequence_for<Ds...>());
 }
@@ -53,7 +53,7 @@ template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 template<muc::character AChar>
 auto JointParameterInterface<ADerived, ADistribution, Ds...>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
-    return ([&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return ([&]<gsl::index... Is>(gslx::index_sequence<Is...>) -> decltype(auto) {
         return (is >> ... >> this->template Margin<Is>());
     })(gslx::index_sequence_for<Ds...>());
 }
@@ -62,7 +62,7 @@ template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr JointInterface<ADerived, AParameter, T, Ds...>::JointInterface() :
     RandomNumberDistributionBase<ADerived, AParameter, T>{},
-    internal::CartesianProductMargin<Ds...>{} {
+    impl::CartesianProductMargin<Ds...>{} {
     static_assert(std::derived_from<ADerived, JointInterface<ADerived, AParameter, T, Ds...>>);
     static_assert(std::derived_from<AParameter, JointParameterInterface<AParameter, ADerived, Ds...>>);
 }
@@ -71,18 +71,18 @@ template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr JointInterface<ADerived, AParameter, T, Ds...>::JointInterface(const typename Ds::ParameterType&... p) :
     RandomNumberDistributionBase<ADerived, AParameter, T>{},
-    internal::CartesianProductMargin<Ds...>{Ds{p}...} {}
+    impl::CartesianProductMargin<Ds...>{Ds{p}...} {}
 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr JointInterface<ADerived, AParameter, T, Ds...>::JointInterface(const AParameter& p) :
     RandomNumberDistributionBase<ADerived, AParameter, T>{},
-    internal::CartesianProductMargin<Ds...>{std::make_from_tuple<internal::CartesianProductMargin<Ds...>>(p)} {}
+    impl::CartesianProductMargin<Ds...>{std::make_from_tuple<impl::CartesianProductMargin<Ds...>>(p)} {}
 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Reset() -> void {
-    [this]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    [this]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr {
         (..., this->template Margin<Is>().Reset());
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -90,7 +90,7 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Reset() -> void {
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Parameter() const -> AParameter {
-    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) -> AParameter {
+    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> AParameter {
         return {this->Parameter<Is>()...};
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -98,7 +98,7 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Parameter() const
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Parameter(const AParameter& p) -> void {
-    [this, &p]<gsl::index... Is>(std::index_sequence<Is...>) {
+    [this, &p]<gsl::index... Is>(std::index_sequence<Is...>) constexpr {
         (..., this->Parameter<Is>(p.template Parameter<Is>()));
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -106,7 +106,7 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Parameter(const A
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Min() const -> T {
-    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
+    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> T {
         return {this->template Margin<Is>().Min()...};
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -114,23 +114,23 @@ constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Min() const -> T 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Max() const -> T {
-    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
+    return [this]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> T {
         return {this->template Margin<Is>().Max()...};
     }(gslx::index_sequence_for<Ds...>());
 }
 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
-MUSTARD_ALWAYS_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Impl(auto& g) -> T {
-    return [this, &g]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
+constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Impl(auto& g) -> T {
+    return [this, &g]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> T {
         return {this->template Margin<Is>()(g)...};
     }(gslx::index_sequence_for<Ds...>());
 }
 
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
-MUSTARD_ALWAYS_INLINE constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Impl(auto& g, const AParameter& p) -> T {
-    return [this, &g, &p]<gsl::index... Is>(gslx::index_sequence<Is...>) -> T {
+constexpr auto JointInterface<ADerived, AParameter, T, Ds...>::Impl(auto& g, const AParameter& p) -> T {
+    return [this, &g, &p]<gsl::index... Is>(gslx::index_sequence<Is...>) constexpr -> T {
         return {this->template Margin<Is>()(g, p.template Parameter<Is>())...};
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -139,7 +139,7 @@ template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 template<muc::character AChar>
 auto JointInterface<ADerived, AParameter, T, Ds...>::StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os) {
-    return [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return [&]<gsl::index... Is>(gslx::index_sequence<Is...>) -> decltype(auto) {
         return (os << ... << this->template Margin<Is>());
     }(gslx::index_sequence_for<Ds...>());
 }
@@ -148,7 +148,7 @@ template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 template<muc::character AChar>
 auto JointInterface<ADerived, AParameter, T, Ds...>::StreamInput(std::basic_istream<AChar>& is) & -> decltype(is) {
-    return [&]<gsl::index... Is>(gslx::index_sequence<Is...>) {
+    return [&]<gsl::index... Is>(gslx::index_sequence<Is...>) -> decltype(auto) {
         return (is >> ... >> this->template Margin<Is>());
     }(gslx::index_sequence_for<Ds...>());
 }

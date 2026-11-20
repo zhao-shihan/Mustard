@@ -1,3 +1,21 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
+//
+// This file is part of Mustard, an offline software framework for HEP experiments.
+//
+// Mustard is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Mustard. If not, see <https://www.gnu.org/licenses/>.
+
 #pragma once
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -18,7 +36,7 @@ namespace Mustard::inline Utility {
 /// @tparam ACategory The unit category.
 /// @param x The value
 /// @return Converted value.
-template<muc::ceta_string ACategory, muc::general_arithmetic U>
+template<muc::ceta_string ACategory, muc::linearly_combinable U>
 constexpr auto ToG3(const U& x) -> U {
     constexpr auto L{TGeoUnit::mm};
     constexpr auto T{TGeoUnit::ns};
@@ -72,7 +90,7 @@ constexpr auto ToG3(const U& x) -> U {
     } else if constexpr (ACategory == "Illuminance") {
         return x * (TGeoUnit::lux / CLHEP::lux);
     } else {
-        static_assert(muc::dependent_false<U>, "No such unit category");
+        static_assert(muc::dependent_false<U>, "No such unit category exists.");
     }
 }
 
@@ -81,7 +99,7 @@ constexpr auto ToG3(const U& x) -> U {
 /// @tparam ACategory The unit category.
 /// @param x The value
 /// @return Converted value.
-template<muc::ceta_string ACategory, muc::general_arithmetic U>
+template<muc::ceta_string ACategory, muc::linearly_combinable U>
 constexpr auto ToG4(const U& x) -> U {
     constexpr auto L{CLHEP::cm};
     constexpr auto T{CLHEP::s};
@@ -135,7 +153,7 @@ constexpr auto ToG4(const U& x) -> U {
     } else if constexpr (ACategory == "Illuminance") {
         return x * (CLHEP::lux / TGeoUnit::lux);
     } else {
-        static_assert(muc::dependent_false<U>, "No such unit category");
+        static_assert(muc::dependent_false<U>, "No such unit category exists.");
     }
 }
 

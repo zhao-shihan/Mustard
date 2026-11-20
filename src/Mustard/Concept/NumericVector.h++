@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -25,6 +25,7 @@
 #include "gsl/gsl"
 
 #include <array>
+#include <complex>
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -32,27 +33,48 @@
 
 namespace Mustard::Concept {
 
+namespace impl {
+
+template<typename T, typename F, std::size_t N>
+concept VectorInitializable = requires {
+    requires(N != std::numeric_limits<std::size_t>::max() and N >= 2);
+    requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
+        return requires(T v, std::array<F, sizeof...(Is)> u) {
+            ::delete ::new T{std::get<Is>(u)...};
+            v = T{std::get<Is>(u)...};
+            v = {std::get<Is>(u)...};
+        };
+    }(gslx::make_index_sequence<N>{}));
+};
+
+} // namespace impl
+
 template<typename T, typename F, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept NumericVector =
-    requires {
-        requires InputVector<T, F, N>;
-        requires std::is_standard_layout_v<T>;
-        requires std::is_class_v<T>;
-        requires std::regular<T>;
-        requires SubscriptableTo<T, F&>;
-        requires(SubscriptableTo<std::add_const_t<T>, const F&> or
-                 SubscriptableTo<std::add_const_t<T>, F>);
-        requires sizeof(T) % sizeof(F) == 0;
-        requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) {
-            return requires(T v, std::array<F, sizeof...(Is)> u) {
-                ::delete ::new T{std::get<Is>(u)...};
-                v = T{std::get<Is>(u)...};
-                v = {std::get<Is>(u)...};
-            };
-        }(gslx::make_index_sequence<sizeof(T) / sizeof(F)>{}));
-        requires(N == std::numeric_limits<std::size_t>::max() or
-                 sizeof(T) / sizeof(F) == N);
-    };
+concept NumericVector = requires {
+    // Common signatures for fixed-size numeric vector types.
+    requires InputVector<T, F, N>;
+    requires std::is_standard_layout_v<T>;
+    requires std::is_class_v<T>;
+    requires std::regular<T>;
+    requires SubscriptableTo<T, F&>;
+    requires(SubscriptableTo<std::add_const_t<T>, const F&> or
+             SubscriptableTo<std::add_const_t<T>, F>);
+    requires(sizeof(T) % sizeof(F) == 0);
+    requires(sizeof(T) / sizeof(F) >= 2);
+    requires(N >= 2);
+    requires(N == std::numeric_limits<std::size_t>::max() or
+             (alignof(T) == alignof(F) and sizeof(T) / sizeof(F) == N) or
+             (alignof(T) > alignof(F) and sizeof(T) / sizeof(F) >= N));
+    requires(N == std::numeric_limits<std::size_t>::max() or
+             impl::VectorInitializable<T, F, N>);
+    requires(impl::VectorInitializable<T, F, sizeof(T) / sizeof(F)> or
+             alignof(T) > alignof(F));
+    // These API should not be provided by a fixed-size numeric vector type.
+    requires not requires(T v, std::size_t n) { v.reserve(n); };
+    requires not requires(T v, std::size_t n) { v.Reserve(n); };
+    requires not requires(T v, F e) { v.push_back(e); };
+    requires not requires(T v, F e) { v.PushBack(e); };
+};
 
 template<typename T, typename F>
 concept NumericVector2 = NumericVector<T, F, 2>;
@@ -72,24 +94,49 @@ template<typename T>
 concept NumericVector3D = NumericVector3<T, double>;
 template<typename T>
 concept NumericVector4D = NumericVector4<T, double>;
+template<typename T>
+concept NumericVector2LD = NumericVector2<T, long double>;
+template<typename T>
+concept NumericVector3LD = NumericVector3<T, long double>;
+template<typename T>
+concept NumericVector4LD = NumericVector4<T, long double>;
+template<typename T>
+concept NumericVector2CD = NumericVector2<T, std::complex<double>>;
+template<typename T>
+concept NumericVector3CD = NumericVector3<T, std::complex<double>>;
+template<typename T>
+concept NumericVector4CD = NumericVector4<T, std::complex<double>>;
+template<typename T>
+concept NumericVector2CF = NumericVector2<T, std::complex<float>>;
+template<typename T>
+concept NumericVector3CF = NumericVector3<T, std::complex<float>>;
+template<typename T>
+concept NumericVector4CF = NumericVector4<T, std::complex<float>>;
+template<typename T>
+concept NumericVector2CLD = NumericVector2<T, std::complex<long double>>;
+template<typename T>
+concept NumericVector3CLD = NumericVector3<T, std::complex<long double>>;
+template<typename T>
+concept NumericVector4CLD = NumericVector4<T, std::complex<long double>>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept NumericVectorIntegral = NumericVector<T, bool, N> or
-                                NumericVector<T, signed char, N> or
-                                NumericVector<T, unsigned char, N> or
-                                NumericVector<T, char, N> or
-                                NumericVector<T, char8_t, N> or
-                                NumericVector<T, char16_t, N> or
-                                NumericVector<T, char32_t, N> or
-                                NumericVector<T, wchar_t, N> or
-                                NumericVector<T, short, N> or
-                                NumericVector<T, int, N> or
-                                NumericVector<T, long, N> or
-                                NumericVector<T, long long, N> or
-                                NumericVector<T, unsigned short, N> or
-                                NumericVector<T, unsigned int, N> or
-                                NumericVector<T, unsigned long, N> or
-                                NumericVector<T, unsigned long long, N>;
+concept NumericVectorIntegral =
+    NumericVector<T, bool, N> or
+    NumericVector<T, signed char, N> or
+    NumericVector<T, unsigned char, N> or
+    NumericVector<T, char, N> or
+    NumericVector<T, char8_t, N> or
+    NumericVector<T, char16_t, N> or
+    NumericVector<T, char32_t, N> or
+    NumericVector<T, wchar_t, N> or
+    NumericVector<T, short, N> or
+    NumericVector<T, int, N> or
+    NumericVector<T, long, N> or
+    NumericVector<T, long long, N> or
+    NumericVector<T, unsigned short, N> or
+    NumericVector<T, unsigned int, N> or
+    NumericVector<T, unsigned long, N> or
+    NumericVector<T, unsigned long long, N>;
 
 template<typename T>
 concept NumericVector2Integral = NumericVectorIntegral<T, 2>;
@@ -99,9 +146,10 @@ template<typename T>
 concept NumericVector4Integral = NumericVectorIntegral<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept NumericVectorFloatingPoint = NumericVector<T, float, N> or
-                                     NumericVector<T, double, N> or
-                                     NumericVector<T, long double, N>;
+concept NumericVectorFloatingPoint =
+    NumericVector<T, float, N> or
+    NumericVector<T, double, N> or
+    NumericVector<T, long double, N>;
 
 template<typename T>
 concept NumericVector2FloatingPoint = NumericVectorFloatingPoint<T, 2>;
@@ -111,8 +159,23 @@ template<typename T>
 concept NumericVector4FloatingPoint = NumericVectorFloatingPoint<T, 4>;
 
 template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
-concept NumericVectorAny = NumericVectorIntegral<T, N> or
-                           NumericVectorFloatingPoint<T, N>;
+concept NumericVectorComplex =
+    NumericVector<T, std::complex<float>, N> or
+    NumericVector<T, std::complex<double>, N> or
+    NumericVector<T, std::complex<long double>, N>;
+
+template<typename T>
+concept NumericVector2Complex = NumericVectorComplex<T, 2>;
+template<typename T>
+concept NumericVector3Complex = NumericVectorComplex<T, 3>;
+template<typename T>
+concept NumericVector4Complex = NumericVectorComplex<T, 4>;
+
+template<typename T, std::size_t N = std::numeric_limits<std::size_t>::max()>
+concept NumericVectorAny =
+    NumericVectorIntegral<T, N> or
+    NumericVectorFloatingPoint<T, N> or
+    NumericVectorComplex<T, N>;
 
 template<typename T>
 concept NumericVector2Any = NumericVectorAny<T, 2>;

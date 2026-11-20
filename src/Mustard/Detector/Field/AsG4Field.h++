@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,7 +21,6 @@
 #include "Mustard/Detector/Field/ElectricField.h++"
 #include "Mustard/Detector/Field/ElectromagneticField.h++"
 #include "Mustard/Detector/Field/MagneticField.h++"
-#include "Mustard/Utility/VectorCast.h++"
 
 #include "G4ElectricField.hh"
 #include "G4ElectroMagneticField.hh"
@@ -29,35 +28,66 @@
 
 #include "muc/array"
 
-#include <algorithm>
-#include <bit>
 #include <type_traits>
 #include <utility>
 
 namespace Mustard::Detector::Field {
 
-namespace internal {
+namespace impl {
 
+/// @brief Helper base that controls the @c DoesFieldChangeEnergy() flag
+/// for Geant4 electromagnetic fields.
+///
+/// @tparam AChangeEnergy If @c true, the field may change particle energy.
 template<bool AChangeEnergy>
 class G4EMFieldBase : public G4ElectroMagneticField {
 public:
-    auto DoesFieldChangeEnergy() const -> G4bool override final { return AChangeEnergy; }
+    auto DoesFieldChangeEnergy() const -> bool override final { return AChangeEnergy; }
 };
 
-} // namespace internal
+} // namespace impl
 
+/// @brief Adapter that wraps a Mustard electromagnetic field for use with
+/// Geant4.
+///
+/// The Geant4 base class is selected at compile time based on which Mustard
+/// field concept @c AField satisfies:
+/// - If @c MagneticField<AField>, inherits from @c G4MagneticField
+/// - Else if @c ElectricField<AField>, inherits from @c G4ElectricField
+/// - Otherwise, inherits from @c impl::G4EMFieldBase (full EM field)
+///
+/// This minimizes the Geant4 interface surface: a pure magnetic field
+/// exposes only @c GetFieldValue with 3 output components, while an EM
+/// field exposes all 6.
+///
+/// @tparam AField The Mustard field type. Must satisfy
+/// @c ElectromagneticField.
+/// @tparam AEMFieldChangeEnergy Whether the field changes particle energy.
+/// Only meaningful when @c AField is a full EM field (not pure
+/// E or B). Default: @c true.
+///
+/// @warning The Mustard field methods must return field values in CLHEP
+/// units expected by Geant4 (tesla for B, volt/m for E). No
+/// automatic unit conversion is performed by this adapter.
 template<ElectromagneticField AField, bool AEMFieldChangeEnergy = true>
 class AsG4Field : public std::conditional_t<MagneticField<AField>,
                                             G4MagneticField,
                                             std::conditional_t<ElectricField<AField>,
                                                                G4ElectricField,
-                                                               internal::G4EMFieldBase<AEMFieldChangeEnergy>>>,
+                                                               impl::G4EMFieldBase<AEMFieldChangeEnergy>>>,
                   public AField {
 public:
     using AField::AField;
-    virtual ~AsG4Field() = default;
 
-    auto GetFieldValue(const G4double* x, G4double* f) const -> void override final;
+    /// @brief Geant4 callback: evaluates the field at a point.
+    ///
+    /// Computes the combined BE field via @c AField::BE() and writes the
+    /// result into the Geant4 output array.
+    ///
+    /// @param x Geant4 3D position array (in CLHEP units).
+    /// @param f Output array: @c f[0..2] = B field (tesla),
+    /// @c f[3..5] = E field (volt/m).
+    auto GetFieldValue(const double* x, double* f) const -> void override final;
 };
 
 } // namespace Mustard::Detector::Field

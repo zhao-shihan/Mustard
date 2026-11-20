@@ -1,0 +1,89 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
+//
+// This file is part of Mustard, an offline software framework for HEP experiments.
+//
+// Mustard is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Mustard. If not, see <https://www.gnu.org/licenses/>.
+
+namespace Mustard::inline Execution::impl {
+
+template<std::integral T>
+SequentialExecutorImpl<T>::SequentialExecutorImpl(std::string executionName, std::string opName, std::string taskName, std::unique_ptr<Dispatcher<T>> dispatcher) :
+    ExecutorImplBase<T>{std::move(executionName), std::move(opName), std::move(taskName), std::move(dispatcher)},
+    fProgressBar{} {
+    using std::chrono_literals::operator""ms;
+    this->fPrintProgressInterval = 50ms;
+}
+
+template<std::integral T>
+auto SequentialExecutorImpl<T>::Run(struct Dispatcher<T>::Task task, std::invocable<T> auto&& F) -> T {
+    // reset
+    if (task.last < task.first) {
+        Throw<std::invalid_argument>(fmt::format("task.last ({}) is less than task.first ({}).", task.last, task.first));
+    }
+    if (task.last == task.first) {
+        return 0;
+    }
+    const auto nTask{task.last - task.first};
+    this->fDispatcher->Task(task);
+    this->fDispatcher->Reset();
+    Expects(this->ExecutingTask() == this->Task().first);
+    Expects(this->NLocalExecutedTask() == 0);
+    Expects(this->fDispatcher->NExecutedTaskEstimation().second == 0);
+    // initialize
+    this->fExecuting = true;
+    this->fDispatcher->PreLoopAction();
+    this->fExecutionBeginTime = std::chrono::system_clock::now();
+    this->fStopwatch.reset();
+    this->fProcessorStopwatch.reset();
+    this->PreLoopReport();
+    // main loop
+    fProgressBar.Start(nTask);
+    while (this->ExecutingTask() != this->Task().last) {
+        this->fDispatcher->PreTaskAction();
+        const auto taskID{this->ExecutingTask()};
+        Ensures(taskID <= this->Task().last);
+        std::invoke(std::forward<decltype(F)>(F), taskID);
+        this->fDispatcher->IncrementNLocalExecutedTask();
+        this->fDispatcher->PostTaskAction();
+        fProgressBar.Tick();
+    }
+    fProgressBar.Complete();
+    // finalize
+    this->fExecutionInfo.nExecutedTask = this->NLocalExecutedTask();
+    this->fExecutionInfo.wallTime = this->fStopwatch.read();
+    this->fExecutionInfo.processorTime = this->fProcessorStopwatch.read();
+    this->fDispatcher->PostLoopAction();
+    this->fExecuting = false;
+    this->PostLoopReport();
+    return this->NLocalExecutedTask();
+}
+
+template<std::integral T>
+auto SequentialExecutorImpl<T>::PrintExecutionSummary() const -> void {
+    const auto& [executed, time, processorTime]{this->fExecutionInfo};
+    if (executed == 0 or this->fExecuting) {
+        PrintWarning("Execution summary not available for now.");
+        return;
+    }
+    using Seconds = muc::chrono::seconds<double>;
+    Print("+-------------------------+-------> Summary <-------+-------------------------+\n"
+          "| Executed                | Wall time (s)           | Processor time (s)      |\n"
+          "+-------------------------+-------------------------+-------------------------+\n"
+          "| {:23} | {:23.3f} | {:23.3f} |\n"
+          "+-------------------------+-------> Summary <-------+-------------------------+\n",
+          executed, Seconds{time}.count(), Seconds{processorTime}.count());
+}
+
+} // namespace Mustard::inline Execution::impl

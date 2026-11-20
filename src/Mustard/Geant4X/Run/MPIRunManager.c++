@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -17,46 +17,50 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/Geant4X/Run/MPIRunManager.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 
+#include "CLHEP/Random/Random.h"
+
 #include "G4Run.hh"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/utility"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <exception>
+#include <stdexcept>
 #include <streambuf>
 
 namespace Mustard::Geant4X::inline Run {
 
-namespace internal {
+namespace impl {
 
 FlipG4cout::FlipG4cout() {
-    if (mplr::comm_world().rank() != 0 or
+    if (mp1::comm_world().rank() != 0 or
         not Env::VerboseLevelReach<'E'>()) {
         static std::streambuf* gG4coutBufExchanger{};
         gG4coutBufExchanger = G4cout.rdbuf(gG4coutBufExchanger);
     }
 }
 
-} // namespace internal
+} // namespace impl
 
 MPIRunManager::MPIRunManager() :
-    internal::PreG4RunManagerInitFlipG4cout{},
+    impl::PreG4RunManagerInitFlipG4cout{},
     G4RunManager{},
-    internal::PostG4RunManagerInitFlipG4cout{},
-    fExecutor{"G4Run", "G4Event"},
+    impl::PostG4RunManagerInitFlipG4cout{},
+    fExecutor{"G4Run", "Simulation", "G4Event"},
     fMessengerRegister{this} {
     printModulo = -1;
     SetVerboseLevel(muc::to_underlying(Env::BasicEnv::Instance().VerboseLevel()));
 }
 
-auto MPIRunManager::PrintProgress(G4bool print) -> void {
+auto MPIRunManager::PrintProgress(bool print) -> void {
     fExecutor.PrintProgress(print);
     printModulo = -1;
 }
@@ -66,23 +70,31 @@ auto MPIRunManager::PrintProgressInterval(muc::chrono::seconds<double> t) -> voi
     printModulo = -1;
 }
 
-auto MPIRunManager::BeamOn(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void {
-    Parallel::ReseedRandomEngine();
+auto MPIRunManager::BeamOn(int nEvent, gsl::czstring macroFile, int nSelect) -> void {
+    // Reseed the process-wide unified engine through its CLHEP handle; ROOT's
+    // gRandom is a handle of that same engine, hence reseeded with it. A process
+    // whose environment installed no unified engine only has its CLHEP engine
+    // reseeded.
+    if (auto randomEngine{CLHEP::HepRandom::getTheEngine()}) {
+        Parallel::ReseedRandomEngine(*randomEngine);
+    } else {
+        Exception<FatalException>("CLHEP global random engine has been uninstalled, cannot reseed it.");
+    }
     G4RunManager::BeamOn(nEvent, macroFile, nSelect);
 }
 
-auto MPIRunManager::DoEventLoop(G4int nEvent, gsl::czstring macroFile, G4int nSelect) -> void {
+auto MPIRunManager::DoEventLoop(int nEvent, gsl::czstring macroFile, int nSelect) -> void {
     InitializeEventLoop(nEvent, macroFile, nSelect);
     // Set name for message
     if (currentRun) {
         fExecutor.ExecutionName(fmt::format("G4Run {}", currentRun->GetRunID()));
     }
     // Event loop
-    fExecutor(numberOfEventToBeProcessed, [this](auto eventID) {
+    fExecutor.Run(numberOfEventToBeProcessed, [this](auto eventID) {
         ProcessOneEvent(eventID);
         TerminateOneEvent();
         if (runAborted) {
-            Throw<std::runtime_error>("G4Run aborted");
+            Throw<std::runtime_error>("G4Run aborted.");
         }
     });
     // If multi-threading, TerminateEventLoop() is invoked after all threads are finished.

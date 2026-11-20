@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,10 +18,12 @@
 
 #pragma once
 
-#include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectricField.h++"
 #include "Mustard/Detector/Field/ElectromagneticFieldBase.h++"
 #include "Mustard/Detector/Field/MagneticFieldBase.h++"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <concepts>
 
@@ -30,21 +32,45 @@ namespace Mustard::Detector::Field {
 template<typename ADerived>
 class MagneticFieldBase;
 
+/// @brief CRTP base class for electric-field-only implementations.
+///
+/// Provides a static @c B() that always returns the zero vector, so
+/// derived classes only need to implement @c E(). The combined @c BE()
+/// method pairs this zero @c B with the derived class's @c E().
+///
+/// Inherits from @c ElectromagneticFieldBase<ADerived>.
+///
+/// @tparam ADerived The derived class (CRTP parameter).
+///
+/// @note The constructor enforces at compile time:
+/// - @c ADerived derives from @c ElectricFieldBase<ADerived>
+/// - @c ADerived does NOT derive from @c MagneticFieldBase
+/// - @c ADerived satisfies @c ElectricField<ADerived>
 template<typename ADerived>
 class ElectricFieldBase : public ElectromagneticFieldBase<ADerived> {
 public:
-    template<Concept::NumericVector3D T>
-    using F = typename ElectromagneticFieldBase<ADerived>::template F<T>;
+    using typename ElectromagneticFieldBase<ADerived>::BEField;
 
 protected:
+    /// @brief Default constructor. Enforces CRTP and concept constraints at compile time.
     constexpr ElectricFieldBase();
-    constexpr ~ElectricFieldBase() = default;
+    /// @brief Defaulted destructor.
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEONLY(ElectricFieldBase)
 
 public:
-    template<Concept::NumericVector3D T>
-    static constexpr auto B(T) -> T { return {0, 0, 0}; }
-    template<Concept::NumericVector3D T>
-    constexpr auto BE(T x) const -> F<T> { return {B(x), static_cast<const ADerived*>(this)->E(x)}; }
+    /// @brief Returns the zero vector (no magnetic field).
+    /// @note The position parameter is unused; it exists for interface uniformity.
+    /// @return The zero vector @c {0, 0, 0}.
+    static auto B(Point3D) -> Vector3D { return {0, 0, 0}; }
+    /// @brief Returns the combined B and E field at a point.
+    ///
+    /// The B component is always zero; the E component is delegated to
+    /// @c ADerived::E().
+    ///
+    /// @param x The position at which to evaluate the field.
+    /// @return A @c BEField with @c B = {0, 0, 0} and
+    /// @c E = ADerived::E(x).
+    auto BE(Point3D x) const -> BEField { return {B(x), static_cast<const ADerived*>(this)->E(x)}; }
 };
 
 } // namespace Mustard::Detector::Field

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -108,7 +108,7 @@ auto MPIExecutive::Execute(const std::ranges::input_range auto& cmdList) const -
             if (fIsInteractive) {
                 break;
             } else {
-                Throw<std::runtime_error>("Last command failed");
+                Throw<std::runtime_error>("Last command failed.");
             }
         }
     }

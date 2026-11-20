@@ -1,0 +1,51 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
+//
+// This file is part of Mustard, an offline software framework for HEP experiments.
+//
+// Mustard is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Mustard. If not, see <https://www.gnu.org/licenses/>.
+
+#include "Mustard/Env/MPIMonteCarloEnv.h++"
+#include "Mustard/Env/impl/EnvBase.h++"
+#include "Mustard/IO/PrettyLog.h++"
+
+#include "mp1/mp1.hpp"
+
+#include <utility>
+
+namespace Mustard::Env {
+
+MPIMonteCarloEnv::MPIMonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
+                                   enum VerboseLevel verboseLevel,
+                                   bool showBannerHint,
+                                   std::optional<muc::any_rng> engine) :
+    impl::EnvBase(impl::EnableMPI{argc, argv}),
+    BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
+    MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
+    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)},
+    PassiveSingleton<MPIMonteCarloEnv>{this} {}
+
+MPIMonteCarloEnv::MPIMonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
+                                   enum VerboseLevel verboseLevel,
+                                   bool showBannerHint,
+                                   std::optional<muc::any_rng> engine) :
+    MPIMonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)} {
+    if (fShowBanner and (not mp1::available() or mp1::comm_world().rank() == 0)) {
+        PrintStartBannerSplitLine();
+        PrintStartBannerBody(argc, argv);
+        PrintStartBannerSplitLine();
+    }
+}
+
+} // namespace Mustard::Env

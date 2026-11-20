@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,11 +19,15 @@
 #pragma once
 
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "CLHEP/Random/RandomEngine.h"
 
+#include "TRandom.h"
+
 #include "muc/concepts"
+#include "muc/numeric"
 #include "muc/utility"
 
 #include <concepts>
@@ -33,7 +37,7 @@
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<muc::arithmetic T, template<typename> typename AUniform>
 class BasicUniformParameter final : public DistributionParameterBase<BasicUniformParameter<T, AUniform>, AUniform<T>> {
@@ -78,7 +82,7 @@ public:
     constexpr explicit UniformBase(const typename Base::ParameterType& p);
 
 protected:
-    constexpr ~UniformBase() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(UniformBase)
 
 public:
     constexpr auto Reset() -> void {}
@@ -94,8 +98,6 @@ public:
     constexpr auto Min() const -> auto { return Infimum(); }
     constexpr auto Max() const -> auto { return Supremum(); }
 
-    static constexpr auto Stateless() -> bool { return true; }
-
     template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const UniformBase& self) -> auto& { return os << self.fParameter; }
     template<muc::character AChar>
@@ -105,32 +107,9 @@ protected:
     typename Base::ParameterType fParameter;
 };
 
-} // namespace internal
+} // namespace impl
 
-/// @brief Generates uniform random floating-point value on a compact (including end-point) interval.
-/// @tparam T The value type.
-template<std::floating_point T = double>
-class UniformCompact;
-
-template<std::floating_point T>
-using UniformCompactParameter = internal::BasicUniformParameter<T, UniformCompact>;
-
-template<std::floating_point T>
-class UniformCompact final : public internal::UniformBase<UniformCompact, T> {
-public:
-    using internal::UniformBase<UniformCompact, T>::UniformBase;
-
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformCompactParameter<T>& p) -> T;
-
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const UniformCompactParameter<T>& p) -> T;
-};
-
-template<typename T, typename U>
-UniformCompact(T, U) -> UniformCompact<std::common_type_t<T, U>>;
-
-/// @brief Generates uniform random floating-point value on an open (excluding end-point) interval.
+/// @brief Generates uniform random floating-point value on [a, b) interval.
 /// @tparam T The value type.
 template<std::floating_point T = double>
 class UniformReal;
@@ -148,23 +127,25 @@ using Uniform = std::conditional_t<std::floating_point<T>,
                                    UniformInteger<std::conditional_t<std::integral<T>, T, int>>>;
 
 template<muc::arithmetic T>
-using UniformParameter = internal::BasicUniformParameter<T, Uniform>;
+using UniformParameter = impl::BasicUniformParameter<T, Uniform>;
 
-/// @brief Generates uniform random floating-point value on an open (excluding end-point) interval.
+/// @brief Generates uniform random floating-point value on [a, b) interval.
 /// @tparam T The value type.
 template<std::floating_point T>
-class UniformReal final : public internal::UniformBase<Uniform, T> {
+class UniformReal final : public impl::UniformBase<Uniform, T> {
 public:
-    using internal::UniformBase<Uniform, T>::UniformBase;
+    using impl::UniformBase<Uniform, T>::UniformBase;
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> auto { return Impl(g, p); }
+    template<std::uniform_random_bit_generator G>
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(G& g) -> auto { return (*this)(g, this->fParameter); }
+    template<std::uniform_random_bit_generator G>
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(G& g, const UniformParameter<T>& p) -> T;
 
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const UniformParameter<T>& p) -> auto { return Impl(g, p); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const UniformParameter<T>& p) -> T;
 
-private:
-    MUSTARD_ALWAYS_INLINE static constexpr auto Impl(auto& g, const UniformParameter<T>& p) -> T;
+    MUSTARD_ALWAYS_INLINE auto operator()(TRandom& g) -> auto { return (*this)(g, this->fParameter); }
+    MUSTARD_ALWAYS_INLINE auto operator()(TRandom& g, const UniformParameter<T>& p) -> T;
 };
 
 template<typename T, typename U>
@@ -173,12 +154,14 @@ UniformReal(T, U) -> UniformReal<std::common_type_t<T, U>>;
 /// @brief Generates uniform random integral value on a interval.
 /// @tparam T The value type.
 template<std::integral T>
-class UniformInteger final : public internal::UniformBase<Uniform, T> {
+class UniformInteger final : public impl::UniformBase<Uniform, T> {
 public:
-    using internal::UniformBase<Uniform, T>::UniformBase;
+    using impl::UniformBase<Uniform, T>::UniformBase;
 
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return (*this)(g, this->fParameter); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const UniformParameter<T>& p) -> T;
+    template<std::uniform_random_bit_generator G>
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(G& g) -> auto { return (*this)(g, this->fParameter); }
+    template<std::uniform_random_bit_generator G>
+    MUSTARD_ALWAYS_INLINE constexpr auto operator()(G& g, const UniformParameter<T>& p) -> T;
 };
 
 template<typename T, typename U>

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,7 +22,7 @@
 
 #include "muc/math"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -34,9 +34,9 @@ using namespace PhysicalConstant;
 
 M2ENNGGGenerator::M2ENNGGGenerator(std::string_view parent, Vector3D momentum, Vector3D polarization,
                                    double softCutoff, double collinearCutoff,
-                                   std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
+                                   std::optional<int> acfSampleSize, std::optional<int> acfReplicate,
                                    std::optional<double> stepSize) :
-    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, std::move(thinningRatio), acfSampleSize.value_or(200000), stepSize.value_or(0.1)} {
+    MultipleTryMetropolisGenerator{{}, polarization, {}, {}, acfSampleSize.value_or(1 << 18), std::move(acfReplicate), stepSize.value_or(0.1)} {
     Parent(parent);
     Momentum(momentum);
     Mass({electron_mass_c2, 0, 0, 0, 0});
@@ -51,7 +51,7 @@ auto M2ENNGGGenerator::Parent(std::string_view parent) -> void {
     } else if (parent == "mu+") {
         PDGID({-11, 12, -14, 22, 22});
     } else {
-        Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'", parent));
+        Throw<std::invalid_argument>(fmt::format("Parent should be mu- or mu+, got '{}'.", parent));
     }
 }
 

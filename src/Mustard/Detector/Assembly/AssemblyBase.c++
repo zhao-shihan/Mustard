@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,8 +20,6 @@
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "muc/hash_set"
-
 namespace Mustard::Detector::Assembly {
 
 auto AssemblyBase::Get(std::type_index definition) const -> const Definition::DefinitionBase& {
@@ -34,7 +32,7 @@ auto AssemblyBase::Get(std::type_index definition) const -> const Definition::De
             return *descendant;
         }
     }
-    Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
+    Throw<std::logic_error>(fmt::format("No {} found in assembly.", muc::try_demangle(definition.name())));
 }
 
 auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase& {
@@ -47,13 +45,13 @@ auto AssemblyBase::Get(std::type_index definition) -> Definition::DefinitionBase
             return *descendant;
         }
     }
-    Throw<std::logic_error>(fmt::format("No {} in assembly", muc::try_demangle(definition.name())));
+    Throw<std::logic_error>(fmt::format("No {} found in assembly.", muc::try_demangle(definition.name())));
 }
 
 auto AssemblyBase::TopComplete() -> void {
     // check not empty
     if (fTop.empty()) {
-        Throw<std::logic_error>("Empty assembly");
+        Throw<std::logic_error>("Assembly is empty.");
     }
     // check not mother-daughter
     for (auto&& [topType, pTop] : fTop) {
@@ -63,14 +61,14 @@ auto AssemblyBase::TopComplete() -> void {
         }
         for (auto&& [anotherTop, _] : fTop) {
             if (top.FindDaughter(anotherTop)) {
-                Throw<std::logic_error>(fmt::format("{} is mother of {}",
+                Throw<std::logic_error>(fmt::format("{} is mother of {}.",
                                                     muc::try_demangle(topType.name()),
                                                     muc::try_demangle(anotherTop.name())));
             }
         }
     }
     // check from same family
-    muc::flat_hash_set<const Definition::DefinitionBase*> mother;
+    gtl::flat_hash_set<const Definition::DefinitionBase*> mother;
     mother.reserve(fTop.size());
     for (auto&& [_, top] : fTop) {
         const Definition::DefinitionBase* myMother{top.get()};
@@ -80,7 +78,7 @@ auto AssemblyBase::TopComplete() -> void {
         mother.emplace(myMother);
     }
     if (mother.size() != 1) {
-        Throw<std::logic_error>("Assembly has many first ancestors");
+        Throw<std::logic_error>("Assembly has many first ancestors.");
     }
 }
 

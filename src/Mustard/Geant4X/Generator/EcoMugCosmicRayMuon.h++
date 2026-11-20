@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -68,6 +68,10 @@ public:
     auto HSphereRadius(double r) -> void;
     auto HSphereCenterPosition(G4ThreeVector x0) -> void;
 
+    auto UseTargetSphere() -> void;
+    auto TargetSphereRadius(double r) -> void;
+    auto TargetSphereCenterPosition(G4ThreeVector x0) -> void;
+
     auto MaxTheta(double thetaMax) -> void;
     auto MinMomentum(double pMin) -> void;
     auto MaxMomentum(double pMax) -> void;
@@ -77,8 +81,8 @@ public:
     auto EstimatedTime(double nMuon, double horizontalFlux = 129_m_2_s_1) -> double;
 
 private:
-    auto EcoMuG() const -> const auto&;
-    auto EcoMuG() -> auto&;
+    auto EcoMug() const -> const auto&;
+    auto EcoMug() -> auto&;
 
     auto ToEcoMug(G4ThreeVector x) -> muc::array3d;
     auto ToGeant4(muc::array3d x) -> G4ThreeVector;

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -28,7 +28,7 @@
 #include "muc/math"
 #include "muc/numeric"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <algorithm>
 #include <array>

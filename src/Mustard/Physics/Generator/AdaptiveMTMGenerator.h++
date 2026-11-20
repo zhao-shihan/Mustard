@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,13 +19,12 @@
 #pragma once
 
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
+#include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Physics/Generator/MCMCGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Utility/VectorAssign.h++"
 #include "Mustard/Utility/VectorCast.h++"
-
-#include "CLHEP/Random/RandomEngine.h"
 
 #include "Eigen/Cholesky"
 
@@ -76,21 +75,21 @@ public:
     /// @param pI initial-state 4-momenta
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     AdaptiveMTMGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                         std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {});
+                         std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
-    /// @note This overload is only enabled for polarized decay
+    /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
+    /// @note This overload is only enabled for polarized decay.
     AdaptiveMTMGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                          const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                         std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {})
+                         std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
     // Keep the class abstract
@@ -98,22 +97,22 @@ public:
 
 private:
     /// @brief Markov chain burn in stage
-    /// @param rng Reference to CLHEP random engine
-    virtual auto BurnIn(CLHEP::HepRandomEngine& rng) -> void override;
+    /// @param rng Reference to a random number engine
+    virtual auto BurnIn(muc::rng_ref rng) -> void override;
     /// @brief Advance Markov chain by one event
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return true if proposal accepted, false if not
-    virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override { return NextEventImpl(rng); }
+    virtual auto NextEvent(muc::rng_ref rng) -> bool override { return NextEventImpl(rng); }
 
     /// @brief Advance Markov chain by one event using
     /// adaptive multiple-try Metropolis (aMTM) algorithm
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @param burnInStepSize Step scale of random walk during burn in stage
     /// @return true if proposal accepted, false if not
-    auto NextEventImpl(CLHEP::HepRandomEngine& rng, double burnInStepSize = 0) -> bool;
+    auto NextEventImpl(muc::rng_ref rng, double burnInStepSize = 0) -> bool;
 
 private:
-    Random::GaussianFast<double> fGaussian;                                        ///< Gaussian distribution
+    Random::Gaussian<> fGaussian;                                                  ///< Gaussian distribution
     unsigned long long fIteration;                                                 ///< Current iteration count
     double fLearningRate;                                                          ///< Learning rate for adaptation
     Eigen::Vector<double, MarkovChain::dim> fRunningMean;                          ///< Running mean of states

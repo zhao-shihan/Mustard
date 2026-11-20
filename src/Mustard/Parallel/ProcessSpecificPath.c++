@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,7 +20,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "fmt/std.h"
 
@@ -29,19 +29,19 @@
 
 namespace Mustard::Parallel {
 
-auto ProcessSpecificPath(const std::filesystem::path& path) -> std::filesystem::path {
+auto ProcessSpecificPath(const std::filesystem::path& path, std::string_view suffix) -> std::filesystem::path {
     auto stem{path.stem()};
     if (stem.empty()) {
-        Throw<std::invalid_argument>("Empty file name");
+        Throw<std::invalid_argument>("File name is empty.");
     }
     if (stem == "." or stem == "..") {
-        Throw<std::invalid_argument>(fmt::format("Invalid file name '{}'", stem));
+        Throw<std::invalid_argument>(fmt::format("File name '{}' is invalid.", stem));
     }
 
-    if (not mplr::available()) {
+    if (not mp1::available()) {
         return path;
     }
-    const auto worldComm{mplr::comm_world()};
+    const auto& worldComm{mp1::comm_world()};
     if (worldComm.size() == 1) {
         return path;
     }
@@ -58,9 +58,10 @@ auto ProcessSpecificPath(const std::filesystem::path& path) -> std::filesystem::
         std::filesystem::create_directories(parent);
     }
     // wait for create_directories
-    intraNodeComm.barrier();
+    mp1::barrier(intraNodeComm);
     // construct full path
-    return parent / stem.concat(fmt::format("_mpi{}.", worldComm.rank())).replace_extension(path.extension());
+    return parent / stem.concat(fmt::format("{}{}.", suffix, worldComm.rank()))
+                        .replace_extension(path.extension());
 }
 
 } // namespace Mustard::Parallel

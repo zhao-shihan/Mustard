@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -34,7 +34,7 @@ class DataReaderPrimaryGenerator;
 
 class DataReaderPrimaryGeneratorMessenger final : public Geant4X::SingletonMessenger<DataReaderPrimaryGeneratorMessenger,
                                                                                      DataReaderPrimaryGenerator> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     DataReaderPrimaryGeneratorMessenger();

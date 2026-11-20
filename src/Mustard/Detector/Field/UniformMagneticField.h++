@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,29 +18,37 @@
 
 #pragma once
 
-#include "Mustard/Concept/InputVector.h++"
-#include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/MagneticFieldBase.h++"
-
-#include "muc/array"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 namespace Mustard::Detector::Field {
 
+/// @brief A spatially uniform (constant) magnetic field.
+///
+/// The magnetic field vector is the same at every point in space.
+/// Inherits from @c MagneticFieldBase<UniformMagneticField>, so the
+/// electric field component is automatically zero.
 class UniformMagneticField : public MagneticFieldBase<UniformMagneticField> {
 public:
-    constexpr UniformMagneticField(double bx, double by, double bz);
-    template<Concept::InputVector3D T = muc::array3d>
-    constexpr UniformMagneticField(T b);
+    /// @brief Construct from three scalar components.
+    /// @param bx Magnetic field x-component.
+    /// @param by Magnetic field y-component.
+    /// @param bz Magnetic field z-component.
+    UniformMagneticField(double bx, double by, double bz);
+    /// @brief Construct from a vector.
+    /// @param b Magnetic field vector.
+    UniformMagneticField(Vector3D b);
 
-    template<Concept::NumericVector3D T>
-    constexpr auto B(T) const -> T { return {fBx, fBy, fBz}; }
+    /// @brief Returns the constant magnetic field.
+    /// @note The position parameter is unused; it exists for interface uniformity.
+    /// @return The constant magnetic field vector.
+    auto B(Point3D) const -> Vector3D { return {fBx, fBy, fBz}; }
 
 private:
-    double fBx;
-    double fBy;
-    double fBz;
+    double fBx; ///< Magnetic field x-component.
+    double fBy; ///< Magnetic field y-component.
+    double fBz; ///< Magnetic field z-component.
 };
 
 } // namespace Mustard::Detector::Field
-
-#include "Mustard/Detector/Field/UniformMagneticField.inl"

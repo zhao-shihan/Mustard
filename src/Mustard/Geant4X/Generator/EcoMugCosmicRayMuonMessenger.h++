@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -34,7 +34,7 @@ class EcoMugCosmicRayMuon;
 
 class EcoMugCosmicRayMuonMessenger final : public Geant4X::SingletonMessenger<EcoMugCosmicRayMuonMessenger,
                                                                               EcoMugCosmicRayMuon> {
-    friend Env::Memory::SingletonInstantiator;
+    friend Env::SingletonFactory;
 
 private:
     EcoMugCosmicRayMuonMessenger();
@@ -50,6 +50,7 @@ private:
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkyCenterPosition;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fHSphereCenterPosition;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fCylinderCenterPosition;
+    std::unique_ptr<G4UIcmdWith3VectorAndUnit> fTargetSphereCenterPosition;
 
     std::unique_ptr<G4UIdirectory> fSizeDirectory;
     std::unique_ptr<G4UIcmdWith3VectorAndUnit> fSkySizeXY;
@@ -58,6 +59,8 @@ private:
     std::unique_ptr<G4UIdirectory> fSizeCylinderDirectory;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fCylinderRadius;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fCylinderHeight;
+    std::unique_ptr<G4UIdirectory> fSizeTargetSphereDirectory;
+    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fTargetSphereRadius;
 
     std::unique_ptr<G4UIdirectory> fEnergyDirectory;
     std::unique_ptr<G4UIcmdWithADoubleAndUnit> fMaxMomentum;

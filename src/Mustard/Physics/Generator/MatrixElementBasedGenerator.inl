@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -45,9 +45,8 @@ MatrixElementBasedGenerator<M, N, A>::MatrixElementBasedGenerator(const InitialS
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
-                                                              MCIntegrationState integrationState,
-                                                              CLHEP::HepRandomEngine& rng) -> std::tuple<Estimate, double, MCIntegrationState> {
+auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<long long>& executor, double precisionGoal, Statistic<1> statistic,
+                                                              muc::rng_ref rng) -> Statistic<1> {
     MasterPrintLn("Integrating |M|^2 * (Acceptance) over phase space in {}.\n", muc::try_demangle(typeid(*this).name()));
     if (fInfraredUnsafePID.empty()) {
         MasterPrintLn("No infrared cutoff is set.\n");
@@ -65,41 +64,35 @@ auto MatrixElementBasedGenerator<M, N, A>::PhaseSpaceIntegral(Executor<unsigned 
     }
 
     // Reseed random engine for statistical safety
-    Parallel::ReseedRandomEngine(&rng);
-
-    // Set task name
-    auto originalExecutionName{executor.ExecutionName()};
-    auto originalTaskName{executor.TaskName()};
-    auto _{gsl::finally([&] {
-        executor.ExecutionName(std::move(originalExecutionName));
-        executor.TaskName(std::move(originalTaskName));
-    })};
-    executor.ExecutionName("Integration");
-    executor.TaskName("Sample");
+    Parallel::ReseedRandomEngine(rng);
 
     // Start integration
-    const auto Integrand{[this](const Event& event) {
+    const auto integrand{[this](const Event& event) {
         const auto& [detJ, _, pF]{event};
         const auto acceptance{Acceptance(pF)};
         return MSqAcceptanceDetJ(pF, acceptance, detJ);
     }};
     muc::chrono::stopwatch stopwatch;
-    const auto [integral, nEff]{Integrate(Integrand, precisionGoal, integrationState, executor, rng)};
+    MCIntegrate(statistic, integrand, precisionGoal, executor, rng);
     auto time{muc::chrono::seconds<double>{stopwatch.read()}.count()};
-    if (mplr::available()) {
-        mplr::comm_world().ireduce(mplr::max<double>{}, 0, time).wait(mplr::duty_ratio::preset::relaxed);
+    if (mp1::available()) {
+        double maxTime{};
+        mp1::reduce(mp1::comm_world(), mp1::max{}, 0, time, maxTime);
+        if (mp1::comm_world().rank() == 0) {
+            time = maxTime;
+        }
     }
 
     // Report result
-    const auto& [sumF, sumF2, nSample]{integrationState};
+    const auto integral{statistic.MeanEstimate()};
     MasterPrint("Integration completed in {:.3f}s.\n"
                 "Integration state (integration can be continued from here):\n"
-                "  {} {} {}\n"
+                "  {}\n"
                 "The integral of |M|^2 * (Acceptance) over phase space:\n"
                 "  {} +/- {}  (rel. unc.: {:.3}%, N_eff: {:.2f})\n",
-                time, sumF, sumF2, nSample, integral.value, integral.uncertainty,
-                integral.uncertainty / std::abs(integral.value) * 100, nEff);
-    return {integral, nEff, integrationState};
+                time, ToBase64(statistic.ToPOD()), integral.Value(), integral.Uncertainty(),
+                integral.RelativeUncertainty() * 100, statistic.EffectiveSampleSize());
+    return statistic;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
@@ -136,24 +129,24 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set) -> void {
     for (auto&& i : std::as_const(set)) {
         if (i < 0 or i >= N) [[unlikely]] {
-            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0, {}), got {}), ignoring the set", N, i));
+            PrintError(fmt::format("Invalid particle index in identical set (valid range is [0, {}), got {}), ignoring the set.", N, i));
             return;
         }
     }
     muc::timsort(set);
     if (const auto duplicate{std::ranges::unique(set)};
         not duplicate.empty()) [[unlikely]] {
-        PrintWarning(fmt::format("There is/are {} duplicate index/indices in identical set, removing it/them", duplicate.size()));
+        PrintWarning(fmt::format("There is/are {} duplicate index/indices in identical set, removing it/them.", duplicate.size()));
         set.erase(duplicate.begin(), duplicate.end());
     }
     if (set.size() < 2) [[unlikely]] {
-        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it", set.size()));
+        PrintWarning(fmt::format("Identical set should have at least 2 elements (got {}), ignoring it.", set.size()));
         return;
     }
     for (auto&& addedSet : std::as_const(fIdenticalSet)) {
         const auto duplicated{std::ranges::find_first_of(addedSet, set)};
         if (duplicated != addedSet.cend()) [[unlikely]] {
-            PrintError(fmt::format("Particle {} added across different identical sets, ignoring the set", *duplicated));
+            PrintError(fmt::format("Particle {} added across different identical sets, ignoring the set.", *duplicated));
             return;
         }
     }
@@ -164,15 +157,15 @@ auto MatrixElementBasedGenerator<M, N, A>::AddIdenticalSet(std::vector<int> set)
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::SoftCutoff(int i, double cutoff) -> void {
     if (i < 0 or i >= N) [[unlikely]] {
-        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got {})", N, i));
+        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got {}).", N, i));
         return;
     }
     if (not std::isfinite(cutoff)) [[unlikely]] {
-        PrintError(fmt::format("Non-finite soft cutoff for particle {} not allowed (got {}), not setting it", i, cutoff));
+        PrintError(fmt::format("Non-finite soft cutoff for particle {} not allowed (got {}), not setting it.", i, cutoff));
         return;
     }
     if (cutoff <= 0) [[unlikely]] {
-        PrintWarning(fmt::format("Non-positive soft cutoff for particle {} (got {})", i, cutoff));
+        PrintWarning(fmt::format("Non-positive soft cutoff for particle {} (got {}).", i, cutoff));
     }
     fSoftCutoff[i] = cutoff;
     fInfraredUnsafePID.insert(i);
@@ -185,19 +178,19 @@ auto MatrixElementBasedGenerator<M, N, A>::CollinearCutoff(std::pair<int, int> p
         std::swap(i, j);
     }
     if (i < 0 or i >= N or j < 0 or j >= N) [[unlikely]] {
-        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got (i, j) = {})", N, pID));
+        PrintError(fmt::format("Invalid particle index (valid range is [0, {}), got (i, j) = {}).", N, pID));
         return;
     }
     if (i == j) [[unlikely]] {
-        PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i, j) = {})", pID));
+        PrintError(fmt::format("Collinear cutoff cannot be set for the same particle (got (i, j) = {}).", pID));
         return;
     }
     if (not std::isfinite(cutoff)) [[unlikely]] {
-        PrintError(fmt::format("Non-finite collinear cutoff for particle pair {} not allowed (got {}), not setting it", pID, cutoff));
+        PrintError(fmt::format("Non-finite collinear cutoff for particle pair {} not allowed (got {}), not setting it.", pID, cutoff));
         return;
     }
     if (cutoff <= 0 or CLHEP::pi <= cutoff) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious collinear cutoff for particle pair {} (expect 0 < cutoff < pi, got {})", pID, cutoff));
+        PrintWarning(fmt::format("Suspicious collinear cutoff for particle pair {} (expect 0 < cutoff < pi, got {}).", pID, cutoff));
     }
     fCollinearCutoff[pID] = std::cos(cutoff); // store cosθ to speed up the check (cosθ ≥ cutoff means θ ≤ cutoff, i.e. collinear)
     fInfraredUnsafePID.insert(i);
@@ -247,19 +240,19 @@ auto MatrixElementBasedGenerator<M, N, A>::Acceptance(const FinalStateMomenta& p
         return where;
     }};
     if (not std::isfinite(acceptance)) {
-        Throw<std::runtime_error>(fmt::format("Non-finite acceptance found (got {} at {})", acceptance, Format(pF)));
+        Throw<std::runtime_error>(fmt::format("Non-finite acceptance found (got {} at {}).", acceptance, Format(pF)));
     }
     if (acceptance < 0) {
-        Throw<std::runtime_error>(fmt::format("Negative acceptance found (got {} at {})", acceptance, Format(pF)));
+        Throw<std::runtime_error>(fmt::format("Negative acceptance found (got {} at {}).", acceptance, Format(pF)));
     }
     if (acceptance > 1) [[unlikely]] {
         constexpr std::int8_t maxIncidentReport{10};
         if (fAcceptanceGt1Counter < maxIncidentReport) {
             ++fAcceptanceGt1Counter;
-            PrintWarning(fmt::format("Acceptance > 1 (incident: {}, this warning will be suppressed after {} incidents)",
+            PrintWarning(fmt::format("Acceptance > 1 (incident: {}, this warning will be suppressed after {} incidents).",
                                      fAcceptanceGt1Counter, maxIncidentReport));
             if (fAcceptanceGt1Counter == maxIncidentReport) {
-                PrintWarning("Warning of acceptance > 1 suppressed");
+                PrintWarning("Warning of acceptance > 1 suppressed.");
             }
         }
     }
@@ -270,12 +263,12 @@ template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMomenta& pF, double acceptance, double detJ) const -> double {
     Expects(acceptance >= 0);
     Expects(detJ > 0);
-    if (acceptance <= std::numeric_limits<double>::epsilon()) {
+    if (acceptance <= muc::default_abs_tol<double>) {
         return 0;
     }
     const auto mSq{fMatrixElement(fMomenta, pF)};
     const auto result{fFSSymmetryFactor * mSq * acceptance * detJ}; // 1/S × |M|² × acceptance × |J|
-    constexpr auto Format{[](const FinalStateMomenta& pF, double acceptance, double detJ) {
+    constexpr auto format{[](const FinalStateMomenta& pF, double acceptance, double detJ) {
         auto where{fmt::format("({})", detJ)};
         for (auto&& p : pF) {
             where += fmt::format("[{}; {}, {}, {}]", p.e(), p.x(), p.y(), p.z());
@@ -287,78 +280,61 @@ auto MatrixElementBasedGenerator<M, N, A>::MSqAcceptanceDetJ(const FinalStateMom
         constexpr std::int8_t maxIncidentReport{10};
         if (fNegativeMSqCounter < maxIncidentReport) {
             ++fNegativeMSqCounter;
-            PrintWarning(fmt::format("Negative |M|^2 (got {} at {}, incident: {}, this warning will be suppressed after {} incidents)",
-                                     mSq, Format(pF, acceptance, detJ), fNegativeMSqCounter, maxIncidentReport));
+            PrintWarning(fmt::format("Negative |M|^2 (got {} at {}, incident: {}, this warning will be suppressed after {} incidents).",
+                                     mSq, format(pF, acceptance, detJ), fNegativeMSqCounter, maxIncidentReport));
             if (fNegativeMSqCounter == maxIncidentReport) {
-                PrintWarning("Warning of negative |M|^2 suppressed");
+                PrintWarning("Warning of negative |M|^2 suppressed.");
             }
         }
     }
     if (not std::isfinite(result)) {
-        Throw<std::runtime_error>(fmt::format("Non-finite 1/S * |M|^2 * acceptance * |J| found (got {} at {})", result, Format(pF, acceptance, detJ)));
+        Throw<std::runtime_error>(fmt::format("Non-finite 1/S * |M|^2 * acceptance * |J| found (got {} at {}).", result, format(pF, acceptance, detJ)));
     }
     return result;
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                                                     MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Estimate, double> {
+auto MatrixElementBasedGenerator<M, N, A>::MCIntegrate(Statistic<1>& statistic, std::regular_invocable<const Event&> auto&& integrand, double precisionGoal,
+                                                       Executor<long long>& executor, muc::rng_ref rng) -> void {
     if (precisionGoal <= 0) [[unlikely]] {
-        Mustard::PrintWarning(fmt::format("Non-positive precision goal (got {}), taking its absolute value", precisionGoal));
+        Mustard::PrintWarning(fmt::format("Non-positive precision goal (got {}), taking its absolute value.", precisionGoal));
         precisionGoal = std::abs(precisionGoal);
     }
-    // Core integration method
-    const auto Integrate{[&](unsigned long long nSample) {
-        using namespace Mustard::VectorArithmeticOperator::Vector2ArithmeticOperator;
-        muc::array2d sum{};
-        muc::array2d compensation{};
-        const auto KahanAdd{[&](muc::array2d value) { // improve numeric stability
-            const auto correctedValue{value - compensation};
-            const auto newSum{sum + correctedValue};
-            compensation = (newSum - sum) - correctedValue;
-            sum = newSum;
-        }};
-        executor(nSample, [&](auto) {
+    // Integration loop
+    MasterPrintLn("Integration starts. Precision goal: {:.3}.", precisionGoal);
+    const auto batchSizeForPrecision{muc::llround(muc::pow(precisionGoal, -2))};
+    auto batchSize{std::max(1000000ll * executor.NProcess(), batchSizeForPrecision)};
+    for (int checkpoint{};; ++checkpoint) {
+        if (statistic.SampleSize() == 0) {
+            MasterPrintLn("[Checkpoint {}] Restarting integration.", checkpoint);
+        } else {
+            MasterPrintLn("[Checkpoint {}] Continuing integration from state\n"
+                          "  {}",
+                          checkpoint, ToBase64(statistic.ToPOD()));
+        }
+        MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
+        Statistic<1> batchStatistic;
+        executor.Run("Integration", "Summation", "sample", batchSize, [&](auto) {
             const auto event{PhaseSpace(rng)};
             if (not InfraredSafe(event.p)) {
                 return;
             }
-            const auto value{Integrand(event)};
-            KahanAdd({value, muc::pow(value, 2)});
+            batchStatistic.Fill(integrand(event));
         });
-        if (mplr::available()) {
-            mplr::comm_world().allreduce([](auto a, auto b) { return a + b; }, sum);
+        if (mp1::available()) {
+            auto podBatchStatistic{batchStatistic.ToPOD()};
+            mp1::allreduce(mp1::comm_world(), std::plus{}, mp1::in_place, podBatchStatistic);
+            batchStatistic.FromPOD(podBatchStatistic);
         }
-        state.sumF += sum[0];
-        state.sumF2 += sum[1];
-        state.n += nSample;
-        Estimate integral;
-        integral.value = state.sumF / state.n;
-        integral.uncertainty = std::sqrt((state.sumF2 / state.n - muc::pow(integral.value, 2)) / state.n);
-        const auto nEff{muc::pow(state.sumF, 2) / state.sumF2};
-        return std::pair{integral, nEff};
-    }};
-    // Integration loop
-    MasterPrintLn("Integration starts. Precision goal: {:.3}.", precisionGoal);
-    const auto initialBatchSize{muc::to_unsigned(muc::llround(muc::pow(precisionGoal, -2)))};
-    auto batchSize{std::max(1000000ull * executor.NProcess(), initialBatchSize)};
-    for (int checkpoint{};; ++checkpoint) {
-        if (state.n == 0) {
-            MasterPrintLn("[Checkpoint {}] Restarting integration.", checkpoint);
-        } else {
-            MasterPrintLn("[Checkpoint {}] Continuing integration from state\n"
-                          "  {} {} {}",
-                          checkpoint, state.sumF, state.sumF2, state.n);
-        }
-        MasterPrintLn("Integrate with {} samples. Precision goal: {:.3}.", batchSize, precisionGoal);
-        const auto [integral, nEff]{Integrate(batchSize)};
-        const auto precision{integral.uncertainty / std::abs(integral.value)};
+        statistic += batchStatistic;
+        const auto integral{statistic.MeanEstimate()};
+        const auto nEff{statistic.EffectiveSampleSize()};
+        const auto precision{integral.RelativeUncertainty()};
         if (precision <= precisionGoal) {
             MasterPrint("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} reached.\n"
                         "\n"
                         "Integration completed with {} samples.\n",
-                        precision, nEff, precisionGoal, state.n);
-            return {integral, nEff};
+                        precision, nEff, precisionGoal, statistic.SampleSize());
         }
         MasterPrint("Current precision: {:.3}, N_eff: {:.2f}, precision goal {:.3} not reached.\n"
                     "\n",
@@ -370,7 +346,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
             constexpr auto zFactor{1};  // decrease z sigma to increase stability
             const auto counterFactor{1 - zFactor / std::sqrt(nEff)};
             const auto factor{std::max(0., counterFactor * muc::pow(precision / precisionGoal, 2) - 1)};
-            batchSize = factor * state.n;
+            batchSize = factor * statistic.SampleSize();
         } else { // increase the batch size by 10 if we have not even stepped into the real phase space
             batchSize *= 10;
         }
@@ -378,7 +354,7 @@ auto MatrixElementBasedGenerator<M, N, A>::Integrate(std::regular_invocable<cons
         const auto batchSizeLowerBound{std::max<long long>(executor.NProcess(), std::llround(nSamplePerMin))};
         // and not too large
         const auto batchSizeUpperBound{std::llround(15 * nSamplePerMin)};
-        batchSize = std::clamp<unsigned long long>(batchSize, batchSizeLowerBound, batchSizeUpperBound);
+        batchSize = std::clamp(batchSize, batchSizeLowerBound, batchSizeUpperBound);
     }
 }
 

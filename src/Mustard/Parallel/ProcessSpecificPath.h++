@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,7 +22,7 @@
 
 namespace Mustard::Parallel {
 
-/// @brief Generates a unique filesystem path for parallel processing environments
+/// @brief Generates a unique filesystem path for parallel processing environments.
 ///
 /// This function creates a process-specific path to avoid file conflicts in MPI environments.
 /// In single-process execution, returns the original path unchanged. In multi-process environments:
@@ -31,10 +31,11 @@ namespace Mustard::Parallel {
 /// Directory creation is synchronized using intra-node MPI communication.
 ///
 /// @param path Original filesystem path to process
-///
+/// @param suffix Process-specific suffix to append to the filename stem (default: "_p").
+///               The final filename will be: `{STEM}{SUFFIX}{RANK}.{EXTENSION}`
 /// @return The original path in single-process mode, or a modified path with:
 ///          - Node-specific parent directory (cluster environments)
-///          - Filename stem appended with "_mpi{RANK}."
+///          - Filename stem appended with "{SUFFIX}{RANK}" (e.g., "_p0", "_p1", ...)
 ///          - Original extension preserved
 ///
 /// @throws std::invalid_argument If:
@@ -46,10 +47,10 @@ namespace Mustard::Parallel {
 ///       - Single process: Returns original path immediately
 ///       - Multi-process:
 ///          1. Checks filename validity
-///          2. Creates node-specific directory (rank 0 per node)
+///          2. Node leaders create node-specific directory
 ///          3. Synchronizes directory creation (intra-node barrier)
-///          4. Generates rank-unique filename
+///          4. Generates process-unique filename
 ///       - Cluster environments use node names in directory structure
-auto ProcessSpecificPath(const std::filesystem::path& path) -> std::filesystem::path;
+auto ProcessSpecificPath(const std::filesystem::path& path, std::string_view suffix = "_p") -> std::filesystem::path;
 
 } // namespace Mustard::Parallel

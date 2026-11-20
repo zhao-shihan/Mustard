@@ -32,6 +32,7 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
   - [Class Structure](#class-structure)
     - [General Rules](#general-rules-1)
     - [Typical Declaration Order](#typical-declaration-order)
+    - [Member Function Definitions](#member-function-definitions)
     - [Example Class Structure](#example-class-structure)
     - [Inheritance](#inheritance)
   - [Constant and Variable Declaration](#constant-and-variable-declaration)
@@ -147,7 +148,7 @@ All files must begin with a standard copyright header:
 ```cpp
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -280,12 +281,12 @@ const auto eta{std::sqrt(x + epsilon)};
 
 // √ Good
 constexpr auto CompareTrackID{[](const auto& hit1, const auto& hit2) {
-    return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
+    return F<"TrkID">(*hit1) < F<"TrkID">(*hit2);
 }};
 // × Bad
 constexpr auto CompareTrackID{
     [](const auto& hit1, const auto& hit2) {
-        return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
+        return F<"TrkID">(*hit1) < F<"TrkID">(*hit2);
     }};
 ```
 
@@ -293,13 +294,12 @@ constexpr auto CompareTrackID{
 - No wrapping after `=`
 ```cpp
 template<typename M1, typename M2>
-concept SubTupleModel = requires {
+concept SubModel = requires {
     /* ... */
 };
 
-template<typename T1, typename T2>
-concept SubTuple = TupleLike<T1> and TupleLike<T2> and
-                   SubTupleModel<typename T1::Model, typename T2::Model>;
+template<typename T, typename M>
+concept SubTuple = TupleLike<T> and SubModel<typename T::Model, M>;
 ```
 
 ## Naming Conventions
@@ -378,7 +378,8 @@ auto Name(std::string val) -> void { fName = val; }   // setter
 
 ### Namespaces
 - **`PascalCase` for all namespaces**, excepts
-- `namespace internal` for implementation detail
+  - `namespace impl` for implementation detail, or
+  - `namespace impl1`, `namespace impl2` and so on if there are name conflicts
 
 ```cpp
 namespace MACE::Detector::Definition {
@@ -389,11 +390,11 @@ namespace MACE::Detector::Definition {
 
 namespace Mustard::inline Reconstruction::MMSTracking::inline Finder {
 
-namespace internal {
+namespace impl {
 
 /* ... */
 
-} // namespace internal
+} // namespace impl
 
 /* ... */
 
@@ -421,13 +422,42 @@ namespace Mustard::inline Reconstruction::MMSTracking::inline Finder {
 } // namespace Mustard::inline Reconstruction::MMSTracking::inline Finder
 ```
 
+### Qualification
+- **Never qualify a name with an `inline` namespace**: an inline namespace is transparent, its members belong to the enclosing namespace, so name them from there and keep the shortest path that reaches the name
+- Qualify only to disambiguate, that is, when a nearer namespace hides the name
+
+```cpp
+namespace Mustard::inline Utility {
+
+// √ Good: Utility is inline, so its members are reachable directly
+auto MakeEngine() -> Random::AnyEngine;                 // Mustard::Math::Random, Math is inline
+class RandomEngineInstaller : public NoncopyableBase {  // Mustard::Utility::NoncopyableBase
+    /* ... */
+};
+
+// × Bad: redundant qualifications of inline namespaces
+auto MakeEngine() -> Math::Random::AnyEngine;
+class RandomEngineInstaller : public Utility::NoncopyableBase {
+    /* ... */
+};
+
+} // namespace Mustard::inline Utility
+
+namespace Mustard::CLHEPX::Random {
+
+// √ Good: CLHEPX::Random hides Math::Random, so the qualification is needed here
+using Xoshiro256StarStar = AsHepRandomEngine<Math::Random::Xoshiro256StarStar>;
+
+} // namespace Mustard::CLHEPX::Random
+```
+
 ### Using Directives
 - **Never use `using namespace` in header files**
 - Limit `using` declarations to implementation files or function scope
 
 ### Anonymous Namespaces
 - Only use for introducing **internal linkage** (**do not use** when there should be or possibly should be external linkage):
-- When used in conjunction with `namespace internal`, place `namespace internal` outside the anonymous namespace
+- When used in conjunction with `namespace impl`, place `namespace impl` outside the anonymous namespace
 
 ```cpp
 namespace Mustard::Geant4X::inline Generator {
@@ -444,7 +474,7 @@ class Class1 {
 
 } // namespace
 
-namespace internal {
+namespace impl {
 namespace {
 
 class Class1 {
@@ -452,7 +482,7 @@ class Class1 {
 };
 
 } // namespace
-} // namespace internal
+} // namespace impl
 
 } // namespace Mustard::Geant4X::inline Generator
 ```
@@ -480,6 +510,11 @@ class Class1 {
 8. Private type aliases nested types
 9.  Private member functions
 10. Private member variables
+
+### Member Function Definitions
+- Define a member function inside the class body only if its definition is a single line, e.g. a simple getter or setter
+- Define any longer member function in the corresponding `.inl` (for templates) or `.c++` (otherwise) file, unless the class is local or there is another special reason
+- Define member functions in the same order as they are declared in the class, and let that order follow the declaration order described above
 
 ### Example Class Structure
 ```cpp
@@ -524,9 +559,8 @@ class Accelerator final : public Mustard::Detector::Definition::DefinitionBase {
 ```
 - Place multiple base classes on the different line successively
 ```cpp
-class Geant4Env : virtual public MPIEnv,
-                  virtual public MonteCarloEnv<512>,
-                  public Memory::PassiveSingleton<Geant4Env> {
+class Geant4Env : virtual public MPIMonteCarloEnv,
+                  public PassiveSingleton<Geant4Env> {
     /* ... */
 };
 ```
@@ -746,7 +780,7 @@ AdaptiveMTMGenerator<M, N, A>::AdaptiveMTMGenerator(
     const std::array<int, N>& pdgID, 
     const std::array<double, N>& mass,
     std::optional<double> thinningRatio, 
-    std::optional<unsigned> acfSampleSize) :
+    std::optional<int> acfSampleSize) :
     Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
     fGaussian{},
     fIteration{},
@@ -782,7 +816,15 @@ Example::Example(int val, std::vector<int> vec, std::string str = {}) :
 
 ### Local Variable Initialization
 - Use brace initialization for local variables as well
-- Use `auto` with brace initialization
+- Use `auto` with brace initialization when the initializer determines the type
+- For zero-initialization, write the type explicitly: use `T var{}`, not `auto var{T{}}` or `auto var{0.}`. Empty braces carry no type for `auto`, and an explicit type makes the zero value and its type clear
+- This rule is about zero-initialization; using `auto` with a non-zero literal whose type is obvious (e.g., `auto k{2}`) remains acceptable
+
+```cpp
+double sum{};          // √ Zero-initialized double
+auto sum{0.};          // × Prefer double sum{}
+auto sum{double{}};    // × Redundant; prefer double sum{}
+```
 
 ```cpp
 auto RAMBO<M, N>::RAMBO(const std::array<int, N>& pdgID, const std::array<double, N>& mass) :
@@ -850,7 +892,7 @@ template<typename T>
 concept Description =
     requires {
         requires std::derived_from<T, DescriptionBase<>>;
-        requires Env::Memory::Singletonified<T>;
+        requires Env::Singletonified<T>;
     };
 
 // Function templates with concept constraints
@@ -883,7 +925,7 @@ const auto& [p0, _1, _2, p3, p4]{momenta};
 ```
 
 ### Smart Pointers and Memory Management
-- **Use smart pointers (`std::unique_ptr`, `std::shared_ptr`) for ownership**
+- **Use smart pointers (`std::unique_ptr`, `std::shared_ptr`, `Mustard::Arc`) for ownership**
 - Use `gsl::not_null` for non-nullable pointers
 - **Prefer references over pointers when ownership is not transferred**
 
@@ -927,7 +969,7 @@ public:
 - **Never write your own singleton**
 ```cpp
 class Solenoid final : public Mustard::Detector::Description::DescriptionBase<Solenoid> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Solenoid();
@@ -977,8 +1019,8 @@ class Statistic {
 Declare extern templates in headers when specializations are defined in source file:
 
 ```cpp
-extern template class UseXoshiro<256>;
-extern template class UseXoshiro<512>;
+extern template class FStream<std::ifstream>;
+extern template class FStream<std::wifstream>;
 
 extern template class File<std::ifstream>;
 extern template class File<std::wifstream>;
@@ -1102,6 +1144,13 @@ constexpr auto NormSq(const Concept::NumericVectorFloatingPoint auto& x) {
 }
 ```
 
+- **Terminal Periods**: 
+  - Noun phrases: do **not** end with a period (`.`)
+  - Complete sentences: end with a period (`.`)
+  - `@brief`, `@param`, `@return`, `@tparam` tags are typically noun phrases
+  - `@note`, `@warning` tags and standalone `///` are typically complete sentences
+  - Multi-line `///` descriptions should have a period at the end of the final sentence
+
 ### Implementation Comments
 - Use `//` for implementation comments
 - Section dividers with multiple slashes
@@ -1126,16 +1175,19 @@ private:
 ### Exceptions
 - **Use `Mustard::Throw<exception_type>()` for exceptions, do not use plain `throw` directly**
 - Usually use standard library exceptions: `std::runtime_error`, `std::invalid_argument`, etc.
+- `Throw` is `[[noreturn]]`; do not add `[[unlikely]]` to a branch whose body unconditionally throws. Reserve `[[unlikely]]` for rare branches that actually continue or return.
 
 ```cpp
 if (not opened) {
-    Mustard::Throw<std::runtime_error>(fmt::format("Cannot open file '{}' with mode '{}'", outputPath, mode));
+    Mustard::Throw<std::runtime_error>(fmt::format("Cannot open file '{}' with mode '{}'.", outputPath, mode));
 }
 
 if (std::ranges::size(sample) > std::ranges::size(weight)) {
-    Throw<std::invalid_argument>("Size of sample > size of weight");
+    Throw<std::invalid_argument>("Size of sample > size of weight.");
 }
 ```
+
+- Error, warning, and exception messages must be complete sentences ending with a period (`.`)
 
 ### Assertions
 - Use GSL `Expects(...)` for precondition and `Ensures(...)` for postcondition
@@ -1159,7 +1211,7 @@ auto Calculate(double x) {
 constexpr auto NormSq(const Concept::NumericVectorFloatingPoint auto& x) {
     return [&x]<gsl::index... Is>(gslx::index_sequence<Is...>) {
         return muc::hypot_sq(x[Is]...);
-    }(gslx::make_index_sequence<VectorDimension<std::decay_t<decltype(x)>>>());
+    }(gslx::make_index_sequence<VectorDimension<std::decay_t<decltype(x)>>{}>());
 }
 
 constexpr auto Fill(double sample, double weight) -> void {
@@ -1190,7 +1242,7 @@ const auto alpha{1 / 137.035999084};
 // √ Good
 auto SortTrack1(std::vector<Track>& event) -> void {
     constexpr auto CompareTrackID{[](const auto& hit1, const auto& hit2) {
-        return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
+        return F<"TrkID">(*hit1) < F<"TrkID">(*hit2);
     }};
     std::ranges::sort(event, CompareTrackID);
 }
@@ -1199,7 +1251,7 @@ auto SortTrack1(std::vector<Track>& event) -> void {
 namespace {
 
 auto CompareTrackID(const auto& hit1, const auto& hit2) -> auto {
-    return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
+    return F<"TrkID">(*hit1) < F<"TrkID">(*hit2);
 }
 
 } // namespace
@@ -1232,7 +1284,7 @@ using namespace std::string_literals;
 
 ```cpp
 fmt::format("Cannot open file '{}' with mode '{}'", outputPath, mode)
-fmt::format("Entries of provided event split ({}) is inconsistent with the dataset ({})",
+fmt::format("Entries of provided RDF event info ({}) is inconsistent with the dataset ({})",
             nEntry, nEntryRDF)
 ```
 
@@ -1279,7 +1331,7 @@ class G4Material;
 
 ```cpp
 class Solenoid final : public Mustard::Detector::Description::DescriptionBase<Solenoid> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Solenoid();
@@ -1342,6 +1394,8 @@ public:
 ### Class Design
 - [ ] Place single base class on same line, multiple base classes on successive lines
 - [ ] Follow typical declaration order: types → constructors → destructor → functions → variables
+- [ ] Define only single-line member functions in the class body; put longer ones in the `.inl`/`.c++` file
+- [ ] Define member functions in the same order as they are declared
 - [ ] Declare member functions before member variables
 - [ ] Group related functions and variables together
 - [ ] Order members by logical relationship, not type
@@ -1416,7 +1470,7 @@ public:
 - [ ] Never use `using namespace` in header files
 - [ ] Limit `using` declarations to implementation files
 - [ ] Use anonymous namespaces only for internal linkage
-- [ ] Place `namespace internal` outside anonymous namespaces
+- [ ] Place `namespace impl` outside anonymous namespaces
 
 ### Documentation and Comments
 - [ ] Use Doxygen-style `///` comments for public APIs

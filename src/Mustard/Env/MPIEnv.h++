@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,9 +20,9 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "muc/optional"
 
@@ -35,20 +35,58 @@
 
 namespace Mustard::Env {
 
+/// @brief MPI-aware runtime environment for distributed Mustard applications.
+/// @details This environment initializes MPI via mp1 and derives a two-level
+/// communicator topology:
+/// - Intra-node communicator (`IntraNodeComm`) involves processes sharing
+///   the same node (shared-memory domain).
+/// - Inter-node communicator (`InterNodeComm`) involves one leader process
+///   per node for cross-node communication. Leader processes are processes
+///   ranked 0 in their respective intra-node communicators, or practically,
+///   they are processes that possess a valid inter-node communicator object.
+///
+/// The class also builds a node table that maps node names to world ranks,
+/// allowing code to reason about cluster layout.
+///
+/// MPI is owned by the optional `mp1::environment` held by `EnvBase`. `MPIEnv`
+/// constructs it before `BasicEnv`/`EnvBase` logic runs, and it is destroyed
+/// after `EnvBase`'s singleton pools have been destroyed.
 class MPIEnv : virtual public BasicEnv,
-               public Memory::PassiveSingleton<MPIEnv> {
+               public PassiveSingleton<MPIEnv> {
 protected:
+    /// @brief Constructs the environment without printing startup banner.
+    /// @param argc Argument count passed to `main`.
+    /// @param argv Argument vector passed to `main`.
+    /// @param cli Optional CLI object for argument processing.
+    /// @param verboseLevel Logging verbosity inherited from BasicEnv.
+    /// @param showBannerHint Whether banner hint should still be tracked.
+    /// @note Intended for derived/internal construction paths.
+    /// @note A most-derived class derived from `MPIEnv` must initialize
+    ///       `impl::EnvBase` with `impl::EnableMPI{argc, argv}` itself; the
+    ///       initializer in this constructor is ignored in that case.
     MPIEnv(NoBanner, int argc, char* argv[],
            muc::optional_ref<CLI::CLI<>> cli,
            enum VerboseLevel verboseLevel,
            bool showBannerHint);
 
 public:
+    /// @brief Constructs the MPI environment and optionally prints banners.
+    /// @param argc Argument count passed to `main`.
+    /// @param argv Argument vector passed to `main`.
+    /// @param cli Optional CLI object for argument processing.
+    /// @param verboseLevel Logging verbosity inherited from BasicEnv.
+    /// @param showBannerHint Whether start/exit banner behavior is enabled.
     MPIEnv(int argc, char* argv[],
            muc::optional_ref<CLI::CLI<>> cli = {},
            enum VerboseLevel verboseLevel = {},
            bool showBannerHint = true);
 
+    /// @brief Synchronizes all processes and finalizes environment shutdown.
+    /// @details A barrier is waited before teardown to keep shutdown output
+    /// consistent across processes. MPI itself is finalized by the owned
+    /// `mp1::environment`, which is destroyed after the communicator members,
+    /// the derived environments, and `EnvBase` (the singleton pools) have been
+    /// destroyed.
     virtual ~MPIEnv();
 
     using PassiveSingleton<MPIEnv>::Instance;
@@ -56,33 +94,60 @@ public:
     using PassiveSingleton<MPIEnv>::Expired;
     using PassiveSingleton<MPIEnv>::Instantiated;
 
+    /// @brief Returns communicator grouping processes on the same physical node.
+    /// @return Intra-node communicator derived from `MPI_COMM_WORLD` using
+    /// shared-memory split.
     auto IntraNodeComm() const -> const auto& { return fIntraNodeComm; }
+    /// @brief Returns communicator containing one leader rank per node.
+    /// Leader processes are processes ranked 0 in their respective intra-node
+    /// communicators, or practically, they are processes that possess a valid
+    /// inter-node communicator object.
+    /// @return Inter-node communicator; invalid for non-leader processes.
     auto InterNodeComm() const -> const auto& { return fInterNodeComm; }
 
-    auto LocalNodeID() const -> const auto& { return fLocalNodeID; }
-    auto LocalNode() const -> const auto& { return fNodeList[fLocalNodeID]; }
+    /// @brief Returns local node index in the cluster node list.
+    /// @return Local node index into the node list.
+    auto LocalNodeIdx() const -> const auto& { return fLocalNodeIdx; }
+    /// @brief Returns metadata of the node where current rank runs.
+    /// @return Const reference to the `Node` metadata of the local node.
+    auto LocalNode() const -> const auto& { return fNodeList[fLocalNodeIdx]; }
+    /// @brief Returns metadata of all discovered nodes.
+    /// @return Const reference to the vector of all `Node` metadata.
     auto NodeList() const -> const auto& { return fNodeList; }
+    /// @brief Returns metadata for node @p id.
+    /// @param id Node index in [0, ClusterSize()).
+    /// @return Const reference to `Node` metadata at index @p id.
     auto Node(int id) const -> const auto& { return fNodeList.at(id); }
+    /// @brief Returns total number of participating nodes.
+    /// @return Total number of distinct physical nodes.
     auto ClusterSize() const -> int { return fNodeList.size(); }
+    /// @brief Checks whether all MPI processes are on a single node.
+    /// @return True if all MPI processes reside on a single node.
     auto OnSingleNode() const -> auto { return ClusterSize() == 1; }
+    /// @brief Checks whether MPI processes span multiple nodes.
+    /// @return True if MPI processes span multiple nodes.
     auto OnCluster() const -> auto { return ClusterSize() != 1; }
 
 protected:
+    /// @brief Prints MPI-specific details (rank, node info) into the start banner.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
     auto PrintStartBannerBody(int argc, char* argv[]) const -> void;
 
 private:
+    /// @brief Metadata aggregated per physical node.
     struct Node {
-        std::string name;
-        int size;
-        std::vector<int> worldRank;
+        std::string name;           ///< Hostname (MPI processor name) of the node.
+        int size;                   ///< Number of world processes located on this node.
+        std::vector<int> worldRank; ///< Sorted world-rank list belonging to this node.
     };
 
 private:
-    mplr::communicator fIntraNodeComm;
-    mplr::communicator fInterNodeComm;
+    mp1::communicator fIntraNodeComm; ///< Communicator grouping processes on the same physical node.
+    mp1::communicator fInterNodeComm; ///< Communicator containing one leader rank per node.
 
-    int fLocalNodeID;
-    std::vector<struct Node> fNodeList;
+    int fLocalNodeIdx;                  ///< Index of the current rank's node in the node list.
+    std::vector<struct Node> fNodeList; ///< Metadata for all discovered nodes in the cluster.
 };
 
 } // namespace Mustard::Env

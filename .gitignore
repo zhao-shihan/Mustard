@@ -1,5 +1,8 @@
+**/__pycache__/
 **/.cache/
 **/.ipynb_checkpoints/
+**/.kilo/
+**/.opencode/
 **/.temp/
 **/.tmp/
 **/.vs/
@@ -25,6 +28,8 @@
 **/temp/
 **/thirdparty/
 **/tmp/
+cmake/CPM.cmake
+cmake/FindFFTW.cmake
 document/doxygen/html/
 document/doxygen/latex/
 document/doxygen/man/

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,6 +20,7 @@
 
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/RandomNumberDistribution.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <type_traits>
 
@@ -33,7 +34,7 @@ public:
 
 protected:
     constexpr DistributionParameterBase();
-    constexpr ~DistributionParameterBase() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(DistributionParameterBase)
 
 public:
     constexpr bool operator==(const DistributionParameterBase&) const = default;
@@ -45,12 +46,13 @@ class RandomNumberDistributionBase {
 public:
     using ResultType = T;
     using ParameterType = AParameter;
+
     using result_type = ResultType;
     using param_type = ParameterType;
 
 protected:
     constexpr RandomNumberDistributionBase();
-    constexpr ~RandomNumberDistributionBase() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(RandomNumberDistributionBase)
 
 public:
     auto reset() -> void { static_cast<ADerived*>(this)->Reset(); }
@@ -63,6 +65,8 @@ public:
 
     constexpr auto operator==(const RandomNumberDistributionBase&) const -> bool = default;
     constexpr auto operator<=>(const RandomNumberDistributionBase&) const -> auto = delete;
+
+    static constexpr auto Stateless() -> auto { return sizeof(ADerived) == sizeof(ParameterType); }
 };
 
 } // namespace Mustard::inline Math::Random

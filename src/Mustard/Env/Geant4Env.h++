@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,23 +20,39 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/Geant4Module.h++"
-#include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
-#include "Mustard/Env/MonteCarloEnv.h++"
+#include "Mustard/Env/MPIMonteCarloEnv.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include <concepts>
 
 namespace Mustard::Env {
 
-class Geant4Env : virtual public MPIEnv,
-                  virtual public MonteCarloEnv<512>,
-                  public Memory::PassiveSingleton<Geant4Env> {
+/// @brief Geant4-specialized MPI Monte Carlo environment.
+/// @details Inherits the full MPI distribution and Monte Carlo random engine
+/// capabilities via `MPIMonteCarloEnv`, installing a Xoshiro512** engine by
+/// default (the --rng option can select another one). Integrates Geant4 CLI
+/// module support for Geant4 simulation workflows. Uses the passive singleton
+/// pattern — clients access the environment via `Geant4Env::Instance()`.
+class Geant4Env : virtual public MPIMonteCarloEnv,
+                  public PassiveSingleton<Geant4Env> {
 protected:
+    /// @brief Constructs the Geant4 environment without printing the start banner.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
+    /// @param cli   CLI object for Geant4 and general argument processing.
+    /// @param verboseLevel  Logging verbosity threshold.
+    /// @param showBannerHint  Whether banner hint should be tracked despite suppression.
     Geant4Env(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
               enum VerboseLevel verboseLevel,
               bool showBannerHint);
 
 public:
+    /// @brief Constructs the Geant4 environment and optionally prints banners.
+    /// @param argc  Argument count passed to `main`.
+    /// @param argv  Argument vector passed to `main`.
+    /// @param cli   CLI object for Geant4 and general argument processing.
+    /// @param verboseLevel  Logging verbosity threshold.
+    /// @param showBannerHint  Whether start/exit banner behavior is enabled.
     Geant4Env(int argc, char* argv[], CLI::CLI<>& cli,
               enum VerboseLevel verboseLevel = {},
               bool showBannerHint = true);

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -22,6 +22,7 @@
 #include "Mustard/Math/Random/Distribution/Joint.h++"
 #include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/Utility/VectorValueType.h++"
 
 #include "muc/array"
@@ -29,11 +30,12 @@
 #include <array>
 #include <concepts>
 #include <iomanip>
+#include <random>
 #include <type_traits>
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
 template<Concept::NumericVector2Any T, template<typename> typename AUniformRectangle, template<typename> typename AUniform>
 class BasicUniformRectangleParameter final : public JointParameterInterface<BasicUniformRectangleParameter<T, AUniformRectangle, AUniform>,
@@ -41,11 +43,11 @@ class BasicUniformRectangleParameter final : public JointParameterInterface<Basi
                                                                             AUniform<VectorValueType<T>>,
                                                                             AUniform<VectorValueType<T>>> {
 private:
-    using VT = VectorValueType<T>;
+    using Scalar = VectorValueType<T>;
     using Base = JointParameterInterface<BasicUniformRectangleParameter<T, AUniformRectangle, AUniform>,
                                          AUniformRectangle<T>,
-                                         AUniform<VT>,
-                                         AUniform<VT>>;
+                                         AUniform<Scalar>,
+                                         AUniform<Scalar>>;
 
 public:
     using Base::Base;
@@ -57,12 +59,12 @@ public:
     constexpr auto InfimumY() const -> auto { return ParameterY().Infimum(); }
     constexpr auto SupremumY() const -> auto { return ParameterY().Supremum(); }
 
-    constexpr auto ParameterX(const typename AUniform<VT>::ParameterType x) -> void { Parameter<0>(x); }
-    constexpr auto InfimumX(VT infX) -> void { ParameterX({infX, SupremumX()}); }
-    constexpr auto SupremumX(VT supX) -> void { ParameterX({InfimumX(), supX}); }
-    constexpr auto ParameterY(const typename AUniform<VT>::ParameterType y) -> void { Parameter<1>(y); }
-    constexpr auto InfimumY(VT infY) -> void { ParameterY({infY, SupremumY()}); }
-    constexpr auto SupremumY(VT supY) -> void { ParameterY({InfimumY(), supY}); }
+    constexpr auto ParameterX(const typename AUniform<Scalar>::ParameterType x) -> void { Parameter<0>(x); }
+    constexpr auto InfimumX(Scalar infX) -> void { ParameterX({infX, SupremumX()}); }
+    constexpr auto SupremumX(Scalar supX) -> void { ParameterX({InfimumX(), supX}); }
+    constexpr auto ParameterY(const typename AUniform<Scalar>::ParameterType y) -> void { Parameter<1>(y); }
+    constexpr auto InfimumY(Scalar infY) -> void { ParameterY({infY, SupremumY()}); }
+    constexpr auto SupremumY(Scalar supY) -> void { ParameterY({InfimumY(), supY}); }
 };
 
 template<template<typename> typename ADerived, Concept::NumericVector2Any T, template<typename> typename AUniform>
@@ -72,18 +74,18 @@ class UniformRectangleBase : public JointInterface<ADerived<T>,
                                                    AUniform<VectorValueType<T>>,
                                                    AUniform<VectorValueType<T>>> {
 private:
-    using VT = VectorValueType<T>;
+    using Scalar = VectorValueType<T>;
     using Base = JointInterface<ADerived<T>,
                                 BasicUniformRectangleParameter<T, ADerived, AUniform>,
                                 T,
-                                AUniform<VT>,
-                                AUniform<VT>>;
+                                AUniform<Scalar>,
+                                AUniform<Scalar>>;
 
 public:
     using Base::Base;
 
 protected:
-    constexpr ~UniformRectangleBase() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(UniformRectangleBase)
 
 public:
     constexpr auto ParameterX() const -> auto { return Base::template Parameter<0>(); }
@@ -93,31 +95,17 @@ public:
     constexpr auto InfimumY() const -> auto { return ParameterY().Infimum(); }
     constexpr auto SupremumY() const -> auto { return ParameterY().Supremum(); }
 
-    constexpr auto ParameterX(const typename AUniform<VT>::ParameterType& x) -> void { Base::template Parameter<0>(x); }
-    constexpr auto InfimumX(VT infX) -> void { ParameterX({infX, SupremumX()}); }
-    constexpr auto SupremumX(VT supX) -> void { ParameterX({InfimumX(), supX}); }
-    constexpr auto ParameterY(const typename AUniform<VT>::ParameterType& y) -> void { Base::template Parameter<1>(y); }
-    constexpr auto InfimumY(VT infY) -> void { ParameterY({infY, SupremumY()}); }
-    constexpr auto SupremumY(VT supY) -> void { ParameterY({InfimumY(), supY}); }
+    constexpr auto ParameterX(const typename AUniform<Scalar>::ParameterType& x) -> void { Base::template Parameter<0>(x); }
+    constexpr auto InfimumX(Scalar infX) -> void { ParameterX({infX, SupremumX()}); }
+    constexpr auto SupremumX(Scalar supX) -> void { ParameterX({InfimumX(), supX}); }
+    constexpr auto ParameterY(const typename AUniform<Scalar>::ParameterType& y) -> void { Base::template Parameter<1>(y); }
+    constexpr auto InfimumY(Scalar infY) -> void { ParameterY({infY, SupremumY()}); }
+    constexpr auto SupremumY(Scalar supY) -> void { ParameterY({InfimumY(), supY}); }
 };
 
-} // namespace internal
+} // namespace impl
 
-/// @brief Generates 2D uniform random vector on a compact (including boundary) rectangular region.
-/// @tparam T The result vector type. It must be 2-dimensional and has floating-point type.
-template<Concept::NumericVector2FloatingPoint T = muc::array2d>
-class UniformCompactRectangle final : public internal::UniformRectangleBase<UniformCompactRectangle, T, UniformCompact> {
-public:
-    using internal::UniformRectangleBase<UniformCompactRectangle, T, UniformCompact>::UniformRectangleBase;
-};
-
-template<typename T, typename U>
-UniformCompactRectangle(std::initializer_list<T>, std::initializer_list<U>) -> UniformCompactRectangle<std::array<std::common_type_t<T, U>, 2>>;
-
-template<std::floating_point T>
-using UniformCompactRectangleParameter = internal::BasicUniformRectangleParameter<T, UniformCompactRectangle, UniformCompact>;
-
-/// @brief Generates 2D uniform random vector on a open (excluding boundary) rectangular region.
+/// @brief Generates 2D uniform random vector on [a, b) x [c, d) rectangular region.
 /// @tparam T The result vector type. It must be 2-dimensional and has floating-point type.
 template<Concept::NumericVector2FloatingPoint T = muc::array2d>
 class UniformRealRectangle;
@@ -135,21 +123,21 @@ using UniformRectangle = std::conditional_t<std::floating_point<VectorValueType<
                                             UniformIntegerRectangle<std::conditional_t<std::integral<VectorValueType<T>>, T, muc::array2i>>>;
 
 template<Concept::NumericVector2Any T>
-using UniformRectangleParameter = internal::BasicUniformRectangleParameter<T, UniformRectangle, Uniform>;
+using UniformRectangleParameter = impl::BasicUniformRectangleParameter<T, UniformRectangle, Uniform>;
 
 template<Concept::NumericVector2FloatingPoint T>
-class UniformRealRectangle final : public internal::UniformRectangleBase<UniformRealRectangle, T, Uniform> {
+class UniformRealRectangle final : public impl::UniformRectangleBase<UniformRealRectangle, T, Uniform> {
 public:
-    using internal::UniformRectangleBase<UniformRealRectangle, T, Uniform>::UniformRectangleBase;
+    using impl::UniformRectangleBase<UniformRealRectangle, T, Uniform>::UniformRectangleBase;
 };
 
 template<typename T, typename U>
 UniformRealRectangle(std::initializer_list<T>, std::initializer_list<U>) -> UniformRealRectangle<std::array<std::common_type_t<T, U>, 2>>;
 
 template<Concept::NumericVector2Integral T>
-class UniformIntegerRectangle final : public internal::UniformRectangleBase<UniformIntegerRectangle, T, Uniform> {
+class UniformIntegerRectangle final : public impl::UniformRectangleBase<UniformIntegerRectangle, T, Uniform> {
 public:
-    using internal::UniformRectangleBase<UniformIntegerRectangle, T, Uniform>::UniformRectangleBase;
+    using impl::UniformRectangleBase<UniformIntegerRectangle, T, Uniform>::UniformRectangleBase;
 };
 
 template<typename T, typename U>

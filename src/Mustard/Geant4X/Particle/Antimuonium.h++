@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,21 +18,13 @@
 
 #pragma once
 
-#include "Mustard/Env/Memory/Singleton.h++"
-
-#include "G4ParticleDefinition.hh"
+#include "Mustard/Geant4X/Particle/impl/MuoniumBase.h++"
 
 namespace Mustard::Geant4X::inline Particle {
 
-class Antimuonium final : public Env::Memory::Singleton<Antimuonium>,
-                          public G4ParticleDefinition {
-    friend Env::Memory::SingletonInstantiator;
-
-private:
+class Antimuonium final : public impl::MuoniumBase<Antimuonium> {
+    friend Env::SingletonFactory;
     Antimuonium();
-
-public:
-    static auto Definition() -> auto { return &Instance(); }
 };
 
 } // namespace Mustard::Geant4X::inline Particle

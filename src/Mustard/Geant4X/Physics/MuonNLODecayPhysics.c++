@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Geant4X/Decay/ExtendedDecayWithSpin.h++"
 #include "Mustard/Geant4X/Physics/MuonNLODecayPhysics.h++"
 #include "Mustard/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
 
 #include "G4DecayTable.hh"
+#include "G4DecayWithSpin.hh"
 #include "G4EmBuilder.hh"
 #include "G4MuonDecayChannelWithSpin.hh"
 #include "G4MuonMinus.hh"
@@ -33,7 +33,7 @@
 
 namespace Mustard::Geant4X::inline Physics {
 
-MuonNLODecayPhysics::MuonNLODecayPhysics(G4int verbose) :
+MuonNLODecayPhysics::MuonNLODecayPhysics(int verbose) :
     DecayPhysicsBase{"MuonNLODecayPhysics"},
     fRadiativeDecayBR{},
     fMessengerRegister{this} {
@@ -68,7 +68,7 @@ auto MuonNLODecayPhysics::ConstructParticle() -> void {
 
 auto MuonNLODecayPhysics::ConstructProcess() -> void {
     const auto ReplaceMuonDecayPhysics{
-        [decayWithSpin = new ExtendedDecayWithSpin,
+        [decayWithSpin = new G4DecayWithSpin,
          processTable = G4ProcessTable::GetProcessTable()](G4ParticleDefinition* muon) {
             const auto manager{muon->GetProcessManager()};
             if (manager == nullptr) {
@@ -89,7 +89,7 @@ auto MuonNLODecayPhysics::ConstructProcess() -> void {
 
 auto MuonNLODecayPhysics::InsertDecayChannel(const G4String& parentName, gsl::not_null<G4DecayTable*> decay) -> void {
     if (parentName != "mu-" and parentName != "mu+") {
-        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}", parentName));
+        Throw<std::invalid_argument>(fmt::format("Parent particle is not mu- or mu+ but {}.", parentName));
     }
     // sort by initial BR! we firstly write random BRs in decrease order...
     G4VDecayChannel* ch;

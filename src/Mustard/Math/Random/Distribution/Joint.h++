@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,10 +20,13 @@
 
 #include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Math/Random/RandomNumberDistributionBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "CLHEP/Random/RandomEngine.h"
+
+#include "TRandom.h"
 
 #include "muc/concepts"
 
@@ -31,15 +34,16 @@
 
 #include <array>
 #include <concepts>
+#include <random>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
 namespace Mustard::inline Math::Random::inline Distribution {
 
-namespace internal {
+namespace impl {
 
-namespace internal {
+namespace impl {
 
 template<gsl::index I, typename T>
 struct Margin {
@@ -52,31 +56,31 @@ template<gsl::index... Is, typename... Ts>
     requires(sizeof...(Is) == sizeof...(Ts))
 struct CartesianProductMarginBase<gslx::index_sequence<Is...>, Ts...> : Margin<Is, Ts>... {};
 
-} // namespace internal
+} // namespace impl
 
 template<typename... Ts>
-struct CartesianProductMargin : internal::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...> {
+struct CartesianProductMargin : impl::CartesianProductMarginBase<gslx::index_sequence_for<Ts...>, Ts...> {
     CartesianProductMargin() = default;
     CartesianProductMargin(const Ts&... objects);
 
     template<gsl::index I>
-    constexpr auto Margin() const -> const auto& { return static_cast<const internal::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
+    constexpr auto Margin() const -> const auto& { return static_cast<const impl::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
     template<gsl::index I>
-    constexpr auto Margin() -> auto& { return static_cast<internal::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
+    constexpr auto Margin() -> auto& { return static_cast<impl::Margin<I, std::tuple_element_t<I, std::tuple<Ts...>>>*>(this)->value; }
 };
 
-} // namespace internal
+} // namespace impl
 
 template<typename ADerived, typename ADistribution, typename... Ds>
     requires(sizeof...(Ds) >= 2)
 class JointParameterInterface : public DistributionParameterBase<ADerived, ADistribution>,
-                                public internal::CartesianProductMargin<typename Ds::ParameterType...> {
+                                public impl::CartesianProductMargin<typename Ds::ParameterType...> {
 public:
     constexpr JointParameterInterface();
     constexpr JointParameterInterface(const typename Ds::ParameterType&... p);
 
 protected:
-    constexpr ~JointParameterInterface() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(JointParameterInterface)
 
 public:
     template<gsl::index I>
@@ -100,21 +104,30 @@ private:
 template<typename ADerived, typename AParameter, typename T, typename... Ds>
     requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)>)
 class JointInterface : public RandomNumberDistributionBase<ADerived, AParameter, T>,
-                       public internal::CartesianProductMargin<Ds...> {
+                       public impl::CartesianProductMargin<Ds...> {
 public:
     constexpr JointInterface();
     constexpr JointInterface(const typename Ds::ParameterType&... p);
     constexpr explicit JointInterface(const AParameter& p);
 
 protected:
-    constexpr ~JointInterface() = default;
+    MUSTARD_UTILITY_DECLARE_NONVIRTUAL_PROTECTED_DEFAULT_DESTRUCTOR_IN_DEFAULT_MOVEABLE(JointInterface)
 
 public:
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g) -> auto { return Impl(g); }
-    MUSTARD_ALWAYS_INLINE constexpr auto operator()(UniformRandomBitGenerator auto& g, const AParameter& p) -> auto { return Impl(g, p); }
+    template<std::uniform_random_bit_generator G>
+    constexpr auto operator()(G& g) -> auto { return Impl(g); }
+    template<std::uniform_random_bit_generator G>
+    constexpr auto operator()(G& g, const AParameter& p) -> auto { return Impl(g, p); }
 
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g) -> auto { return Impl(g); }
-    MUSTARD_ALWAYS_INLINE auto operator()(CLHEP::HepRandomEngine& g, const AParameter& p) -> auto { return Impl(g, p); }
+    auto operator()(CLHEP::HepRandomEngine& g) -> auto
+        requires Concept::NumericVectorFloatingPoint<T, sizeof...(Ds)> { return Impl(g); }
+    auto operator()(CLHEP::HepRandomEngine& g, const AParameter& p) -> auto
+        requires Concept::NumericVectorFloatingPoint<T, sizeof...(Ds)> { return Impl(g, p); }
+
+    auto operator()(TRandom& g) -> auto
+        requires Concept::NumericVectorFloatingPoint<T, sizeof...(Ds)> { return Impl(g); }
+    auto operator()(TRandom& g, const AParameter& p) -> auto
+        requires Concept::NumericVectorFloatingPoint<T, sizeof...(Ds)> { return Impl(g, p); }
 
     constexpr auto Reset() -> void;
 
@@ -129,7 +142,7 @@ public:
     constexpr auto Min() const -> T;
     constexpr auto Max() const -> T;
 
-    static constexpr auto Stateless() -> bool { return (... and Ds::Stateless()); }
+    static constexpr auto Stateless() -> auto { return (... and Ds::Stateless()); }
 
     template<muc::character AChar>
     friend auto operator<<(std::basic_ostream<AChar>& os, const JointInterface& self) -> decltype(os) { return self.StreamOutput(os); }
@@ -137,8 +150,8 @@ public:
     friend auto operator>>(std::basic_istream<AChar>& is, JointInterface& self) -> decltype(is) { return self.StreamInput(is); }
 
 private:
-    MUSTARD_ALWAYS_INLINE constexpr auto Impl(auto& g) -> T;
-    MUSTARD_ALWAYS_INLINE constexpr auto Impl(auto& g, const AParameter& p) -> T;
+    constexpr auto Impl(auto& g) -> T;
+    constexpr auto Impl(auto& g, const AParameter& p) -> T;
 
     template<muc::character AChar>
     auto StreamOutput(std::basic_ostream<AChar>& os) const -> decltype(os);
@@ -147,11 +160,11 @@ private:
 };
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::numeric<typename Ds::ResultType>))
 class Joint;
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::numeric<typename Ds::ResultType>))
 class JointParameter final : public JointParameterInterface<JointParameter<T, Ds...>,
                                                             Joint<T, Ds...>,
                                                             Ds...> {
@@ -162,7 +175,7 @@ template<typename... Ps>
 JointParameter(Ps...) -> JointParameter<std::array<std::common_type_t<typename Ps::DistributionType::ResultType...>, sizeof...(Ps)>, typename Ps::DistributionType...>;
 
 template<typename T, typename... Ds>
-    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::arithmetic<typename Ds::ResultType>))
+    requires(sizeof...(Ds) >= 2 and Concept::NumericVectorAny<T, sizeof...(Ds)> and (... and muc::numeric<typename Ds::ResultType>))
 class Joint final : public JointInterface<Joint<T, Ds...>,
                                           JointParameter<T, Ds...>,
                                           T,

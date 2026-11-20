@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,8 +18,8 @@
 
 namespace Mustard::inline Math::Random::inline Generator {
 
-MT1993764::MT1993764(MT1993764::SeedType seed) :
-    UniformPseudoRandomBitGeneratorBase{},
+inline MT1993764::MT1993764(MT1993764::SeedType seed) :
+    RandomNumberEngineBase{},
     fMT{seed} {}
 
 } // namespace Mustard::inline Math::Random::inline Generator

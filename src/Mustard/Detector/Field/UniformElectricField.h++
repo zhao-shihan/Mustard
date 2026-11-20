@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,27 +18,37 @@
 
 #pragma once
 
-#include "Mustard/Concept/InputVector.h++"
-#include "Mustard/Concept/NumericVector.h++"
 #include "Mustard/Detector/Field/ElectricFieldBase.h++"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 namespace Mustard::Detector::Field {
 
+/// @brief A spatially uniform (constant) electric field.
+///
+/// The electric field vector is the same at every point in space.
+/// Inherits from @c ElectricFieldBase<UniformElectricField>, so the
+/// magnetic field component is automatically zero.
 class UniformElectricField : public ElectricFieldBase<UniformElectricField> {
 public:
-    constexpr UniformElectricField(double ex, double ey, double ez);
-    template<Concept::InputVector3D T = muc::array3d>
-    constexpr UniformElectricField(T e);
+    /// @brief Construct from three scalar components.
+    /// @param ex Electric field x-component.
+    /// @param ey Electric field y-component.
+    /// @param ez Electric field z-component.
+    UniformElectricField(double ex, double ey, double ez);
+    /// @brief Construct from a vector.
+    /// @param e Electric field vector.
+    UniformElectricField(Vector3D e);
 
-    template<Concept::NumericVector3D T>
-    constexpr auto E(T) const -> T { return {fEx, fEy, fEz}; }
+    /// @brief Returns the constant electric field.
+    /// @note The position parameter is unused; it exists for interface uniformity.
+    /// @return The constant electric field vector.
+    auto E(Point3D) const -> Vector3D { return {fEx, fEy, fEz}; }
 
 private:
-    double fEx;
-    double fEy;
-    double fEz;
+    double fEx; ///< Electric field x-component.
+    double fEy; ///< Electric field y-component.
+    double fEz; ///< Electric field z-component.
 };
 
 } // namespace Mustard::Detector::Field
-
-#include "Mustard/Detector/Field/UniformElectricField.inl"

@@ -46,7 +46,7 @@ This document explains how to report issues, propose changes, and prepare contri
 - Commit message format:
   - One-line summary (50 characters or less).
   - Blank line.
-  - More detailed description, if necessary (wrap at ~72 characters).
+  - More detailed description, if necessary.
 - Use present tense and imperative mood, with the first letter of the sentence capitalized, e.g. "Add command-line option for X".
 
 ## Pull request checklist

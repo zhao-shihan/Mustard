@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -17,6 +17,8 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
+
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "Compression.h"
 
@@ -56,7 +58,7 @@ enum struct FilePathOption {
 /// @warning Open file with FilePathOption::ProcessSpecific is
 /// an MPI collective operation (must be called by all processes)
 template<typename F = void>
-class File {
+class File : public VirtualMoveOnlyBase {
 protected:
     /// @brief Construct base class
     /// @param pathOption Direct/ProcessSpecific
@@ -64,9 +66,6 @@ protected:
     File(FilePathOption pathOption, std::filesystem::path filePath);
 
 public:
-    /// @brief Default d'tor
-    virtual ~File() = default;
-
     /// @brief Get the file path
     auto Path() const -> const auto& { return fPath; }
 
@@ -132,7 +131,7 @@ public:
     ProcessSpecificFile(std::filesystem::path filePath, gsl::czstring mode);
 };
 
-namespace internal {
+namespace impl {
 
 /// @internal
 /// @brief Internal base for C++ fstream wrappers
@@ -179,12 +178,12 @@ extern template class FStream<std::wofstream>;
 extern template class FStream<std::fstream>;
 extern template class FStream<std::wfstream>;
 
-} // namespace internal
+} // namespace impl
 
 /// @brief Specialization for `std::basic_ifstream`
 /// @tparam C Character type (char, wchar_t)
 template<muc::character C>
-class File<std::basic_ifstream<C>> : public internal::FStream<std::basic_ifstream<C>> {
+class File<std::basic_ifstream<C>> : public impl::FStream<std::basic_ifstream<C>> {
 public:
     using Type = std::basic_ifstream<C>; ///< Wrapped file type
 
@@ -226,7 +225,7 @@ extern template class ProcessSpecificFile<std::wifstream>;
 /// @brief Specialization for `std::basic_ofstream`
 /// @tparam C Character type (char, wchar_t)
 template<muc::character C>
-class File<std::basic_ofstream<C>> : public internal::FStream<std::basic_ofstream<C>> {
+class File<std::basic_ofstream<C>> : public impl::FStream<std::basic_ofstream<C>> {
 public:
     using Type = std::basic_ofstream<C>; ///< Wrapped file type
 
@@ -268,7 +267,7 @@ extern template class ProcessSpecificFile<std::wofstream>;
 /// @brief Specialization for `std::basic_fstream`
 /// @tparam C Character type (char, wchar_t)
 template<muc::character C>
-class File<std::basic_fstream<C>> : public internal::FStream<std::basic_fstream<C>> {
+class File<std::basic_fstream<C>> : public impl::FStream<std::basic_fstream<C>> {
 public:
     using Type = std::basic_fstream<C>; ///< Wrapped file type
 

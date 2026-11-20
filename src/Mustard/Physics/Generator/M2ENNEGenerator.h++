@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -33,17 +33,17 @@ namespace Mustard::inline Physics::inline Generator {
 class M2ENNEGenerator : public MultipleTryMetropolisGenerator<1, 4, QFT::MSqM2ENNE> {
 public:
     /// @brief Construct generator for specific parent
-    /// @param parent "muonium" or "antimuonium" (determines PDG IDs in generated event)
+    /// @param parent "muonium" or "anti_muonium" (determines PDG IDs in generated event)
     /// @param momentum Muonium momentum
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     M2ENNEGenerator(std::string_view parent, Vector3D momentum,
-                    std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
+                    std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {},
                     std::optional<double> stepSize = {});
 
     /// @brief Set parent particle
-    /// @param parent "muonium" or "antimuonium"
+    /// @param parent "muonium" or "anti_muonium"
     /// @exception std::invalid_argument for invalid parent names
     auto Parent(std::string_view parent) -> void;
     /// @brief Set parent momentum

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,10 +20,9 @@
 
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Random/Distribution/Gaussian.h++"
+#include "Mustard/Math/Random/Distribution/Uniform.h++"
 #include "Mustard/Physics/Generator/MCMCGenerator.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
-
-#include "CLHEP/Random/RandomEngine.h"
 
 #include "muc/math"
 #include "muc/numeric"
@@ -73,24 +72,24 @@ public:
     /// @param pI initial-state 4-momenta
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
     MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
+                                   std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {},
                                    std::optional<double> stepSize = {});
     /// @brief Construct event generator
     /// @param pI initial-state 4-momenta
     /// @param polarization Initial-state polarization vector(s)
     /// @param pdgID Array of particle PDG IDs (index order preserved)
     /// @param mass Array of particle masses (index order preserved)
-    /// @param thinningRatio Thinning factor (non-negative, optional, use default value if not set)
-    /// @param acfSampleSize Sample size for estimation autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfSampleSize Sample size for estimating autocorrelation function (ACF) (optional, use default value if not set)
+    /// @param acfReplicate Number of ACF replicate segments (at least 3; global, auto-raised to the number of processes; optional, use default value if not set)
     /// @param stepSize Step size (proposal sigma) for proposal increment distribution (optional, use default value if not set)
-    /// @note This overload is only enabled for polarized decay
+    /// @note This overload is only enabled for polarized decay.
     MultipleTryMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                    const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                   std::optional<double> thinningRatio = {}, std::optional<unsigned> acfSampleSize = {},
+                                   std::optional<int> acfSampleSize = {}, std::optional<int> acfReplicate = {},
                                    std::optional<double> stepSize = {})
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
 
@@ -103,16 +102,16 @@ public:
 
 private:
     /// @brief Markov chain burn in stage
-    /// @param rng Reference to CLHEP random engine
-    virtual auto BurnIn(CLHEP::HepRandomEngine& rng) -> void override;
+    /// @param rng Reference to a random number engine
+    virtual auto BurnIn(muc::rng_ref rng) -> void override;
     /// @brief Advance Markov chain by one event
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return true if proposal accepted, false if not
-    virtual auto NextEvent(CLHEP::HepRandomEngine& rng) -> bool override;
+    virtual auto NextEvent(muc::rng_ref rng) -> bool override;
 
 private:
-    Random::GaussianFast<double> fGaussian; ///< Gaussian distribution
-    double fStepSize;                       ///< Step scale along one direction in random state space
+    Random::Gaussian<> fGaussian; ///< Gaussian distribution
+    double fStepSize;             ///< Step scale along one direction in random state space
 
     static constexpr auto fgNTrial{5};                                            ///< Number of trial points
     static inline const auto fgScalingFactor{3.12 / std::sqrt(MarkovChain::dim)}; ///< Step size scaling factor. Ref: of M. B´edard et al. SPA 122 (2012) 758–786, https://doi.org/10.1016/j.spa.2011.11.004

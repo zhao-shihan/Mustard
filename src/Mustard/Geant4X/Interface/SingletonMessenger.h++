@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,19 +19,20 @@
 #pragma once
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/Memory/Singleton.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "G4UImessenger.hh"
 
-#include "muc/hash_set"
+#include "gtl/phmap.hpp"
+
 #include "muc/type_traits"
 #include "muc/utility"
 
 #include "gsl/gsl"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <concepts>
 #include <exception>
@@ -47,9 +48,9 @@ namespace Mustard::Geant4X::inline Interface {
 /// @tparam ADerived CRTP-derived class type (must inherit from SingletonMessenger)
 /// @tparam ARecipients... List of recipient types that can register with this messenger
 ///
-/// @warning Deregistration during delivery will terminate the program
+/// @warning Deregistration during delivery will terminate the program.
 template<typename ADerived, typename... ARecipients>
-class SingletonMessenger : public Env::Memory::Singleton<ADerived>,
+class SingletonMessenger : public Env::Singleton<ADerived>,
                            public G4UImessenger {
 protected:
     SingletonMessenger();
@@ -63,7 +64,7 @@ public:
     template<typename ARecipient>
     friend class Register;
     template<typename ARecipient>
-    class Register : public NonCopyableBase {
+    class Register : public NoncopyableBase {
     public:
         /// @brief Register a recipient with the singleton messenger
         /// @param recipient Recipient's `this`
@@ -78,23 +79,23 @@ public:
 protected:
     /// @brief Deliver action to all registered recipients of specific type
     /// @tparam ARecipient Type of recipients to target
-    /// @param Action Callable object accepting ARecipient& parameter
+    /// @param action Callable object accepting ARecipient& parameter
     /// @note Requires ARecipient to be in the template recipient list
     template<typename ARecipient>
         requires muc::is_uniquely_contained_in_v<ARecipient, ARecipients...>
-    auto Deliver(std::invocable<ARecipient&> auto&& Action) const -> void;
+    auto Deliver(std::invocable<ARecipient&> auto&& action) const -> void;
     /// @brief Deliver action to multiple recipient types simultaneously
     /// @tparam Rs Two or more recipient types to target
-    /// @param Action Callable object accepting references to all Rs types
-    /// @note All Rs types must be in the template recipient list
+    /// @param action Callable object accepting references to all Rs types
+    /// @note All Rs types must be in the template recipient list.
     template<typename... Rs, typename F>
         requires(sizeof...(Rs) >= 2 and
                  (... and (std::invocable<F &&, Rs&> and muc::is_uniquely_contained_in_v<Rs, ARecipients...>)))
-    auto Deliver(F&& Action) const -> void;
+    auto Deliver(F&& action) const -> void;
 
 private:
     mutable bool fDelivering;                                           ///< Delivery state flag (prevents deregistration during delivery)
-    std::tuple<muc::flat_hash_set<ARecipients*>...> fRecipientSetTuple; ///< Type-segregated recipient sets
+    std::tuple<gtl::flat_hash_set<ARecipients*>...> fRecipientSetTuple; ///< Type-segregated recipient sets
 };
 
 } // namespace Mustard::Geant4X::inline Interface

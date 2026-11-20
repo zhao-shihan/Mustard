@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,19 +19,25 @@
 #pragma once
 
 #include "Mustard/Detector/Field/ElectromagneticField.h++"
-
-#include "muc/array"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/Vector.h++"
 
 #include <concepts>
 
 namespace Mustard::Detector::Field {
 
+/// @brief Concept constraining a type to a magnetic-field-only model.
+///
+/// Refines @c ElectromagneticField by additionally requiring that
+/// @c F::E(position) is a valid static expression returning @c Vector3D.
+/// This means the type provides only a magnetic field; the electric field
+/// component is statically zero.
+///
+/// @tparam F Candidate type to check against the concept.
 template<typename F>
-concept MagneticField =
-    requires {
-        requires ElectromagneticField<F>;
-        { F::template E<muc::array3d>({}) } -> std::same_as<muc::array3d>;
-        requires F::template E<muc::array3d>({}) == muc::array3d{};
-    };
+concept MagneticField = requires(Point3D position) {
+    requires ElectromagneticField<F>;
+    { F::E(position) } -> std::same_as<Vector3D>;
+};
 
 } // namespace Mustard::Detector::Field

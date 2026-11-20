@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,7 +21,7 @@
 namespace Mustard::Detector::Description {
 
 DescriptionWithCacheBase<>::CacheBase::CacheBase(DescriptionWithCacheBase<>* description) :
-    NonCopyableBase{},
+    NoncopyableBase{},
     fUpToDate{false} {
     description->fCache.emplace_back(this);
 }

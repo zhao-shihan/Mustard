@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -21,7 +21,7 @@ namespace Mustard::inline Math::Random::inline Generator {
 constexpr Xoshiro256Plus::Xoshiro256Plus(Xoshiro256Plus::SeedType seed) :
     Xoshiro256Base{seed} {}
 
-MUSTARD_ALWAYS_INLINE constexpr auto Xoshiro256Plus::operator()() -> Xoshiro256Plus::ResultType {
+constexpr auto Xoshiro256Plus::operator()() -> Xoshiro256Plus::ResultType {
     const auto result{fState[0] + fState[3]};
     Step();
     return result;

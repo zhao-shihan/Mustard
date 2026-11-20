@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -29,12 +29,12 @@ namespace Mustard::gslx {
 template<gsl::index... Is>
 using index_sequence = std::integer_sequence<gsl::index, Is...>;
 
-/// @brief Generate 0-based index sequence of length N
+/// @brief Generate 0-based index sequence of length N.
 /// @tparam N Length of sequence to generate
 template<gsl::index N>
 using make_index_sequence = std::make_integer_sequence<gsl::index, N>;
 
-/// @brief Generate index sequence for a parameter pack
+/// @brief Generate index sequence for a parameter pack.
 /// @tparam T... Types to generate sequence for (length = sizeof...(T))
 template<typename... T>
 using index_sequence_for = make_index_sequence<sizeof...(T)>;

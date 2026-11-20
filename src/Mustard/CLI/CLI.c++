@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -17,11 +17,11 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/CLI/CLI.h++"
-#include "Mustard/CLI/internal/MakeDefaultArgParser.h++"
+#include "Mustard/CLI/impl/MakeDefaultArgParser.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Version.h++"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -31,9 +31,9 @@ namespace Mustard::CLI {
 
 CLI<>::CLI() :
     fArgcArgv{},
-    fArgParser{internal::MakeDefaultArgParser()} {
+    fArgParser{impl::MakeDefaultArgParser()} {
     if (static bool gInstantiated{}; gInstantiated) {
-        Throw<std::logic_error>("Trying to construct CLI twice");
+        Throw<std::logic_error>("Trying to construct CLI twice.");
     } else {
         gInstantiated = true;
     }
@@ -65,11 +65,11 @@ auto CLI<>::ArgcArgv() const -> std::pair<int, char**> {
 }
 
 [[noreturn]] auto CLI<>::ThrowParsed() -> void {
-    Throw<std::logic_error>("Command line arguments has been parsed");
+    Throw<std::logic_error>("Command line arguments has been parsed.");
 }
 
 [[noreturn]] auto CLI<>::ThrowNotParsed() -> void {
-    Throw<std::logic_error>("Command line arguments has not been parsed");
+    Throw<std::logic_error>("Command line arguments has not been parsed.");
 }
 
 } // namespace Mustard::CLI

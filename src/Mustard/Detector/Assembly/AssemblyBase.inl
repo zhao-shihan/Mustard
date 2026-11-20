@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -23,7 +23,7 @@ template<std::derived_from<Definition::DefinitionBase> ADefinition>
 auto AssemblyBase::AddTop(ADefinition& top) -> void {
     const auto [_, inserted]{fTop.try_emplace(typeid(ADefinition), &top)};
     if (not inserted) {
-        Throw<std::logic_error>(fmt::format("{} added twice", muc::try_demangle(typeid(ADefinition).name())));
+        Throw<std::logic_error>(fmt::format("{} was added twice.", muc::try_demangle(typeid(ADefinition).name())));
     }
 }
 
@@ -31,7 +31,7 @@ template<std::derived_from<Definition::DefinitionBase> ADefinition>
     requires(not std::same_as<ADefinition, Definition::DefinitionBase>)
 auto AssemblyBase::AddTop(std::unique_ptr<ADefinition> top) -> void {
     if (not top->Topmost()) {
-        Throw<std::logic_error>(fmt::format("{} is not topmost", muc::try_demangle(typeid(ADefinition).name())));
+        Throw<std::logic_error>(fmt::format("{} is not topmost.", muc::try_demangle(typeid(ADefinition).name())));
     }
     AddTop(*top.release());
 }

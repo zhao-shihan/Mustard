@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include "G4FieldManager.hh"
 #include "G4LogicalVolume.hh"
@@ -32,7 +32,7 @@
 
 #include "gsl/gsl"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <concepts>
 #include <filesystem>
@@ -52,7 +52,7 @@ class G4VSensitiveDetector;
 
 namespace Mustard::Detector::Definition {
 
-class DefinitionBase : public NonCopyableBase {
+class DefinitionBase : public NoncopyableBase {
 public:
     virtual ~DefinitionBase() = default;
 

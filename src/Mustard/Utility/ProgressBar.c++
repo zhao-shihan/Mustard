@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -23,7 +23,7 @@
 
 #include "muc/chrono"
 
-#include "fmt/core.h"
+#include "fmt/format.h"
 
 #include <cmath>
 #include <functional>
@@ -59,7 +59,7 @@ ProgressBar::ProgressBar() = default;
 
 ProgressBar::ProgressBar(ProgressBar&& other) noexcept {
     if (other.fImpl) {
-        other.fImpl->asyncPrint.wait();
+        other.fImpl->asyncPrint.get();
         fImpl = std::move(other.fImpl);
     }
 }
@@ -75,7 +75,7 @@ auto ProgressBar::operator=(ProgressBar&& other) noexcept -> ProgressBar& {
         if (fImpl) {
             Stop();
         }
-        other.fImpl->asyncPrint.wait();
+        other.fImpl->asyncPrint.get();
         fImpl = std::move(other.fImpl);
     }
     return *this;

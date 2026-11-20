@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,10 +19,14 @@
 namespace Mustard::Detector::Field {
 
 template<ElectromagneticField AField, bool AEMFieldChangeEnergy>
-auto AsG4Field<AField, AEMFieldChangeEnergy>::GetFieldValue(const G4double* x, G4double* f) const -> void {
-    std::ranges::copy(std::bit_cast<std::array<G4double, 6>>(
-                          this->BE(VectorCast<muc::array3d>(x))),
-                      f);
+auto AsG4Field<AField, AEMFieldChangeEnergy>::GetFieldValue(const double* x, double* f) const -> void {
+    const auto field{this->BE({x[0], x[1], x[2]})};
+    f[0] = field.B[0];
+    f[1] = field.B[1];
+    f[2] = field.B[2];
+    f[3] = field.E[0];
+    f[4] = field.E[1];
+    f[5] = field.E[2];
 }
 
 } // namespace Mustard::Detector::Field

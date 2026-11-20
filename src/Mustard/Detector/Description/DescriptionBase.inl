@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -30,10 +30,10 @@ auto DescriptionBase<>::ImportValue(const YAML::Node& node, AValue& value, std::
 }
 
 template<typename AReadAs>
-auto DescriptionBase<>::ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& ImportAction, std::convertible_to<std::string> auto&&... names) -> void {
+auto DescriptionBase<>::ImportValue(const YAML::Node& node, std::invocable<AReadAs> auto&& importAction, std::convertible_to<std::string> auto&&... names) -> void {
     if (const auto leaf{UnpackToLeafNodeForImporting(node, std::forward<decltype(names)>(names)...)};
         leaf.has_value()) {
-        ImportAction(leaf->template as<AReadAs>());
+        std::invoke(importAction, leaf->template as<AReadAs>());
     } else {
         PrintNodeNotFoundNotice(std::forward<decltype(names)>(names)...);
     }
@@ -45,7 +45,7 @@ auto DescriptionBase<>::ExportValue(YAML::Node& node, const AValue& value, std::
     UnpackToLeafNodeForExporting(node, std::forward<decltype(names)>(names)...) = static_cast<AWriteAs>(value);
 }
 
-namespace internal {
+namespace impl {
 namespace {
 
 constexpr void TupleForEach(auto&& tuple, auto&& func) {
@@ -57,17 +57,17 @@ constexpr void TupleForEach(auto&& tuple, auto&& func) {
 }
 
 } // namespace
-} // namespace internal
+} // namespace impl
 
 auto DescriptionBase<>::UnpackToLeafNodeForImporting(const YAML::Node& node, std::convertible_to<std::string> auto&&... names) -> std::optional<const YAML::Node> {
     try {
         std::array<YAML::Node, sizeof...(names)> leafNodes;
         gsl::index i{};
-        internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
-                               [&node, &leafNodes, &i](auto&& name) {
-                                   leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
-                                   ++i;
-                               });
+        impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
+                           [&node, &leafNodes, &i](auto&& name) {
+                               leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
+                               ++i;
+                           });
         return leafNodes.back();
     } catch (const YAML::InvalidNode&) {
         return std::nullopt;
@@ -77,27 +77,27 @@ auto DescriptionBase<>::UnpackToLeafNodeForImporting(const YAML::Node& node, std
 auto DescriptionBase<>::UnpackToLeafNodeForExporting(YAML::Node& node, std::convertible_to<std::string> auto&&... names) const -> YAML::Node {
     std::array<YAML::Node, sizeof...(names)> leafNodes;
     gsl::index i{};
-    internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
-                           [&node, &leafNodes, &i](auto&& name) {
-                               leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
-                               ++i;
-                           });
+    impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
+                       [&node, &leafNodes, &i](auto&& name) {
+                           leafNodes[i] = (i == 0 ? node : leafNodes[i - 1])[name];
+                           ++i;
+                       });
     return leafNodes.back();
 }
 
 auto DescriptionBase<>::PrintNodeNotFoundNotice(std::convertible_to<std::string> auto&&... names) const -> void {
     auto info{fmt::format("Notice: YAML node '{}", fName)};
-    internal::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
-                           [&info](auto&& name) {
-                               info.append(fmt::format(".{}", name));
-                           });
+    impl::TupleForEach(std::tie(std::forward<decltype(names)>(names)...),
+                       [&info](auto&& name) {
+                           info.append(fmt::format(".{}", name));
+                       });
     info.append("' not defined, skipping");
     PrintInfo(info);
 }
 
 template<typename ADerived>
 DescriptionBase<ADerived>::DescriptionBase(std::string name) :
-    Env::Memory::Singleton<ADerived>{},
+    Env::Singleton<ADerived>{},
     DescriptionBase<>{std::move(name)} {
     static_assert(Description<ADerived>);
 }

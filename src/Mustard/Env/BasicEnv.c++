@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,12 +19,18 @@
 #include "Mustard/CLI/Module/BasicModule.h++"
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/Print.h++"
+#include "Mustard/Math/LorentzRotation.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
 #include "Mustard/Version.h++"
 
-#include "TThread.h"
+#include "CLHEP/Vector/RotationInterfaces.h"
 
-#include "mplr/mplr.hpp"
+#include "TROOT.h"
+
+#include "mp1/mp1.hpp"
+
+#include "muc/numeric"
 
 #include "fmt/chrono.h"
 #include "fmt/color.h"
@@ -55,9 +61,15 @@ BasicEnv::BasicEnv(NoBanner, int argc, char* argv[],
             fShowBanner = basicCLI->ShowBanner();
         }
     }
-
     // We have async ROOT IO, enable ROOT global mutex
-    TThread::Initialize();
+    ROOT::EnableThreadSafety();
+    // Set default tolerance for vectors and Lorentz rotations
+    Vector2D::setTolerance(muc::default_rel_tol<double>);
+    Vector3D::setTolerance(muc::default_rel_tol<double>);
+    VectorLor::setTolerance(muc::default_rel_tol<double>);
+    AxisAngle::setTolerance(muc::default_rel_tol<double>);
+    EulerAngles::setTolerance(muc::default_rel_tol<double>);
+    CLHEP::Hep4RotationInterface::setTolerance(muc::default_rel_tol<double>);
 }
 
 BasicEnv::BasicEnv(int argc, char* argv[],
@@ -65,7 +77,7 @@ BasicEnv::BasicEnv(int argc, char* argv[],
                    enum VerboseLevel verboseLevel,
                    bool showBannerHint) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
-    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
+    if (fShowBanner and (not mp1::available() or mp1::comm_world().rank() == 0)) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();
@@ -73,7 +85,7 @@ BasicEnv::BasicEnv(int argc, char* argv[],
 }
 
 BasicEnv::~BasicEnv() {
-    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
+    if (fShowBanner and (not mp1::available() or mp1::comm_world().rank() == 0)) {
         PrintExitBanner();
     }
     fShowBanner = false;
@@ -101,18 +113,26 @@ auto BasicEnv::PrintStartBannerBody(int argc, char* argv[]) const -> void {
     if (cwdError) {
         cwd = "<Error getting current working directory>";
     }
-    Print(fmt::emphasis::bold,
-          " ______  ___             _____              _________\n"
-          " ___   |/  /___  __________  /______ _____________  /\n"
-          " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
-          " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n"
-          " /_/  /_/  \\____/ /____/ \\__/ \\____/ /_/    \\____/   {}\n"
-          "\n",
-          versionString);
+    if (not VerboseLevelReach<'I'>()) {
+        Print(fmt::emphasis::bold,
+              "\n"
+              " Mustard v{}:",
+              versionString);
+    } else {
+        Print(fmt::emphasis::bold,
+              " ______  ___             _____              _________\n"
+              " ___   |/  /___  __________  /______ _____________  /\n"
+              " __  /|_/ /_  / / /_  ___/  __/  __ `/_  ___/  __  / \n"
+              " _  /  / / / /_/ /_(__  )/ /_ / /_/ /_  /   / /_/ /  Version\n" // clang-format off
+            R"( /_/  /_/  \_____\/____/ \__/ \_____\/_/    \_____\  {})""\n" // clang-format on
+              "\n"
+              " Mustard:",
+              versionString);
+    }
     Print(fmt::emphasis::bold | fmt::emphasis::italic,
           " An offline software framework for HEP experiments\n");
     Print(fmt::emphasis::bold,
-          " Copyright (C) 2020-2025  Mustard developers\n"
+          " Copyright (C) 2020-2026  Shihan Zhao and contributors\n"
           "\n"
           " Compiled by {} C++ compiler {}\n"
           " Start at {}\n"

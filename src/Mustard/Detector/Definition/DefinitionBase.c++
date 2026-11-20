@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,9 +18,9 @@
 
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
 #include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
 
-#include "G4Exception.hh"
 #include "G4FieldManager.hh"
 #include "G4GDMLParser.hh"
 #include "G4Region.hh"
@@ -44,7 +44,7 @@ auto DefinitionBase::FindDaughter(std::type_index definition) const -> Definitio
 
 auto DefinitionBase::RemoveDaughter(std::type_index definition) -> void {
     if (fDaughters.erase(definition) == 0) {
-        Throw<std::runtime_error>(fmt::format("{} is not a daughter of {}",
+        Throw<std::runtime_error>(fmt::format("{} is not a daughter of {}.",
                                               muc::try_demangle(definition.name()),
                                               muc::try_demangle(typeid(*this).name())));
     }
@@ -63,7 +63,7 @@ auto DefinitionBase::FindDescendant(std::type_index definition) const -> Definit
     return {};
 }
 
-namespace internal {
+namespace impl {
 namespace {
 
 auto RegisterMaterial(gsl::not_null<G4LogicalVolume*> logic, gsl::not_null<G4Material*> material) -> void {
@@ -87,16 +87,14 @@ auto RegisterSD(gsl::not_null<G4LogicalVolume*> logic, gsl::not_null<G4VSensitiv
             sdManager->AddNewDetector(sd);
         }
     } else if (logic->GetSensitiveDetector() != sd) {
-        G4Exception("Detector::Definition::DefinitionBase::RegisterSD", "-1", JustWarning,
-                    fmt::format("Attempting to register SD multiple times for \"{}\" is currently not supported "
-                                "(G4MultiSensitiveDetector not supported currently), skipping.",
-                                logic->GetName())
-                        .c_str());
+        Geant4X::Exception<JustWarning>(fmt::format(
+            "Attempting to register SD multiple times for \"{}\" is currently not supported "
+            "(G4MultiSensitiveDetector not supported currently), skipping.",
+            logic->GetName()));
     } else {
-        G4Exception("Detector::Definition::DefinitionBase::RegisterSD", "-1", JustWarning,
-                    fmt::format("Attempting to register the same SD multiple times for \"{}\", skipping.",
-                                logic->GetName())
-                        .c_str());
+        Geant4X::Exception<JustWarning>(fmt::format(
+            "Attempting to register the same SD multiple times for \"{}\", skipping.",
+            logic->GetName()));
     }
 }
 
@@ -114,11 +112,11 @@ auto Export(std::filesystem::path gdmlPath, gsl::not_null<G4LogicalVolume*> logi
 }
 
 } // namespace
-} // namespace internal
+} // namespace impl
 
 auto DefinitionBase::Mother() const -> const DefinitionBase& {
     if (Topmost()) {
-        Throw<std::logic_error>("Topmost entity should not access Mother()");
+        Throw<std::logic_error>("Topmost entity should not access Mother().");
     }
     return *fMother;
 }
@@ -130,7 +128,7 @@ auto DefinitionBase::RegisterMaterial(gsl::not_null<G4Material*> material) const
     const auto& lvs{LogicalVolumes()};
     Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
-        internal::RegisterMaterial(lv, material);
+        impl::RegisterMaterial(lv, material);
     }
 }
 
@@ -141,7 +139,7 @@ auto DefinitionBase::RegisterMaterial(std::string_view logicalVolumeName, gsl::n
     const auto& lvs{LogicalVolumes(logicalVolumeName)};
     Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
-        internal::RegisterMaterial(lv, material);
+        impl::RegisterMaterial(lv, material);
     }
 }
 
@@ -149,14 +147,14 @@ auto DefinitionBase::RegisterMaterial(gsl::index iLogicalVolume, gsl::not_null<G
     if (not Ready<"warning">()) {
         return;
     }
-    internal::RegisterMaterial(LogicalVolume(iLogicalVolume), material);
+    impl::RegisterMaterial(LogicalVolume(iLogicalVolume), material);
 }
 
 auto DefinitionBase::RegisterMaterial(std::string_view logicalVolumeName, gsl::index iLogicalVolume, gsl::not_null<G4Material*> material) const -> void {
     if (not Ready<"warning">()) {
         return;
     }
-    internal::RegisterMaterial(LogicalVolume(logicalVolumeName, iLogicalVolume), material);
+    impl::RegisterMaterial(LogicalVolume(logicalVolumeName, iLogicalVolume), material);
 }
 
 auto DefinitionBase::RegisterRegion(gsl::not_null<G4Region*> region) const -> void {
@@ -166,7 +164,7 @@ auto DefinitionBase::RegisterRegion(gsl::not_null<G4Region*> region) const -> vo
     const auto& lvs{LogicalVolumes()};
     Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
-        internal::RegisterRegion(lv, region);
+        impl::RegisterRegion(lv, region);
     }
 }
 
@@ -177,7 +175,7 @@ auto DefinitionBase::RegisterRegion(std::string_view logicalVolumeName, gsl::not
     const auto& lvs{LogicalVolumes(logicalVolumeName)};
     Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
-        internal::RegisterRegion(lv, region);
+        impl::RegisterRegion(lv, region);
     }
 }
 
@@ -185,14 +183,14 @@ auto DefinitionBase::RegisterRegion(gsl::index iLogicalVolume, gsl::not_null<G4R
     if (not Ready<"warning">()) {
         return;
     }
-    internal::RegisterRegion(LogicalVolume(iLogicalVolume), region);
+    impl::RegisterRegion(LogicalVolume(iLogicalVolume), region);
 }
 
 auto DefinitionBase::RegisterRegion(std::string_view logicalVolumeName, gsl::index iLogicalVolume, gsl::not_null<G4Region*> region) const -> void {
     if (not Ready<"warning">()) {
         return;
     }
-    internal::RegisterRegion(LogicalVolume(logicalVolumeName, iLogicalVolume), region);
+    impl::RegisterRegion(LogicalVolume(logicalVolumeName, iLogicalVolume), region);
 }
 
 auto DefinitionBase::RegisterSD(gsl::not_null<G4VSensitiveDetector*> sd) const -> void {
@@ -202,7 +200,7 @@ auto DefinitionBase::RegisterSD(gsl::not_null<G4VSensitiveDetector*> sd) const -
     const auto& lvs{LogicalVolumes()};
     Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
-        internal::RegisterSD(lv, sd);
+        impl::RegisterSD(lv, sd);
     }
 }
 
@@ -213,7 +211,7 @@ auto DefinitionBase::RegisterSD(std::string_view logicalVolumeName, gsl::not_nul
     const auto& lvs{LogicalVolumes(logicalVolumeName)};
     Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
-        internal::RegisterSD(lv, sd);
+        impl::RegisterSD(lv, sd);
     }
 }
 
@@ -221,14 +219,14 @@ auto DefinitionBase::RegisterSD(gsl::index iLogicalVolume, gsl::not_null<G4VSens
     if (not Ready<"warning">()) {
         return;
     }
-    internal::RegisterSD(LogicalVolume(iLogicalVolume), sd);
+    impl::RegisterSD(LogicalVolume(iLogicalVolume), sd);
 }
 
 auto DefinitionBase::RegisterSD(std::string_view logicalVolumeName, gsl::index iLogicalVolume, gsl::not_null<G4VSensitiveDetector*> sd) const -> void {
     if (not Ready<"warning">()) {
         return;
     }
-    internal::RegisterSD(LogicalVolume(logicalVolumeName, iLogicalVolume), sd);
+    impl::RegisterSD(LogicalVolume(logicalVolumeName, iLogicalVolume), sd);
 }
 
 auto DefinitionBase::RegisterField(std::unique_ptr<G4FieldManager> fieldManager, bool forceToAllDaughters) -> void {
@@ -238,7 +236,7 @@ auto DefinitionBase::RegisterField(std::unique_ptr<G4FieldManager> fieldManager,
     const auto& lvs{LogicalVolumes()};
     Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
-        internal::RegisterField(lv, fieldManager.get(), forceToAllDaughters);
+        impl::RegisterField(lv, fieldManager.get(), forceToAllDaughters);
     }
     fFieldStore.emplace_back(std::move(fieldManager));
 }
@@ -250,7 +248,7 @@ auto DefinitionBase::RegisterField(std::string_view logicalVolumeName, std::uniq
     const auto& lvs{LogicalVolumes(logicalVolumeName)};
     Ensures(lvs.size() > 0);
     for (auto&& lv : lvs) {
-        internal::RegisterField(lv, fieldManager.get(), forceToAllDaughters);
+        impl::RegisterField(lv, fieldManager.get(), forceToAllDaughters);
     }
     fFieldStore.emplace_back(std::move(fieldManager));
 }
@@ -259,7 +257,7 @@ auto DefinitionBase::RegisterField(gsl::index iLogicalVolume, std::unique_ptr<G4
     if (not Ready<"warning">()) {
         return;
     }
-    internal::RegisterField(LogicalVolume(iLogicalVolume), fieldManager.get(), forceToAllDaughters);
+    impl::RegisterField(LogicalVolume(iLogicalVolume), fieldManager.get(), forceToAllDaughters);
     fFieldStore.emplace_back(std::move(fieldManager));
 }
 
@@ -267,7 +265,7 @@ auto DefinitionBase::RegisterField(std::string_view logicalVolumeName, gsl::inde
     if (not Ready<"warning">()) {
         return;
     }
-    internal::RegisterField(LogicalVolume(logicalVolumeName, iLogicalVolume), fieldManager.get(), forceToAllDaughters);
+    impl::RegisterField(LogicalVolume(logicalVolumeName, iLogicalVolume), fieldManager.get(), forceToAllDaughters);
     fFieldStore.emplace_back(std::move(fieldManager));
 }
 
@@ -275,19 +273,19 @@ auto DefinitionBase::Export(std::filesystem::path gdmlPath, gsl::index iPhysical
     if (not Ready<"warning">()) {
         return {};
     }
-    return internal::Export(std::move(gdmlPath), LogicalVolume(iPhysicalVolume));
+    return impl::Export(std::move(gdmlPath), LogicalVolume(iPhysicalVolume));
 }
 
 auto DefinitionBase::Export(std::filesystem::path gdmlPath, std::string_view physicalVolumeName, gsl::index iPhysicalVolume) const -> std::filesystem::path {
     if (not Ready<"warning">()) {
         return {};
     }
-    return internal::Export(std::move(gdmlPath), LogicalVolume(physicalVolumeName, iPhysicalVolume));
+    return impl::Export(std::move(gdmlPath), LogicalVolume(physicalVolumeName, iPhysicalVolume));
 }
 
 auto DefinitionBase::LogicalVolumes() const -> const std::vector<G4LogicalVolume*>& {
     if (fFirstLogicalVolumes == nullptr) {
-        Throw<std::logic_error>(fmt::format("No logical volume in {}", muc::try_demangle(typeid(*this).name())));
+        Throw<std::logic_error>(fmt::format("No logical volume found in {}.", muc::try_demangle(typeid(*this).name())));
     }
     Ensures(not fLogicalVolumes.empty());
     return *fFirstLogicalVolumes;
@@ -297,7 +295,7 @@ auto DefinitionBase::LogicalVolumes(std::string_view name) const -> const std::v
     try {
         return fLogicalVolumes.at(std::string{name});
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("No logical volume named '{}' in {}",
+        Throw<std::out_of_range>(fmt::format("No logical volume named '{}' found in {}.",
                                              name, muc::try_demangle(typeid(*this).name())));
     }
 }
@@ -306,7 +304,7 @@ auto DefinitionBase::LogicalVolume(gsl::index i) const -> G4LogicalVolume* {
     try {
         return LogicalVolumes().at(i);
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("Logical volume index {} out of range in {}",
+        Throw<std::out_of_range>(fmt::format("Logical volume index {} is out of range in {}.",
                                              i, muc::try_demangle(typeid(*this).name())));
     }
 }
@@ -316,14 +314,14 @@ auto DefinitionBase::LogicalVolume(std::string_view name, gsl::index i) const ->
     try {
         return logicalVolume.at(i);
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("Logical volume index {} out of range for logical volume '{}' in {}",
+        Throw<std::out_of_range>(fmt::format("Logical volume index {} is out of range for logical volume '{}' in {}.",
                                              i, name, muc::try_demangle(typeid(*this).name())));
     }
 }
 
 auto DefinitionBase::PhysicalVolumes() const -> const std::vector<G4VPhysicalVolume*>& {
     if (fFirstPhysicalVolumes == nullptr) {
-        Throw<std::logic_error>(fmt::format("No physical volume in {}", muc::try_demangle(typeid(*this).name())));
+        Throw<std::logic_error>(fmt::format("No physical volume found in {}.", muc::try_demangle(typeid(*this).name())));
     }
     Ensures(not fPhysicalVolumes.empty());
     return *fFirstPhysicalVolumes;
@@ -333,7 +331,7 @@ auto DefinitionBase::PhysicalVolumes(std::string_view name) const -> const std::
     try {
         return fPhysicalVolumes.at(std::string{name});
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("No physical volume named '{}' in {}",
+        Throw<std::out_of_range>(fmt::format("No physical volume named '{}' found in {}.",
                                              name, muc::try_demangle(typeid(*this).name())));
     }
 }
@@ -342,7 +340,7 @@ auto DefinitionBase::PhysicalVolume(gsl::index i) const -> G4VPhysicalVolume* {
     try {
         return PhysicalVolumes().at(i);
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("Physical volume index {} out of range in {}",
+        Throw<std::out_of_range>(fmt::format("Physical volume index {} is out of range in {}.",
                                              i, muc::try_demangle(typeid(*this).name())));
     }
 }
@@ -352,7 +350,7 @@ auto DefinitionBase::PhysicalVolume(std::string_view name, gsl::index i) const -
     try {
         return physicalVolume.at(i);
     } catch (const std::out_of_range&) {
-        Throw<std::out_of_range>(fmt::format("Physical volume index {} out of range for physical volume '{}' in {}",
+        Throw<std::out_of_range>(fmt::format("Physical volume index {} is out of range for physical volume '{}' in {}.",
                                              i, name, muc::try_demangle(typeid(*this).name())));
     }
 }

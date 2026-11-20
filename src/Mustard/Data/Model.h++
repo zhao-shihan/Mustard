@@ -1,0 +1,279 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
+//
+// This file is part of Mustard, an offline software framework for HEP experiments.
+//
+// Mustard is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Mustard. If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
+
+#include "Mustard/Data/Object/Field.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
+#include "Mustard/gslx/index_sequence.h++"
+
+#include "muc/ceta_string"
+#include "muc/concepts"
+#include "muc/tuple"
+
+#include "gsl/gsl"
+
+#include <concepts>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <vector>
+
+namespace Mustard::Data {
+
+namespace impl {
+
+/// @brief Marker base type used to identify tuple model types.
+struct ModelSignature : NonconstructibleBase {};
+
+namespace impl {
+
+/// @brief Concept requiring a std::tuple whose element field names are unique.
+/// @details Each tuple element type is expected to expose a static Name used for uniqueness checks.
+template<typename T>
+concept UniqueStdTuple = requires {
+    requires muc::instantiated_from<T, std::tuple>;
+    requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
+        return (... and ([]<gsl::index... Js, gsl::index I>(gslx::index_sequence<Js...>, std::integral_constant<gsl::index, I>) consteval {
+                    return (... and ((I == Js) == (std::tuple_element_t<I, T>::Name() == std::tuple_element_t<Js, T>::Name())));
+                }(gslx::make_index_sequence<std::tuple_size_v<T>>{}, std::integral_constant<gsl::index, Is>{})));
+    }(gslx::make_index_sequence<std::tuple_size_v<T>>{}));
+};
+
+} // namespace impl
+
+/// @brief Common implementation base for all Model specializations.
+/// @tparam ADerived Concrete model type.
+/// @tparam AStdTuple Underlying schema tuple type.
+template<typename ADerived, impl::UniqueStdTuple AStdTuple>
+class ModelBase : public ModelSignature {
+public:
+    /// @brief Underlying schema tuple type.
+    using StdTuple = AStdTuple;
+
+public:
+    /// @brief Returns field count in the schema.
+    static constexpr auto Size() -> auto { return std::tuple_size_v<StdTuple>; }
+
+    /// @brief Looks up field index by compile-time field name.
+    /// @tparam AName Field name.
+    /// @return Zero-based field index in StdTuple.
+    template<muc::ceta_string AName>
+    static constexpr auto Index() -> auto { return IndexImpl<AName>(); }
+
+    /// @brief Returns runtime vector of field names in declaration order.
+    static auto NameVector() -> const auto& { return fNameVector; }
+
+    /// @brief Field type alias resolved by compile-time field name.
+    /// @tparam AName Field name.
+    template<muc::ceta_string AName>
+    using FieldAt = std::tuple_element_t<Index<AName>(), StdTuple>;
+
+private:
+    /// @brief Helper path used to terminate constexpr recursion flow.
+    static auto StopConsteval() -> gsl::index { return -1; }
+
+    /// @brief Recursive implementation of Index.
+    /// @tparam AName Field name to find.
+    /// @tparam I Current recursion index.
+    template<muc::ceta_string AName, gsl::index I = 0>
+    static consteval auto IndexImpl() -> gsl::index;
+
+private:
+    /// @brief Cached runtime field-name vector.
+    static const std::vector<std::string> fNameVector;
+};
+
+} // namespace impl
+
+/// @brief Types allowed as Model parameters.
+/// @details A parameter can be an existing model type or a Field type.
+template<typename T>
+concept Modelizable = std::derived_from<T, impl::ModelSignature> or
+                      impl2::IsField<T>::value;
+
+/// @brief Empty Model specialization.
+template<Modelizable...>
+struct Model
+    : impl::ModelBase<Model<>,
+                      std::tuple<>> {};
+
+/// @brief Model specialization that prepends an existing model.
+/// @tparam AModel Existing model.
+/// @tparam AOthers Remaining modelizable items.
+template<std::derived_from<impl::ModelSignature> AModel, Modelizable... AOthers>
+struct Model<AModel, AOthers...>
+    : impl::ModelBase<Model<AModel, AOthers...>,
+                      muc::tuple_concat_t<typename AModel::StdTuple,
+                                          typename Model<AOthers...>::StdTuple>> {};
+
+/// @brief Model specialization that prepends one Field field.
+/// @tparam T Field payload type (in-memory type).
+/// @tparam AName Field name.
+/// @tparam U Field persistent storage type.
+/// @tparam ADescription Field description.
+/// @tparam AOthers Remaining modelizable items.
+template<typename T, muc::ceta_string AName, ROOTX::RNTuplePersistable U, muc::ceta_string ADescription, Modelizable... AOthers>
+struct Model<Field<T, AName, U, ADescription>, AOthers...>
+    : impl::ModelBase<Model<Field<T, AName, U, ADescription>, AOthers...>,
+                      muc::tuple_concat_t<std::tuple<Field<T, AName, U, ADescription>>,
+                                          typename Model<AOthers...>::StdTuple>> {};
+
+/// @brief Concept for concrete model types.
+/// @note To define a model, inherit from a Model directly via the Model template.
+/// The purpose of inheriting from Model and create a new type is to produce
+/// a more human-readable compiler error/warning messages.
+template<typename M>
+concept Modelized = std::derived_from<M, impl::ModelSignature> and
+                    not muc::instantiated_from<M, Model>;
+
+namespace impl {
+
+/// @brief Compile-time test: Name is contained in the Names pack.
+/// @tparam Name Name to test.
+/// @tparam ...Names Names pack to search.
+template<muc::ceta_string Name, muc::ceta_string... Names>
+consteval auto NameInPack() -> bool {
+    return (... or (Name == Names));
+}
+
+/// @brief Compile-time count of occurrences of Name within the Names pack.
+/// @tparam Name Name to count.
+/// @tparam ...Names Names pack to search.
+template<muc::ceta_string Name, muc::ceta_string... Names>
+consteval auto CountInPack() -> gsl::index {
+    return (0 + ... + (Name == Names));
+}
+
+/// @brief Compile-time test: all names in the pack are pairwise distinct.
+/// @tparam ...Names Names pack to test.
+template<muc::ceta_string... Names>
+consteval auto UniqueNames() -> bool {
+    return (... and (CountInPack<Names, Names...>() == 1));
+}
+
+/// @brief Compile-time test: Name exists among the fields of M.
+/// @tparam M Source model type.
+/// @tparam Name Name to search for.
+template<Modelized M, muc::ceta_string Name>
+consteval auto NameInModel() -> bool {
+    return []<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
+        return (... or (std::tuple_element_t<Is, typename M::StdTuple>::Name() == Name));
+    }(gslx::make_index_sequence<M::Size()>{});
+}
+
+/// @brief Compile-time test: every name in the pack exists among the fields of M.
+/// @tparam M Source model type.
+/// @tparam ...Names Names pack to test.
+template<Modelized M, muc::ceta_string... Names>
+consteval auto NamesInModel() -> bool {
+    return (... and NameInModel<M, Names>());
+}
+
+/// @brief Filters the fields of a schema tuple by name, producing the corresponding Model.
+/// @details Each field whose name satisfies the selector is kept as-is, so the
+///          resulting model preserves the declaration order of the tuple. A model
+///          is Modelizable itself, so the kept fields are gathered by simply
+///          letting Model concatenate the selected sub-models.
+/// @tparam AStdTuple std::tuple<Field<...>...> to filter.
+/// @tparam AKeepMatching true to keep fields whose names are in ANames (Take),
+///                       false to keep fields whose names are not in ANames (Drop).
+/// @tparam ...ANames Field names.
+template<typename AStdTuple, bool AKeepMatching, muc::ceta_string... ANames>
+struct FilteredModel;
+
+template<typename... AFields, bool AKeepMatching, muc::ceta_string... ANames>
+struct FilteredModel<std::tuple<AFields...>, AKeepMatching, ANames...> {
+    /// @brief Model of the kept Field types.
+    using type = Model<std::conditional_t<AKeepMatching == NameInPack<AFields::Name(), ANames...>(),
+                                          Model<AFields>,
+                                          Model<>>...>;
+};
+
+} // namespace impl
+
+/// @brief Take fields from a model by field name, producing a new model.
+/// @details The resulting model consists of exactly the fields of M whose names
+///          appear in ANames, in the declaration order of M. Every name in ANames
+///          must be unique and must name a field of M; otherwise the type is
+///          ill-formed and the compiler reports the violated constraint. The
+///          result is itself a Modelized type and can be composed further with
+///          Model, Take, and Drop.
+/// @tparam M Source model type.
+/// @tparam ...ANames Compile-time field names to extract.
+template<Modelized M, muc::ceta_string... ANames>
+    requires (impl::UniqueNames<ANames...>()) and (impl::NamesInModel<M, ANames...>())
+struct Take
+    : impl::FilteredModel<typename M::StdTuple, true, ANames...>::type {};
+
+/// @brief Drop fields from a model by field name, producing a new model.
+/// @details The resulting model consists of exactly the fields of M whose names
+///          do not appear in ANames, in the declaration order of M. Every name in
+///          ANames must name a field of M; otherwise the type is ill-formed and
+///          the compiler reports the violated constraint. Repeating a name is
+///          harmless. The result is itself a Modelized type and can be composed
+///          further with Model, Take, and Drop.
+/// @tparam M Source model type.
+/// @tparam ...ANames Compile-time field names to drop.
+template<Modelized M, muc::ceta_string... ANames>
+    requires (impl::NamesInModel<M, ANames...>())
+struct Drop
+    : impl::FilteredModel<typename M::StdTuple, false, ANames...>::type {};
+
+/// @brief Concept requiring that model M1 is a sub-model of M2 by field-name inclusion.
+template<typename M1, typename M2>
+concept SubModel = requires {
+    requires Modelized<M1>;
+    requires Modelized<M2>;
+    requires M1::Size() <= M2::Size();
+    requires([]<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
+        const auto compare{[]<gsl::index I, gsl::index... Js>(gslx::index_sequence<Js...>) consteval {
+            return (... or (std::tuple_element_t<I, typename M1::StdTuple>::Name() ==
+                            std::tuple_element_t<Js, typename M2::StdTuple>::Name()));
+        }};
+        return (... and compare.template operator()<Is>(gslx::make_index_sequence<M2::Size()>{}));
+    }(gslx::make_index_sequence<M1::Size()>{}));
+};
+
+/// @brief Concept requiring that model M1 is a strict super-model of M2.
+template<typename M1, typename M2>
+concept ProperSuperModel = not SubModel<M1, M2>;
+
+/// @brief Concept requiring that model M1 and M2 are equivalent.
+template<typename M1, typename M2>
+concept EquivalentModel = SubModel<M1, M2> and
+                          SubModel<M2, M1>;
+
+/// @brief Concept requiring that model M1 is a strict sub-model of M2.
+template<typename M1, typename M2>
+concept ProperSubModel = SubModel<M1, M2> and
+                         not EquivalentModel<M1, M2>;
+
+/// @brief Concept requiring that model M1 is a super-model of M2.
+template<typename M1, typename M2>
+concept SuperModel = ProperSuperModel<M1, M2> or
+                     EquivalentModel<M1, M2>;
+
+/// @brief Concept for model covers another model.
+/// This is essentially an alias for SuperModel, provided for better readability in some contexts.
+template<typename M1, typename M2>
+concept ModelCoverable = SuperModel<M1, M2>;
+
+} // namespace Mustard::Data
+
+#include "Mustard/Data/Model.inl"

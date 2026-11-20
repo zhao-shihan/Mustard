@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -32,7 +32,7 @@ struct LinePoint3DPOCAResult {
     double doca;  ///< distance of closest approach
 };
 
-/// @brief Calculate the point of closest approach (POCA) between a line and a point
+/// @brief Calculate the point of closest approach (POCA) between a line and a point.
 /// @param line The line
 /// @param point The point
 /// @return The POCA result containing the POCA and the distance
@@ -45,7 +45,7 @@ struct LineLine3DPOCAResult {
     double doca;   ///< distance of closest approach
 };
 
-/// @brief Calculate the point of closest approach (POCA) between two lines
+/// @brief Calculate the point of closest approach (POCA) between two lines.
 /// @param line1 The first line
 /// @param line2 The second line
 /// @return The POCA result containing the POCAs on both lines and the distance
@@ -58,7 +58,7 @@ struct HelixAxisPOCAResult {
     double doca;     ///< distance of closest approach
 };
 
-/// @brief Calculate the point of closest approach (POCA) between a helix and an axis
+/// @brief Calculate the point of closest approach (POCA) between a helix and an axis.
 /// @param helix The helix
 /// @param axis The axis (2D point representing a line along the z direction)
 /// @return The POCA result containing the POCAs in both directions and the distance
@@ -72,7 +72,7 @@ struct HelixPointPOCAResult {
 
 /// @brief Calculate the point of closest approach (POCA) between a helix and a point
 /// within a specified phi range. This function uses Brent's method with initial
-/// grid search to find the POCA
+/// grid search to find the POCA.
 /// @param helix The helix
 /// @param point The point
 /// @param phiLow Lower bound of the helix azimuthal angle (relative to phi0)
@@ -81,14 +81,12 @@ struct HelixPointPOCAResult {
 /// skip both the unimodality check and initial grid search; if 1, determine the actual
 /// number automatically (default: 1, i.e. determined automatically)
 /// @param maxIter Maximum number of iterations for minimization (default: 300)
-/// @param absTol Absolute tolerance for minimization (default: machine epsilon)
-/// @param relTol Relative tolerance for minimization (default: sqrt(machine epsilon))
+/// @param tol Tolerance configuration for minimization (default: `tolerance<double>{}`)
 /// @return If successful, an instance of HelixPointPOCAResult containing the POCA and
 /// the distance; null result if minimization failed
 auto POCA(const Helix& helix, const Point3D& point, double phiLow, double phiUp,
           int nTrialPts = 1, int maxIter = 300,
-          double absTol = muc::default_abs_tol<double>,
-          double relTol = muc::default_rel_tol<double>) -> std::optional<HelixPointPOCAResult>;
+          muc::tolerance<double> tol = {}) -> std::optional<HelixPointPOCAResult>;
 
 /// @brief Result of helix-line POCA calculation
 struct HelixLinePOCAResult {
@@ -99,7 +97,7 @@ struct HelixLinePOCAResult {
 
 /// @brief Calculate the point of closest approach (POCA) between a helix and a line
 /// within a specified phi range. This function uses Brent's method with initial
-/// grid search to find the POCA
+/// grid search to find the POCA.
 /// @param helix The helix
 /// @param line The line
 /// @param phiLow Lower bound of the helix azimuthal angle (relative to phi0)
@@ -108,13 +106,11 @@ struct HelixLinePOCAResult {
 /// skip both the unimodality check and initial grid search; if 1, determine the actual
 /// number automatically (default: 1, i.e. determined automatically)
 /// @param maxIter Maximum number of iterations for minimization (default: 300)
-/// @param absTol Absolute tolerance for minimization (default: machine epsilon)
-/// @param relTol Relative tolerance for minimization (default: sqrt(machine epsilon))
+/// @param tol Tolerance configuration for minimization (default: `tolerance<double>{}`)
 /// @return If successful, an instance of HelixLinePOCAResult containing the POCAs and
 /// the distance; null result if minimization failed
 auto POCA(const Helix& helix, const Line3D& line, double phiLow, double phiUp,
           int nTrialPts = 1, int maxIter = 300,
-          double absTol = muc::default_abs_tol<double>,
-          double relTol = muc::default_rel_tol<double>) -> std::optional<HelixLinePOCAResult>;
+          muc::tolerance<double> tol = {}) -> std::optional<HelixLinePOCAResult>;
 
 } // namespace Mustard::inline Math

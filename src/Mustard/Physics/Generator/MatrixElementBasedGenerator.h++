@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -18,32 +18,31 @@
 
 #pragma once
 
+#include "Mustard/Env/MonteCarloEnv.h++"
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Math/Estimate.h++"
-#include "Mustard/Math/MCIntegrationUtility.h++"
+#include "Mustard/Math/Statistic.h++"
 #include "Mustard/Math/Vector.h++"
 #include "Mustard/Parallel/ReseedRandomEngine.h++"
 #include "Mustard/Physics/Generator/EventGenerator.h++"
 #include "Mustard/Physics/Generator/GENBOD.h++"
 #include "Mustard/Physics/QFT/MatrixElement.h++"
 #include "Mustard/Physics/QFT/PolarizedMatrixElement.h++"
-#include "Mustard/Utility/VectorArithmeticOperator.h++"
+#include "Mustard/Utility/Base64.h++"
 
-#include "CLHEP/Random/Random.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "mplr/mplr.hpp"
+#include "gtl/phmap.hpp"
+
+#include "mp1/mp1.hpp"
 
 #include "muc/array"
 #include "muc/chrono"
-#include "muc/hash_map"
-#include "muc/hash_set"
 #include "muc/math"
 #include "muc/numeric"
+#include "muc/random"
 #include "muc/utility"
-
-#include "gsl/gsl"
 
 #include "fmt/std.h"
 
@@ -105,17 +104,16 @@ public:
     auto Momenta() const -> const auto& { return fMomenta; }
 
     /// @brief Compute 1/S × |M|² × acceptance integral on phase space by Monte Carlo integration.
-    /// Useful for calculating total decay width or cross section
+    /// Useful for calculating total decay width or cross section.
     /// @param executor An executor instance
     /// @param precisionGoal Target relative uncertainty (e.g. 0.01 for 1% rel. unc.)
     /// @param integrationState Integration state for continuing integration
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return (1) Monte Carlo integration result of 1/S × |M|² × acceptance integral on phase space
     ///         (2) Effective sample size
     ///         (3) Current integration state
-    auto PhaseSpaceIntegral(Executor<unsigned long long>& executor, double precisionGoal,
-                            MCIntegrationState integrationState = {},
-                            CLHEP::HepRandomEngine& rng = *CLHEP::HepRandom::getTheEngine()) -> std::tuple<Estimate, double, MCIntegrationState>;
+    auto PhaseSpaceIntegral(Executor<long long>& executor, double precisionGoal, Statistic<1> statistic = {},
+                            muc::rng_ref rng = Env::RandomEngine()) -> Statistic<1>;
 
 protected:
     /// @brief Set initial-state 4-momenta
@@ -123,24 +121,24 @@ protected:
     auto Momenta(const InitialStateMomenta& pI) -> void;
 
     /// @brief Get initial-state polarization vector(s)
-    /// @note This overload is only enabled for polarized process
+    /// @note This overload is only enabled for polarized process.
     auto Polarization() const -> const typename A::InitialStatePolarization&
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
     /// @brief Get initial-state polarization vector
     /// @param i Particle index (0 ≤ i < M)
-    /// @note This overload is only enabled for polarized scattering
+    /// @note This overload is only enabled for polarized scattering.
     auto Polarization(int i) const -> Vector3D
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
     /// @brief Set initial-state polarization vector(s)
     /// @param pol Polarization vector(s) (all |pol| ≤ 1)
-    /// @note This overload is only enabled for polarized process
+    /// @note This overload is only enabled for polarized process.
     auto Polarization(const typename A::InitialStatePolarization& pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>>;
     /// @brief Set polarization for single initial-state particle
     /// @param i Particle index (0 ≤ i < M)
     /// @param pol Polarization vector (|pol| ≤ 1)
-    /// @note This overload is only enabled for polarized scattering
+    /// @note This overload is only enabled for polarized scattering.
     auto Polarization(int i, Vector3D pol) -> void
         requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> and (M > 1);
 
@@ -152,9 +150,9 @@ protected:
     auto Mass(const std::array<double, N>& mass) -> void { fGENBOD.Mass(mass); }
 
     /// @brief Generate an event on phase space
-    /// @param rng Reference to CLHEP random engine
+    /// @param rng Reference to a random number engine
     /// @return An event from phase space
-    auto PhaseSpace(CLHEP::HepRandomEngine& rng) -> auto { return fGENBOD(rng, fMomenta); }
+    auto PhaseSpace(muc::rng_ref rng) -> auto { return fGENBOD(rng, fMomenta); }
 
     /// @brief Add an identical particle index set
     /// @param set A vector of particle indices (0 ≤ index < N)
@@ -201,8 +199,8 @@ protected:
 
 private:
     /// @brief Monte Carlo integration implementation
-    auto Integrate(std::regular_invocable<const Event&> auto&& Integrand, double precisionGoal,
-                   MCIntegrationState& state, Executor<unsigned long long>& executor, CLHEP::HepRandomEngine& rng) -> std::pair<Estimate, double>;
+    auto MCIntegrate(Statistic<1>& statistic, std::regular_invocable<const Event&> auto&& integrand, double precisionGoal,
+                     Executor<long long>& executor, muc::rng_ref rng) -> void;
 
 protected:
     [[no_unique_address]] A fMatrixElement; ///< Matrix element
@@ -215,9 +213,9 @@ private:
     double fFSSymmetryFactor;                                         ///< Final-state identical particle symmetry factor
     std::vector<std::vector<int>> fIdenticalSet;                      ///< Identical particle sets
                                                                       //
-    muc::flat_hash_map<int, double> fSoftCutoff;                      ///< Soft cutoffs (on kinetic energies in the c.m. frame)
-    muc::flat_hash_map<std::pair<int, int>, double> fCollinearCutoff; ///< Collinear cutoffs (on cosine of angles between particles in the c.m. frame)
-    muc::flat_hash_set<int> fInfraredUnsafePID;                       ///< Particle indices involved in IR cutoffs
+    gtl::flat_hash_map<int, double> fSoftCutoff;                      ///< Soft cutoffs (on kinetic energies in the c.m. frame)
+    gtl::flat_hash_map<std::pair<int, int>, double> fCollinearCutoff; ///< Collinear cutoffs (on cosine of angles between particles in the c.m. frame)
+    gtl::flat_hash_set<int> fInfraredUnsafePID;                       ///< Particle indices involved in IR cutoffs
                                                                       //
     AcceptanceFunction fAcceptance;                                   ///< User acceptance function (normally 0 <= acceptance <= 1)
                                                                       //

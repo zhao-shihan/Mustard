@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -25,7 +25,7 @@ namespace Mustard::Geant4X::inline DecayChannel {
 
 class MuonNeutrinolessDoubleRadiativeDecayChannel : public G4PhaseSpaceDecayChannel {
 public:
-    MuonNeutrinolessDoubleRadiativeDecayChannel(const G4String& parentName, G4double br, G4int verbose = 1);
+    MuonNeutrinolessDoubleRadiativeDecayChannel(const G4String& parentName, double br, int verbose = 1);
 
 private:
     static auto DaughterLeptonName(const G4String& parentName) -> G4String;

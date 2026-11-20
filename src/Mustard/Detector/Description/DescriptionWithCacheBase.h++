@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Detector/Description/DescriptionBase.h++"
-#include "Mustard/Env/Memory/Singleton.h++"
-#include "Mustard/Utility/NonCopyableBase.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
+#include "Mustard/Utility/ClassSemanticHelper.h++"
 
 #include <concepts>
 #include <functional>
@@ -38,13 +38,13 @@ template<>
 class DescriptionWithCacheBase<> : public DescriptionBase<> {
 protected:
     using DescriptionBase::DescriptionBase;
-    virtual ~DescriptionWithCacheBase() = default; // not necessarily virtual, but I need to mute a warning...
+    ~DescriptionWithCacheBase() override = default;
 
 protected:
     template<typename T>
     friend class Simple;
     template<typename T>
-    class Simple : public NonCopyableBase {
+    class Simple : public NoncopyableBase {
     public:
         Simple(const DescriptionWithCacheBase<>* description, const T& value);
         Simple(const DescriptionWithCacheBase<>* description, T&& value);
@@ -67,7 +67,7 @@ protected:
 
 private:
     friend class CacheBase;
-    class CacheBase : public NonCopyableBase {
+    class CacheBase : public NoncopyableBase {
     public:
         CacheBase(DescriptionWithCacheBase<>* description);
 
@@ -111,11 +111,11 @@ private:
 };
 
 template<typename ADerived>
-class DescriptionWithCacheBase<ADerived> : public Env::Memory::Singleton<ADerived>,
+class DescriptionWithCacheBase<ADerived> : public Env::Singleton<ADerived>,
                                            public DescriptionWithCacheBase<> {
 protected:
     using DescriptionWithCacheBase<>::DescriptionWithCacheBase;
-    ~DescriptionWithCacheBase() = default;
+    ~DescriptionWithCacheBase() override = default;
 };
 
 } // namespace Mustard::Detector::Description

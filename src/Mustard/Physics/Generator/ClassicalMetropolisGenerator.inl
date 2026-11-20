@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,9 +20,8 @@ namespace Mustard::inline Physics::inline Generator {
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
-                                                                    std::optional<double> stepSize) :
-    Base{pI, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
+                                                                    std::optional<int> acfSampleSize, std::optional<int> acfReplicate, std::optional<double> stepSize) :
+    Base{pI, pdgID, mass, std::move(acfSampleSize), std::move(acfReplicate)},
     fGaussian{},
     fStepSize{std::numeric_limits<double>::quiet_NaN()} {
     if (stepSize) {
@@ -33,10 +32,9 @@ ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const Initia
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 ClassicalMetropolisGenerator<M, N, A>::ClassicalMetropolisGenerator(const InitialStateMomenta& pI, const typename A::InitialStatePolarization& polarization,
                                                                     const std::array<int, N>& pdgID, const std::array<double, N>& mass,
-                                                                    std::optional<double> thinningRatio, std::optional<unsigned> acfSampleSize,
-                                                                    std::optional<double> stepSize) // clang-format off
+                                                                    std::optional<int> acfSampleSize, std::optional<int> acfReplicate, std::optional<double> stepSize) // clang-format off
     requires std::derived_from<A, QFT::PolarizedMatrixElement<M, N>> : // clang-format on
-    Base{pI, polarization, pdgID, mass, std::move(thinningRatio), std::move(acfSampleSize)},
+    Base{pI, polarization, pdgID, mass, std::move(acfSampleSize), std::move(acfReplicate)},
     fGaussian{},
     fStepSize{std::numeric_limits<double>::quiet_NaN()} {
     if (stepSize) {
@@ -50,11 +48,11 @@ ClassicalMetropolisGenerator<M, N, A>::~ClassicalMetropolisGenerator() = default
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
 auto ClassicalMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
     if (not std::isfinite(stepSize)) [[unlikely]] {
-        PrintError(fmt::format("Non-finite MCMC step size not allowed (got {}), not setting it", stepSize));
+        PrintError(fmt::format("Non-finite MCMC step size not allowed (got {}), not setting it.", stepSize));
         return;
     }
-    if (stepSize <= muc::default_tolerance<double> or 0.5 <= stepSize) [[unlikely]] {
-        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5)", stepSize, muc::default_tolerance<double>));
+    if (stepSize <= muc::default_rel_tol<double> or 0.5 <= stepSize) [[unlikely]] {
+        PrintWarning(fmt::format("Suspicious MCMC step size (got {}, expects {} < step size < 0.5).", stepSize, muc::default_rel_tol<double>));
     }
     // Rescale stepSize
     // E(distance in d-dim space) ~ sqrt(d), if stepSize = stepSize0 / sqrt(d) => E(step size) ~ stepSize0
@@ -62,7 +60,7 @@ auto ClassicalMetropolisGenerator<M, N, A>::StepSize(double stepSize) -> void {
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) -> void {
+auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(muc::rng_ref rng) -> void {
     // E(distance in d-dim space) ~ sqrt(d), and E(random walk displacement) ~ sqrt(random walk distance),
     // so we try to ensure E(random walk displacement) >~ scale * E(distance in d-dim space) with some scale
     // i.e. sqrt(random walk distance) >~ scale * sqrt(dimension)
@@ -76,10 +74,11 @@ auto ClassicalMetropolisGenerator<M, N, A>::BurnIn(CLHEP::HepRandomEngine& rng) 
 }
 
 template<int M, int N, std::derived_from<QFT::MatrixElement<M, N>> A>
-auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rng) -> bool {
+auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(muc::rng_ref rng) -> bool {
     if (std::isnan(fStepSize)) {
-        Throw<std::logic_error>("Step size not set");
+        Throw<std::logic_error>("Step size not set.");
     }
+    auto uniform{Random::Uniform<double>{}};
     struct MarkovChain::State state;
     // Walk random state
     std::ranges::transform(this->fMC.state.u, state.u.begin(), [&](auto u0) {
@@ -97,7 +96,7 @@ auto ClassicalMetropolisGenerator<M, N, A>::NextEvent(CLHEP::HepRandomEngine& rn
         const auto acceptance{this->Acceptance(event.p)};
         const auto mSqAcceptanceDetJ{this->MSqAcceptanceDetJ(event.p, acceptance, detJ)};
         if (mSqAcceptanceDetJ >= this->fMC.mSqAcceptanceDetJ or
-            mSqAcceptanceDetJ > this->fMC.mSqAcceptanceDetJ * rng.flat()) {
+            mSqAcceptanceDetJ > this->fMC.mSqAcceptanceDetJ * uniform(rng)) {
             this->fMC.state = std::move(state);
             this->fMC.mSqAcceptanceDetJ = mSqAcceptanceDetJ;
             this->fMC.event = std::move(event);

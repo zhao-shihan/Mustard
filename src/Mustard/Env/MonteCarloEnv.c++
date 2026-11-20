@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,35 +20,34 @@
 #include "Mustard/Env/MonteCarloEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
+
+#include <utility>
 
 namespace Mustard::Env {
 
-template<unsigned AXoshiroWidth>
-MonteCarloEnv<AXoshiroWidth>::MonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
-                                            enum VerboseLevel verboseLevel,
-                                            bool showBannerHint) :
+MonteCarloEnv::MonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>& cli,
+                             enum VerboseLevel verboseLevel,
+                             bool showBannerHint,
+                             std::optional<muc::any_rng> engine) :
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     PassiveSingleton<MonteCarloEnv>{this},
-    fXoshiro{cli} {
+    fRandomEngineInstaller{std::move(engine), cli} {
     if (not dynamic_cast<CLI::MonteCarloModule*>(&cli)) {
-        Mustard::MasterPrintWarning("Monte Carlo CLI module (Mustard::CLI::MonteCarloModule) not found");
+        Mustard::MasterPrintWarning("Monte Carlo CLI module (Mustard::CLI::MonteCarloModule) not found.");
     }
 }
 
-template<unsigned AXoshiroWidth>
-MonteCarloEnv<AXoshiroWidth>::MonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
-                                            enum VerboseLevel verboseLevel,
-                                            bool showBannerHint) :
-    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint} {
-    if (fShowBanner and (not mplr::available() or mplr::comm_world().rank() == 0)) {
+MonteCarloEnv::MonteCarloEnv(int argc, char* argv[], CLI::CLI<>& cli,
+                             enum VerboseLevel verboseLevel,
+                             bool showBannerHint,
+                             std::optional<muc::any_rng> engine) :
+    MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)} {
+    if (fShowBanner and (not mp1::available() or mp1::comm_world().rank() == 0)) {
         PrintStartBannerSplitLine();
         PrintStartBannerBody(argc, argv);
         PrintStartBannerSplitLine();
     }
 }
-
-template class MonteCarloEnv<256>;
-template class MonteCarloEnv<512>;
 
 } // namespace Mustard::Env

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2025  Mustard developers
+# Copyright (C) 2020-2026  Shihan Zhao and contributors
 #
 # This file is part of Mustard, an offline software framework for HEP experiments.
 #
@@ -19,52 +19,65 @@ add_library(Mustard ${MUSTARD_SRC})
 add_library(Mustard::Mustard ALIAS Mustard)
 
 # Mustard
-target_include_directories(Mustard PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                                          $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-target_compile_options(Mustard PUBLIC ${MUSTARD_PUBLIC_COMPILE_OPTIONS}
-                               PRIVATE ${MUSTARD_PRIVATE_COMPILE_OPTIONS})
-target_compile_definitions(Mustard PUBLIC ${MUSTARD_PUBLIC_COMPILE_DEFINITIONS})
+target_include_directories(Mustard
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+target_compile_options(Mustard
+    PUBLIC ${MUSTARD_PUBLIC_COMPILE_OPTIONS}
+    PRIVATE ${MUSTARD_PRIVATE_COMPILE_OPTIONS})
+target_compile_definitions(Mustard
+    PUBLIC ${MUSTARD_PUBLIC_COMPILE_DEFINITIONS}
+    PRIVATE ${MUSTARD_PRIVATE_COMPILE_DEFINITIONS})
 
 # Generate version header
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl.in
-                              ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl
-                              INSTALL_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Mustard)
+include(CMakePackageConfigHelpers)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mustard/Version.inl
+    @ONLY)
 
-# envparse
-target_link_libraries(Mustard PUBLIC envparse::envparse)
+# System dependencies
 
-# muc
-target_link_libraries(Mustard PUBLIC muc::muc)
-
-# EFM
-target_link_libraries(Mustard PUBLIC EFM::EFM)
-
-# backward-cpp
-target_link_libraries(Mustard PUBLIC Backward::Interface)
-
-# argparse
-target_link_libraries(Mustard PUBLIC argparse::argparse)
-
-# indicators
-target_link_libraries(Mustard PUBLIC indicators::indicators)
-
-# MPLR
-target_link_libraries(Mustard PUBLIC mplr::mplr)
-
-# Microsoft.GSL
-target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
-
-# fmt
-target_link_libraries(Mustard PUBLIC fmt::fmt)
-
-# Eigen
-target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
-
-# yaml-cpp
-target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
-
+# ROOT
+target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Imt ROOT::MathCore ROOT::Hist ROOT::Tree ROOT::ROOTDataFrame ROOT::ROOTNTuple ROOT::RIO)
 # Geant4
 target_link_libraries(Mustard PUBLIC ${Geant4_LIBRARIES})
 
-# ROOT
-target_link_libraries(Mustard PUBLIC ROOT::Core ROOT::Hist ROOT::Thread ROOT::Tree ROOT::MathCore ROOT::ROOTDataFrame ROOT::Geom)
+# Public dependencies
+
+# mp1 (-> MPI)
+target_link_libraries(Mustard PUBLIC mp1::mp1)
+# FFTW
+if(MUSTARD_USE_FFTW)
+    target_link_libraries(Mustard PRIVATE FFTW::Double)
+endif()
+# Eigen
+target_link_libraries(Mustard PUBLIC Eigen3::Eigen)
+# yaml-cpp
+target_link_libraries(Mustard PUBLIC yaml-cpp::yaml-cpp)
+# fmt
+target_link_libraries(Mustard PUBLIC fmt::fmt)
+
+# Public light-weight dependencies
+
+# argparse
+target_link_libraries(Mustard PUBLIC argparse::argparse)
+# envparse
+target_link_libraries(Mustard PUBLIC envparse::envparse)
+# gtl
+target_link_libraries(Mustard PUBLIC gtl)
+# Microsoft.GSL
+target_link_libraries(Mustard PUBLIC Microsoft.GSL::GSL)
+# muc
+target_link_libraries(Mustard PUBLIC muc::muc)
+
+# Private dependencies
+
+# backward-cpp
+target_link_libraries(Mustard PRIVATE backward_interface)
+# indicators
+target_link_libraries(Mustard PRIVATE indicators::indicators)
+# mimalloc
+if(MUSTARD_USE_MIMALLOC)
+    target_link_libraries(Mustard PRIVATE mimalloc-static)
+endif()

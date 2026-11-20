@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -27,7 +27,7 @@
 namespace Mustard::Parallel {
 
 /// @concept MPIPredefined
-/// @brief Checks if a type is a predefined MPI datatype
+/// @brief Checks if a type is a predefined MPI datatype.
 ///
 /// This concept verifies that a type matches one of the fundamental datatypes
 /// directly supported by MPI standard. It ensures the type can be used with

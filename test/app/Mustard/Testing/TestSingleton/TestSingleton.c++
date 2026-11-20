@@ -1,0 +1,54 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
+//
+// This file is part of Mustard, an offline software framework for HEP experiments.
+//
+// Mustard is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Mustard. If not, see <https://www.gnu.org/licenses/>.
+
+#include "Mustard/CLI/BasicCLI.h++"
+#include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/Env/ObjectRegistry/Singleton.h++"
+#include "Mustard/Testing/TestSingleton/TestSingleton.h++"
+
+namespace Mustard::Testing {
+
+namespace {
+
+namespace TestSingletonSection {
+
+class NullSingleton final : public Mustard::Env::Singleton<NullSingleton> {
+    friend Mustard::Env::SingletonFactory;
+
+private:
+    NullSingleton() = default;
+};
+
+} // namespace TestSingletonSection
+
+} // namespace
+
+TestSingleton::TestSingleton() :
+    Subprogram{"TestSingleton", "Test Mustard::Env::Singleton."} {}
+
+auto TestSingleton::Main(int argc, char* argv[]) const -> int {
+    Mustard::CLI::BasicCLI<> cli;
+    Mustard::Env::MPIEnv env{argc, argv, cli};
+
+    using namespace TestSingletonSection;
+
+    NullSingleton::Instance();
+    return EXIT_SUCCESS;
+}
+
+} // namespace Mustard::Testing

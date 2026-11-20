@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2020-2025  Mustard developers
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
 //
 // This file is part of Mustard, an offline software framework for HEP experiments.
 //
@@ -20,7 +20,7 @@
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
 
-#include "mplr/mplr.hpp"
+#include "mp1/mp1.hpp"
 
 #include "fmt/chrono.h"
 #include "fmt/color.h"
@@ -31,7 +31,7 @@
 
 namespace Mustard::inline IO {
 
-namespace internal {
+namespace impl {
 namespace {
 
 auto PrettyLogHead(std::string_view prefix, const std::source_location& location) -> std::string {
@@ -42,8 +42,8 @@ auto PrettyLogHead(std::string_view prefix, const std::source_location& location
                        location.line(),
                        location.column(),
                        location.function_name(),
-                       mplr::available() ?
-                           fmt::format(" in MPI process {}", mplr::comm_world().rank()) :
+                       mp1::available() ?
+                           fmt::format(" in MPI process {}", mp1::comm_world().rank()) :
                            "");
 }
 
@@ -53,11 +53,11 @@ auto PrettyException(std::string_view message, const std::source_location& locat
     return fmt::format("{}: {}", PrettyLogHead("", location), message);
 }
 
-} // namespace internal
+} // namespace impl
 
 auto PrintInfo(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::deep_sky_blue)};
-    Print<'I'>(stderr, ts, "{}: ", internal::PrettyLogHead("Information from ", location));
+    Print<'I'>(stderr, ts, "{}: ", impl::PrettyLogHead("Information from ", location));
     Print<'I'>(stderr, ts | fmt::emphasis::bold, "{}", message);
     Print<'I'>(stderr, "\n");
 }
@@ -65,7 +65,7 @@ auto PrintInfo(std::string_view message, const std::source_location& location) -
 auto PrintWarning(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::white) | bg(fmt::color::dark_orange)};
     Print<'W'>(stderr, ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
-    Print<'W'>(stderr, ts, " {}: ", internal::PrettyLogHead("Warning from ", location));
+    Print<'W'>(stderr, ts, " {}: ", impl::PrettyLogHead("Warning from ", location));
     Print<'W'>(stderr, ts | fmt::emphasis::bold, "{}", message);
     Print<'W'>(stderr, "\n");
 }
@@ -73,28 +73,28 @@ auto PrintWarning(std::string_view message, const std::source_location& location
 auto PrintError(std::string_view message, const std::source_location& location) -> void {
     const auto ts{fg(fmt::color::white) | bg(fmt::color::tomato)};
     Print<'E'>(stderr, ts | fmt::emphasis::bold | fmt::emphasis::blink, "***");
-    Print<'E'>(stderr, ts, " {}: ", internal::PrettyLogHead("Error from ", location));
+    Print<'E'>(stderr, ts, " {}: ", impl::PrettyLogHead("Error from ", location));
     Print<'E'>(stderr, ts | fmt::emphasis::bold, "{}", message);
     Print<'E'>(stderr, "\n");
 }
 
 auto MasterPrintInfo(std::string_view message, const std::source_location& location) -> void {
-    if (not mplr::available() or
-        mplr::comm_world().rank() == 0) {
+    if (not mp1::available() or
+        mp1::comm_world().rank() == 0) {
         PrintInfo(message, location);
     }
 }
 
 auto MasterPrintWarning(std::string_view message, const std::source_location& location) -> void {
-    if (not mplr::available() or
-        mplr::comm_world().rank() == 0) {
+    if (not mp1::available() or
+        mp1::comm_world().rank() == 0) {
         PrintWarning(message, location);
     }
 }
 
 auto MasterPrintError(std::string_view message, const std::source_location& location) -> void {
-    if (not mplr::available() or
-        mplr::comm_world().rank() == 0) {
+    if (not mp1::available() or
+        mp1::comm_world().rank() == 0) {
         PrintError(message, location);
     }
 }
