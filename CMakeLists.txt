@@ -22,7 +22,7 @@ cmake_policy(SET CMP0091 NEW)
 
 set(MUSTARD_VERSION_MAJOR 0)
 set(MUSTARD_VERSION_MINOR 26)
-set(MUSTARD_VERSION_PATCH 1120)
+set(MUSTARD_VERSION_PATCH 1121)
 set(MUSTARD_VERSION ${MUSTARD_VERSION_MAJOR}.${MUSTARD_VERSION_MINOR}.${MUSTARD_VERSION_PATCH})
 
 project(Mustard
@@ -109,9 +109,9 @@ message(STATUS "Mustard install path: ${CMAKE_INSTALL_PREFIX} (add -DCMAKE_INSTA
 # =============================================================================
 
 # Global compile configs, before adding dependencies
-include(GlobalCompileConfig)
+include(MustardGlobalCompileConfig)
 # Find and configure dependencies.
-include(LookForPackages)
+include(MustardLookForPackages)
 # Compile configs for Mustard itself, after dependencies are added.
 include(MustardCompileConfig)
 

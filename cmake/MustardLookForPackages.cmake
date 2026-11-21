@@ -47,9 +47,9 @@ find_package(
 # =============================================================================
 
 file(DOWNLOAD
-    https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
+    https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.43.2/CPM.cmake
     ${MUSTARD_CMAKE_MODULE_PATH}/CPM.cmake
-    EXPECTED_HASH SHA256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844)
+    EXPECTED_HASH SHA256=49a3bef91ceb65bb66d57255e12d1ffd22abc2f6408fa9fe4534c544a2f232aa)
 set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm" CACHE PATH "CPM source cache directory")
 include(CPM)
 
