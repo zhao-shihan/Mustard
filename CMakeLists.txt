@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.25)
 
 # Enable MSVC_RUNTIME_LIBRARY target property
 # See https://cmake.org/cmake/help/latest/policy/CMP0091.html
