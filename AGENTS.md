@@ -106,7 +106,7 @@ Reusable helpers for data-model/statistics tests live in `test/lib/Mustard/Testi
 | `.github/workflows/build-and-test-amd64-gnu-linux.yml` | `tooling/test-config.cfg` → `tooling/generate-test-scripts.py` |
 | `tooling/run-tests.sh` | same generator |
 | `src/Mustard/Version.inl` | `src/Mustard/Version.inl.in` + version variables in `CMakeLists.txt` (`configure_file`) |
-| `cmake/CPM.cmake`, `cmake/FindFFTW.cmake` | downloaded by `cmake/LookForPackages.cmake` (gitignored) |
+| `cmake/CPM.cmake`, `cmake/FindFFTW.cmake` | downloaded by `cmake/MustardLookForPackages.cmake` (gitignored) |
 
 Editing a generated file is always wrong: the next configure/build overwrites it, and the CI workflow would diverge from `test-config.cfg`. Change the generator or the config instead.
 

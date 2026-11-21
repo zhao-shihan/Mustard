@@ -109,9 +109,9 @@ message(STATUS "Mustard install path: ${CMAKE_INSTALL_PREFIX} (add -DCMAKE_INSTA
 # =============================================================================
 
 # Global compile configs, before adding dependencies
-include(GlobalCompileConfig)
+include(MustardGlobalCompileConfig)
 # Find and configure dependencies.
-include(LookForPackages)
+include(MustardLookForPackages)
 # Compile configs for Mustard itself, after dependencies are added.
 include(MustardCompileConfig)
 
