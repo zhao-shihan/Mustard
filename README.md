@@ -59,7 +59,7 @@ The following dependencies are required, but built-in if not found.
 | [**greg7mdp/gtl**](https://github.com/greg7mdp/gtl)                         | 1.3.1       | Greg's Template Library of useful classes                |
 | [**zhao-shihan/indicators**](https://github.com/zhao-shihan/indicators)     | 2.3.2       | Activity Indicators for Modern C++                       |
 | [**Microsoft.GSL**](https://github.com/Microsoft/GSL)                       | 5.0.1       | ISO C++ guidelines support library                       |
-| [**mp1**](https://github.com/zhao-shihan/mp1)                               | 2.0.0       | A thin, typed, header-only C++20 wrapper for MPI         |
+| [**mp1**](https://github.com/zhao-shihan/mp1)                               | 2.0.1       | A thin, typed, header-only C++20 wrapper for MPI         |
 | [**muc**](https://github.com/zhao-shihan/muc)                               | 0.26.925    | A standard non-standard C++ library                      |
 | [**yaml-cpp**](https://github.com/jbeder/yaml-cpp)                          | 0.9.0       | A YAML parser and emitter in C++                         |
 

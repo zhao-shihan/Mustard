@@ -58,12 +58,12 @@ include(CPM)
 # =============================================================================
 
 # mp1 (-> MPI)
-set(MUSTARD_MP1_MINIMUM_REQUIRED 2.0.0)
+set(MUSTARD_MP1_MINIMUM_REQUIRED 2.0.1)
 CPMFindPackage(
     NAME mp1
     GITHUB_REPOSITORY zhao-shihan/mp1
     VERSION ${MUSTARD_MP1_MINIMUM_REQUIRED}
-    GIT_TAG v2.0.0
+    GIT_TAG v2.0.1
     OPTIONS "MP1_INSTALL ON" "MP1_BUILD_EXAMPLES OFF")
 
 # FFTW
