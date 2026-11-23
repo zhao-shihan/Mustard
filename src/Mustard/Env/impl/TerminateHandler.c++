@@ -17,6 +17,9 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/IO/Print.h++"
+#include "Mustard/Utility/ProcessTag.h++"
+
+#include "mp1/mp1.hpp"
 
 #include "muc/utility"
 
@@ -30,8 +33,8 @@
 namespace Mustard::Env::impl {
 
 [[noreturn]] auto TerminateHandler() -> void {
-    const auto exception{std::current_exception()};
-    if (exception) {
+    const auto procTag{mp1::available() ? fmt::format("{}> ", ProcessTag()) : ""};
+    if (const auto exception{std::current_exception()}) {
         std::signal(SIGABRT, SIG_DFL);
         try {
             std::rethrow_exception(exception);
@@ -41,26 +44,30 @@ namespace Mustard::Env::impl {
                 what.remove_suffix(1);
             }
             const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::tomato)};
-            Print<'E'>(ts | fmt::emphasis::blink, "***");
-            Print<'E'>(ts, " terminate called after throwing an instance of '{}'\n", muc::try_demangle(typeid(e).name()));
-            Print<'E'>(ts | fmt::emphasis::blink, "***");
-            Print<'E'>(ts, "   what(): {}", what);
-            Print<'E'>("\n");
+            Print<'E'>(stderr, ts, "{}", procTag);
+            Print<'E'>(stderr, ts | fmt::emphasis::blink, "***");
+            Print<'E'>(stderr, ts, " terminate called after throwing an instance of '{}'\n", muc::try_demangle(typeid(e).name()));
+            Print<'E'>(stderr, ts, "{}", procTag);
+            Print<'E'>(stderr, ts | fmt::emphasis::blink, "***");
+            Print<'E'>(stderr, ts, "   what(): {}", what);
+            Print<'E'>(stderr, "\n");
         } catch (...) {
             const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::tomato)};
-            Print<'E'>(ts | fmt::emphasis::blink, "***");
+            Print<'E'>(stderr, ts, "{}", procTag);
+            Print<'E'>(stderr, ts | fmt::emphasis::blink, "***");
             if constexpr (requires { std::current_exception().__cxa_exception_type()->name(); }) {
-                Print<'E'>(ts, " terminate called after throwing an instance of '{}'", muc::try_demangle(std::current_exception().__cxa_exception_type()->name()));
+                Print<'E'>(stderr, ts, " terminate called after throwing an instance of '{}'", muc::try_demangle(std::current_exception().__cxa_exception_type()->name()));
             } else {
-                Print<'E'>(ts, " terminate called after throwing a non-std::exception instance");
+                Print<'E'>(stderr, ts, " terminate called after throwing a non-std::exception instance");
             }
-            Print<'E'>("\n");
+            Print<'E'>(stderr, "\n");
         }
     } else {
         const auto ts{fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::dark_orange)};
-        Print<'E'>(ts | fmt::emphasis::blink, "***");
-        Print<'E'>(ts, " terminate called without an active exception");
-        Print<'E'>("\n");
+        Print<'E'>(stderr, ts, "{}", procTag);
+        Print<'E'>(stderr, ts | fmt::emphasis::blink, "***");
+        Print<'E'>(stderr, ts, " terminate called without an active exception");
+        Print<'E'>(stderr, "\n");
     }
     std::abort();
 }

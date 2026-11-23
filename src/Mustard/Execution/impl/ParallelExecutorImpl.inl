@@ -133,16 +133,16 @@ auto ParallelExecutorImpl<T>::PostTaskReport(T iEnded) const -> void {
     const auto elapsed{this->fStopwatch.read()};
     const auto speed{static_cast<double>(nExecutedTask) / elapsed.count()};
     const std::chrono::duration<double, typename StopwatchDuration::period> printInterval{this->fPrintProgressInterval};
-    if ((iEnded + 1) % std::max(1ll, muc::llround(speed * printInterval.count())) != 0) {
+    if ((iEnded + 1) % std::max(1ll, muc::llround(speed * printInterval.count())) != 0) [[likely]] {
         return;
     }
-    const auto& worldComm{mp1::comm_world()};
     const auto perSecondSpeed{muc::chrono::seconds<double>{1} / StopwatchDuration{1} * speed};
     const auto now{std::chrono::system_clock::now()};
-    Print("MPI{}> [{}] {} of {} {} completed \n"
-          "MPI{}>   {} elaps., {}\n",
-          worldComm.rank(), FormatToLocalTime(now), this->fOperationName, this->fTaskName, iEnded,
-          worldComm.rank(), this->ToDayHrMinSecMs(elapsed),
+    const auto procTag{fmt::format("{}> ", ProcessTag())};
+    Print("{}[{}] {} of {} {} completed \n"
+          "{}  {} elaps., {}\n",
+          procTag, FormatToLocalTime(now), this->fOperationName, this->fTaskName, iEnded,
+          procTag, this->ToDayHrMinSecMs(elapsed),
           [&, good{goodEstimation}, nExecuted{nExecutedTask}] {
               if (good) {
                   const StopwatchDuration eta{muc::llround((this->NTask() - nExecuted) / speed)};
