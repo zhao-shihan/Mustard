@@ -24,6 +24,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
+#include "Mustard/Utility/ProcessTag.h++"
 
 #include "mp1/mp1.hpp"
 

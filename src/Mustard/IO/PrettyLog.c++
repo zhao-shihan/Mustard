@@ -19,6 +19,7 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/FormatToLocalTime.h++"
+#include "Mustard/Utility/ProcessTag.h++"
 
 #include "mp1/mp1.hpp"
 
@@ -36,15 +37,10 @@ namespace {
 
 auto PrettyLogHead(std::string_view prefix, const std::source_location& location) -> std::string {
     return fmt::format("[{}] {}{}:{}:{} `{}`{}",
-                       FormatToLocalTime(std::chrono::system_clock::now()),
-                       prefix,
+                       FormatToLocalTime(std::chrono::system_clock::now()), prefix,
                        std::filesystem::path{location.file_name()}.filename().generic_string(),
-                       location.line(),
-                       location.column(),
-                       location.function_name(),
-                       mp1::available() ?
-                           fmt::format(" in MPI process {}", mp1::comm_world().rank()) :
-                           "");
+                       location.line(), location.column(), location.function_name(),
+                       mp1::available() ? fmt::format(" on {}", ProcessTag()) : "");
 }
 
 } // namespace

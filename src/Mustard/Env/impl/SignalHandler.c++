@@ -21,7 +21,8 @@
 #    include "Mustard/IO/Print.h++"
 #    include "Mustard/Utility/FormatToLocalTime.h++"
 #    include "Mustard/Utility/FunctionAttribute.h++"
-#    include "Mustard/Utility/PrintStackTrace.h++"
+#    include "Mustard/Utility/ProcessTag.h++"
+#    include "Mustard/Utility/StackTrace.h++"
 
 #    include "mp1/mp1.hpp"
 
@@ -30,6 +31,7 @@
 #    include <cstdio>
 #    include <cstdlib>
 #    include <ctime>
+#    include <string>
 
 namespace Mustard::Env::impl {
 
@@ -46,35 +48,28 @@ auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
     static struct Handler {
         MUSTARD_ALWAYS_INLINE Handler(int sig) {
             const auto now{std::chrono::system_clock::now()};
-            const auto lineHeader{mp1::available() ?
-                                      fmt::format("MPI{}> ", mp1::comm_world().rank()) :
-                                      ""};
-            const auto ts{fmt::emphasis::bold};
-            Print<'E'>(stderr, "\n");
+            const auto procTag{mp1::available() ? fmt::format("{}> ", ProcessTag()) : ""};
+            std::string buf{"\n"};
             switch (sig) {
             case SIGINT:
-                Print<'E'>(stderr, ts, "{}***** INTERRUPT (SIGINT received)\n", lineHeader);
+                buf += fmt::format("{}***** INTERRUPT (SIGINT received)\n", procTag);
                 break;
             case SIGTERM:
-                Print<'E'>(stderr, ts, "{}***** TERMINATE (SIGTERM received)\n", lineHeader);
+                buf += fmt::format("{}***** TERMINATE (SIGTERM received)\n", procTag);
                 break;
             }
-            if (mp1::available()) {
-                Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                           lineHeader, mp1::comm_world().rank(), mp1::processor_name());
-            }
-            Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
-            PrintStackTrace(64, 2, stderr, ts);
-            Print<'E'>(stderr, "\n");
+            buf += fmt::format("{}***** at {}\n", procTag, FormatToLocalTime(now));
+            buf += StackTrace(64, 2);
+            buf += '\n';
             switch (sig) {
             case SIGINT:
-                Print<'E'>(stderr, ts, "Ctrl-C pressed or an external interrupt received."); // no '\n' looks good for now
+                buf += "Ctrl-C pressed or an external interrupt received."; // no '\n' looks good for now
                 break;
             case SIGTERM:
-                Print<'E'>(stderr, ts, "The process is terminated.\n");
+                buf += "The process is terminated.\n";
                 break;
             }
-            Print<'E'>(stderr, "\n");
+            Print<'E'>(stderr, fmt::emphasis::bold, "{}\n", buf);
             std::fflush(stderr);
             std::raise(sig);
         }
@@ -84,21 +79,15 @@ auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void {
 [[noreturn]] auto Mustard_SIGABRT_Handler(int) -> void {
     std::signal(SIGABRT, SIG_DFL);
     const auto now{std::chrono::system_clock::now()};
-    const auto lineHeader{mp1::available() ?
-                              fmt::format("MPI{}> ", mp1::comm_world().rank()) :
-                              ""};
-    const auto ts{fmt::emphasis::bold | fg(fmt::color::orange)};
-    Print<'E'>(stderr, "\n");
-    Print<'E'>(stderr, ts, "{}***** ABORT (SIGABRT received)\n", lineHeader);
-    if (mp1::available()) {
-        Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                   lineHeader, mp1::comm_world().rank(), mp1::processor_name());
-    }
-    Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
-    PrintStackTrace(64, 2, stderr, ts);
-    Print<'E'>(stderr, "\n");
-    Print<'E'>(stderr, ts, "The process is aborted. View the logs just before receiving SIGABRT for more information.\n");
-    Print<'E'>(stderr, "\n");
+    const auto procTag{mp1::available() ? fmt::format("{}> ", ProcessTag()) : ""};
+    auto buf{fmt::format("\n"
+                         "{}***** ABORT (SIGABRT received)\n"
+                         "{}***** at {}\n",
+                         procTag, procTag, FormatToLocalTime(now))};
+    buf += StackTrace(64, 2);
+    buf += "\n"
+           "The process is aborted. View the logs just before receiving SIGABRT for more information.\n";
+    Print<'E'>(stderr, fmt::emphasis::bold | fg(fmt::color::orange), "{}\n", buf);
     std::fflush(stderr);
     std::abort();
 }
@@ -114,31 +103,24 @@ auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void {
     static struct Handler {
         MUSTARD_ALWAYS_INLINE Handler(int sig) {
             const auto now{std::chrono::system_clock::now()};
-            const auto lineHeader{mp1::available() ?
-                                      fmt::format("MPI{}> ", mp1::comm_world().rank()) :
-                                      ""};
-            const auto ts{fmt::emphasis::bold | fg(fmt::color::tomato)};
-            Print<'E'>(stderr, "\n");
+            const auto procTag{mp1::available() ? fmt::format("{}> ", ProcessTag()) : ""};
+            std::string buf{"\n"};
             switch (sig) {
             case SIGFPE:
-                Print<'E'>(stderr, ts, "{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE received)\n", lineHeader);
+                buf += fmt::format("{}***** ERRONEOUS ARITHMETIC OPERATION (SIGFPE received)\n", procTag);
                 break;
             case SIGILL:
-                Print<'E'>(stderr, ts, "{}***** ILLEGAL INSTRUCTION (SIGILL received)\n", lineHeader);
+                buf += fmt::format("{}***** ILLEGAL INSTRUCTION (SIGILL received)\n", procTag);
                 break;
             case SIGSEGV:
-                Print<'E'>(stderr, ts, "{}***** SEGMENTATION VIOLATION (SIGSEGV received)\n", lineHeader);
+                buf += fmt::format("{}***** SEGMENTATION VIOLATION (SIGSEGV received)\n", procTag);
                 break;
             }
-            if (mp1::available()) {
-                Print<'E'>(stderr, ts, "{}***** in MPI process {} (node: {})\n",
-                           lineHeader, mp1::comm_world().rank(), mp1::processor_name());
-            }
-            Print<'E'>(stderr, ts, "{}***** at {}\n", lineHeader, FormatToLocalTime(now));
-            PrintStackTrace(64, 2, stderr, ts);
-            Print<'E'>(stderr, "\n");
-            Print<'E'>(stderr, ts, "It is likely that the program has one or more errors. Try seeking help from debugging tools.\n");
-            Print<'E'>(stderr, "\n");
+            buf += fmt::format("{}***** at {}\n", procTag, FormatToLocalTime(now));
+            buf += StackTrace(64, 2);
+            buf += "\n"
+                   "It is likely that the program has one or more errors. Try seeking help from debugging tools.\n";
+            Print<'E'>(stderr, fmt::emphasis::bold | fg(fmt::color::tomato), "{}\n", buf);
             std::fflush(stderr);
             std::raise(sig);
         }

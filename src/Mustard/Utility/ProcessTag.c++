@@ -1,0 +1,35 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2026  Shihan Zhao and contributors
+//
+// This file is part of Mustard, an offline software framework for HEP experiments.
+//
+// Mustard is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// Mustard is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Mustard. If not, see <https://www.gnu.org/licenses/>.
+
+#include "Mustard/Utility/ProcessTag.h++"
+
+#include "mp1/mp1.hpp"
+
+#include "fmt/format.h"
+
+namespace Mustard::inline Utility {
+
+[[nodiscard]] auto ProcessTag() -> std::string {
+    if (not mp1::available()) {
+        return {};
+    }
+    static const auto hostname{mp1::processor_name()};
+    return fmt::format("r{}@{}", mp1::comm_world().rank(), hostname);
+}
+
+} // namespace Mustard::inline Utility

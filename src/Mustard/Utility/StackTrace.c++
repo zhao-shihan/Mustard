@@ -16,12 +16,14 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/IO/Print.h++"
-#include "Mustard/Utility/PrintStackTrace.h++"
+#include "Mustard/Utility/ProcessTag.h++"
+#include "Mustard/Utility/StackTrace.h++"
 
 #include "backward.hpp"
 
 #include "mp1/mp1.hpp"
+
+#include "fmt/format.h"
 
 #include <climits>
 #include <string>
@@ -29,22 +31,20 @@
 
 namespace Mustard::inline Utility {
 
-MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const fmt::text_style& ts) -> void {
+[[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth, int skip) -> std::string {
     const auto trueSkip{skip + 1};
     backward::StackTrace stack;
     stack.load_here(depth + trueSkip);
     backward::TraceResolver resolver;
     resolver.load_stacktrace(stack);
 
-    const auto lineHeader{mp1::available() ?
-                              fmt::format("MPI{}> ", mp1::comm_world().rank()) :
-                              ""};
-    auto text{lineHeader + "Stack trace (most recent call last):\n"};
+    const auto procTag{mp1::available() ? fmt::format("{}> ", ProcessTag()) : ""};
+    auto text{procTag + "Stack trace (most recent call last):\n"};
     backward::SnippetFactory snippetFactory;
     for (auto i{std::ssize(stack) - 1}; i >= trueSkip; --i) {
         auto trace{resolver.resolve(stack[i])};
         text += fmt::format("{}#{:<2} {} in {} from {}",
-                            lineHeader, i - trueSkip, std::move(trace.addr),
+                            procTag, i - trueSkip, std::move(trace.addr),
                             trace.object_function.empty() ? "??" : std::move(trace.object_function),
                             trace.object_filename.empty() ? "??" : std::move(trace.object_filename));
         if (auto&& src{trace.source};
@@ -56,13 +56,12 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const f
             if (auto snippet{snippetFactory.get_snippet(src.filename, src.line, 1)};
                 not snippet.empty()) {
                 auto&& [line, content] = snippet.front();
-                text += fmt::format("\n{} {:7} |{}", lineHeader, std::move(line), std::move(content));
+                text += fmt::format("\n{} {:7} |{}", procTag, std::move(line), std::move(content));
             }
         }
         text += '\n';
     }
-
-    Print<'E'>(f, ts, "{}", text);
+    return text;
 }
 
 } // namespace Mustard::inline Utility

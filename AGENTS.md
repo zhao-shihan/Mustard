@@ -43,7 +43,7 @@ Namespace root is `Mustard::`, mirroring `src/Mustard/` directory names: `Mustar
 ## Toolchain and dependencies
 
 - **Language and compilers:** C++20, no compiler extensions (`CMAKE_CXX_EXTENSIONS OFF`); GCC 13, Clang 19, IntelLLVM 2025, MSVC 19.50 enforced in `CMakeLists.txt`. Local tree: GCC 16.2.
-- **Build:** CMake ≥ 3.24 + Ninja (or Make); build type defaults to `Release`.
+- **Build:** CMake ≥ 3.25 + Ninja (or Make); build type defaults to `Release`.
 - **System, no fallback:** ROOT ≥ 6.36 (`Core Imt MathCore Hist Tree ROOTDataFrame ROOTNTuple RIO`), Geant4 ≥ 11.0 (`ui_all gdml`, plus `vis_all`/`static` per options), MPI ≥ 4.1.
 - **CPM source fallback** (cached in `.cache/cpm`, so re-configures are usually cheap): Eigen 5.0 (+ `unsupported`), mp1, muc, fmt 12.2, yaml-cpp 0.9, argparse, envparse, gtl, Microsoft.GSL, backward-cpp, indicators, mimalloc, FFTW.
 

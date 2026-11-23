@@ -20,12 +20,15 @@
 
 #include "Mustard/Utility/FunctionAttribute.h++"
 
-#include "fmt/color.h"
-
-#include <cstdio>
+#include <string>
 
 namespace Mustard::inline Utility {
 
-MUSTARD_NOINLINE auto PrintStackTrace(int depth = 64, int skip = 0, std::FILE* f = stderr, const fmt::text_style& ts = {}) -> void;
+/// @brief Stack trace text, every line prefixed with the process tag and `"> "`.
+///        Without MPI, no prefix is added.
+/// @param depth Maximum number of frames to capture.
+/// @param skip Number of frames to skip above the immediate caller; 0 starts at the immediate caller.
+/// @return The stack trace, ending with a newline.
+[[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth = 64, int skip = 0) -> std::string;
 
 } // namespace Mustard::inline Utility

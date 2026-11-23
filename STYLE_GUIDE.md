@@ -1118,38 +1118,40 @@ constexpr auto operator[](auto&& i) & -> decltype(auto)
 - **Use Doxygen-style comments `///` for public APIs**
 
 ```cpp
-/// @brief Class for maximization based on "Whale Optimization Algorithm"
+/// @brief Class for maximization based on "Whale Optimization Algorithm".
 /// doi:10.1016/j.advengsoft.2016.01.008
 class EMMaximization { 
-    /// @brief Calculate the objective function
-    /// @param parameters The input parameters
-    /// @return The objective function value
+    /// @brief Calculate the objective function.
+    /// @param parameters The input parameters.
+    /// @return The objective function value.
     auto Calculate(const std::vector<double>& parameters) -> double;
     /* ... */
 };
 ```
 
 ```cpp
-/// @brief Computes the squared Euclidean norm of a floating-point vector
+/// @brief Computes the squared Euclidean norm of a floating-point vector.
 ///
 /// Calculates the sum of squares of all components in a numeric vector.
 /// Compile-time optimized using component unpacking.
 ///
-/// @tparam V Numeric vector type (satisfies NumericVectorFloatingPoint concept)
-/// @param x Vector input (must support index-based element access)
+/// @tparam V Numeric vector type (satisfies NumericVectorFloatingPoint concept).
+/// @param x Vector input (must support index-based element access).
 ///
-/// @return Sum of squares: x₀² + x₁² + ... + xₙ²
+/// @return Sum of squares: x₀² + x₁² + ... + xₙ².
 constexpr auto NormSq(const Concept::NumericVectorFloatingPoint auto& x) {
     // implementation
 }
 ```
 
-- **Terminal Periods**: 
-  - Noun phrases: do **not** end with a period (`.`)
-  - Complete sentences: end with a period (`.`)
-  - `@brief`, `@param`, `@return`, `@tparam` tags are typically noun phrases
-  - `@note`, `@warning` tags and standalone `///` are typically complete sentences
-  - Multi-line `///` descriptions should have a period at the end of the final sentence
+- **Terminal Periods**:
+  - All documentation text ends with a period (`.`), including the noun-phrase tags
+    `@brief`, `@param`, `@return`, and `@tparam`.
+  - Standalone `///` paragraphs and `@note`/`@warning` tags are complete sentences and
+    therefore end with a period as well.
+  - Multi-line `///` descriptions should have a period at the end of the final sentence.
+  - A bare reference such as `doi:...` is an identifier rather than prose, so it takes no
+    period.
 
 ### Implementation Comments
 - Use `//` for implementation comments
