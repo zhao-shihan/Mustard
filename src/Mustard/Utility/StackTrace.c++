@@ -31,7 +31,7 @@
 
 namespace Mustard::inline Utility {
 
-MUSTARD_NOINLINE auto StackTrace(int depth, int skip) -> std::string {
+[[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth, int skip) -> std::string {
     const auto trueSkip{skip + 1};
     backward::StackTrace stack;
     stack.load_here(depth + trueSkip);

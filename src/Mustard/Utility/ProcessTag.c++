@@ -24,11 +24,12 @@
 
 namespace Mustard::inline Utility {
 
-auto ProcessTag() -> std::string {
+[[nodiscard]] auto ProcessTag() -> std::string {
     if (not mp1::available()) {
         return {};
     }
-    return fmt::format("r{}@{}", mp1::comm_world().rank(), mp1::processor_name());
+    static const auto hostname{mp1::processor_name()};
+    return fmt::format("r{}@{}", mp1::comm_world().rank(), hostname);
 }
 
 } // namespace Mustard::inline Utility

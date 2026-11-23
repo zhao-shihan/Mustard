@@ -24,10 +24,11 @@
 
 namespace Mustard::inline Utility {
 
-/// @brief Stack trace text, every line prefixed with the MPI process tag.
+/// @brief Stack trace text, every line prefixed with the process tag and `"> "`.
+///        Without MPI, no prefix is added.
 /// @param depth Maximum number of frames to capture.
-/// @param skip Number of frames to skip above the caller of this function.
+/// @param skip Number of frames to skip above the immediate caller; 0 starts at the immediate caller.
 /// @return The stack trace, ending with a newline.
-MUSTARD_NOINLINE auto StackTrace(int depth = 64, int skip = 0) -> std::string;
+[[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth = 64, int skip = 0) -> std::string;
 
 } // namespace Mustard::inline Utility

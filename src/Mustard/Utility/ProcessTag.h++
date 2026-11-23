@@ -26,6 +26,6 @@ namespace Mustard::inline Utility {
 /// @return Empty string when MPI is unavailable.
 /// @note This is the bare process identity; callers add any decoration
 ///       (for example a trailing `"> "` for a log line prefix).
-auto ProcessTag() -> std::string;
+[[nodiscard]] auto ProcessTag() -> std::string;
 
 } // namespace Mustard::inline Utility

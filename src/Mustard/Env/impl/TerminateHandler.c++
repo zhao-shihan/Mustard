@@ -26,6 +26,7 @@
 #include "fmt/color.h"
 
 #include <csignal>
+#include <cstdio>
 #include <exception>
 #include <string>
 #include <string_view>
@@ -63,6 +64,7 @@ namespace Mustard::Env::impl {
     const auto ts{fmt::emphasis::bold | fg(fmt::color::white) |
                   bg(exception ? fmt::color::tomato : fmt::color::dark_orange)};
     Print<'E'>(stderr, ts, "{}\n", buf);
+    std::fflush(stderr);
     std::abort();
 }
 
