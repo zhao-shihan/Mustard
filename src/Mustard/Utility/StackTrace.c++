@@ -16,13 +16,14 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/IO/Print.h++"
-#include "Mustard/Utility/PrintStackTrace.h++"
 #include "Mustard/Utility/ProcessTag.h++"
+#include "Mustard/Utility/StackTrace.h++"
 
 #include "backward.hpp"
 
 #include "mp1/mp1.hpp"
+
+#include "fmt/format.h"
 
 #include <climits>
 #include <string>
@@ -30,7 +31,7 @@
 
 namespace Mustard::inline Utility {
 
-MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const fmt::text_style& ts) -> void {
+MUSTARD_NOINLINE auto StackTrace(int depth, int skip) -> std::string {
     const auto trueSkip{skip + 1};
     backward::StackTrace stack;
     stack.load_here(depth + trueSkip);
@@ -60,8 +61,7 @@ MUSTARD_NOINLINE auto PrintStackTrace(int depth, int skip, std::FILE* f, const f
         }
         text += '\n';
     }
-
-    Print<'E'>(f, ts, "{}", text);
+    return text;
 }
 
 } // namespace Mustard::inline Utility
