@@ -19,6 +19,8 @@
 #include "Mustard/Geant4X/Management/Exception.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
+#include "G4ios.hh"
+
 #include "mp1/mp1.hpp"
 
 #include "fmt/format.h"
@@ -32,19 +34,20 @@ auto Exception(G4ExceptionSeverity severity,
                const std::string& message,
                const std::source_location& loc,
                const std::string& code) -> void {
-    const auto& actualCode{
-        code.empty() ? fmt::format("0x{:x}", std::hash<std::string>{}(std::format(
-                                                 "{}:{}:{}", loc.file_name(), loc.line(), loc.column()))) :
-                       code};
+    const auto hashCode{[&loc] {
+        const auto locInfo{std::format("{}:{}:{}", loc.file_name(), loc.line(), loc.column())};
+        return fmt::format("0x{:x}", std::hash<std::string>{}(locInfo));
+    }};
+    const auto& actualCode{code.empty() ? hashCode() : code};
     switch (severity) {
     case FatalException:
     case FatalErrorInArgument:
     case RunMustBeAborted:
     case EventMustBeAborted:
-        PrintError(message, loc);
+        PrintError(G4cerr, message, loc);
         break;
     case JustWarning:
-        PrintWarning(message, loc);
+        PrintWarning(G4cerr, message, loc);
         break;
     case IgnoreTheIssue:
         break;

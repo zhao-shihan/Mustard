@@ -21,38 +21,112 @@
 #include "mp1/mp1.hpp"
 
 #include <concepts>
+#include <cstdio>
+#include <ostream>
 #include <source_location>
 #include <string>
 #include <string_view>
 
 namespace Mustard::inline IO {
 
-/// @brief Print pretty information.
+/// @brief Print pretty information to a C file stream.
+/// @details When MPI is available, every output line is prefixed with
+/// `"r<rank>@<hostname>> "`; multi-line messages are prefixed line by line.
+/// @param f The C file stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintInfo(std::FILE* f, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty information to a C++ output stream.
+/// @param os The C++ output stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintInfo(std::ostream& os, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty information to `stderr`.
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto PrintInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
-/// @brief Print pretty warning.
+/// @brief Print pretty warning to a C file stream.
+/// @details When MPI is available, every output line is prefixed with
+/// `"r<rank>@<hostname>> "`; multi-line messages are prefixed line by line.
+/// @param f The C file stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintWarning(std::FILE* f, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty warning to a C++ output stream.
+/// @param os The C++ output stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintWarning(std::ostream& os, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty warning to `stderr`.
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto PrintWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
-/// @brief Print pretty error.
+/// @brief Print pretty error to a C file stream.
+/// @details When MPI is available, every output line is prefixed with
+/// `"r<rank>@<hostname>> "`; multi-line messages are prefixed line by line.
+/// @param f The C file stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintError(std::FILE* f, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty error to a C++ output stream.
+/// @param os The C++ output stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto PrintError(std::ostream& os, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty error to `stderr`.
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto PrintError(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
-/// @brief Print pretty information from master proccess.
+/// @brief Print pretty information from the master process to a C file stream.
+/// @details When MPI is available, every output line is prefixed with
+/// `"r<rank>@<hostname>> "`; multi-line messages are prefixed line by line.
+/// @param f The C file stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintInfo(std::FILE* f, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty information from the master process to a C++ output stream.
+/// @param os The C++ output stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintInfo(std::ostream& os, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty information from the master process to `stderr`.
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto MasterPrintInfo(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
-/// @brief Print pretty warning from master proccess.
+/// @brief Print pretty warning from the master process to a C file stream.
+/// @details When MPI is available, every output line is prefixed with
+/// `"r<rank>@<hostname>> "`; multi-line messages are prefixed line by line.
+/// @param f The C file stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintWarning(std::FILE* f, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty warning from the master process to a C++ output stream.
+/// @param os The C++ output stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintWarning(std::ostream& os, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty warning from the master process to `stderr`.
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto MasterPrintWarning(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
 
-/// @brief Print pretty error from master proccess.
+/// @brief Print pretty error from the master process to a C file stream.
+/// @details When MPI is available, every output line is prefixed with
+/// `"r<rank>@<hostname>> "`; multi-line messages are prefixed line by line.
+/// @param f The C file stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintError(std::FILE* f, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty error from the master process to a C++ output stream.
+/// @param os The C++ output stream to write to.
+/// @param message The message.
+/// @param location Source location. Default is current.
+auto MasterPrintError(std::ostream& os, std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
+/// @brief Print pretty error from the master process to `stderr`.
 /// @param message The message.
 /// @param location Source location. Default is current.
 auto MasterPrintError(std::string_view message, const std::source_location& location = std::source_location::current()) -> void;
