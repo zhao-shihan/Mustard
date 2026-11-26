@@ -28,7 +28,13 @@ namespace Mustard::inline Utility {
 ///        Without MPI, no prefix is added.
 /// @param depth Maximum number of frames to capture.
 /// @param skip Number of frames to skip above the immediate caller; 0 starts at the immediate caller.
+///        When `context` is non-null, 0 starts at the interrupted instruction instead.
+/// @param context Optional signal context (`ucontext_t*`) passed by a `SA_SIGINFO` handler.
+/// @param errorAddr Optional fault address (`siginfo_t::si_addr`) passed by a `SA_SIGINFO` handler.
 /// @return The stack trace, ending with a newline.
-[[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth = 64, int skip = 0) -> std::string;
+/// @note `context` and `errorAddr` are only used by unwinder backends that support unwinding
+///       from a signal context. With the compiler unwind API, the frames of the signal handler
+///       are skipped by a platform-calibrated count instead.
+[[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth = 64, int skip = 0, void* context = nullptr, void* errorAddr = nullptr) -> std::string;
 
 } // namespace Mustard::inline Utility

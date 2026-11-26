@@ -36,7 +36,7 @@
 
 namespace Mustard::Data {
 
-namespace impl {
+namespace impl1 {
 
 /// @brief Marker base type used to identify tuple model types.
 struct ModelSignature : NonconstructibleBase {};
@@ -99,28 +99,28 @@ private:
     static const std::vector<std::string> fNameVector;
 };
 
-} // namespace impl
+} // namespace impl1
 
 /// @brief Types allowed as Model parameters.
 /// @details A parameter can be an existing model type or a Field type.
 template<typename T>
-concept Modelizable = std::derived_from<T, impl::ModelSignature> or
+concept Modelizable = std::derived_from<T, impl1::ModelSignature> or
                       impl2::IsField<T>::value;
 
 /// @brief Empty Model specialization.
 template<Modelizable...>
 struct Model
-    : impl::ModelBase<Model<>,
-                      std::tuple<>> {};
+    : impl1::ModelBase<Model<>,
+                       std::tuple<>> {};
 
 /// @brief Model specialization that prepends an existing model.
 /// @tparam AModel Existing model.
 /// @tparam AOthers Remaining modelizable items.
-template<std::derived_from<impl::ModelSignature> AModel, Modelizable... AOthers>
+template<std::derived_from<impl1::ModelSignature> AModel, Modelizable... AOthers>
 struct Model<AModel, AOthers...>
-    : impl::ModelBase<Model<AModel, AOthers...>,
-                      muc::tuple_concat_t<typename AModel::StdTuple,
-                                          typename Model<AOthers...>::StdTuple>> {};
+    : impl1::ModelBase<Model<AModel, AOthers...>,
+                       muc::tuple_concat_t<typename AModel::StdTuple,
+                                           typename Model<AOthers...>::StdTuple>> {};
 
 /// @brief Model specialization that prepends one Field field.
 /// @tparam T Field payload type (in-memory type).
@@ -130,19 +130,19 @@ struct Model<AModel, AOthers...>
 /// @tparam AOthers Remaining modelizable items.
 template<typename T, muc::ceta_string AName, ROOTX::RNTuplePersistable U, muc::ceta_string ADescription, Modelizable... AOthers>
 struct Model<Field<T, AName, U, ADescription>, AOthers...>
-    : impl::ModelBase<Model<Field<T, AName, U, ADescription>, AOthers...>,
-                      muc::tuple_concat_t<std::tuple<Field<T, AName, U, ADescription>>,
-                                          typename Model<AOthers...>::StdTuple>> {};
+    : impl1::ModelBase<Model<Field<T, AName, U, ADescription>, AOthers...>,
+                       muc::tuple_concat_t<std::tuple<Field<T, AName, U, ADescription>>,
+                                           typename Model<AOthers...>::StdTuple>> {};
 
 /// @brief Concept for concrete model types.
 /// @note To define a model, inherit from a Model directly via the Model template.
 /// The purpose of inheriting from Model and create a new type is to produce
 /// a more human-readable compiler error/warning messages.
 template<typename M>
-concept Modelized = std::derived_from<M, impl::ModelSignature> and
+concept Modelized = std::derived_from<M, impl1::ModelSignature> and
                     not muc::instantiated_from<M, Model>;
 
-namespace impl {
+namespace impl1 {
 
 /// @brief Compile-time test: Name is contained in the Names pack.
 /// @tparam Name Name to test.
@@ -205,7 +205,7 @@ struct FilteredModel<std::tuple<AFields...>, AKeepMatching, ANames...> {
                                           Model<>>...>;
 };
 
-} // namespace impl
+} // namespace impl1
 
 /// @brief Take fields from a model by field name, producing a new model.
 /// @details The resulting model consists of exactly the fields of M whose names
@@ -217,9 +217,9 @@ struct FilteredModel<std::tuple<AFields...>, AKeepMatching, ANames...> {
 /// @tparam M Source model type.
 /// @tparam ...ANames Compile-time field names to extract.
 template<Modelized M, muc::ceta_string... ANames>
-    requires (impl::UniqueNames<ANames...>()) and (impl::NamesInModel<M, ANames...>())
+    requires(impl1::UniqueNames<ANames...>()) and (impl1::NamesInModel<M, ANames...>())
 struct Take
-    : impl::FilteredModel<typename M::StdTuple, true, ANames...>::type {};
+    : impl1::FilteredModel<typename M::StdTuple, true, ANames...>::type {};
 
 /// @brief Drop fields from a model by field name, producing a new model.
 /// @details The resulting model consists of exactly the fields of M whose names
@@ -231,9 +231,9 @@ struct Take
 /// @tparam M Source model type.
 /// @tparam ...ANames Compile-time field names to drop.
 template<Modelized M, muc::ceta_string... ANames>
-    requires (impl::NamesInModel<M, ANames...>())
+    requires(impl1::NamesInModel<M, ANames...>())
 struct Drop
-    : impl::FilteredModel<typename M::StdTuple, false, ANames...>::type {};
+    : impl1::FilteredModel<typename M::StdTuple, false, ANames...>::type {};
 
 /// @brief Concept requiring that model M1 is a sub-model of M2 by field-name inclusion.
 template<typename M1, typename M2>

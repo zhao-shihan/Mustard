@@ -272,6 +272,25 @@ auto MyFunction2(double x) -> auto {
 - No space between function name and opening parenthesis
 - Space after control statement keywords (`if`, `for`, `while`)
 
+### Preprocessor Directives
+- Follow this repository's style, **not** the style of a third-party dependency
+- Test feature macros with `#if defined X`; never write `#if defined(X)`
+- Indent directives that are nested in preprocessor conditionals after the `#` (one level is 4 spaces, matching `.clang-format`'s `IndentPPDirectives: AfterHash`)
+
+```cpp
+// √ Good
+#if defined __clang__
+#    define MUSTARD_ALWAYS_INLINE [[clang::always_inline]] inline
+#elif defined __GNUC__
+#    define MUSTARD_ALWAYS_INLINE [[gnu::always_inline]] inline
+#endif
+
+// × bad
+#if defined(__GNUC__)
+#define MUSTARD_ALWAYS_INLINE [[gnu::always_inline]] inline
+#endif
+```
+
 ### Initializations
 - Variable and initializer in the same line if possible
 - Always place Lambda name and initializer in the same line, wrap Lambda body
@@ -380,6 +399,7 @@ auto Name(std::string val) -> void { fName = val; }   // setter
 - **`PascalCase` for all namespaces**, excepts
   - `namespace impl` for implementation detail, or
   - `namespace impl1`, `namespace impl2` and so on if there are name conflicts
+    - When names conflict (typically through inline namespaces), suffix **all** of them -- never mix a suffixed one with the unsuffixed `impl` -- and number them in the alphabetical order of the namespace that encloses `impl`; e.g. `Mustard::Data::impl1`, `Mustard::Data::Object::impl2`, `Mustard::Data::Processing::impl3`
 
 ```cpp
 namespace MACE::Detector::Definition {

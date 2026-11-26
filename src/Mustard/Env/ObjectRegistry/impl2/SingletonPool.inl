@@ -18,7 +18,7 @@
 
 namespace Mustard::Env::inline ObjectRegistry {
 
-namespace impl {
+namespace impl2 {
 
 template<Singletonified ASingleton>
 [[nodiscard]] auto SingletonPool::Find() const -> std::shared_ptr<void*> {
@@ -45,7 +45,7 @@ template<Singletonified ASingleton>
     return instancePtr;
 }
 
-} // namespace impl
+} // namespace impl2
 
 template<Singletonified ASingleton>
 auto SingletonFactory::Make() -> std::pair<gsl::owner<ASingleton*>, std::shared_ptr<void*>> {

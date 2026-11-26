@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Env/ObjectRegistry/WeakSingletonified.h++"
-#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/WeakSingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/WeakSingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
@@ -42,13 +42,13 @@ class PassiveSingleton;
 
 /// @brief Base mixin for externally owned singleton-like objects.
 /// @tparam ADerived Final derived type.
-/// @details The object registers itself into `impl::WeakSingletonPool` on
+/// @details The object registers itself into `impl2::WeakSingletonPool` on
 /// construction. Access is status-driven and does not force object creation.
 /// @note Registration uses a shared indirection node from the global pool, so
 /// code in different dynamic libraries can observe the same object pointer when
 /// they are running in the same Mustard environment.
 template<typename ADerived>
-class WeakSingleton : public impl::WeakSingletonBase {
+class WeakSingleton : public impl2::WeakSingletonBase {
     friend class PassiveSingleton<ADerived>;
 
 protected:

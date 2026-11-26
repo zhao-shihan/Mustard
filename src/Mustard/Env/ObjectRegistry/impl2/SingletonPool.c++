@@ -16,12 +16,12 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonPool.h++"
 
 #include <queue>
 #include <ranges>
 
-namespace Mustard::Env::inline ObjectRegistry::impl {
+namespace Mustard::Env::inline ObjectRegistry::impl2 {
 
 std::recursive_mutex SingletonPool::fgRecursiveMutex{};
 
@@ -46,4 +46,4 @@ SingletonPool::~SingletonPool() {
     }
 }
 
-} // namespace Mustard::Env::inline ObjectRegistry::impl
+} // namespace Mustard::Env::inline ObjectRegistry::impl2

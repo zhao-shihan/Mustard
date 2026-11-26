@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Concept/NonCopyable.h++"
-#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/WeakSingletonBase.h++"
 
 #include <concepts>
 #include <type_traits>
@@ -36,8 +36,8 @@ template<typename T>
 concept Singletonified = requires {
     { T::Instance() } -> std::same_as<T&>;
     requires std::derived_from<T, Singleton<T>>;
-    requires std::derived_from<T, impl::SingletonBase>;
-    requires not std::is_base_of_v<impl::WeakSingletonBase, T>;
+    requires std::derived_from<T, impl2::SingletonBase>;
+    requires not std::is_base_of_v<impl2::WeakSingletonBase, T>;
     requires Concept::NonCopyable<T>;
     requires std::is_final_v<T>;
     requires not std::is_default_constructible_v<T>; // try to constrain to private or protected constructor

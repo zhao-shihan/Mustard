@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-namespace Mustard::Data::impl {
+namespace Mustard::Data::impl1 {
 
 template<typename>
 struct IsStdVector : std::false_type {};
@@ -102,4 +102,4 @@ struct IsStdUnorderedMultiMap : std::false_type {};
 template<typename K, typename V>
 struct IsStdUnorderedMultiMap<std::unordered_multimap<K, V>> : std::true_type {};
 
-} // namespace Mustard::Data::impl
+} // namespace Mustard::Data::impl1

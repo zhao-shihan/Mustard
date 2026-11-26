@@ -164,13 +164,51 @@ CPMFindPackage(
 # =============================================================================
 
 # backward-cpp
+# Stack walking: libunwind is preferred when available, because it can start from
+# the ucontext_t of a signal handler. If it is not found, backward-cpp falls back
+# to the compiler unwind API, which cannot use the signal context.
+set(MUSTARD_BACKWARD_STACK_WALKING_LIBUNWIND OFF)
+if(MUSTARD_USE_LIBUNWIND)
+    find_path(MUSTARD_LIBUNWIND_INCLUDE_DIR NAMES libunwind.h)
+    find_library(MUSTARD_LIBUNWIND_LIBRARY NAMES unwind)
+    mark_as_advanced(MUSTARD_LIBUNWIND_INCLUDE_DIR MUSTARD_LIBUNWIND_LIBRARY)
+    if(MUSTARD_LIBUNWIND_INCLUDE_DIR AND MUSTARD_LIBUNWIND_LIBRARY)
+        set(MUSTARD_BACKWARD_STACK_WALKING_LIBUNWIND ON)
+    else()
+        message(STATUS "libunwind not found: backward-cpp will walk the stack with the compiler unwind API")
+    endif()
+endif()
+# backward-cpp 1.6.1 reports "libunwind does not support unwinding from signal handler
+# frames" on every system: it probes the flag with check_symbol_exists (which cannot see
+# an enumerator) and without UNW_LOCAL_ONLY (so the probe would not even link). The
+# message is cosmetic -- the interrupted instruction pointer still comes from the
+# ucontext_t -- and goes away once backward-cpp auto-detects libunwind itself.
 CPMFindPackage(
     NAME Backward
     GITHUB_REPOSITORY zhao-shihan/backward-cpp
     VERSION 1.6.1
     OPTIONS "BACKWARD_SHARED OFF"
     "BACKWARD_INSTALL ON"
-    "BACKWARD_TESTS ${BUILD_TESTING}")
+    "BACKWARD_TESTS ${BUILD_TESTING}"
+    "STACK_WALKING_LIBUNWIND ${MUSTARD_BACKWARD_STACK_WALKING_LIBUNWIND}")
+
+# backward-cpp selects both of its layers (stack walking and symbolization) by
+# auto-detection. Report what it settled on, since the result is a build-machine
+# property and is otherwise invisible.
+set(MUSTARD_STACK_WALKING_BACKEND "unknown")
+foreach(_backend LIBUNWIND BACKTRACE UNWIND)
+    if("BACKWARD_HAS_${_backend}=1" IN_LIST BACKWARD_DEFINITIONS)
+        set(MUSTARD_STACK_WALKING_BACKEND ${_backend})
+    endif()
+endforeach()
+set(MUSTARD_STACK_SYMBOLIZATION_BACKEND "unknown")
+foreach(_backend DW BFD DWARF BACKTRACE_SYMBOL)
+    if("BACKWARD_HAS_${_backend}=1" IN_LIST BACKWARD_DEFINITIONS)
+        set(MUSTARD_STACK_SYMBOLIZATION_BACKEND ${_backend})
+    endif()
+endforeach()
+message(STATUS "Stack walking backend: ${MUSTARD_STACK_WALKING_BACKEND}")
+message(STATUS "Stack symbolization backend: ${MUSTARD_STACK_SYMBOLIZATION_BACKEND}")
 
 # indicators
 set(MUSTARD_INDICATORS_MINIMUM_REQUIRED 2.3.2)

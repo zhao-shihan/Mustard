@@ -32,7 +32,7 @@
 #include <string_view>
 #include <typeinfo>
 
-namespace Mustard::Env::impl {
+namespace Mustard::Env::impl1 {
 
 namespace {
 
@@ -89,4 +89,4 @@ auto FormatBlinkingAsterisks(std::string_view message, fmt::text_style ts) -> st
     std::abort();
 }
 
-} // namespace Mustard::Env::impl
+} // namespace Mustard::Env::impl1

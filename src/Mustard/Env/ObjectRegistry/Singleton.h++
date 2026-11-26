@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Env/ObjectRegistry/Singletonified.h++"
-#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/ClassSemanticHelper.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
@@ -40,7 +40,7 @@ namespace Mustard::Env::inline ObjectRegistry {
 /// @brief Base mixin for lazily created environment singletons.
 /// @tparam ADerived Final derived singleton type.
 /// @details The first call to Instance() resolves the instance through
-/// `impl::SingletonPool`, creating it on demand when needed.
+/// `impl2::SingletonPool`, creating it on demand when needed.
 /// @note Derived types must declare Mustard::Env::SingletonFactory as a friend
 /// to allow construction and destruction.
 /// Registration uses a shared indirection node from the global pool, so
@@ -52,7 +52,7 @@ namespace Mustard::Env::inline ObjectRegistry {
 /// any allocation/deallocation function in derived classes, otherwise
 /// memory could corrupt.
 template<typename ADerived>
-class Singleton : public impl::SingletonBase {
+class Singleton : public impl2::SingletonBase {
 protected:
     /// @brief Protected constructor for CRTP inheritance.
     Singleton();

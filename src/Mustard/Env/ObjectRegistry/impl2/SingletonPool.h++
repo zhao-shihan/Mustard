@@ -20,7 +20,7 @@
 
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Env/ObjectRegistry/Singletonified.h++"
-#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Memory/Allocator.h++"
 #include "Mustard/Utility/ClassSemanticHelper.h++"
@@ -45,7 +45,7 @@
 
 namespace Mustard::Env::inline ObjectRegistry {
 
-namespace impl {
+namespace impl2 {
 
 /// @brief Implementation detail of Mustard::Env::Singleton.
 /// @details Not API. Stores singleton indirection nodes keyed by dynamic type.
@@ -96,13 +96,13 @@ private:
     static std::recursive_mutex fgRecursiveMutex;
 };
 
-} // namespace impl
+} // namespace impl2
 
 /// @brief Internal type-erased construction/disposal helper for singletons.
 /// @note Singletons should declare SingletonFactory as a friend
 /// to allow SingletonFactory to construct and destruct them.
 class SingletonFactory : public NonconstructibleBase {
-    friend class impl::SingletonPool;
+    friend class impl2::SingletonPool;
 
     /// @brief Allocates and constructs one singleton instance.
     /// @tparam ASingleton Singleton type.
@@ -118,4 +118,4 @@ class SingletonFactory : public NonconstructibleBase {
 
 } // namespace Mustard::Env::inline ObjectRegistry
 
-#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.inl"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonPool.inl"

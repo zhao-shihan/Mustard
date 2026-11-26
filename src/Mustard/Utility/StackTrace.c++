@@ -25,26 +25,77 @@
 
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <climits>
 #include <string>
 #include <utility>
 
+#if not BACKWARD_HAS_LIBUNWIND and not defined _WIN32
+#    include <ucontext.h>
+#endif
+
 namespace Mustard::inline Utility {
 
-[[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth, int skip) -> std::string {
-    const auto trueSkip{skip + 1};
+namespace {
+
+#if not BACKWARD_HAS_LIBUNWIND
+
+auto InterruptedPC(void* context) -> void* {
+    // Without libunwind, the unwinder starts in this file and the number of frames above
+    // the interrupted instruction depends on how the handler and backward-cpp happen to
+    // be inlined, so locate the interrupted instruction by its address from the signal
+    // context instead of counting frames.
+#    if defined __linux__ and defined __x86_64__ and defined REG_RIP
+    return reinterpret_cast<void*>(static_cast<ucontext_t*>(context)->uc_mcontext.gregs[REG_RIP]);
+#    elif defined __linux__ and defined __aarch64__
+    return reinterpret_cast<void*>(static_cast<ucontext_t*>(context)->uc_mcontext.pc);
+#    else
+    static_cast<void>(context);
+    return nullptr;
+#    endif
+}
+
+#endif
+
+} // namespace
+
+[[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth, int skip, void* context, void* errorAddr) -> std::string {
     backward::StackTrace stack;
-    stack.load_here(depth + trueSkip);
+    if (context == nullptr) {
+        skip += 1; // Skip StackTrace itself.
+        stack.load_here(depth + skip, context, errorAddr);
+    } else {
+#if not BACKWARD_HAS_LIBUNWIND
+        // Without libunwind the unwinder cannot use the signal context. Locate the
+        // interrupted instruction by its address instead, which does not depend on how
+        // the signal handler happens to be inlined.
+        const auto* interruptedPC{InterruptedPC(context)};
+        stack.load_here(depth + 8, context, errorAddr);
+        if (interruptedPC != nullptr) {
+            for (int i{}; i < std::ssize(stack); ++i) {
+                if (stack[i].addr == interruptedPC) {
+                    skip = i;
+                    break;
+                }
+            }
+        }
+        if (skip == 0) {
+            skip += 1; // The interrupted instruction is unknown; skip StackTrace itself.
+        }
+#else
+        stack.load_here(depth + skip, context, errorAddr);
+#endif
+    }
     backward::TraceResolver resolver;
     resolver.load_stacktrace(stack);
 
     const auto procTag{mp1::available() ? fmt::format("{}> ", ProcessTag()) : ""};
     auto text{procTag + "Stack trace (most recent call last):\n"};
     backward::SnippetFactory snippetFactory;
-    for (auto i{std::ssize(stack) - 1}; i >= trueSkip; --i) {
+    for (auto i{std::min<std::ptrdiff_t>(std::ssize(stack) - 1, skip + depth - 1)}; i >= skip; --i) {
         auto trace{resolver.resolve(stack[i])};
         text += fmt::format("{}#{:<2} {} in {} from {}",
-                            procTag, i - trueSkip, std::move(trace.addr),
+                            procTag, i - skip, std::move(trace.addr),
                             trace.object_function.empty() ? "??" : std::move(trace.object_function),
                             trace.object_filename.empty() ? "??" : std::move(trace.object_filename));
         if (auto&& src{trace.source};

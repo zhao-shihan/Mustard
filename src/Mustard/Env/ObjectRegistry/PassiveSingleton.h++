@@ -20,8 +20,8 @@
 
 #include "Mustard/Env/ObjectRegistry/PassiveSingletonified.h++"
 #include "Mustard/Env/ObjectRegistry/WeakSingleton.h++"
-#include "Mustard/Env/ObjectRegistry/impl/PassiveSingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/PassiveSingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/WeakSingletonPool.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "muc/utility"
@@ -41,7 +41,7 @@ namespace Mustard::Env::inline ObjectRegistry {
 /// code in different dynamic libraries can observe the same object pointer when
 /// they are running in the same Mustard environment.
 template<typename ADerived>
-class PassiveSingleton : public impl::PassiveSingletonBase,
+class PassiveSingleton : public impl2::PassiveSingletonBase,
                          public WeakSingleton<ADerived> {
 private:
     using Base = WeakSingleton<ADerived>;

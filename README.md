@@ -67,12 +67,21 @@ The following dependencies are required, but built-in if not found.
 
 The following dependencies are only required when certain options are set.
 
-| Library                                                   | Min version | Remarks                                                             |
-| :-------------------------------------------------------- | :---------- | :------------------------------------------------------------------ |
-| [**Geant4**](https://geant4.org/) visualization component | N/A         | Required when `MUSTARD_USE_G4VIS` is set                            |
-| [**Geant4**](https://geant4.org/) static library          | N/A         | Required when `MUSTARD_USE_STATIC_G4` is set                        |
-| [**FFTW**](https://fftw.org/)                             | 3.3.11      | Required when `MUSTARD_USE_FFTW` is set (built-in if not found)     |
-| [**mimalloc**](https://github.com/microsoft/mimalloc)     | 3.7.0       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found) |
+| Library                                                           | Min version | Remarks                                                                                                          |
+| :---------------------------------------------------------------- | :---------- | :--------------------------------------------------------------------------------------------------------------- |
+| [**Geant4**](https://geant4.org/) visualization component         | N/A         | Required when `MUSTARD_USE_G4VIS` is set                                                                         |
+| [**Geant4**](https://geant4.org/) static library                  | N/A         | Required when `MUSTARD_USE_STATIC_G4` is set                                                                     |
+| [**FFTW**](https://fftw.org/)                                     | 3.3.11      | Required when `MUSTARD_USE_FFTW` is set (built-in if not found)                                                  |
+| [**mimalloc**](https://github.com/microsoft/mimalloc)             | 3.7.0       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found)                                              |
+| [**libunwind**](https://github.com/libunwind/libunwind)           | 1.3         | Used when found and `MUSTARD_USE_LIBUNWIND` is set; without it stack traces from signal handlers are approximate |
+| [**elfutils**](https://sourceware.org/elfutils/) (`libdw`)        | N/A         | Auto-detected by backward-cpp for symbolization; without it (or libbfd/libdwarf) traces lose file and line       |
+| [**binutils**](https://www.gnu.org/software/binutils/) (`libbfd`) | N/A         | Auto-detected by backward-cpp for symbolization                                                                  |
+| [**libdwarf**](https://github.com/davea42/libdwarf-code)          | N/A         | Auto-detected by backward-cpp for symbolization                                                                  |
+
+backward-cpp selects its stack-walking backend (libunwind or the compiler unwind API) and its
+symbolization backend (libdw, libbfd, libdwarf, or `backtrace_symbols`) by auto-detection; the
+configure log reports both choices. Missing libraries do not break the build, they only make crash
+reports less informative.
 
 ## Projects using this library
 

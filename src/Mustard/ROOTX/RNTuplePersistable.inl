@@ -22,28 +22,28 @@ template<typename T>
 consteval auto RNTuplePersistableImpl() -> bool {
     if constexpr (RNTuplePersistableFundamental<T> or
                   std::same_as<T, std::string> or
-                  Mustard::Data::impl::IsStdBitset<T>{}) {
+                  Mustard::Data::impl1::IsStdBitset<T>{}) {
         return true;
-    } else if constexpr (Mustard::Data::impl::IsStdPair<T>{}) {
+    } else if constexpr (Mustard::Data::impl1::IsStdPair<T>{}) {
         return RNTuplePersistableImpl<typename T::first_type>() and
                RNTuplePersistableImpl<typename T::second_type>();
-    } else if constexpr (Mustard::Data::impl::IsStdTuple<T>{}) {
+    } else if constexpr (Mustard::Data::impl1::IsStdTuple<T>{}) {
         return []<gsl::index... Is>(gslx::index_sequence<Is...>) consteval {
             return (... and RNTuplePersistableImpl<std::tuple_element_t<Is, T>>());
         }(gslx::make_index_sequence<std::tuple_size_v<T>>{});
-    } else if constexpr (Mustard::Data::impl::IsStdVector<T>{} or
-                         Mustard::Data::impl::IsStdArray<T>{} or
-                         Mustard::Data::impl::IsStdOptional<T>{}) {
+    } else if constexpr (Mustard::Data::impl1::IsStdVector<T>{} or
+                         Mustard::Data::impl1::IsStdArray<T>{} or
+                         Mustard::Data::impl1::IsStdOptional<T>{}) {
         return RNTuplePersistableImpl<typename T::value_type>();
-    } else if constexpr (Mustard::Data::impl::IsStdSet<T>{} or
-                         Mustard::Data::impl::IsStdUnorderedSet<T>{} or
-                         Mustard::Data::impl::IsStdMultiSet<T>{} or
-                         Mustard::Data::impl::IsStdUnorderedMultiSet<T>{}) {
+    } else if constexpr (Mustard::Data::impl1::IsStdSet<T>{} or
+                         Mustard::Data::impl1::IsStdUnorderedSet<T>{} or
+                         Mustard::Data::impl1::IsStdMultiSet<T>{} or
+                         Mustard::Data::impl1::IsStdUnorderedMultiSet<T>{}) {
         return RNTuplePersistableImpl<typename T::key_type>();
-    } else if constexpr (Mustard::Data::impl::IsStdMap<T>{} or
-                         Mustard::Data::impl::IsStdUnorderedMap<T>{} or
-                         Mustard::Data::impl::IsStdMultiMap<T>{} or
-                         Mustard::Data::impl::IsStdUnorderedMultiMap<T>{}) {
+    } else if constexpr (Mustard::Data::impl1::IsStdMap<T>{} or
+                         Mustard::Data::impl1::IsStdUnorderedMap<T>{} or
+                         Mustard::Data::impl1::IsStdMultiMap<T>{} or
+                         Mustard::Data::impl1::IsStdUnorderedMultiMap<T>{}) {
         return RNTuplePersistableImpl<typename T::key_type>() and
                RNTuplePersistableImpl<typename T::mapped_type>();
     } else {

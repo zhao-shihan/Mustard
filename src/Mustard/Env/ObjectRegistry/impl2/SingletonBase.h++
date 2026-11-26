@@ -21,7 +21,7 @@
 #include "Mustard/Memory/ClassSpecificAllocation.h++"
 #include "Mustard/Utility/ClassSemanticHelper.h++"
 
-namespace Mustard::Env::inline ObjectRegistry::impl {
+namespace Mustard::Env::inline ObjectRegistry::impl2 {
 
 /// @brief Implementation detail of Mustard::Env::Singleton.
 /// @details Not API. Combines non-copyable semantics with special
@@ -40,4 +40,4 @@ protected:
     ~SingletonBase() = default;
 };
 
-} // namespace Mustard::Env::inline ObjectRegistry::impl
+} // namespace Mustard::Env::inline ObjectRegistry::impl2

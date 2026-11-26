@@ -46,46 +46,46 @@ auto FieldTypeName() -> std::string {
         return "f64";
     } else if constexpr (std::same_as<T, std::string>) {
         return "str";
-    } else if constexpr (impl::IsStdBitset<T>{}) {
+    } else if constexpr (impl1::IsStdBitset<T>{}) {
         return fmt::format("bset<{}>", T{}.size());
-    } else if constexpr (impl::IsStdPair<T>{}) {
+    } else if constexpr (impl1::IsStdPair<T>{}) {
         const auto firstName{FieldTypeName<typename T::first_type>()};
         const auto secondName{FieldTypeName<typename T::second_type>()};
         return fmt::format("pair<{},{}>", std::move(firstName), std::move(secondName));
-    } else if constexpr (impl::IsStdTuple<T>{}) {
+    } else if constexpr (impl1::IsStdTuple<T>{}) {
         std::string result{"tup<"};
         [&result]<gsl::index... Is>(gslx::index_sequence<Is...>) {
             (..., (result += FieldTypeName<std::tuple_element_t<Is, T>>() + (Is < sizeof...(Is) - 1 ? "," : "")));
         }(gslx::make_index_sequence<std::tuple_size_v<T>>{});
         result += ">";
         return result;
-    } else if constexpr (impl::IsStdVector<T>{}) {
+    } else if constexpr (impl1::IsStdVector<T>{}) {
         return fmt::format("vec<{}>", FieldTypeName<typename T::value_type>());
-    } else if constexpr (impl::IsStdArray<T>{}) {
+    } else if constexpr (impl1::IsStdArray<T>{}) {
         return fmt::format("arr<{},{}>", FieldTypeName<typename T::value_type>(), std::tuple_size_v<T>);
-    } else if constexpr (impl::IsStdOptional<T>{}) {
+    } else if constexpr (impl1::IsStdOptional<T>{}) {
         return fmt::format("opt<{}>", FieldTypeName<typename T::value_type>());
-    } else if constexpr (impl::IsStdSet<T>{}) {
+    } else if constexpr (impl1::IsStdSet<T>{}) {
         return fmt::format("set<{}>", FieldTypeName<typename T::key_type>());
-    } else if constexpr (impl::IsStdUnorderedSet<T>{}) {
+    } else if constexpr (impl1::IsStdUnorderedSet<T>{}) {
         return fmt::format("uset<{}>", FieldTypeName<typename T::key_type>());
-    } else if constexpr (impl::IsStdMultiSet<T>{}) {
+    } else if constexpr (impl1::IsStdMultiSet<T>{}) {
         return fmt::format("mset<{}>", FieldTypeName<typename T::key_type>());
-    } else if constexpr (impl::IsStdUnorderedMultiSet<T>{}) {
+    } else if constexpr (impl1::IsStdUnorderedMultiSet<T>{}) {
         return fmt::format("umset<{}>", FieldTypeName<typename T::key_type>());
-    } else if constexpr (impl::IsStdMap<T>{}) {
+    } else if constexpr (impl1::IsStdMap<T>{}) {
         auto keyName{FieldTypeName<typename T::key_type>()};
         auto mappedName{FieldTypeName<typename T::mapped_type>()};
         return fmt::format("map<{},{}>", std::move(keyName), std::move(mappedName));
-    } else if constexpr (impl::IsStdUnorderedMap<T>{}) {
+    } else if constexpr (impl1::IsStdUnorderedMap<T>{}) {
         auto keyName{FieldTypeName<typename T::key_type>()};
         auto mappedName{FieldTypeName<typename T::mapped_type>()};
         return fmt::format("umap<{},{}>", std::move(keyName), std::move(mappedName));
-    } else if constexpr (impl::IsStdMultiMap<T>{}) {
+    } else if constexpr (impl1::IsStdMultiMap<T>{}) {
         auto keyName{FieldTypeName<typename T::key_type>()};
         auto mappedName{FieldTypeName<typename T::mapped_type>()};
         return fmt::format("mmap<{},{}>", std::move(keyName), std::move(mappedName));
-    } else if constexpr (impl::IsStdUnorderedMultiMap<T>{}) {
+    } else if constexpr (impl1::IsStdUnorderedMultiMap<T>{}) {
         auto keyName{FieldTypeName<typename T::key_type>()};
         auto mappedName{FieldTypeName<typename T::mapped_type>()};
         return fmt::format("ummap<{},{}>", std::move(keyName), std::move(mappedName));

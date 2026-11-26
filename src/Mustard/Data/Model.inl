@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-namespace Mustard::Data::impl {
+namespace Mustard::Data::impl1 {
 
 template<typename ADerived, impl::UniqueStdTuple AStdTuple>
 const std::vector<std::string> ModelBase<ADerived, AStdTuple>::fNameVector{
@@ -37,4 +37,4 @@ consteval auto ModelBase<ADerived, AStdTuple>::IndexImpl() -> gsl::index {
     }
 }
 
-} // namespace Mustard::Data::impl
+} // namespace Mustard::Data::impl1
