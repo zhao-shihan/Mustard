@@ -30,7 +30,7 @@
 #include <string>
 #include <utility>
 
-#if not BACKWARD_HAS_LIBUNWIND and not defined _WIN32
+#if not defined BACKWARD_WALKER_LIBUNWIND and not defined _WIN32
 #    include <ucontext.h>
 #endif
 
@@ -38,7 +38,7 @@ namespace Mustard::inline Utility {
 
 namespace {
 
-#if not BACKWARD_HAS_LIBUNWIND
+#if not defined BACKWARD_WALKER_LIBUNWIND
 
 auto InterruptedPC(void* context) -> void* {
     // Without libunwind, the unwinder starts in this file and the number of frames above
@@ -65,7 +65,7 @@ auto InterruptedPC(void* context) -> void* {
         skip += 1; // Skip StackTrace itself.
         stack.load_here(depth + skip, context, errorAddr);
     } else {
-#if not BACKWARD_HAS_LIBUNWIND
+#if not defined BACKWARD_WALKER_LIBUNWIND
         // Without libunwind the unwinder cannot use the signal context. Locate the
         // interrupted instruction by its address instead, which does not depend on how
         // the signal handler happens to be inlined.

@@ -53,7 +53,7 @@ The following dependencies are required, but built-in if not found.
 | Library                                                                     | Min version | Description                                              |
 | :-------------------------------------------------------------------------- | :---------- | :------------------------------------------------------- |
 | [**argparse**](https://github.com/p-ranav/argparse)                         | 3.2         | Argument parsing for modern C++                          |
-| [**zhao-shihan/backward-cpp**](https://github.com/zhao-shihan/backward-cpp) | 1.6.1       | A beautiful stack trace pretty printer for C++           |
+| [**zhao-shihan/backward-cpp**](https://github.com/zhao-shihan/backward-cpp) | 2.0.0       | A beautiful stack trace pretty printer for C++           |
 | [**envparse**](https://github.com/zhao-shihan/envparse)                     | 1.0.0       | A simple, header-only environment variable parser in C++ |
 | [**fmt**](https://github.com/fmtlib/fmt)                                    | 12.2.1      | A modern formatting library                              |
 | [**greg7mdp/gtl**](https://github.com/greg7mdp/gtl)                         | 1.3.1       | Greg's Template Library of useful classes                |
@@ -67,21 +67,21 @@ The following dependencies are required, but built-in if not found.
 
 The following dependencies are only required when certain options are set.
 
-| Library                                                           | Min version | Remarks                                                                                                          |
-| :---------------------------------------------------------------- | :---------- | :--------------------------------------------------------------------------------------------------------------- |
-| [**Geant4**](https://geant4.org/) visualization component         | N/A         | Required when `MUSTARD_USE_G4VIS` is set                                                                         |
-| [**Geant4**](https://geant4.org/) static library                  | N/A         | Required when `MUSTARD_USE_STATIC_G4` is set                                                                     |
-| [**FFTW**](https://fftw.org/)                                     | 3.3.11      | Required when `MUSTARD_USE_FFTW` is set (built-in if not found)                                                  |
-| [**mimalloc**](https://github.com/microsoft/mimalloc)             | 3.7.0       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found)                                              |
-| [**libunwind**](https://github.com/libunwind/libunwind)           | 1.3         | Used when found and `MUSTARD_USE_LIBUNWIND` is set; without it stack traces from signal handlers are approximate |
-| [**elfutils**](https://sourceware.org/elfutils/) (`libdw`)        | N/A         | Auto-detected by backward-cpp for symbolization; without it (or libbfd/libdwarf) traces lose file and line       |
-| [**binutils**](https://www.gnu.org/software/binutils/) (`libbfd`) | N/A         | Auto-detected by backward-cpp for symbolization                                                                  |
-| [**libdwarf**](https://github.com/davea42/libdwarf-code)          | N/A         | Auto-detected by backward-cpp for symbolization                                                                  |
+| Library                                                           | Min version | Remarks                                                                                                                     |
+| :---------------------------------------------------------------- | :---------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| [**Geant4**](https://geant4.org/) visualization component         | N/A         | Required when `MUSTARD_USE_G4VIS` is set                                                                                    |
+| [**Geant4**](https://geant4.org/) static library                  | N/A         | Required when `MUSTARD_USE_STATIC_G4` is set                                                                                |
+| [**FFTW**](https://fftw.org/)                                     | 3.3.11      | Required when `MUSTARD_USE_FFTW` is set (built-in if not found)                                                             |
+| [**mimalloc**](https://github.com/microsoft/mimalloc)             | 3.7.0       | Required when `MUSTARD_USE_MIMALLOC` is set (built-in if not found)                                                         |
+| [**libunwind**](https://github.com/libunwind/libunwind)           | 1.3         | Used when `MUSTARD_USE_LIBUNWIND` is set and backward-cpp finds it usable; without it signal-handler traces are approximate |
+| [**elfutils**](https://sourceware.org/elfutils/) (`libdw`)        | N/A         | Probed by backward-cpp for symbolization; without it (or libbfd/libdwarf) traces lose file and line                         |
+| [**binutils**](https://www.gnu.org/software/binutils/) (`libbfd`) | N/A         | Probed by backward-cpp for symbolization                                                                                    |
+| [**libdwarf**](https://github.com/davea42/libdwarf-code)          | N/A         | Probed by backward-cpp for symbolization; needs the modern libdwarf API (0.9.0+)                                            |
 
-backward-cpp selects its stack-walking backend (libunwind or the compiler unwind API) and its
-symbolization backend (libdw, libbfd, libdwarf, or `backtrace_symbols`) by auto-detection; the
-configure log reports both choices. Missing libraries do not break the build, they only make crash
-reports less informative.
+backward-cpp selects its stack walker (`BACKWARD_UNWINDER`) and its symbolizer
+(`BACKWARD_SYMBOLIZER`) from preference lists, probing each candidate by compiling and
+linking; the configure log reports both choices. Missing libraries do not break the build,
+they only make crash reports less informative.
 
 ## Projects using this library
 
