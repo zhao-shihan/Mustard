@@ -45,6 +45,7 @@ Namespace root is `Mustard::`, mirroring `src/Mustard/` directory names: `Mustar
 - **Language and compilers:** C++20, no compiler extensions (`CMAKE_CXX_EXTENSIONS OFF`); GCC 13, Clang 19, IntelLLVM 2025, MSVC 19.50 enforced in `CMakeLists.txt`. Local tree: GCC 16.2.
 - **Build:** CMake ≥ 3.25 + Ninja (or Make); build type defaults to `Release`.
 - **System, no fallback:** ROOT ≥ 6.36 (`Core Imt MathCore Hist Tree ROOTDataFrame ROOTNTuple RIO`), Geant4 ≥ 11.0 (`ui_all gdml`, plus `vis_all`/`static` per options), MPI ≥ 4.1.
+- **Optional system libraries (auto-detected, silent fallback):** backward-cpp 2.0.0 picks its stack walker (`BACKWARD_UNWINDER`: libunwind → unwind → backtrace on Linux) and its symbolizer (`BACKWARD_SYMBOLIZER`: libdw → libbfd → libdwarf → `backtrace_symbols`) from preference lists, probing each candidate by compiling and linking, so an installed but unusable library is skipped. Only libunwind gives exact stack traces from signal handlers; without libdw/libbfd/libdwarf traces lose file/line. `MUSTARD_USE_LIBUNWIND` (default `ON`) keeps libunwind in the walker list. The configure log prints `-- Backward: stack unwinder = ...` and `-- Backward: stack symbolizer = ...`.
 - **CPM source fallback** (cached in `.cache/cpm`, so re-configures are usually cheap): Eigen 5.0 (+ `unsupported`), mp1, muc, fmt 12.2, yaml-cpp 0.9, argparse, envparse, gtl, Microsoft.GSL, backward-cpp, indicators, mimalloc, FFTW.
 
 | Option | Default | Note |
@@ -55,7 +56,7 @@ Namespace root is `Mustard::`, mirroring `src/Mustard/` directory names: `Mustar
 | `BUILD_SHARED_LIBS` / `MUSTARD_ENABLE_IPO` | `OFF` / `=BUILD_SHARED_LIBS` | Static by default; IPO is LTO for Release |
 | `CMAKE_INSTALL_PREFIX` | `<repo>/install` | Override explicitly when needed |
 
-Other options (`MUSTARD_USE_FFTW`, `MUSTARD_USE_MIMALLOC`, `MUSTARD_USE_G4VIS`, `MUSTARD_USE_STATIC_G4`, `MUSTARD_SIGNAL_HANDLER`, warning-level and MSVC runtime flags) are declared with their defaults in `CMakeLists.txt`.
+Other options (`MUSTARD_USE_FFTW`, `MUSTARD_USE_MIMALLOC`, `MUSTARD_USE_G4VIS`, `MUSTARD_USE_LIBUNWIND`, `MUSTARD_USE_STATIC_G4`, `MUSTARD_SIGNAL_HANDLER`, warning-level and MSVC runtime flags) are declared with their defaults in `CMakeLists.txt`.
 
 ## Building
 
@@ -114,6 +115,7 @@ Editing a generated file is always wrong: the next configure/build overwrites it
 
 Normative document: [`STYLE_GUIDE.md`](STYLE_GUIDE.md). Formatting is enforced by `.clang-format` (LLVM base, 4 spaces, `ColumnLimit: 0`, `BreakBeforeBraces: Attach`, `PointerAlignment: Left`, `PackConstructorInitializers: Never`, custom `IncludeCategories`); run `clang-format -i <file>`.
 
+- **This repository's style first:** never copy a third-party dependency's style into Mustard code; follow [`STYLE_GUIDE.md`](STYLE_GUIDE.md).
 - **Extensions:** `.h++` headers, `.c++` sources, `.inl` template/inline implementations. Never `.hpp`/`.hh`/`.cpp`/`.cc`.
 - **File layout:** copyright header → `#pragma once` (headers) → includes (project headers, third-party, standard library last, sorted case-sensitively per `.clang-format`) → namespace → forward declarations → code. **`.inl` files must not `#include` anything.**
 - **Naming:** `PascalCase` for namespaces, types, and *all* functions and methods (getters/setters included: `Name()`, not `GetName()`). Locals/constants `camelCase`; non-static members `f` + `PascalCase`; static members `fg` + `PascalCase`. No underscores except structured-binding placeholders (`_1`, `_2`). Booleans/flags take an adjective, not `is`/`has`/`can`. No `s`/`es` plurals (`Momenta`, `HitSet`, …); `Ts`/`ADescriptions`-style `s` marks a template parameter pack.

@@ -29,13 +29,13 @@ class environment;
 namespace Mustard::Env {
 
 inline namespace ObjectRegistry {
-namespace impl {
+namespace impl2 {
 class WeakSingletonPool;
 class SingletonPool;
-} // namespace impl
+} // namespace impl2
 } // namespace ObjectRegistry
 
-namespace impl {
+namespace impl1 {
 
 /// @brief Implementation detail. Enables MPI in `EnvBase`.
 /// @details Holds references to `argc`/`argv` only for the duration of the
@@ -71,11 +71,11 @@ private:
     static auto CheckFundamentalType() -> void;
 
 private:
-    std::unique_ptr<mp1::environment> fMP1Env;                                   ///< Owned MPI environment, if any; destroyed last.
-    std::unique_ptr<ObjectRegistry::impl::WeakSingletonPool> fWeakSingletonPool; ///< Weak singleton registry pool.
-    std::unique_ptr<ObjectRegistry::impl::SingletonPool> fSingletonPool;         ///< Singleton registry pool.
+    std::unique_ptr<mp1::environment> fMP1Env;                                    ///< Owned MPI environment, if any; destroyed last.
+    std::unique_ptr<ObjectRegistry::impl2::WeakSingletonPool> fWeakSingletonPool; ///< Weak singleton registry pool.
+    std::unique_ptr<ObjectRegistry::impl2::SingletonPool> fSingletonPool;         ///< Singleton registry pool.
 };
 
-} // namespace impl
+} // namespace impl1
 
 } // namespace Mustard::Env

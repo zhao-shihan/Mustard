@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License along with
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
-#include "Mustard/Env/ObjectRegistry/impl/SingletonPool.h++"
-#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
-#include "Mustard/Env/impl/EnvBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/WeakSingletonPool.h++"
+#include "Mustard/Env/impl1/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "mp1/mp1.hpp"
@@ -34,20 +34,9 @@
 #include <stdexcept>
 #include <utility>
 
-#ifdef MUSTARD_SIGNAL_HANDLER
+namespace Mustard::Env::impl1 {
 
-#    include <csignal>
-
-extern "C" {
-auto Mustard_SIGINT_SIGTERM_Handler(int sig) -> void;
-[[noreturn]] auto Mustard_SIGABRT_Handler(int) -> void;
-auto Mustard_SIGFPE_SIGILL_SIGSEGV_Handler(int sig) -> void;
-} // extern "C"
-
-#endif
-
-namespace Mustard::Env::impl {
-
+auto InstallSignalHandlers() -> void;
 [[noreturn]] auto TerminateHandler() -> void;
 
 EnvBase::EnvBase() :
@@ -64,16 +53,9 @@ EnvBase::EnvBase(std::unique_ptr<mp1::environment> mp1) :
     static_assert("三清在上 运行稳定 结果无偏");
 
     CheckFundamentalType();
-
     std::set_terminate(TerminateHandler);
-
 #if MUSTARD_SIGNAL_HANDLER
-    std::signal(SIGABRT, Mustard_SIGABRT_Handler);
-    std::signal(SIGFPE, Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGILL, Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGINT, Mustard_SIGINT_SIGTERM_Handler);
-    std::signal(SIGSEGV, Mustard_SIGFPE_SIGILL_SIGSEGV_Handler);
-    std::signal(SIGTERM, Mustard_SIGINT_SIGTERM_Handler);
+    InstallSignalHandlers();
 #endif
 
     if (static bool gInstantiated{false};
@@ -83,8 +65,8 @@ EnvBase::EnvBase(std::unique_ptr<mp1::environment> mp1) :
         gInstantiated = true;
     }
 
-    fWeakSingletonPool = std::make_unique<ObjectRegistry::impl::WeakSingletonPool>();
-    fSingletonPool = std::make_unique<ObjectRegistry::impl::SingletonPool>();
+    fWeakSingletonPool = std::make_unique<ObjectRegistry::impl2::WeakSingletonPool>();
+    fSingletonPool = std::make_unique<ObjectRegistry::impl2::SingletonPool>();
 }
 
 EnvBase::~EnvBase() = default;
@@ -139,4 +121,4 @@ auto EnvBase::CheckFundamentalType() -> void {
     }
 }
 
-} // namespace Mustard::Env::impl
+} // namespace Mustard::Env::impl1

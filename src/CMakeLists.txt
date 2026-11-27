@@ -74,7 +74,7 @@ target_link_libraries(Mustard PUBLIC muc::muc)
 # Private dependencies
 
 # backward-cpp
-target_link_libraries(Mustard PRIVATE backward_interface)
+target_link_libraries(Mustard PRIVATE Backward::Interface)
 # indicators
 target_link_libraries(Mustard PRIVATE indicators::indicators)
 # mimalloc

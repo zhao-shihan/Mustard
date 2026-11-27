@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Mustard/Concept/NonCopyable.h++"
-#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonBase.h++"
 
 #include <concepts>
 #include <type_traits>
@@ -35,7 +35,7 @@ template<typename T>
 concept PassiveSingletonified = requires {
     { T::Instance() } -> std::same_as<T&>;
     requires std::derived_from<T, PassiveSingleton<T>>;
-    requires not std::is_base_of_v<impl::SingletonBase, T>;
+    requires not std::is_base_of_v<impl2::SingletonBase, T>;
     requires Concept::NonCopyable<T>;
 };
 

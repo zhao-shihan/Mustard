@@ -49,6 +49,7 @@
 #include "Mustard/Testing/TestPhaseSpaceGenerator/TestPhaseSpaceGenerator.h++"
 #include "Mustard/Testing/TestRandomNumberDistribution/TestRandomNumberDistribution.h++"
 #include "Mustard/Testing/TestShmArray/TestShmArray.h++"
+#include "Mustard/Testing/TestSignalHandler/TestSignalHandler.h++"
 #include "Mustard/Testing/TestSingleRDFEntryProcessor/TestSingleRDFEntryProcessor.h++"
 #include "Mustard/Testing/TestSingleRDFEntryReader/TestSingleRDFEntryReader.h++"
 #include "Mustard/Testing/TestSingleRDFEventProcessor/TestSingleRDFEventProcessor.h++"
@@ -148,6 +149,7 @@ auto main(int argc, char* argv[]) -> int {
     launcher.AddSubprogram<TestSingleRDFEventProcessor>();
     launcher.AddSubprogram<TestSingleRDFEventReader>();
     launcher.AddSubprogram<TestShmArray>();
+    launcher.AddSubprogram<TestSignalHandler>();
     launcher.AddSubprogram<TestSingleton>();
     launcher.AddSubprogram<TestStatistic0>();
     launcher.AddSubprogram<TestStatistic1>();

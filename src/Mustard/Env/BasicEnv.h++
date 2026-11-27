@@ -21,7 +21,7 @@
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Env/VerboseLevel.h++"
-#include "Mustard/Env/impl/EnvBase.h++"
+#include "Mustard/Env/impl1/EnvBase.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 
 #include "muc/optional"
@@ -39,7 +39,7 @@ namespace Mustard::Env {
 /// banners, and owns the underlying singleton/weak-singleton pools via EnvBase.
 /// All higher-level environment classes (MonteCarloEnv, MPIEnv, Geant4Env)
 /// inherit from BasicEnv through virtual inheritance.
-class BasicEnv : virtual public impl::EnvBase,
+class BasicEnv : virtual public impl1::EnvBase,
                  public PassiveSingleton<BasicEnv> {
 protected:
     /// @brief Tag type passed to the protected constructor to suppress banner printing.

@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIMonteCarloEnv.h++"
-#include "Mustard/Env/impl/EnvBase.h++"
+#include "Mustard/Env/impl1/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "mp1/mp1.hpp"
@@ -30,7 +30,7 @@ MPIMonteCarloEnv::MPIMonteCarloEnv(NoBanner, int argc, char* argv[], CLI::CLI<>&
                                    enum VerboseLevel verboseLevel,
                                    bool showBannerHint,
                                    std::optional<muc::any_rng> engine) :
-    impl::EnvBase(impl::EnableMPI{argc, argv}),
+    impl1::EnvBase(impl1::EnableMPI{argc, argv}),
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MPIEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     MonteCarloEnv{{}, argc, argv, cli, verboseLevel, showBannerHint, std::move(engine)},

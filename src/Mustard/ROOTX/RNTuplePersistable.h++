@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Data/impl/TypeTraits.h++"
+#include "Mustard/Data/impl1/TypeTraits.h++"
 #include "Mustard/gslx/index_sequence.h++"
 
 #include "gsl/gsl"

@@ -17,13 +17,13 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonPool.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/WeakSingletonPool.h++"
 
 #include "fmt/format.h"
 
 #include <utility>
 
-namespace Mustard::Env::inline ObjectRegistry::impl {
+namespace Mustard::Env::inline ObjectRegistry::impl2 {
 
 WeakSingletonPool* WeakSingletonPool::fgInstance{};
 bool WeakSingletonPool::fgInstantiated{};
@@ -62,4 +62,4 @@ auto WeakSingletonPool::Instance() -> WeakSingletonPool& {
     return *fgInstance;
 }
 
-} // namespace Mustard::Env::inline ObjectRegistry::impl
+} // namespace Mustard::Env::inline ObjectRegistry::impl2

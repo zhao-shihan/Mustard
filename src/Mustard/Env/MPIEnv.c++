@@ -17,7 +17,7 @@
 // Mustard. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Env/impl/EnvBase.h++"
+#include "Mustard/Env/impl1/EnvBase.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/IO/Print.h++"
 
@@ -43,7 +43,7 @@ MPIEnv::MPIEnv(NoBanner, int argc, char* argv[],
                muc::optional_ref<CLI::CLI<>> cli,
                enum VerboseLevel verboseLevel,
                bool showBannerHint) :
-    impl::EnvBase(impl::EnableMPI{argc, argv}),
+    impl1::EnvBase(impl1::EnableMPI{argc, argv}),
     BasicEnv{{}, argc, argv, cli, verboseLevel, showBannerHint},
     PassiveSingleton<MPIEnv>{this},
     fIntraNodeComm{mp1::communicator::split_type(mp1::comm_world(), mp1::comm_type_shared)},

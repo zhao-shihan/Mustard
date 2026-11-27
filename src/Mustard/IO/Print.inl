@@ -18,6 +18,15 @@
 
 namespace Mustard::inline IO {
 
+namespace impl {
+
+inline auto OnMasterProcess() -> bool {
+    return not mp1::available() or
+           mp1::comm_world().rank() == 0;
+}
+
+} // namespace impl
+
 template<char L, typename... Ts>
 auto Print(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
     if (not Env::VerboseLevelReach<L>()) {
@@ -87,7 +96,8 @@ auto Print(std::ostream& os, fmt::text_style ts, fmt::format_string<Ts...> fmt, 
     if (not Env::VerboseLevelReach<L>()) {
         return;
     }
-    fmt::print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+    // fmt has no text_style overload for std::ostream, so format first.
+    fmt::print(os, "{}", fmt::format(ts, std::move(fmt), std::forward<Ts>(args)...));
 }
 
 template<char L, typename... Ts>
@@ -111,7 +121,7 @@ auto Print(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts...> fmt
     if (not Env::VerboseLevelReach<L>()) {
         return;
     }
-    fmt::print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+    fmt::print(os, L"{}", fmt::format(ts, std::move(fmt), std::forward<Ts>(args)...));
 }
 
 template<char L>
@@ -124,104 +134,91 @@ auto VPrint(auto&&... args) -> void {
 
 template<char L, typename... Ts>
 auto MasterPrint(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         Print<L>(std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         PrintLn<L>(std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         Print<L>(ts, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         Print<L>(f, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::FILE* f, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         PrintLn<L>(f, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::FILE* f, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         Print<L>(f, ts, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         Print<L>(os, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::ostream& os, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         PrintLn<L>(os, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::ostream& os, fmt::text_style ts, fmt::format_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         Print<L>(os, ts, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         Print<L>(os, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrintLn(std::wostream& os, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         PrintLn<L>(os, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L, typename... Ts>
 auto MasterPrint(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts...> fmt, Ts&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         Print<L>(os, ts, std::move(fmt), std::forward<Ts>(args)...);
     }
 }
 
 template<char L>
 auto MasterVPrint(auto&&... args) -> void {
-    if (not mp1::available() or
-        mp1::comm_world().rank() == 0) {
+    if (impl::OnMasterProcess()) {
         VPrint<L>(std::forward<decltype(args)>(args)...);
     }
 }

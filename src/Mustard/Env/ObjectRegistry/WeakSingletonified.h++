@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Mustard/Concept/NonCopyable.h++"
-#include "Mustard/Env/ObjectRegistry/impl/SingletonBase.h++"
-#include "Mustard/Env/ObjectRegistry/impl/WeakSingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/SingletonBase.h++"
+#include "Mustard/Env/ObjectRegistry/impl2/WeakSingletonBase.h++"
 
 #include <concepts>
 #include <type_traits>
@@ -34,8 +34,8 @@ class WeakSingleton;
 /// @tparam T Candidate type.
 template<typename T>
 concept IndirectlyWeakSingletonified = requires {
-    requires std::is_base_of_v<impl::WeakSingletonBase, T>;
-    requires not std::is_base_of_v<impl::SingletonBase, T>;
+    requires std::is_base_of_v<impl2::WeakSingletonBase, T>;
+    requires not std::is_base_of_v<impl2::SingletonBase, T>;
     requires Concept::NonCopyable<T>;
 };
 

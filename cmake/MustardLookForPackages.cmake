@@ -164,13 +164,21 @@ CPMFindPackage(
 # =============================================================================
 
 # backward-cpp
+if(WIN32 OR MUSTARD_USE_LIBUNWIND)
+    set(MUSTARD_BACKWARD_UNWINDER AUTO)
+else()
+    # A comma, not a semicolon: CPM passes OPTIONS as CMake arguments and would split a
+    # semicolon-separated list into two options.
+    set(MUSTARD_BACKWARD_UNWINDER "unwind,backtrace")
+endif()
 CPMFindPackage(
     NAME Backward
     GITHUB_REPOSITORY zhao-shihan/backward-cpp
-    VERSION 1.6.1
+    VERSION 2.0.0
     OPTIONS "BACKWARD_SHARED OFF"
     "BACKWARD_INSTALL ON"
-    "BACKWARD_TESTS ${BUILD_TESTING}")
+    "BACKWARD_TESTS ${BUILD_TESTING}"
+    "BACKWARD_UNWINDER ${MUSTARD_BACKWARD_UNWINDER}")
 
 # indicators
 set(MUSTARD_INDICATORS_MINIMUM_REQUIRED 2.3.2)

@@ -227,6 +227,10 @@ echo "  -> ./MustardTest TestShmArray"
 echo "  -> parexec ./MustardTest TestShmArray"
 parexec ./MustardTest TestShmArray
 
+echo "Running TestSignalHandler..."
+echo "  -> ./MustardTest TestSignalHandler"
+./MustardTest TestSignalHandler
+
 echo "Running TestSingleton/TestSingleton..."
 echo "  -> ./MustardTest TestSingleton"
 ./MustardTest TestSingleton

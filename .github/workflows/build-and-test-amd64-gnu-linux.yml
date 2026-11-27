@@ -116,6 +116,7 @@ jobs:
           - TestSingleRDFEntryReader-TestSingleRDFEntryProcessor-TestSingleRDFEntryProcessor
           - TestSingleRDFEventReader-TestSingleRDFEventProcessor-TestSingleRDFEventProcessor
           - TestShmArray-TestShmArray
+          - TestSignalHandler
           - TestSingleton-TestSingleton
           - TestStatistic0-TestStatistic1-TestStatistic2-TestStatistic3-TestStatistic4-TestStatistic5-TestStatistic6-TestStatistic7-TestStatistic8-TestStatistic9-TestStatistic10
           - TestStatisticalTTest-TestStatisticalZTest-TestStatisticalTSquaredTest-TestStatisticalChiSquaredTest
@@ -277,6 +278,9 @@ jobs:
                 "TestShmArray-TestShmArray")
                   ./MustardTest TestShmArray
                   parexec --use-hwthreads ./MustardTest TestShmArray
+                  ;;
+                "TestSignalHandler")
+                  ./MustardTest TestSignalHandler
                   ;;
                 "TestSingleton-TestSingleton")
                   ./MustardTest TestSingleton

@@ -18,21 +18,14 @@
 
 #pragma once
 
-#include "Mustard/Memory/ClassSpecificAllocation.h++"
-#include "Mustard/Utility/ClassSemanticHelper.h++"
+#include "Mustard/Application/Subprogram.h++"
 
-namespace Mustard::Env::inline ObjectRegistry::impl {
+namespace Mustard::Testing {
 
-/// @brief Implementation detail of Mustard::Env::WeakSingleton.
-/// @details Not API. Provides a common marker and allocation behavior for
-/// weak singleton objects tracked by ObjectRegistry.
-class WeakSingletonBase : public ClassSpecificAllocation,
-                          public NoncopyableBase {
-protected:
-    /// @brief Protected default constructor for mixin inheritance.
-    WeakSingletonBase() = default;
-    /// @brief Protected default destructor for mixin inheritance.
-    ~WeakSingletonBase() = default;
+class TestSignalHandler : public Application::Subprogram {
+public:
+    TestSignalHandler();
+    auto Main(int argc, char* argv[]) const -> int override;
 };
 
-} // namespace Mustard::Env::inline ObjectRegistry::impl
+} // namespace Mustard::Testing

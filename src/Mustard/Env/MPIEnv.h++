@@ -62,7 +62,7 @@ protected:
     /// @param showBannerHint Whether banner hint should still be tracked.
     /// @note Intended for derived/internal construction paths.
     /// @note A most-derived class derived from `MPIEnv` must initialize
-    ///       `impl::EnvBase` with `impl::EnableMPI{argc, argv}` itself; the
+    ///       `impl1::EnvBase` with `impl1::EnableMPI{argc, argv}` itself; the
     ///       initializer in this constructor is ignored in that case.
     MPIEnv(NoBanner, int argc, char* argv[],
            muc::optional_ref<CLI::CLI<>> cli,
