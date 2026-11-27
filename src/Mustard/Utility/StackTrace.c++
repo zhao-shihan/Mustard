@@ -69,7 +69,7 @@ auto InterruptedPC(void* context) -> void* {
         // Without libunwind the unwinder cannot use the signal context. Locate the
         // interrupted instruction by its address instead, which does not depend on how
         // the signal handler happens to be inlined.
-        const auto* interruptedPC{InterruptedPC(context)};
+        const auto interruptedPC{InterruptedPC(context)};
         stack.load_here(depth + 8, context, errorAddr);
         if (interruptedPC != nullptr) {
             for (int i{}; i < std::ssize(stack); ++i) {

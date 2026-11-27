@@ -22,11 +22,14 @@
 
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <array>
+#include <cerrno>
 #include <chrono>
 #include <climits>
 #include <csignal>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
@@ -123,9 +126,11 @@ auto RunChild(int argc, char* argv[], std::string_view task) -> int {
 
     if (task == "FAULT_NULL") {
         // The address comes from the environment so that the compiler cannot warn about
-        // (or fold away) the deliberate null dereference.
-        const auto* address{std::getenv("MUSTARD_TEST_FAULT_ADDRESS")};
-        *reinterpret_cast<volatile int*>(const_cast<char*>(address)) = 1;
+        // (or fold away) the deliberate fault.
+        const auto addressText{std::getenv("MUSTARD_TEST_FAULT_ADDRESS")};
+        const auto address{static_cast<std::uintptr_t>(
+            addressText != nullptr ? std::strtoull(addressText, nullptr, 0) : 0)};
+        *reinterpret_cast<volatile int*>(address) = 1;
     } else if (task == "FAULT_ILL") {
         // A compiler trap instruction raises a real SIGILL, so this also exercises the
         // "faulting instruction address" line.
@@ -202,17 +207,22 @@ auto ExecutablePath() -> std::string {
     return {};
 }
 
-auto ReadAll(int fd) -> std::string {
-    std::string output;
+auto ReadAll(int fd, std::string& output) -> void {
     std::array<char, 4096> buffer{};
-    while (output.size() < maxChildOutput) {
+    while (true) {
         const auto n{::read(fd, buffer.data(), buffer.size())};
+        if (n < 0 and errno == EINTR) {
+            continue;
+        }
         if (n <= 0) {
             break;
         }
-        output.append(buffer.data(), static_cast<std::size_t>(n));
+        // Keep draining past the cap, so that a large report cannot block the child.
+        if (output.size() < maxChildOutput) {
+            const auto room{maxChildOutput - output.size()};
+            output.append(buffer.data(), std::min(room, static_cast<std::size_t>(n)));
+        }
     }
-    return output;
 }
 
 auto RunCase(const std::string& executable, const SignalTestCase& testCase) -> bool {
@@ -222,7 +232,7 @@ auto RunCase(const std::string& executable, const SignalTestCase& testCase) -> b
         return false;
     }
     if (testCase.task == "FAULT_NULL") {
-        ::unsetenv("MUSTARD_TEST_FAULT_ADDRESS");
+        ::setenv("MUSTARD_TEST_FAULT_ADDRESS", "0", 1);
     }
 
     int pipeFD[2]{};
@@ -254,6 +264,12 @@ auto RunCase(const std::string& executable, const SignalTestCase& testCase) -> b
     }
 
     ::close(pipeFD[1]);
+    // Drain the capture pipe while waiting: a report larger than the pipe buffer would
+    // otherwise block the child, which would then be killed for timing out.
+    auto output{std::string{}};
+    auto reader{std::thread{[&] {
+        ReadAll(pipeFD[0], output);
+    }}};
     int status{};
     auto timedOut{false};
     const auto deadline{std::chrono::steady_clock::now() + childTimeout};
@@ -272,7 +288,7 @@ auto RunCase(const std::string& executable, const SignalTestCase& testCase) -> b
         ::kill(pid, SIGKILL);
         ::waitpid(pid, &status, 0);
     }
-    const auto output{ReadAll(pipeFD[0])};
+    reader.join();
     ::close(pipeFD[0]);
 
     std::string failure;
@@ -337,7 +353,7 @@ TestSignalHandler::TestSignalHandler() :
 
 auto TestSignalHandler::Main(int argc, char* argv[]) const -> int {
 #if defined __unix__ || defined __APPLE__
-    if (const auto* task{std::getenv(childTaskEnvVar)}; task != nullptr) {
+    if (const auto task{std::getenv(childTaskEnvVar)}) {
         return RunChild(argc, argv, task);
     }
     return RunParent();

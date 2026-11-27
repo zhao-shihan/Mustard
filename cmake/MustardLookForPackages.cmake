@@ -167,7 +167,9 @@ CPMFindPackage(
 if(WIN32 OR MUSTARD_USE_LIBUNWIND)
     set(MUSTARD_BACKWARD_UNWINDER AUTO)
 else()
-    set(MUSTARD_BACKWARD_UNWINDER "unwind;backtrace")
+    # A comma, not a semicolon: CPM passes OPTIONS as CMake arguments and would split a
+    # semicolon-separated list into two options.
+    set(MUSTARD_BACKWARD_UNWINDER "unwind,backtrace")
 endif()
 CPMFindPackage(
     NAME Backward

@@ -65,7 +65,9 @@ The following dependencies are required, but built-in if not found.
 
 #### Optional dependencies
 
-The following dependencies are only required when certain options are set.
+The following dependencies are optional. Geant4, FFTW and mimalloc are required when their
+options are set; the stack trace backends are detected by probing, so a missing one only makes
+crash reports less informative.
 
 | Library                                                           | Min version | Remarks                                                                                                                     |
 | :---------------------------------------------------------------- | :---------- | :-------------------------------------------------------------------------------------------------------------------------- |
@@ -80,8 +82,8 @@ The following dependencies are only required when certain options are set.
 
 backward-cpp selects its stack walker (`BACKWARD_UNWINDER`) and its symbolizer
 (`BACKWARD_SYMBOLIZER`) from preference lists, probing each candidate by compiling and
-linking; the configure log reports both choices. Missing libraries do not break the build,
-they only make crash reports less informative.
+linking; the configure log reports both choices. libunwind 1.3 or later is recommended to
+unwind signal frames.
 
 ## Projects using this library
 

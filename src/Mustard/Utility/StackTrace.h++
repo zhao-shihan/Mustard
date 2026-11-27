@@ -32,9 +32,10 @@ namespace Mustard::inline Utility {
 /// @param context Optional signal context (`ucontext_t*`) passed by a `SA_SIGINFO` handler.
 /// @param errorAddr Optional fault address (`siginfo_t::si_addr`) passed by a `SA_SIGINFO` handler.
 /// @return The stack trace, ending with a newline.
-/// @note `context` and `errorAddr` are only used by unwinder backends that support unwinding
-///       from a signal context. With the compiler unwind API, the frames of the signal handler
-///       are skipped by a platform-calibrated count instead.
+/// @note `errorAddr` is only used by unwinder backends that can unwind from a signal
+///       context. Without such a backend, `context` is used to locate the interrupted
+///       instruction by its address and the trace starts there; if the address does not
+///       appear in the trace, the trace starts above the signal handler.
 [[nodiscard]] MUSTARD_NOINLINE auto StackTrace(int depth = 64, int skip = 0, void* context = nullptr, void* errorAddr = nullptr) -> std::string;
 
 } // namespace Mustard::inline Utility

@@ -121,7 +121,7 @@ auto Print(std::wostream& os, fmt::text_style ts, fmt::wformat_string<Ts...> fmt
     if (not Env::VerboseLevelReach<L>()) {
         return;
     }
-    fmt::print(os, ts, std::move(fmt), std::forward<Ts>(args)...);
+    fmt::print(os, L"{}", fmt::format(ts, std::move(fmt), std::forward<Ts>(args)...));
 }
 
 template<char L>
